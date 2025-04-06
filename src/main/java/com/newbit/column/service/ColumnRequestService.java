@@ -24,7 +24,9 @@ public class ColumnRequestService {
         Column savedColumn = columnRepository.save(column);
 
         // 2. ColumnRequest 저장
-        ColumnRequest request = columnMapper.toColumnRequest(dto, savedColumn);
+        Long adminUserId = 1L; // 임시로 지정할 관리자 ID
+        ColumnRequest request = columnMapper.toColumnRequest(dto, savedColumn, adminUserId);
+
         ColumnRequest saved = columnRequestRepository.save(request);
 
         return CreateColumnResponseDto.builder()
