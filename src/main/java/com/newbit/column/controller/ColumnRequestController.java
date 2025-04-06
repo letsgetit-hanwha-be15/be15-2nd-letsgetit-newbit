@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/columns/requests")
+@RequestMapping("/api/v1/columns/requests")
 @RequiredArgsConstructor
 public class ColumnRequestController {
     private final ColumnRequestService columnRequestService;
