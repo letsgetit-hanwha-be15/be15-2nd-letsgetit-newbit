@@ -51,16 +51,17 @@ public class ColumnRequest {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public static ColumnRequest createdColumnRequest(CreateColumnRequestDto dto, Column column) {
-        return ColumnRequest.builder()
-                .requestType(RequestType.CREATE)
-                .isApproved(false)
-                .updatedTitle(dto.getTitle())
-                .updatedContent(dto.getContent())
-                .updatedPrice(dto.getPrice())
-                .updatedThumbnailUrl(dto.getThumbnailUrl())
-                .column(column)
-                .build();
-    }
+    /* 현재 사용하지 않음. 추후 테스트/기타 로직에 활용 가능 */
+//    public static ColumnRequest createdColumnRequest(CreateColumnRequestDto dto, Column column) {
+//        return ColumnRequest.builder()
+//                .requestType(RequestType.CREATE)
+//                .isApproved(false)
+//                .updatedTitle(dto.getTitle())
+//                .updatedContent(dto.getContent())
+//                .updatedPrice(dto.getPrice())
+//                .updatedThumbnailUrl(dto.getThumbnailUrl())
+//                .column(column)
+//                .build();
+//    }
 
 }
