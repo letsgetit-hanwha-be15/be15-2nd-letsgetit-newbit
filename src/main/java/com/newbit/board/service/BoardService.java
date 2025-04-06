@@ -1,6 +1,8 @@
 package com.newbit.board.service;
 
 import com.newbit.board.entity.Board;
+import com.newbit.board.entity.BoardLike;
+import com.newbit.board.repository.BoardLikeRepository;
 import com.newbit.board.repository.BoardRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -9,8 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -60,4 +61,44 @@ public class BoardService {
 
         boardRepository.deleteById(id);
     }
+
+    // 좋아요 증가 처리
+    public void increaseLike(Integer id) {
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id=" + id));
+        board.setLikeCount(board.getLikeCount() + 1);
+        boardRepository.save(board);
+    }
+
+    @Autowired
+    private BoardLikeRepository likeRepository;
+
+    public boolean toggleLike(Integer boardId, String username) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+
+        // 이미 좋아요 눌렀는지 확인
+        Optional<BoardLike> existingLike = likeRepository.findByBoardAndUsername(board, username);
+
+        if (existingLike.isPresent()) {
+            // 좋아요 취소
+            likeRepository.delete(existingLike.get());
+            board.setLikeCount(board.getLikeCount() - 1);
+            boardRepository.save(board);
+            return false; // 좋아요 취소됨
+        } else {
+            // 좋아요 추가
+            BoardLike like = new BoardLike();
+            like.setBoard(board);
+            like.setUsername(username);
+            likeRepository.save(like);
+
+            board.setLikeCount(board.getLikeCount() + 1);
+            boardRepository.save(board);
+            return true; // 좋아요 추가됨
+        }
+    }
+
+
+
 }

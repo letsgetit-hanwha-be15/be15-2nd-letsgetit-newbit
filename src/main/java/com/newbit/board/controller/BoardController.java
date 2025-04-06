@@ -1,7 +1,9 @@
 package com.newbit.board.controller;
 
 import com.newbit.board.entity.Board;
+import com.newbit.board.entity.Comment;
 import com.newbit.board.service.BoardService;
+import com.newbit.board.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -68,8 +70,8 @@ public class BoardController {
 
     @GetMapping("/board/view")
     public String boardView(Model model, @RequestParam("id") Integer id) {
-
         model.addAttribute("board", boardService.boardView(id));
+        model.addAttribute("comments", commentService.getComments(id)); // 댓글 리스트 포함
         return "boardview";
     }
 
@@ -100,5 +102,27 @@ public class BoardController {
         boardService.write(boardTemp, file);
 
         return "redirect:/board/list";
+    }
+
+    @GetMapping("/board/like/{id}")
+    public String toggleLike(@PathVariable("id") Integer id) {
+        String username = "testUser";  // 👉 로그인 기능이 있다면 SecurityContext에서 받아오면 됨
+        boardService.toggleLike(id, username);
+        return "redirect:/board/view?id=" + id;
+    }
+
+    @Autowired
+    private CommentService commentService;
+
+    @PostMapping("/board/comment")
+    public String addComment(@RequestParam("boardId") Integer boardId,
+                             @RequestParam("writer") String writer,
+                             @RequestParam("content") String content) {
+        Comment comment = new Comment();
+        comment.setBoard(boardService.boardView(boardId));
+        comment.setWriter(writer);
+        comment.setContent(content);
+        commentService.addComment(comment);
+        return "redirect:/board/view?id=" + boardId;
     }
 }
