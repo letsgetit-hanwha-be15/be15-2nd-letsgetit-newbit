@@ -2,8 +2,6 @@ package com.newbit.column.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newbit.column.dto.request.CreateColumnRequestDto;
-import com.newbit.column.entity.ColumnRequest;
-import com.newbit.column.repository.ColumnRequestRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +11,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
+@DisplayName("멘토 칼럼 등록 요청 성공")
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
@@ -28,31 +28,23 @@ class ColumnRequestControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private ColumnRequestRepository columnRequestRepository;
-
     @Test
-    @DisplayName("멘토 칼럼 등록 요청을 성공적으로 생성한다")
     void createColumnRequest_success() throws Exception {
         // given
-        CreateColumnRequestDto dto = CreateColumnRequestDto.builder()
-                .title("칼럼 제목")
-                .content("칼럼 내용")
+        CreateColumnRequestDto requestDto = CreateColumnRequestDto.builder()
+                .title("테스트 칼럼 제목")
+                .content("이것은 테스트 칼럼 내용입니다.")
                 .price(1000)
-                .thumbnailUrl("http://image.url")
+                .thumbnailUrl("https://example.com/test-thumbnail.jpg")
                 .build();
 
-        Long mentorId = 1L;
-
-        // when
+        // when & then
         mockMvc.perform(post("/api/columns/requests")
+                        .param("mentorId", "1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .param("mentorId", mentorId.toString())
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
-
-        // then
-        assertThat(columnRequestRepository.findAll())
-                .anyMatch(cr -> cr.getUpdatedTitle().equals("JPA 고급 매핑 정리"));
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.columnRequestId").exists())
+                .andDo(print());
     }
 }
