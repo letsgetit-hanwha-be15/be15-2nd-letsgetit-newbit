@@ -26,7 +26,7 @@ public class ColumnRequest {
     @Enumerated(EnumType.STRING)
     private RequestType requestType;
 
-    private Boolean isApporved;
+    private Boolean isApproved;
 
     private String updatedTitle;
 
@@ -41,9 +41,9 @@ public class ColumnRequest {
 
     private Long adminUserId;
 
-    private Long columnId;
-
-    private Long mentorId;
+    @ManyToOne
+    @JoinColumn(name = "column_id", nullable = false)
+    private Column column;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -51,15 +51,15 @@ public class ColumnRequest {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public static ColumnRequest createdColumnRequest(CreateColumnRequestDto dto, Long mentorId) {
+    public static ColumnRequest createdColumnRequest(CreateColumnRequestDto dto, Column column) {
         return ColumnRequest.builder()
                 .requestType(RequestType.CREATE)
-                .isApporved(false)
+                .isApproved(false)
                 .updatedTitle(dto.getTitle())
                 .updatedContent(dto.getContent())
                 .updatedPrice(dto.getPrice())
                 .updatedThumbnailUrl(dto.getThumbnailUrl())
-                .mentorId(mentorId)
+                .column(column)
                 .build();
     }
 
