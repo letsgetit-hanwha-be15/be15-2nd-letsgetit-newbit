@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 리스트 페이지</title>
+    <style>
+        .layout {
+            width: 600px;
+            margin: 40px auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        a {
+            text-decoration: none;
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+    <h2>게시글 목록</h2>
+
+    <table>
+        <thead>
+        <tr>
+            <th>글번호</th>
+            <th>제목</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="post : ${list}">
+            <td th:text="${post.postId}">1</td>
+            <td>
+                <a th:text="${post.title}" th:href="@{/post/view(id=${post.postId})}"></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 페이지 네비게이션 -->
+    <div>
+        <th:block th:each="page : ${#numbers.sequence(startPage, endPage)}">
+            <a th:if="${page != nowPage}"
+               th:href="@{/post/list(page=${page - 1}, searchKeyword=${param.searchKeyword})}"
+               th:text="${page}"></a>
+            <strong th:if="${page == nowPage}" th:text="${page}" style="color: red"></strong>
+        </th:block>
+    </div>
+
+    <!-- 검색창 -->
+    <form th:action="@{/post/list}" method="get">
+        <input type="text" name="searchKeyword" placeholder="검색어 입력">
+        <button type="submit">검색</button>
+    </form>
+</div>
+
+</body>
+</html>

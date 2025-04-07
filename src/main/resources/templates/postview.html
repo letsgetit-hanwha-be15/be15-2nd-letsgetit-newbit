@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 상세 페이지</title>
+    <style>
+        body {
+            width: 600px;
+            margin: 40px auto;
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .button-group {
+            margin-top: 10px;
+        }
+
+        .button-group form, .button-group a {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            padding: 8px;
+        }
+
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        hr {
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1 th:text="${post.title}">제목입니다.</h1>
+<p th:text="${post.content}">내용이 들어갈 부분입니다.</p>
+
+<!-- 좋아요 수 출력 -->
+<p>❤️ 좋아요: <span th:text="${post.likeCount}">0</span></p>
+
+<div class="button-group">
+    <!-- 좋아요 버튼 -->
+    <form th:action="@{/post/like/{id}(id=${post.id})}" method="get">
+        <button type="submit">좋아요 누르기</button>
+    </form>
+
+    <!-- 수정 링크 -->
+    <a th:href="@{/post/modify/{id}(id=${post.id})}">
+        <button type="button">수정</button>
+    </a>
+
+    <!-- 삭제 버튼 -->
+    <form th:action="@{/post/delete/{id}(id=${post.id})}" method="post">
+        <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+    </form>
+</div>
+
+<hr/>
+
+<!-- 댓글 목록 출력 -->
+<h2>댓글</h2>
+<ul>
+    <li th:each="comment : ${comments}">
+        <strong th:text="${comment.writer}">작성자</strong> :
+        <span th:text="${comment.content}">댓글 내용</span>
+    </li>
+</ul>
+
+<!-- 댓글 작성 폼 -->
+<h3>댓글 작성</h3>
+<form th:action="@{/post/comment}" method="post">
+    <input type="hidden" name="boardId" th:value="${post.id}" />
+    <input type="text" name="writer" placeholder="작성자" required />
+    <textarea name="content" placeholder="댓글을 입력하세요" required></textarea>
+    <button type="submit">작성</button>
+</form>
+
+</body>
+</html>

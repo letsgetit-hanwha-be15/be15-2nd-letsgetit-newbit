@@ -1,10 +1,12 @@
-package com.newbit.board.repository;
+package com.newbit.post.repository;
 
-import com.newbit.board.entity.Comment;
+import com.newbit.post.entity.Comment;
+import com.newbit.post.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
-    List<Comment> findByBoardId(Integer boardId);
+    List<Comment> findByPost(Post post);
 }
+

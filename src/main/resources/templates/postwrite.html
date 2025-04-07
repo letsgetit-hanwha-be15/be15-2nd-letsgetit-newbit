@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 작성폼</title>
+    <style>
+        .layout {
+            width: 500px;
+            margin: 40px auto;
+            font-family: Arial, sans-serif;
+        }
+
+        .layout input[type="text"],
+        .layout textarea,
+        .layout input[type="file"] {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .layout textarea {
+            min-height: 300px;
+        }
+
+        .layout button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .layout label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <h2>게시글 작성</h2>
+    <form action="/post/writepro" method="post" enctype="multipart/form-data">
+        <label for="title">제목</label>
+        <input name="title" type="text" id="title" placeholder="제목을 입력하세요">
+
+        <label for="content">내용</label>
+        <textarea name="content" id="content" placeholder="내용을 입력하세요"></textarea>
+
+        <label for="file">파일 업로드 (선택)</label>
+        <input type="file" name="file" id="file">
+
+        <button type="submit">작성</button>
+    </form>
+</div>
+</body>
+</html>
