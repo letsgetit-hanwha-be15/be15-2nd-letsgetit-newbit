@@ -40,7 +40,7 @@ class ColumnRequestControllerTest {
                 .build();
 
         // when & then
-        mockMvc.perform(post("/api/columns/requests")
+        mockMvc.perform(post("/api/v1/columns/requests")
                         .param("mentorId", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
