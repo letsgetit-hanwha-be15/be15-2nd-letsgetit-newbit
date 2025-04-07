@@ -1,8 +1,10 @@
 package com.newbit.column.controller;
 
 import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.dto.request.DeleteColumnRequestDto;
 import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import com.newbit.column.dto.response.CreateColumnResponseDto;
+import com.newbit.column.dto.response.DeleteColumnResponseDto;
 import com.newbit.column.dto.response.UpdateColumnResponseDto;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.dto.ApiResponse;
@@ -35,5 +37,16 @@ public class ColumnRequestController {
             @RequestBody @Valid UpdateColumnRequestDto dto
             ) {
         return ApiResponse.success(columnRequestService.updateColumnRequest(dto, columnId));
+    }
+
+    // 칼럼 삭제 요청 API
+    @PostMapping("/{columnId}/delete")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<DeleteColumnResponseDto> deleteColumnRequest(
+            @PathVariable Long columnId,
+            @RequestBody @Valid DeleteColumnRequestDto dto
+            ) {
+        return ApiResponse.success(columnRequestService.deleteColumnRequest(dto, columnId));
+
     }
 }
