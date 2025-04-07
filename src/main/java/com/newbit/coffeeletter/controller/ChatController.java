@@ -1,10 +1,15 @@
 package com.newbit.coffeeletter.controller;
 
 import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
+import com.newbit.coffeeletter.domain.chat.MessageType;
+import com.newbit.coffeeletter.dto.ChatMessageDTO;
 import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
 import com.newbit.coffeeletter.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,5 +66,20 @@ public class ChatController {
             @PathVariable CoffeeLetterRoom.RoomStatus status) {
         return ResponseEntity.ok(chatService.getRoomsByUserIdAndStatus(userId, status));
     }
+
+    // WebSocket 메시지 핸들러
+
+    @MessageMapping("/chat.sendMessage")
+    public ChatMessageDTO sendMessage(@Payload ChatMessageDTO chatMessage) {
+        return chatService.sendMessage(chatMessage);
+    }
+
+    @MessageMapping("/chat.addUser/{roomId}")
+    public void addUser(@DestinationVariable String roomId, @Payload ChatMessageDTO chatMessage) {
+        chatMessage.setType(MessageType.ENTER);
+        chatService.sendSystemMessage(roomId, chatMessage.getSenderName() + "님이 입장하셨습니다.");
+    }
+
+
 
 }
