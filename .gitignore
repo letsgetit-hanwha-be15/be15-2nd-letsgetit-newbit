@@ -42,9 +42,6 @@ src/main/resources/application-*.yml
 src/test/resources/application.yml
 src/test/resources/application-*.yml
 
-## Test Application Properties ###
-src/test/resources/application.yml
-src/test/resources/application-*.yml
 
 
 ### Logs ###
