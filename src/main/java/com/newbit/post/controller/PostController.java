@@ -69,11 +69,11 @@ public class PostController {
     }
 
     // 게시글 삭제
-    @PostMapping("/post/delete/{id}")
-    public String postDelete(@PathVariable("id") Integer id) {
-        postService.postDelete(id);
-        return "redirect:/post/list";
-    }
+//    @PostMapping("/post/delete/{id}")
+//    public String postDelete(@PathVariable("id") Integer id) {
+//        postService.postDelete(id);
+//        return "redirect:/post/list";
+//    }
 
     // 게시글 수정 폼
     @GetMapping("/post/modify/{id}")
