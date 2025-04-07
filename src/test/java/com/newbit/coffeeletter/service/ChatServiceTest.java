@@ -1,6 +1,7 @@
 package com.newbit.coffeeletter.service;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
@@ -168,5 +170,133 @@ class ChatServiceTest {
         
         verify(roomRepository, times(1)).findById(roomId);
         verify(roomRepository, never()).save(any(CoffeeLetterRoom.class));
+    }
+    
+    @Test
+    void getAllRooms_모든_채팅방_조회_성공() {
+        // given
+        when(roomRepository.findAll()).thenReturn(rooms);
+        when(modelMapper.map(any(CoffeeLetterRoom.class), eq(CoffeeLetterRoomDTO.class))).thenReturn(roomDTO);
+        
+        // when
+        List<CoffeeLetterRoomDTO> result = chatService.getAllRooms();
+        
+        // then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(roomRepository, times(1)).findAll();
+    }
+    
+    @Test
+    void getAllRooms_빈_목록_반환() {
+        // given
+        when(roomRepository.findAll()).thenReturn(Collections.emptyList());
+        
+        // when
+        List<CoffeeLetterRoomDTO> result = chatService.getAllRooms();
+        
+        // then
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        verify(roomRepository, times(1)).findAll();
+    }
+    
+    @Test
+    void getRoomById_채팅방_조회_성공() {
+        // given
+        String roomId = "test-room-id";
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(modelMapper.map(room, CoffeeLetterRoomDTO.class)).thenReturn(roomDTO);
+        
+        // when
+        CoffeeLetterRoomDTO result = chatService.getRoomById(roomId);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(roomDTO.getMentorId(), result.getMentorId());
+        assertEquals(roomDTO.getMenteeId(), result.getMenteeId());
+        verify(roomRepository, times(1)).findById(roomId);
+    }
+    
+    @Test
+    void getRoomById_존재하지_않는_채팅방_예외발생() {
+        // given
+        String roomId = "non-existent-room-id";
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.getRoomById(roomId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+    }
+    
+    @Test
+    void getRoomsByUserId_사용자_채팅방_조회_성공() {
+        // given
+        Long userId = 1L;
+        String userIdStr = userId.toString();
+        when(roomRepository.findByParticipantsContaining(userIdStr)).thenReturn(rooms);
+        when(modelMapper.map(any(CoffeeLetterRoom.class), eq(CoffeeLetterRoomDTO.class))).thenReturn(roomDTO);
+        
+        // when
+        List<CoffeeLetterRoomDTO> result = chatService.getRoomsByUserId(userId);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(roomRepository, times(1)).findByParticipantsContaining(userIdStr);
+    }
+    
+    @Test
+    void getRoomsByUserId_빈_목록_반환() {
+        // given
+        Long userId = 999L;
+        String userIdStr = userId.toString();
+        when(roomRepository.findByParticipantsContaining(userIdStr)).thenReturn(Collections.emptyList());
+        
+        // when
+        List<CoffeeLetterRoomDTO> result = chatService.getRoomsByUserId(userId);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        verify(roomRepository, times(1)).findByParticipantsContaining(userIdStr);
+    }
+    
+    @Test
+    void getRoomsByUserIdAndStatus_사용자와_상태별_채팅방_조회_성공() {
+        // given
+        Long userId = 1L;
+        String userIdStr = userId.toString();
+        CoffeeLetterRoom.RoomStatus status = CoffeeLetterRoom.RoomStatus.ACTIVE;
+        when(roomRepository.findByParticipantsContainingAndStatus(userIdStr, status)).thenReturn(rooms);
+        when(modelMapper.map(any(CoffeeLetterRoom.class), eq(CoffeeLetterRoomDTO.class))).thenReturn(roomDTO);
+        
+        // when
+        List<CoffeeLetterRoomDTO> result = chatService.getRoomsByUserIdAndStatus(userId, status);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(roomRepository, times(1)).findByParticipantsContainingAndStatus(userIdStr, status);
+    }
+    
+    @Test
+    void getRoomsByUserIdAndStatus_빈_목록_반환() {
+        // given
+        Long userId = 999L;
+        String userIdStr = userId.toString();
+        CoffeeLetterRoom.RoomStatus status = CoffeeLetterRoom.RoomStatus.INACTIVE;
+        when(roomRepository.findByParticipantsContainingAndStatus(userIdStr, status)).thenReturn(Collections.emptyList());
+        
+        // when
+        List<CoffeeLetterRoomDTO> result = chatService.getRoomsByUserIdAndStatus(userId, status);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        verify(roomRepository, times(1)).findByParticipantsContainingAndStatus(userIdStr, status);
     }
 } 
