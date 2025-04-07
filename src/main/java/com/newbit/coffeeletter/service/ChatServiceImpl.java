@@ -1,16 +1,20 @@
 package com.newbit.coffeeletter.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
 import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
 import com.newbit.coffeeletter.repository.CoffeeLetterRoomRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
@@ -32,4 +36,18 @@ public class ChatServiceImpl implements ChatService {
         CoffeeLetterRoom savedRoom = roomRepository.save(room);
         return modelMapper.map(savedRoom, CoffeeLetterRoomDTO.class);
     }
-} 
+
+    @Override
+    @Transactional
+    public CoffeeLetterRoomDTO endRoom(String roomId) {
+        CoffeeLetterRoom room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+
+        room.setStatus(CoffeeLetterRoom.RoomStatus.INACTIVE);
+        room.setEndTime(LocalDateTime.now());
+        CoffeeLetterRoom savedRoom = roomRepository.save(room);
+
+        return modelMapper.map(savedRoom, CoffeeLetterRoomDTO.class);
+    }
+
+}

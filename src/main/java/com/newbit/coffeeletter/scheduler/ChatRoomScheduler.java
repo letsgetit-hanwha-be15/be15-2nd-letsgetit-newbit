@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
 import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom.RoomStatus;
+import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
 import com.newbit.coffeeletter.repository.CoffeeLetterRoomRepository;
 import com.newbit.coffeeletter.service.ChatService;
 
@@ -27,12 +28,8 @@ public class ChatRoomScheduler {
         this.roomRepository = roomRepository;
         this.chatService = chatService;
     }
-    
-    /**
-     * 5분마다 실행되는 스케줄러
-     * 종료 시간이 지난 활성 상태의 채팅방을 비활성화 처리
-     */
-    @Scheduled(fixedRate = 300000) // 5분 =300,000ms
+
+    @Scheduled(fixedRate = 300000)
     public void closeExpiredRooms() {
         LocalDateTime now = LocalDateTime.now();
         
@@ -45,7 +42,12 @@ public class ChatRoomScheduler {
         
         for (CoffeeLetterRoom room : expiredRooms) {
             log.info("Closing room: {}", room.getId());
-            chatService.endRoom(room.getId());
+            try {
+                CoffeeLetterRoomDTO inactiveRoom = chatService.endRoom(room.getId());
+                log.info("Room closed successfully: {}", inactiveRoom.getId());
+            } catch (Exception e) {
+                log.error("Error closing room {}: {}", room.getId(), e.getMessage());
+            }
         }
     }
 } 
