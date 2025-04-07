@@ -1,7 +1,9 @@
 package com.newbit.coffeeletter.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -60,6 +62,36 @@ public class ChatServiceImpl implements ChatService {
         CoffeeLetterRoom savedRoom = roomRepository.save(room);
 
         return modelMapper.map(savedRoom, CoffeeLetterRoomDTO.class);
+    }
+
+    @Override
+    public List<CoffeeLetterRoomDTO> getAllRooms() {
+        return roomRepository.findAll().stream()
+                .map(room -> modelMapper.map(room, CoffeeLetterRoomDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public CoffeeLetterRoomDTO getRoomById(String roomId) {
+        CoffeeLetterRoom room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+        return modelMapper.map(room, CoffeeLetterRoomDTO.class);
+    }
+
+    @Override
+    public List<CoffeeLetterRoomDTO> getRoomsByUserId(Long userId) {
+        String userIdStr = userId.toString();
+        return roomRepository.findByParticipantsContaining(userIdStr).stream()
+                .map(room -> modelMapper.map(room, CoffeeLetterRoomDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CoffeeLetterRoomDTO> getRoomsByUserIdAndStatus(Long userId, CoffeeLetterRoom.RoomStatus status) {
+        String userIdStr = userId.toString();
+        return roomRepository.findByParticipantsContainingAndStatus(userIdStr, status).stream()
+                .map(room -> modelMapper.map(room, CoffeeLetterRoomDTO.class))
+                .collect(Collectors.toList());
     }
 
 }
