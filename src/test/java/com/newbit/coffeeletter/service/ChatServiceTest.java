@@ -132,4 +132,41 @@ class ChatServiceTest {
         verify(roomRepository, times(1)).findById(roomId);
         verify(roomRepository, never()).save(any(CoffeeLetterRoom.class));
     }
+    
+    @Test
+    void cancelRoom_채팅방_취소_성공() {
+        // given
+        String roomId = "test-room-id";
+        CoffeeLetterRoom activeRoom = new CoffeeLetterRoom();
+        activeRoom.setId(roomId);
+        activeRoom.setStatus(CoffeeLetterRoom.RoomStatus.ACTIVE);
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(activeRoom));
+        when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(activeRoom);
+        when(modelMapper.map(activeRoom, CoffeeLetterRoomDTO.class)).thenReturn(roomDTO);
+        
+        // when
+        CoffeeLetterRoomDTO result = chatService.cancelRoom(roomId);
+        
+        // then
+        assertNotNull(result);
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(roomRepository, times(1)).save(any(CoffeeLetterRoom.class));
+        assertEquals(CoffeeLetterRoom.RoomStatus.CANCELED, activeRoom.getStatus());
+    }
+    
+    @Test
+    void cancelRoom_존재하지_않는_채팅방_예외발생() {
+        // given
+        String roomId = "non-existent-room-id";
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.cancelRoom(roomId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(roomRepository, never()).save(any(CoffeeLetterRoom.class));
+    }
 } 
