@@ -1,8 +1,10 @@
 package com.newbit.column.service;
 
 import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.dto.request.DeleteColumnRequestDto;
 import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import com.newbit.column.dto.response.CreateColumnResponseDto;
+import com.newbit.column.dto.response.DeleteColumnResponseDto;
 import com.newbit.column.dto.response.UpdateColumnResponseDto;
 import com.newbit.column.entity.Column;
 import com.newbit.column.entity.ColumnRequest;
@@ -59,6 +61,25 @@ public class ColumnRequestService {
 
         // 4. 응답
         return UpdateColumnResponseDto.builder()
+                .columnRequestId(saved.getColumnRequestId())
+                .build();
+    }
+
+    public DeleteColumnResponseDto deleteColumnRequest(DeleteColumnRequestDto dto, Long columnId) {
+        Column column = columnRepository.findById(columnId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 칼럼을 찾을 수 없습니다. columnId = " + columnId));
+
+        ColumnRequest request = ColumnRequest.builder()
+                .requestType(RequestType.DELETE)
+                .isApproved(false)
+                .rejectedReason(dto.getReason())  // 삭제 사유 rejectedReason에 임시 저장
+                .adminUserId(1L)  // 임시 관리자 ID
+                .column(column)
+                .build();
+
+        ColumnRequest saved = columnRequestRepository.save(request);
+
+        return DeleteColumnResponseDto.builder()
                 .columnRequestId(saved.getColumnRequestId())
                 .build();
     }
