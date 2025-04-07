@@ -7,5 +7,5 @@ public interface ChatService {
 
     CoffeeLetterRoomDTO createRoom(CoffeeLetterRoomDTO roomDto);
     CoffeeLetterRoomDTO endRoom(String roomId);
-
+    CoffeeLetterRoomDTO cancelRoom(String roomId);
 }
