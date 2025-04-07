@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.never;
@@ -66,7 +65,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void createRoom_createRoomTest() {
+    void createRoom_새로운_채팅방_생성_성공() {
         // given
         when(roomRepository.findByCoffeeChatId(anyLong()))
                 .thenReturn(Optional.empty());
@@ -85,7 +84,7 @@ class ChatServiceTest {
     }
 
     @Test
-    void createRoom_duplicatedTest() {
+    void createRoom_이미_존재하는_채팅방_예외발생() {
         // given
         when(roomRepository.findByCoffeeChatId(anyLong()))
                 .thenReturn(Optional.of(room));
@@ -96,5 +95,41 @@ class ChatServiceTest {
         });
         verify(roomRepository, never()).save(any(CoffeeLetterRoom.class));
     }
-
+    
+    @Test
+    void endRoom_채팅방_비활성화_성공() {
+        // given
+        String roomId = "test-room-id";
+        CoffeeLetterRoom activeRoom = new CoffeeLetterRoom();
+        activeRoom.setId(roomId);
+        activeRoom.setStatus(CoffeeLetterRoom.RoomStatus.ACTIVE);
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(activeRoom));
+        when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(activeRoom);
+        when(modelMapper.map(activeRoom, CoffeeLetterRoomDTO.class)).thenReturn(roomDTO);
+        
+        // when
+        CoffeeLetterRoomDTO result = chatService.endRoom(roomId);
+        
+        // then
+        assertNotNull(result);
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(roomRepository, times(1)).save(any(CoffeeLetterRoom.class));
+        assertEquals(CoffeeLetterRoom.RoomStatus.INACTIVE, activeRoom.getStatus());
+    }
+    
+    @Test
+    void endRoom_존재하지_않는_채팅방_예외발생() {
+        // given
+        String roomId = "non-existent-room-id";
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.endRoom(roomId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(roomRepository, never()).save(any(CoffeeLetterRoom.class));
+    }
 } 
