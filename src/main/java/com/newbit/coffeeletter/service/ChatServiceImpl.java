@@ -10,6 +10,8 @@ import com.newbit.coffeeletter.domain.chat.MessageType;
 import com.newbit.coffeeletter.dto.ChatMessageDTO;
 import com.newbit.coffeeletter.repository.ChatMessageRepository;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,5 +179,26 @@ public class ChatServiceImpl implements ChatService {
 
         roomRepository.save(room);
     }
+
+    @Override
+    public List<ChatMessageDTO> getMessagesByRoomId(String roomId) {
+        roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+                
+        return messageRepository.findByRoomId(roomId).stream()
+                .map(message -> modelMapper.map(message, ChatMessageDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<ChatMessageDTO> getMessagesByRoomId(String roomId, Pageable pageable) {
+        roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+                
+        return messageRepository.findByRoomId(roomId, pageable)
+                .map(message -> modelMapper.map(message, ChatMessageDTO.class));
+    }
+
+
 
 }
