@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class ColumnRequestController {
     private final ColumnRequestService columnRequestService;
 
+    // 칼럼 등록 요청 API
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<CreateColumnResponseDto> createColumnRequest(
