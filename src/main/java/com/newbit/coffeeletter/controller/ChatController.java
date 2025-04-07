@@ -25,4 +25,10 @@ public class ChatController {
         return ResponseEntity.ok(chatService.createRoom(roomDto));
     }
 
+    @PutMapping("/rooms/{roomId}/end")
+    public ResponseEntity<CoffeeLetterRoomDTO> endRoom(@PathVariable String roomId) {
+        return ResponseEntity.ok(chatService.endRoom(roomId));
+    }
+
+
 }
