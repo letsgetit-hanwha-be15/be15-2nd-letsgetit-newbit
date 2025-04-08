@@ -21,7 +21,7 @@ public class DiamondHistoryQueryController {
     private final DiamondHistoryQueryService diamondHistoryQueryService;
 
     @Operation(summary = "다이아 내역 조회", description = "지정된 사용자의 다이아 사용/획득 내역을 조회합니다.")
-    @GetMapping
+    @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<AssetHistoryListResponse>> getDiamondHistories(
             @Parameter(description = "조회할 유저 ID", required = true) @PathVariable Long userId,
             @ModelAttribute HistoryRequest requestDto) {

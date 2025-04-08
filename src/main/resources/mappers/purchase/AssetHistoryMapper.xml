@@ -59,4 +59,17 @@
         </if>
     </select>
 
+
+    <select id="countDiamondHistories" resultType="long">
+        SELECT COUNT(*) FROM diamond_history
+        WHERE user_id = #{userId}
+        <if test="type != null and type.name() == 'INCREASE'">
+            AND increase_amount IS NOT NULL
+        </if>
+        <if test="type != null and type.name() == 'DECREASE'">
+            AND decrease_amount IS NOT NULL
+        </if>
+    </select>
+
+
 </mapper>
