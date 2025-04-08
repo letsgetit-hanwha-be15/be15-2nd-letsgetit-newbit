@@ -30,7 +30,7 @@ public class ColumnRequestService {
 
         // 2. ColumnRequest 저장
         Long adminUserId = 1L; // 임시로 지정할 관리자 ID
-        ColumnRequest request = columnMapper.toColumnRequest(dto, savedColumn, adminUserId);
+        ColumnRequest request = columnMapper.toColumnRequest(dto, savedColumn);
 
         ColumnRequest saved = columnRequestRepository.save(request);
 
@@ -73,7 +73,6 @@ public class ColumnRequestService {
                 .requestType(RequestType.DELETE)
                 .isApproved(false)
                 .rejectedReason(dto.getReason())  // 삭제 사유 rejectedReason에 임시 저장
-                .adminUserId(1L)  // 임시 관리자 ID
                 .column(column)
                 .build();
 

@@ -21,7 +21,7 @@ public class ColumnMapper {
                 .build();
     }
 
-    public ColumnRequest toColumnRequest(CreateColumnRequestDto dto, Column column, Long adminUserId) {
+    public ColumnRequest toColumnRequest(CreateColumnRequestDto dto, Column column) {
         return ColumnRequest.builder()
                 .requestType(RequestType.CREATE)
                 .isApproved(false)
@@ -30,7 +30,6 @@ public class ColumnMapper {
                 .updatedPrice(dto.getPrice())
                 .updatedThumbnailUrl(dto.getThumbnailUrl())
                 .column(column)
-                .adminUserId(adminUserId)
                 .build();
     }
 }
