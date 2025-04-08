@@ -1,12 +1,13 @@
 package com.newbit.coffeechat.query.dto.response;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
+@Builder
 public class CoffeechatDto {
     private Long coffeechatId;
     private ProgressStatus progressStatus;
