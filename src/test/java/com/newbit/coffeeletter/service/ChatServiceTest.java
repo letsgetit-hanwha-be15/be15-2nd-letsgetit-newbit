@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
@@ -843,5 +844,118 @@ class ChatServiceTest {
         });
         
         verify(roomRepository, times(1)).findById(roomId);
+    }
+    
+    @Test
+    void getLastMessage_성공적인_조회() {
+        // given
+        String roomId = "test-room-id";
+        LocalDateTime timestamp = LocalDateTime.now();
+        
+        ChatMessage lastMessage = new ChatMessage();
+        lastMessage.setId("last-message-id");
+        lastMessage.setRoomId(roomId);
+        lastMessage.setSenderId(2L);
+        lastMessage.setSenderName("멘티");
+        lastMessage.setContent("마지막 메시지입니다");
+        lastMessage.setTimestamp(timestamp);
+        lastMessage.setType(MessageType.CHAT);
+        lastMessage.setReadByMentor(false);
+        lastMessage.setReadByMentee(true);
+        
+        ChatMessageDTO expectedDTO = new ChatMessageDTO();
+        expectedDTO.setId("last-message-id");
+        expectedDTO.setRoomId(roomId);
+        expectedDTO.setSenderId(2L);
+        expectedDTO.setSenderName("멘티");
+        expectedDTO.setContent("마지막 메시지입니다");
+        expectedDTO.setTimestamp(timestamp);
+        expectedDTO.setType(MessageType.CHAT);
+        expectedDTO.setReadByMentor(false);
+        expectedDTO.setReadByMentee(true);
+        
+        when(messageRepository.findFirstByRoomIdOrderByTimestampDesc(roomId)).thenReturn(lastMessage);
+        when(modelMapper.map(lastMessage, ChatMessageDTO.class)).thenReturn(expectedDTO);
+        
+        // when
+        ChatMessageDTO result = chatService.getLastMessage(roomId);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(expectedDTO.getId(), result.getId());
+        assertEquals(expectedDTO.getRoomId(), result.getRoomId());
+        assertEquals(expectedDTO.getSenderId(), result.getSenderId());
+        assertEquals(expectedDTO.getSenderName(), result.getSenderName());
+        assertEquals(expectedDTO.getContent(), result.getContent());
+        assertEquals(expectedDTO.getType(), result.getType());
+        assertEquals(expectedDTO.getTimestamp(), result.getTimestamp());
+        assertEquals(expectedDTO.isReadByMentor(), result.isReadByMentor());
+        assertEquals(expectedDTO.isReadByMentee(), result.isReadByMentee());
+        
+        verify(messageRepository, times(1)).findFirstByRoomIdOrderByTimestampDesc(roomId);
+        verify(modelMapper, times(1)).map(lastMessage, ChatMessageDTO.class);
+    }
+    
+    @Test
+    void getLastMessage_메시지가_없는_경우() {
+        // given
+        String roomId = "empty-room-id";
+        when(messageRepository.findFirstByRoomIdOrderByTimestampDesc(roomId)).thenReturn(null);
+        
+        // when
+        ChatMessageDTO result = chatService.getLastMessage(roomId);
+        
+        // then
+        assertNull(result);
+        verify(messageRepository, times(1)).findFirstByRoomIdOrderByTimestampDesc(roomId);
+        verify(modelMapper, times(0)).map(any(), any());
+    }
+    
+    @Test
+    void getLastMessage_시스템_메시지_조회() {
+        // given
+        String roomId = "test-room-id";
+        LocalDateTime timestamp = LocalDateTime.now();
+        
+        ChatMessage systemMessage = new ChatMessage();
+        systemMessage.setId("system-message-id");
+        systemMessage.setRoomId(roomId);
+        systemMessage.setSenderId(0L);
+        systemMessage.setSenderName("System");
+        systemMessage.setContent("채팅방이 개설되었습니다");
+        systemMessage.setTimestamp(timestamp);
+        systemMessage.setType(MessageType.SYSTEM);
+        systemMessage.setReadByMentor(true);
+        systemMessage.setReadByMentee(true);
+        
+        ChatMessageDTO expectedDTO = new ChatMessageDTO();
+        expectedDTO.setId("system-message-id");
+        expectedDTO.setRoomId(roomId);
+        expectedDTO.setSenderId(0L);
+        expectedDTO.setSenderName("System");
+        expectedDTO.setContent("채팅방이 개설되었습니다");
+        expectedDTO.setTimestamp(timestamp);
+        expectedDTO.setType(MessageType.SYSTEM);
+        expectedDTO.setReadByMentor(true);
+        expectedDTO.setReadByMentee(true);
+        
+        when(messageRepository.findFirstByRoomIdOrderByTimestampDesc(roomId)).thenReturn(systemMessage);
+        when(modelMapper.map(systemMessage, ChatMessageDTO.class)).thenReturn(expectedDTO);
+        
+        // when
+        ChatMessageDTO result = chatService.getLastMessage(roomId);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(expectedDTO.getId(), result.getId());
+        assertEquals(expectedDTO.getRoomId(), result.getRoomId());
+        assertEquals(expectedDTO.getSenderId(), result.getSenderId());
+        assertEquals(expectedDTO.getSenderName(), result.getSenderName());
+        assertEquals(expectedDTO.getContent(), result.getContent());
+        assertEquals(expectedDTO.getType(), result.getType());
+        assertEquals(MessageType.SYSTEM, result.getType());
+        
+        verify(messageRepository, times(1)).findFirstByRoomIdOrderByTimestampDesc(roomId);
+        verify(modelMapper, times(1)).map(systemMessage, ChatMessageDTO.class);
     }
 } 

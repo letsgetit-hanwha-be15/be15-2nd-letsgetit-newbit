@@ -22,4 +22,7 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
     // 특정 채팅방의 멘티가 읽지 않은 메시지 조회
     List<ChatMessage> findByRoomIdAndReadByMenteeFalse(String roomId);
 
+    // 특정 채팅방의 마지막 메시지 조회
+    ChatMessage findFirstByRoomIdOrderByTimestampDesc(String roomId);
+
 } 
