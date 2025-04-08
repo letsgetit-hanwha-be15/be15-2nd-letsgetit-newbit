@@ -117,6 +117,11 @@ public class ChatController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/messages/{roomId}/last")
+    public ResponseEntity<ChatMessageDTO> getLastMessage(@PathVariable String roomId) {
+        return ResponseEntity.ok(chatService.getLastMessage(roomId));
+    }
+
 
     // WebSocket 메시지 핸들러
     

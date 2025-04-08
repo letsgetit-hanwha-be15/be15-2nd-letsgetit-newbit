@@ -261,4 +261,13 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
+    @Override
+    public ChatMessageDTO getLastMessage(String roomId) {
+        ChatMessage lastMessage = messageRepository.findFirstByRoomIdOrderByTimestampDesc(roomId);
+        if (lastMessage == null) {
+            return null;
+        }
+        return modelMapper.map(lastMessage, ChatMessageDTO.class);
+    }
+
 }
