@@ -2,10 +2,12 @@ package com.newbit.coffeeletter.controller;
 
 import java.util.List;
 
+import com.newbit.coffeeletter.domain.chat.MessageType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -40,11 +42,8 @@ public class ChatController {
         this.messagingTemplate = messagingTemplate;
     }
 
-    @PostMapping("/rooms")
-    public ResponseEntity<CoffeeLetterRoomDTO> createRoom(@RequestBody CoffeeLetterRoomDTO roomDto) {
-        return ResponseEntity.ok(chatService.createRoom(roomDto));
-    }
-
+    // === 채팅방 관련 API ===
+    
     @GetMapping("/rooms")
     public ResponseEntity<List<CoffeeLetterRoomDTO>> getAllRooms() {
         return ResponseEntity.ok(chatService.getAllRooms());
@@ -55,16 +54,21 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getRoomById(roomId));
     }
     
-    @GetMapping("/rooms/users/{userId}")
+    @GetMapping("/rooms/user/{userId}")
     public ResponseEntity<List<CoffeeLetterRoomDTO>> getRoomsByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(chatService.getRoomsByUserId(userId));
     }
     
-    @GetMapping("/rooms/users/{userId}/status/{status}")
+    @GetMapping("/rooms/user/{userId}/status/{status}")
     public ResponseEntity<List<CoffeeLetterRoomDTO>> getRoomsByUserIdAndStatus(
-            @PathVariable Long userId,
+            @PathVariable Long userId, 
             @PathVariable CoffeeLetterRoom.RoomStatus status) {
         return ResponseEntity.ok(chatService.getRoomsByUserIdAndStatus(userId, status));
+    }
+    
+    @PostMapping("/rooms")
+    public ResponseEntity<CoffeeLetterRoomDTO> createRoom(@RequestBody CoffeeLetterRoomDTO roomDto) {
+        return ResponseEntity.ok(chatService.createRoom(roomDto));
     }
     
     @PutMapping("/rooms/{roomId}/end")
@@ -77,27 +81,31 @@ public class ChatController {
         return ResponseEntity.ok(chatService.cancelRoom(roomId));
     }
     
-    @GetMapping("/rooms/{roomId}/messages")
+    // 채팅 메시지 관련 API
+    
+    @GetMapping("/messages/{roomId}")
     public ResponseEntity<List<ChatMessageDTO>> getMessagesByRoomId(@PathVariable String roomId) {
         return ResponseEntity.ok(chatService.getMessagesByRoomId(roomId));
     }
     
-    @GetMapping("/rooms/{roomId}/messages/page")
-    public ResponseEntity<Page<ChatMessageDTO>> getMessagesByRoomIdPaged(
+    @GetMapping("/messages/{roomId}/paging")
+    public ResponseEntity<Page<ChatMessageDTO>> getMessagesByRoomIdPaging(
             @PathVariable String roomId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+            @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(chatService.getMessagesByRoomId(roomId, pageable));
     }
+
+
+    // WebSocket 메시지 핸들러
     
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload ChatMessageDTO messageDTO) {
-        chatService.sendMessage(messageDTO);
+    public ChatMessageDTO sendMessage(@Payload ChatMessageDTO chatMessage) {
+        return chatService.sendMessage(chatMessage);
     }
     
-    @MessageMapping("/chat.sendSystemMessage/{roomId}")
-    public void sendSystemMessage(@DestinationVariable String roomId, @Payload String content) {
-        chatService.sendSystemMessage(roomId, content);
+    @MessageMapping("/chat.addUser/{roomId}")
+    public void addUser(@DestinationVariable String roomId, @Payload ChatMessageDTO chatMessage) {
+        chatMessage.setType(MessageType.ENTER);
+        chatService.sendSystemMessage(roomId, chatMessage.getSenderName() + "님이 입장하셨습니다.");
     }
 }
