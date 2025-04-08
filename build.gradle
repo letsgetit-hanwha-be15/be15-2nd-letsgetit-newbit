@@ -18,19 +18,52 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.modelmapper:modelmapper:3.2.1'
-    implementation 'commons-io:commons-io:2.14.0'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
-    testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
-    compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    dependencies {
+        // JWT
+        implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+        // Model Mapper
+        implementation 'org.modelmapper:modelmapper:3.2.1'
+
+        // IO Utils
+        implementation 'commons-io:commons-io:2.14.0'
+
+        // Spring Boot Starters
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-mail'
+        implementation 'org.springframework.boot:spring-boot-starter-security'
+
+        // MyBatis
+        implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+        testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+
+        // Lombok
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+
+        // Spring DevTools
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+        // Database Drivers
+        runtimeOnly 'com.mysql:mysql-connector-j'
+        implementation 'org.mariadb.jdbc:mariadb-java-client'
+
+        // SpringDoc (Swagger)
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.3'
+        implementation 'org.springdoc:springdoc-openapi-ui:1.6.15'
+
+        // Tests
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.security:spring-security-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        testImplementation 'org.mockito:mockito-core:5.12.0'
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+        testImplementation 'org.mockito:mockito-junit-jupiter:5.12.0'
+    }
 }
 
 tasks.named('test') {
