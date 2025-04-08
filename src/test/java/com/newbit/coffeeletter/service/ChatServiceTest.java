@@ -124,7 +124,9 @@ class ChatServiceTest {
         assertNotNull(result);
         assertEquals(roomDTO.getMentorId(), result.getMentorId());
         assertEquals(roomDTO.getMenteeId(), result.getMenteeId());
+
         verify(roomRepository, times(2)).save(any(CoffeeLetterRoom.class));
+
     }
 
     @Test

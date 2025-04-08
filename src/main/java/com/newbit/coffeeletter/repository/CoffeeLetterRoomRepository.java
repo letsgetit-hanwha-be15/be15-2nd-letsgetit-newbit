@@ -38,4 +38,7 @@ public interface CoffeeLetterRoomRepository extends MongoRepository<CoffeeLetter
     // 페이징 처리된 채팅방 조회 todo 테스트 코드임 개발 완료 후 삭제 여부 결정
     Page<CoffeeLetterRoom> findAll(Pageable pageable);
 
+    List<CoffeeLetterRoom> findByMentorIdOrMenteeId(Long mentorId, Long menteeId);
+    List<CoffeeLetterRoom> findByMentorIdOrMenteeIdAndStatus(Long mentorId, Long menteeId, CoffeeLetterRoom.RoomStatus status);
+
 }
