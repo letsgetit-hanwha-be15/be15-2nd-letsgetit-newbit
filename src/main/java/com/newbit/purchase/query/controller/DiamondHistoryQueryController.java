@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "사용자 다이아 내역", description = "사용자 다이아 내역 조회 API")
+@Tag(name = "구매관련 API", description = "사용자 다이아 내역 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/purchase/diamond/history")
