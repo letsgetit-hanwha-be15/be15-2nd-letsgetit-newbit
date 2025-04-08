@@ -95,6 +95,28 @@ public class ChatController {
         return ResponseEntity.ok(chatService.getMessagesByRoomId(roomId, pageable));
     }
 
+    @GetMapping("/messages/{roomId}/unread/{userId}")
+    public ResponseEntity<List<ChatMessageDTO>> getUnreadMessages(
+            @PathVariable String roomId,
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(chatService.getUnreadMessages(roomId, userId));
+    }
+
+    @GetMapping("/messages/{roomId}/unread-count/{userId}")
+    public ResponseEntity<Integer> getUnreadMessageCount(
+            @PathVariable String roomId,
+            @PathVariable Long userId) {
+        return ResponseEntity.ok(chatService.getUnreadMessageCount(roomId, userId));
+    }
+
+    @PostMapping("/messages/{roomId}/mark-as-read/{userId}")
+    public ResponseEntity<Void> markAsRead(
+            @PathVariable String roomId,
+            @PathVariable Long userId) {
+        chatService.markAsRead(roomId, userId);
+        return ResponseEntity.ok().build();
+    }
+
 
     // WebSocket 메시지 핸들러
     

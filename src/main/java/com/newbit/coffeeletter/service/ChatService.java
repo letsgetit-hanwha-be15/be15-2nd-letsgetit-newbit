@@ -28,4 +28,10 @@ public interface ChatService {
     ChatMessageDTO sendSystemMessage(String roomId, String content);
     List<ChatMessageDTO> getMessagesByRoomId(String roomId);
     Page<ChatMessageDTO> getMessagesByRoomId(String roomId, Pageable pageable);
+    List<ChatMessageDTO> getUnreadMessages(String roomId, Long userId);
+
+    // 읽음 처리 관련 메서드
+    void markAsRead(String roomId, Long userId);
+    int getUnreadMessageCount(String roomId, Long userId);
+
 }

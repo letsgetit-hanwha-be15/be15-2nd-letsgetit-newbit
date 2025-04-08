@@ -5,10 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.newbit.coffeeletter.domain.chat.ChatMessage;
-import com.newbit.coffeeletter.domain.chat.MessageType;
-import com.newbit.coffeeletter.dto.ChatMessageDTO;
-import com.newbit.coffeeletter.repository.ChatMessageRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,8 +12,12 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.newbit.coffeeletter.domain.chat.ChatMessage;
 import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
+import com.newbit.coffeeletter.domain.chat.MessageType;
+import com.newbit.coffeeletter.dto.ChatMessageDTO;
 import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
+import com.newbit.coffeeletter.repository.ChatMessageRepository;
 import com.newbit.coffeeletter.repository.CoffeeLetterRoomRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -199,6 +199,66 @@ public class ChatServiceImpl implements ChatService {
                 .map(message -> modelMapper.map(message, ChatMessageDTO.class));
     }
 
+    @Override
+    public List<ChatMessageDTO> getUnreadMessages(String roomId, Long userId) {
+        CoffeeLetterRoom room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
 
+        List<ChatMessage> unreadMessages;
+
+        if (userId.equals(room.getMentorId())) {
+            unreadMessages = messageRepository.findByRoomIdAndReadByMentorFalse(roomId);
+        }
+        else if (userId.equals(room.getMenteeId())) {
+            unreadMessages = messageRepository.findByRoomIdAndReadByMenteeFalse(roomId);
+        } else {
+            throw new IllegalArgumentException("해당 사용자는 이 채팅방에 참여하지 않았습니다: " + userId);
+        }
+
+        return unreadMessages.stream()
+                .map(message -> modelMapper.map(message, ChatMessageDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void markAsRead(String roomId, Long userId) {
+        CoffeeLetterRoom room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+
+        List<ChatMessage> unreadMessages;
+        
+        if (userId.equals(room.getMentorId())) {
+            unreadMessages = messageRepository.findByRoomIdAndReadByMentorFalse(roomId);
+            unreadMessages.forEach(message -> message.setReadByMentor(true));
+            messageRepository.saveAll(unreadMessages);
+            room.setUnreadCountMentor(0);
+        }
+        else if (userId.equals(room.getMenteeId())) {
+            unreadMessages = messageRepository.findByRoomIdAndReadByMenteeFalse(roomId);
+            unreadMessages.forEach(message -> message.setReadByMentee(true));
+            messageRepository.saveAll(unreadMessages);
+            room.setUnreadCountMentee(0);
+        } else {
+            throw new IllegalArgumentException("해당 사용자는 이 채팅방에 참여하지 않았습니다: " + userId);
+        }
+
+        roomRepository.save(room);
+    }
+
+    @Override
+    public int getUnreadMessageCount(String roomId, Long userId) {
+        CoffeeLetterRoom room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+
+        if (userId.equals(room.getMentorId())) {
+            return room.getUnreadCountMentor();
+        }
+        else if (userId.equals(room.getMenteeId())) {
+            return room.getUnreadCountMentee();
+        } else {
+            throw new IllegalArgumentException("해당 사용자는 이 채팅방에 참여하지 않았습니다: " + userId);
+        }
+    }
 
 }
