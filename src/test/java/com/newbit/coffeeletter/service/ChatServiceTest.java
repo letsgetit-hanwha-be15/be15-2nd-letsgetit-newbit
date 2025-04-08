@@ -568,4 +568,278 @@ class ChatServiceTest {
         verify(roomRepository, times(1)).findById(roomId);
         verify(messageRepository, never()).findByRoomId(anyString(), any(Pageable.class));
     }
+    
+    @Test
+    void getUnreadMessages_멘토의_읽지않은_메시지_조회_성공() {
+        // given
+        String roomId = "test-room-id";
+        Long mentorId = 1L;
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(messageRepository.findByRoomIdAndReadByMentorFalse(roomId)).thenReturn(messages);
+        
+        // when
+        List<ChatMessageDTO> results = chatService.getUnreadMessages(roomId, mentorId);
+        
+        // then
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, times(1)).findByRoomIdAndReadByMentorFalse(roomId);
+        verify(messageRepository, never()).findByRoomIdAndReadByMenteeFalse(anyString());
+    }
+    
+    @Test
+    void getUnreadMessages_멘티의_읽지않은_메시지_조회_성공() {
+        // given
+        String roomId = "test-room-id";
+        Long menteeId = 2L;
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(messageRepository.findByRoomIdAndReadByMenteeFalse(roomId)).thenReturn(messages);
+        
+        // when
+        List<ChatMessageDTO> results = chatService.getUnreadMessages(roomId, menteeId);
+        
+        // then
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, never()).findByRoomIdAndReadByMentorFalse(anyString());
+        verify(messageRepository, times(1)).findByRoomIdAndReadByMenteeFalse(roomId);
+    }
+    
+    @Test
+    void getUnreadMessages_권한없는_사용자_예외발생() {
+        // given
+        String roomId = "test-room-id";
+        Long unauthorizedUserId = 3L;
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.getUnreadMessages(roomId, unauthorizedUserId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, never()).findByRoomIdAndReadByMentorFalse(anyString());
+        verify(messageRepository, never()).findByRoomIdAndReadByMenteeFalse(anyString());
+    }
+    
+    @Test
+    void getUnreadMessages_존재하지_않는_채팅방_예외발생() {
+        // given
+        String roomId = "non-existent-room-id";
+        Long mentorId = 1L;
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.getUnreadMessages(roomId, mentorId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, never()).findByRoomIdAndReadByMentorFalse(anyString());
+        verify(messageRepository, never()).findByRoomIdAndReadByMenteeFalse(anyString());
+    }
+    
+    @Test
+    void markAsRead_멘토_메시지_읽음_처리_성공() {
+        // given
+        String roomId = "test-room-id";
+        Long mentorId = 1L;
+        
+        // 채팅방 설정
+        CoffeeLetterRoom testRoom = new CoffeeLetterRoom();
+        testRoom.setId(roomId);
+        testRoom.setMentorId(mentorId);
+        testRoom.setMenteeId(2L);
+        testRoom.setUnreadCountMentor(3);
+        
+        // 읽지 않은 메시지 설정
+        List<ChatMessage> unreadMessages = Arrays.asList(
+            new ChatMessage(), new ChatMessage(), new ChatMessage()
+        );
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(testRoom));
+        when(messageRepository.findByRoomIdAndReadByMentorFalse(roomId)).thenReturn(unreadMessages);
+        when(messageRepository.saveAll(unreadMessages)).thenReturn(unreadMessages);
+        when(roomRepository.save(testRoom)).thenReturn(testRoom);
+        
+        // when
+        chatService.markAsRead(roomId, mentorId);
+        
+        // then
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, times(1)).findByRoomIdAndReadByMentorFalse(roomId);
+        verify(messageRepository, times(1)).saveAll(unreadMessages);
+        verify(roomRepository, times(1)).save(testRoom);
+        
+        // 메시지들이 모두 읽음 처리되었는지 확인
+        for (ChatMessage message : unreadMessages) {
+            assertTrue(message.isReadByMentor());
+        }
+        
+        // 읽지 않은 메시지 카운트가 0으로 초기화되었는지 확인
+        assertEquals(0, testRoom.getUnreadCountMentor());
+    }
+    
+    @Test
+    void markAsRead_멘티_메시지_읽음_처리_성공() {
+        // given
+        String roomId = "test-room-id";
+        Long menteeId = 2L;
+        
+        // 채팅방 설정
+        CoffeeLetterRoom testRoom = new CoffeeLetterRoom();
+        testRoom.setId(roomId);
+        testRoom.setMentorId(1L);
+        testRoom.setMenteeId(menteeId);
+        testRoom.setUnreadCountMentee(2);
+        
+        // 읽지 않은 메시지 설정
+        List<ChatMessage> unreadMessages = Arrays.asList(
+            new ChatMessage(), new ChatMessage()
+        );
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(testRoom));
+        when(messageRepository.findByRoomIdAndReadByMenteeFalse(roomId)).thenReturn(unreadMessages);
+        when(messageRepository.saveAll(unreadMessages)).thenReturn(unreadMessages);
+        when(roomRepository.save(testRoom)).thenReturn(testRoom);
+        
+        // when
+        chatService.markAsRead(roomId, menteeId);
+        
+        // then
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, times(1)).findByRoomIdAndReadByMenteeFalse(roomId);
+        verify(messageRepository, times(1)).saveAll(unreadMessages);
+        verify(roomRepository, times(1)).save(testRoom);
+        
+        // 메시지들이 모두 읽음 처리되었는지 확인
+        for (ChatMessage message : unreadMessages) {
+            assertTrue(message.isReadByMentee());
+        }
+        
+        // 읽지 않은 메시지 카운트가 0으로 초기화되었는지 확인
+        assertEquals(0, testRoom.getUnreadCountMentee());
+    }
+    
+    @Test
+    void markAsRead_권한없는_사용자_예외발생() {
+        // given
+        String roomId = "test-room-id";
+        Long unauthorizedUserId = 3L;
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.markAsRead(roomId, unauthorizedUserId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, never()).findByRoomIdAndReadByMentorFalse(anyString());
+        verify(messageRepository, never()).findByRoomIdAndReadByMenteeFalse(anyString());
+        verify(messageRepository, never()).saveAll(any());
+    }
+    
+    @Test
+    void markAsRead_존재하지_않는_채팅방_예외발생() {
+        // given
+        String roomId = "non-existent-room-id";
+        Long mentorId = 1L;
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.markAsRead(roomId, mentorId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, never()).findByRoomIdAndReadByMentorFalse(anyString());
+        verify(messageRepository, never()).findByRoomIdAndReadByMenteeFalse(anyString());
+        verify(messageRepository, never()).saveAll(any());
+    }
+    
+    @Test
+    void getUnreadMessageCount_멘토_카운트_조회_성공() {
+        // given
+        String roomId = "test-room-id";
+        Long mentorId = 1L;
+        int expectedCount = 3;
+        
+        CoffeeLetterRoom testRoom = new CoffeeLetterRoom();
+        testRoom.setId(roomId);
+        testRoom.setMentorId(mentorId);
+        testRoom.setMenteeId(2L);
+        testRoom.setUnreadCountMentor(expectedCount);
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(testRoom));
+        
+        // when
+        int actualCount = chatService.getUnreadMessageCount(roomId, mentorId);
+        
+        // then
+        assertEquals(expectedCount, actualCount);
+        verify(roomRepository, times(1)).findById(roomId);
+    }
+    
+    @Test
+    void getUnreadMessageCount_멘티_카운트_조회_성공() {
+        // given
+        String roomId = "test-room-id";
+        Long menteeId = 2L;
+        int expectedCount = 5;
+        
+        CoffeeLetterRoom testRoom = new CoffeeLetterRoom();
+        testRoom.setId(roomId);
+        testRoom.setMentorId(1L);
+        testRoom.setMenteeId(menteeId);
+        testRoom.setUnreadCountMentee(expectedCount);
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(testRoom));
+        
+        // when
+        int actualCount = chatService.getUnreadMessageCount(roomId, menteeId);
+        
+        // then
+        assertEquals(expectedCount, actualCount);
+        verify(roomRepository, times(1)).findById(roomId);
+    }
+    
+    @Test
+    void getUnreadMessageCount_권한없는_사용자_예외발생() {
+        // given
+        String roomId = "test-room-id";
+        Long unauthorizedUserId = 3L;
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.getUnreadMessageCount(roomId, unauthorizedUserId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+    }
+    
+    @Test
+    void getUnreadMessageCount_존재하지_않는_채팅방_예외발생() {
+        // given
+        String roomId = "non-existent-room-id";
+        Long mentorId = 1L;
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.getUnreadMessageCount(roomId, mentorId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+    }
 } 
