@@ -1,21 +1,34 @@
 package com.newbit.coffeechat.query.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Builder
+@Setter
+@ToString
+@Schema(description = "커피챗 DTO")
 public class CoffeechatDto {
+    @Schema(description = "커피챗ID")
     private Long coffeechatId;
+    @Schema(description = "진행상태")
     private ProgressStatus progressStatus;
+    @Schema(description = "요청메시지")
     private String requestMessage;
+    @Schema(description = "확정일시")
     private LocalDateTime confirmedSchedule;
+    @Schema(description = "끝일시")
     private LocalDateTime endedAt;
+    @Schema(description = "멘토ID")
     private Long mentorId;
+    @Schema(description = "온도")
     private Double temperature;
+    @Schema(description = "멘토")
     private UserDto mentor;
+    @Schema(description = "멘티")
     private UserDto mentee;
 }
