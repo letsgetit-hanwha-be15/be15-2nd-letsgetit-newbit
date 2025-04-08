@@ -23,7 +23,7 @@ public class ColumnPurchaseHistory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "column_id", nullable = false)
-    private Column column;
+    private com.newbit.column.entity.Column column;
 
     @Column(nullable = false)
     private Integer price;
@@ -34,7 +34,7 @@ public class ColumnPurchaseHistory {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public static ColumnPurchaseHistory of(User user, Column column) {
+    public static ColumnPurchaseHistory of(User user, com.newbit.column.entity.Column column) {
         ColumnPurchaseHistory history = new ColumnPurchaseHistory();
         history.user = user;
         history.column = column;

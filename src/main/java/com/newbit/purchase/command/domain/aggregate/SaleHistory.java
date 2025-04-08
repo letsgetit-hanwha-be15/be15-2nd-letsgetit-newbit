@@ -59,7 +59,7 @@ public class SaleHistory {
         this.isSettled = false;
     }
 
-    public static SaleHistory forColumn(com.newbit.purchase.command.domain.aggregate.Column column) {
+    public static SaleHistory forColumn(com.newbit.column.entity.Column column) {
         return SaleHistory.builder()
                 .saleAmount(BigDecimal.valueOf(column.getPrice()))
                 .serviceType(ServiceType.COLUMN)
@@ -68,14 +68,4 @@ public class SaleHistory {
                 .build();
     }
 
-
-    //TODO: diamond -> won으로 변환하는 코드 작성
-    public static SaleHistory forCoffeechat(long mentorId, int totalPrice, long coffeechatId) {
-        return SaleHistory.builder()
-                .saleAmount(BigDecimal.valueOf(totalPrice))
-                .serviceType(ServiceType.COFFEECHAT)
-                .serviceId(coffeechatId)
-                .mentorId(mentorId)
-                .build();
-    }
 }

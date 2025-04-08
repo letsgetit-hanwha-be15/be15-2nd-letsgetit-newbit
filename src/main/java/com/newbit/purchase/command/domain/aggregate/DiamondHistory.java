@@ -58,34 +58,12 @@ public class DiamondHistory {
     }
 
     // 칼럼 구매용 팩토리 메서드
-    public static DiamondHistory forColumnPurchase(User user, Column column) {
+    public static DiamondHistory forColumnPurchase(User user, com.newbit.column.entity.Column column) {
         return DiamondHistory.builder()
                 .userId(user.getUserId())
                 .serviceType(DiamondTransactionType.COLUMN)
                 .serviceId(column.getColumnId())
                 .decreaseAmount(column.getPrice())
-                .increaseAmount(null)
-                .balance(user.getDiamond())  // 차감 이후 잔액
-                .build();
-    }
-
-    // 커피챗 구매용 팩토리 메서드
-    public static DiamondHistory forCoffeechatPurchase(User user, Coffeechat coffeeChat, int totalPrice) {
-        return DiamondHistory.builder()
-                .userId(user.getUserId())
-                .serviceType(DiamondTransactionType.COFFEE_CHAT)
-                .serviceId(coffeeChat.getCoffeechatId())
-                .decreaseAmount(totalPrice)
-                .increaseAmount(null)
-                .balance(user.getDiamond())  // 차감 이후 잔액
-                .build();
-    }
-
-    public static DiamondHistory forMentorAuthority(User user, int mentorAuthorityDiamondCost) {
-        return DiamondHistory.builder()
-                .userId(user.getUserId())
-                .serviceType(DiamondTransactionType.MENTOR_AUTHORITY)
-                .decreaseAmount(mentorAuthorityDiamondCost)
                 .increaseAmount(null)
                 .balance(user.getDiamond())  // 차감 이후 잔액
                 .build();
