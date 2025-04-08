@@ -16,4 +16,10 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
     // 특정 채팅방의 메시지 페이징 조회 todo 페이징 필요한 지 확인 필요
     Page<ChatMessage> findByRoomId(String roomId, Pageable pageable);
 
+    // 특정 채팅방의 멘토가 읽지 않은 메시지 조회
+    List<ChatMessage> findByRoomIdAndReadByMentorFalse(String roomId);
+
+    // 특정 채팅방의 멘티가 읽지 않은 메시지 조회
+    List<ChatMessage> findByRoomIdAndReadByMenteeFalse(String roomId);
+
 } 
