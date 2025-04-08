@@ -12,13 +12,9 @@ public class Post {
     @Column(name = "post_id")
     private Long id;
 
+    @Column(nullable = false)
     private String title;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-
-    @Column(name = "filename")
-    private String filename;
-
-    @Column(name = "filepath")
-    private String filepath;
 }
