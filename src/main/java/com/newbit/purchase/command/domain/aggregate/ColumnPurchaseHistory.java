@@ -17,15 +17,13 @@ public class ColumnPurchaseHistory {
     @Column(name = "column_purchase_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "column_id", nullable = false)
-    private com.newbit.column.entity.Column column;
+    @Column(name = "column_id", nullable = false)
+    private Long columnId;
 
-    @Column(nullable = false)
+    @Column(name = "price", nullable = false)
     private Integer price;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -34,11 +32,11 @@ public class ColumnPurchaseHistory {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public static ColumnPurchaseHistory of(User user, com.newbit.column.entity.Column column) {
+    public static ColumnPurchaseHistory of(Long userId, Long columnId, Integer price) {
         ColumnPurchaseHistory history = new ColumnPurchaseHistory();
-        history.user = user;
-        history.column = column;
-        history.price = column.getPrice();
+        history.userId = userId;
+        history.columnId = columnId;
+        history.price = price;
         history.createdAt = LocalDateTime.now();
         history.updatedAt = LocalDateTime.now(); // DB에서도 업데이트 되지만 일단 맞춰둠
         return history;

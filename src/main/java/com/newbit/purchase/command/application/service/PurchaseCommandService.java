@@ -48,14 +48,14 @@ public class PurchaseCommandService {
         // 4. 무료 칼럼일 경우 예외 발생
 
         // 5. 다이아 충분한지 확인 및 차감 (내부적으로 다이아 부족 시 예외 발생) < user에서?
-//        user.useDiamond(column.getPrice());
+        Integer price = user.useDiamond(column.getPrice());
 
         // 6. 구매 내역 저장
-        ColumnPurchaseHistory purchaseHistory = ColumnPurchaseHistory.of(user, column);
+        ColumnPurchaseHistory purchaseHistory = ColumnPurchaseHistory.of(userId, column.getColumnId(), price);
         columnPurchaseHistoryRepository.save(purchaseHistory);
 
 //        // 7. 다이아몬드 사용 내역 저장
-        DiamondHistory diamondHistory = DiamondHistory.forColumnPurchase(user, column);
+        DiamondHistory diamondHistory = DiamondHistory.forColumnPurchase(userId, column);
         diamondHistoryRepository.save(diamondHistory);
 //
 //        // 8. 판매 내역 저장 (칼럼의 저자 기준)
