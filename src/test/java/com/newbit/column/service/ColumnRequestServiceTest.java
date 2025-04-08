@@ -1,8 +1,10 @@
 package com.newbit.column.service;
 
 import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.dto.request.DeleteColumnRequestDto;
 import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import com.newbit.column.dto.response.CreateColumnResponseDto;
+import com.newbit.column.dto.response.DeleteColumnResponseDto;
 import com.newbit.column.dto.response.UpdateColumnResponseDto;
 import com.newbit.column.entity.Column;
 import com.newbit.column.enums.RequestType;
@@ -100,6 +102,40 @@ class ColumnRequestServiceTest {
 
         // then
         assertThat(response.getColumnRequestId()).isEqualTo(100L);
+        verify(columnRepository).findById(columnId);
+        verify(columnRequestRepository).save(any(ColumnRequest.class));
+    }
+
+    @Test
+    @DisplayName("칼럼 삭제 요청 - 성공")
+    void deleteColumnRequest_success() {
+        // given
+        Long columnId = 1L;
+
+        DeleteColumnRequestDto dto = DeleteColumnRequestDto.builder()
+                .reason("삭제 요청 사유입니다.")
+                .build();
+
+        Column column = Column.builder()
+                .columnId(columnId)
+                .build();
+
+        ColumnRequest columnRequest = ColumnRequest.builder()
+                .columnRequestId(200L)
+                .requestType(RequestType.DELETE)
+                .isApproved(false)
+                .rejectedReason(dto.getReason())
+                .column(column)
+                .build();
+
+        when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
+        when(columnRequestRepository.save(any(ColumnRequest.class))).thenReturn(columnRequest);
+
+        // when
+        DeleteColumnResponseDto response = columnRequestService.deleteColumnRequest(dto, columnId);
+
+        // then
+        assertThat(response.getColumnRequestId()).isEqualTo(200L);
         verify(columnRepository).findById(columnId);
         verify(columnRequestRepository).save(any(ColumnRequest.class));
     }
