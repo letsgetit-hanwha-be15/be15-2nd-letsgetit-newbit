@@ -8,9 +8,15 @@ import java.util.List;
 
 @Mapper
 public interface AssetHistoryMapper {
+    List<AssetHistoryDto> findDiamondHistories(
+            HistoryRequest request
+    );
+
     List<AssetHistoryDto> findPointHistories(
             HistoryRequest request
     );
+
+    long countDiamondHistories(HistoryRequest request);
 
     long countPointHistories(HistoryRequest request);
 }
