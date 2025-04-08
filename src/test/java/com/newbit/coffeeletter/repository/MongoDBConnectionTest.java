@@ -21,7 +21,7 @@ public class MongoDBConnectionTest {
     private MongoTemplate mongoTemplate;
 
     @Test
-    void 몽고DB_연결_테스트() {
+    void mongoDbConnectionTest() {
         // given
         // 기존 데이터 모두 삭제
         coffeeLetterRoomRepository.deleteAll();
