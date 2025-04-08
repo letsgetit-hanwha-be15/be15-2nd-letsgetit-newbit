@@ -27,13 +27,15 @@
 
 
     <select id="countPointHistories" resultType="long">
-        SELECT COUNT(*) FROM point_history
-        WHERE user_id = #{userId}
+        SELECT COUNT(*)
+        FROM point_history ph
+        JOIN point_type pt ON ph.point_type_id = pt.point_type_id
+        WHERE ph.user_id = #{userId}
         <if test="type != null and type.name() == 'INCREASE'">
-            AND increase_amount IS NOT NULL
+            AND pt.increase_amount IS NOT NULL
         </if>
         <if test="type != null and type.name() == 'DECREASE'">
-            AND decrease_amount IS NOT NULL
+            AND pt.decrease_amount IS NOT NULL
         </if>
     </select>
 
