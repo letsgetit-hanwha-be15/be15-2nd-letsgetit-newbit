@@ -1,8 +1,11 @@
 package com.newbit.column.service;
 
 import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import com.newbit.column.dto.response.CreateColumnResponseDto;
+import com.newbit.column.dto.response.UpdateColumnResponseDto;
 import com.newbit.column.entity.Column;
+import com.newbit.column.enums.RequestType;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.repository.ColumnRequestRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +20,8 @@ import com.newbit.column.entity.ColumnRequest;
 import com.newbit.column.mapper.ColumnMapper;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class ColumnRequestServiceTest {
@@ -59,5 +64,43 @@ class ColumnRequestServiceTest {
         assertThat(response.getColumnRequestId()).isEqualTo(100L);
         verify(columnRepository).save(column);
         verify(columnRequestRepository).save(columnRequest);
+    }
+
+    @Test
+    @DisplayName("칼럼 수정 요청 - 성공")
+    void updateColumnRequest_success() {
+        // given
+        Long columnId = 1L;
+
+        UpdateColumnRequestDto dto = UpdateColumnRequestDto.builder()
+                .title("수정된 제목")
+                .content("수정된 내용")
+                .price(3000)
+                .thumbnailUrl("https://test.com/thumb.jpg")
+                .build();
+
+        Column column = Column.builder().columnId(columnId).build();
+
+        ColumnRequest columnRequest = ColumnRequest.builder()
+                .columnRequestId(100L)
+                .requestType(RequestType.UPDATE)
+                .isApproved(false)
+                .updatedTitle(dto.getTitle())
+                .updatedContent(dto.getContent())
+                .updatedPrice(dto.getPrice())
+                .updatedThumbnailUrl(dto.getThumbnailUrl())
+                .column(column)
+                .build();
+
+        when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
+        when(columnRequestRepository.save(any(ColumnRequest.class))).thenReturn(columnRequest);
+
+        // when
+        UpdateColumnResponseDto response = columnRequestService.updateColumnRequest(dto, columnId);
+
+        // then
+        assertThat(response.getColumnRequestId()).isEqualTo(100L);
+        verify(columnRepository).findById(columnId);
+        verify(columnRequestRepository).save(any(ColumnRequest.class));
     }
 }
