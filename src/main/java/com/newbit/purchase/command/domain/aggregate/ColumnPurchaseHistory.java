@@ -32,11 +32,12 @@ public class ColumnPurchaseHistory {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public static ColumnPurchaseHistory of(Long userId, Long columnId, Integer price) {
+    public static ColumnPurchaseHistory of(Long userId, com.newbit.column.entity.Column column
+    ) {
         ColumnPurchaseHistory history = new ColumnPurchaseHistory();
         history.userId = userId;
-        history.columnId = columnId;
-        history.price = price;
+        history.columnId = column.getColumnId();
+        history.price = column.getPrice();
         history.createdAt = LocalDateTime.now();
         history.updatedAt = LocalDateTime.now(); // DB에서도 업데이트 되지만 일단 맞춰둠
         return history;

@@ -64,7 +64,7 @@ public class SaleHistory {
                 .saleAmount(BigDecimal.valueOf(column.getPrice()))
                 .serviceType(ServiceType.COLUMN)
                 .serviceId(column.getColumnId())
-                .mentorId(column.getMentor().getMentorId())
+                .mentorId(column.getMentorId())
                 .build();
     }
 
