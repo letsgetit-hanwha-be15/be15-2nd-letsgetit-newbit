@@ -1,0 +1,63 @@
+package com.newbit.column.service;
+
+import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.dto.response.CreateColumnResponseDto;
+import com.newbit.column.entity.Column;
+import com.newbit.column.repository.ColumnRepository;
+import com.newbit.column.repository.ColumnRequestRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
+import com.newbit.column.entity.ColumnRequest;
+import com.newbit.column.mapper.ColumnMapper;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+class ColumnRequestServiceTest {
+
+    @Mock
+    private ColumnRepository columnRepository;
+
+    @Mock
+    private ColumnRequestRepository columnRequestRepository;
+
+    @Mock
+    private ColumnMapper columnMapper;
+
+    @InjectMocks
+    private ColumnRequestService columnRequestService;
+
+    @Test
+    @DisplayName("칼럼 등록 요청 - 성공")
+    void createColumnRequest_success() {
+        // given
+        CreateColumnRequestDto dto = CreateColumnRequestDto.builder()
+                .title("테스트 제목")
+                .content("테스트 내용")
+                .price(1000)
+                .thumbnailUrl("https://test.com/thumb.jpg")
+                .build();
+
+        Column column = Column.builder().columnId(1L).build();
+        ColumnRequest columnRequest = ColumnRequest.builder().columnRequestId(100L).build();
+
+        when(columnMapper.toColumn(dto, 1L)).thenReturn(column);
+        when(columnRepository.save(column)).thenReturn(column);
+        when(columnMapper.toColumnRequest(dto, column)).thenReturn(columnRequest);
+        when(columnRequestRepository.save(columnRequest)).thenReturn(columnRequest);
+
+        // when
+        CreateColumnResponseDto response = columnRequestService.createColumnRequest(dto, 1L);
+
+        // then
+        assertThat(response.getColumnRequestId()).isEqualTo(100L);
+        verify(columnRepository).save(column);
+        verify(columnRequestRepository).save(columnRequest);
+    }
+}
