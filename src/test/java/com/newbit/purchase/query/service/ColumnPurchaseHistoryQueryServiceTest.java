@@ -38,7 +38,6 @@ class ColumnPurchaseHistoryQueryServiceTest {
 
         List<ColumnPurchaseHistoryDto> mockList = List.of(
                 ColumnPurchaseHistoryDto.builder()
-                        .columnPurchaseId(1L)
                         .columnId(100L)
                         .columnTitle("테스트 칼럼")
                         .price(5000)
