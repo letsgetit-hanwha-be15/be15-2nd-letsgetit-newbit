@@ -19,7 +19,10 @@ public enum ErrorCode {
     VALIDATION_ERROR("40001", "입력 값 검증 오류입니다.", HttpStatus.BAD_REQUEST),
 
     // 그 외 기타 오류
-    INTERNAL_SERVER_ERROR("50000", "내부 서버 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR)
+    INTERNAL_SERVER_ERROR("50000", "내부 서버 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    //회원 관련 오류
+    ALREADY_REGISTERED_EMAIL("20000", "이미 가입된 회원입니다.", HttpStatus.CONFLICT)
     ;
 
     private final String code;
