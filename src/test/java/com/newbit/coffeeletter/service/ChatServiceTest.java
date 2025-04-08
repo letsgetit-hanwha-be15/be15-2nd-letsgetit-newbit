@@ -114,6 +114,8 @@ class ChatServiceTest {
         when(roomRepository.findByCoffeeChatId(anyLong()))
                 .thenReturn(Optional.empty());
         when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(room);
+        when(roomRepository.findById(anyString())).thenReturn(Optional.of(room));
+        when(messageRepository.save(any(ChatMessage.class))).thenReturn(message);
 
         // when
         CoffeeLetterRoomDTO result = chatService.createRoom(roomDTO);
@@ -122,7 +124,9 @@ class ChatServiceTest {
         assertNotNull(result);
         assertEquals(roomDTO.getMentorId(), result.getMentorId());
         assertEquals(roomDTO.getMenteeId(), result.getMenteeId());
-        verify(roomRepository, times(1)).save(any(CoffeeLetterRoom.class));
+
+        verify(roomRepository, times(2)).save(any(CoffeeLetterRoom.class));
+
     }
 
     @Test
