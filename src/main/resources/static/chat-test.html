@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>채팅 테스트</title>
+    <meta charset="UTF-8" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Noto Sans KR", Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .card {
+        background-color: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        flex: 1;
+      }
+      h1,
+      h2,
+      h3 {
+        margin-top: 0;
+        color: #333;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      /* 채팅 컨테이너 스타일 */
+      .chat-container {
+        height: 400px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+        border: 1px solid #e0e0e0;
+        padding: 15px;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+      }
+
+      /* 메시지 스타일 */
+      .message {
+        margin-bottom: 20px;
+        max-width: 70%;
+        position: relative;
+        clear: both;
+      }
+      .message-content {
+        padding: 12px 16px;
+        border-radius: 18px;
+        display: inline-block;
+        word-break: break-word;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        position: relative;
+      }
+      .message-info {
+        font-size: 0.8em;
+        margin-top: 5px;
+        opacity: 0.7;
+      }
+
+      /* 내 메시지 (오른쪽) */
+      .message.my-message {
+        float: right;
+      }
+      .message.my-message .message-content {
+        background-color: #78a9e6; /* 파스텔 블루 */
+        color: white;
+        border-bottom-right-radius: 5px;
+      }
+
+      /* 상대방 메시지 (왼쪽) */
+      .message.other-message {
+        float: left;
+      }
+      .message.other-message .message-content {
+        background-color: #e3ebf7; /* 연한 파스텔 블루 */
+        color: #333;
+        border-bottom-left-radius: 5px;
+      }
+
+      /* 멘토/멘티 색상 구분 */
+      .message.mentor .message-content {
+        background-color: #5b9bd5; /* 진한 파스텔 블루 */
+        color: white;
+      }
+      .message.mentee .message-content {
+        background-color: #9cc3e4; /* 중간 파스텔 블루 */
+        color: white;
+      }
+
+      /* 시스템 메시지 */
+      .message.system {
+        max-width: 100%;
+        text-align: center;
+        float: none;
+        clear: both;
+        margin: 10px auto;
+      }
+      .message.system .message-content {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 8px 12px;
+        border-radius: 10px;
+        display: inline-block;
+      }
+
+      /* 읽지 않은 메시지 카운터 */
+      .unread-counter {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: #ff7675; /* 파스텔 레드 */
+        color: white;
+        font-size: 12px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      /* 채팅방 정보 */
+      .room-info {
+        background-color: #e9ecef;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+      .room-info h3 {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      /* 연결 상태 */
+      .connection-status {
+        margin-bottom: 15px;
+        padding: 8px;
+        border-radius: 5px;
+        text-align: center;
+        font-weight: bold;
+      }
+      .status-connected {
+        background-color: #d6eaf3; /* 연한 파스텔 블루-그린 */
+        color: #2471a3;
+      }
+      .status-disconnected {
+        background-color: #fdedec;
+        color: #943126;
+      }
+
+      /* 폼 스타일 */
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #555;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 14px;
+      }
+      textarea:focus,
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #5b9bd5; /* 진한 파스텔 블루 */
+        box-shadow: 0 0 5px rgba(91, 155, 213, 0.5);
+      }
+
+      /* 버튼 스타일 */
+      button {
+        background-color: #5b9bd5; /* 진한 파스텔 블루 */
+        color: white;
+        border: none;
+        padding: 12px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.2s;
+      }
+      button:hover {
+        background-color: #4c8ac4; /* 더 진한 파스텔 블루 */
+      }
+      button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+      }
+
+      /* 메시지 입력 영역 */
+      .message-input-container {
+        position: relative;
+      }
+      #messageInput {
+        padding-right: 60px;
+        resize: none;
+      }
+      #sendButton {
+        position: absolute;
+        right: 10px;
+        bottom: 10px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 카드 헤더 */
+      .card-header {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+      }
+
+      /* 유틸리티 */
+      .clearfix::after {
+        content: "";
+        display: table;
+        clear: both;
+      }
+
+      /* 사용자 영역 */
+      .user-section {
+        background-color: #e3ebf7; /* 연한 파스텔 블루 */
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>커피레터 - 채팅 테스트</h1>
+
+    <div class="container">
+      <div class="card">
+        <div class="card-header">
+          <h2>채팅방 생성/참여</h2>
+        </div>
+
+        <div class="user-section">
+          <h3>사용자 정보</h3>
+          <div class="form-group">
+            <label for="userId">사용자 ID</label>
+            <input type="number" id="userId" placeholder="사용자 ID" />
+          </div>
+          <div class="form-group">
+            <label for="username">사용자 이름</label>
+            <input type="text" id="username" placeholder="사용자 이름" />
+          </div>
+          <div class="form-group">
+            <label for="userType">사용자 유형</label>
+            <select id="userType">
+              <option value="mentor">멘토</option>
+              <option value="mentee">멘티</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="roomId">채팅방 ID (참여할 경우)</label>
+          <input
+            type="text"
+            id="roomId"
+            placeholder="채팅방 ID 입력 (새로 생성하는 경우 비워두세요)"
+          />
+        </div>
+
+        <div class="form-group" id="roomCreationFields">
+          <h3>새 채팅방 생성 (선택)</h3>
+          <div class="form-group">
+            <label for="mentorId">멘토 ID</label>
+            <input type="number" id="mentorId" placeholder="멘토 ID" />
+          </div>
+          <div class="form-group">
+            <label for="mentorName">멘토 이름</label>
+            <input type="text" id="mentorName" placeholder="멘토 이름" />
+          </div>
+          <div class="form-group">
+            <label for="menteeId">멘티 ID</label>
+            <input type="number" id="menteeId" placeholder="멘티 ID" />
+          </div>
+          <div class="form-group">
+            <label for="menteeName">멘티 이름</label>
+            <input type="text" id="menteeName" placeholder="멘티 이름" />
+          </div>
+          <div class="form-group">
+            <label for="coffeeOrderId">커피챗 ID</label>
+            <input type="number" id="coffeeOrderId" placeholder="커피챗 ID" />
+          </div>
+        </div>
+        <button id="connectButton">
+          <i class="fas fa-plug"></i> 연결/채팅방 만들기
+        </button>
+        <button id="disconnectButton" disabled>
+          <i class="fas fa-power-off"></i> 연결 종료
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>채팅</h2>
+        </div>
+        <div id="roomInfo" class="room-info" style="display: none"></div>
+        <div
+          id="connectionStatus"
+          class="connection-status status-disconnected"
+        >
+          연결 상태: 연결 안됨
+        </div>
+        <div class="chat-container" id="chatMessages"></div>
+        <div class="form-group message-input-container">
+          <textarea
+            id="messageInput"
+            placeholder="메시지 입력..."
+            rows="3"
+            disabled
+          ></textarea>
+          <button id="sendButton" disabled>
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let stompClient = null;
+      let currentRoomId = null;
+      let currentUserId = null;
+      let currentUserType = null;
+      let unreadMessages = {}; // 읽지 않은 메시지 카운터
+
+      function connect() {
+        const roomId = $("#roomId").val().trim();
+        const userId = $("#userId").val().trim();
+        const username = $("#username").val().trim();
+        const userType = $("#userType").val();
+
+        if (!userId || !username) {
+          alert("사용자 ID와 이름을 입력해주세요");
+          return;
+        }
+
+        currentUserId = userId;
+        currentUserType = userType;
+
+        // 채팅방이 지정되지 않은 경우 새 채팅방 생성
+        if (!roomId) {
+          const mentorId = $("#mentorId").val().trim();
+          const mentorName = $("#mentorName").val().trim();
+          const menteeId = $("#menteeId").val().trim();
+          const menteeName = $("#menteeName").val().trim();
+          const coffeeOrderId = $("#coffeeOrderId").val().trim();
+
+          if (
+            !mentorId ||
+            !mentorName ||
+            !menteeId ||
+            !menteeName ||
+            !coffeeOrderId
+          ) {
+            alert("새 채팅방 생성을 위한 모든 정보를 입력해주세요");
+            return;
+          }
+
+          // 채팅방 생성 API 호출
+          $.ajax({
+            url: "/api/v1/coffeeletter/rooms",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+              mentorId: parseInt(mentorId),
+              mentorName: mentorName,
+              menteeId: parseInt(menteeId),
+              menteeName: menteeName,
+              coffeeChatId: parseInt(coffeeOrderId),
+              endTime: new Date(
+                new Date().getTime() + 24 * 60 * 60 * 1000
+              ).toISOString(), // 24시간 후
+            }),
+            success: function (response) {
+              connectToRoom(response.id, userId, username, userType);
+            },
+            error: function (error) {
+              console.error("채팅방 생성 실패", error);
+              alert("채팅방 생성에 실패했습니다: " + error.responseText);
+            },
+          });
+        } else {
+          connectToRoom(roomId, userId, username, userType);
+        }
+      }
+
+      function connectToRoom(roomId, userId, username, userType) {
+        currentRoomId = roomId;
+        unreadMessages[roomId] = 0; // 초기화
+
+        // WebSocket 연결
+        const socket = new SockJS("/ws");
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null; // STOMP 디버그 로그 비활성화
+
+        stompClient.connect(
+          {},
+          function (frame) {
+            console.log("Connected: " + frame);
+            $("#connectionStatus")
+              .text("연결 상태: 연결됨")
+              .removeClass("status-disconnected")
+              .addClass("status-connected");
+
+            // 채팅방 구독
+            stompClient.subscribe(
+              "/topic/chat/room/" + roomId,
+              function (message) {
+                const messageData = JSON.parse(message.body);
+
+                // 다른 사람의 메시지인 경우 읽지 않은 메시지 카운트 증가
+                if (messageData.senderId.toString() !== userId) {
+                  incrementUnreadCount(roomId);
+                }
+
+                showMessage(messageData);
+              }
+            );
+
+            // 연결 버튼 상태 변경
+            $("#connectButton").prop("disabled", true);
+            $("#disconnectButton").prop("disabled", false);
+            $("#messageInput").prop("disabled", false);
+            $("#sendButton").prop("disabled", false);
+
+            // 채팅방 정보 표시
+            $("#roomInfo")
+              .html("<h3>채팅방 ID: " + roomId + "</h3>")
+              .show();
+
+            // 이전 메시지 로드
+            loadMessages(roomId);
+
+            // 입장 메시지 보내기
+            stompClient.send(
+              "/app/chat.addUser/" + roomId,
+              {},
+              JSON.stringify({
+                roomId: roomId,
+                senderId: parseInt(userId),
+                senderName: username,
+                type: "ENTER",
+              })
+            );
+
+            // 읽음 처리
+            markMessagesAsRead(roomId, userId);
+          },
+          function (error) {
+            console.error("연결 실패", error);
+            $("#connectionStatus")
+              .text("연결 상태: 연결 실패")
+              .removeClass("status-connected")
+              .addClass("status-disconnected");
+          }
+        );
+      }
+
+      function disconnect() {
+        if (stompClient !== null) {
+          stompClient.disconnect();
+          console.log("Disconnected");
+        }
+
+        $("#connectionStatus")
+          .text("연결 상태: 연결 안됨")
+          .removeClass("status-connected")
+          .addClass("status-disconnected");
+        $("#connectButton").prop("disabled", false);
+        $("#disconnectButton").prop("disabled", true);
+        $("#messageInput").prop("disabled", true);
+        $("#sendButton").prop("disabled", true);
+        $("#roomInfo").html("").hide();
+        $("#chatMessages").html("");
+
+        currentRoomId = null;
+        unreadMessages = {};
+      }
+
+      function sendMessage() {
+        const messageContent = $("#messageInput").val().trim();
+        if (messageContent && stompClient && currentRoomId) {
+          const userId = $("#userId").val().trim();
+          const username = $("#username").val().trim();
+
+          const chatMessage = {
+            roomId: currentRoomId,
+            senderId: parseInt(userId),
+            senderName: username,
+            content: messageContent,
+            type: "CHAT",
+          };
+
+          stompClient.send(
+            "/app/chat.sendMessage",
+            {},
+            JSON.stringify(chatMessage)
+          );
+          $("#messageInput").val("");
+
+          // 내 메시지를 보낸 경우 읽음 처리
+          markMessagesAsRead(currentRoomId, userId);
+        }
+      }
+
+      function loadMessages(roomId) {
+        $.ajax({
+          url: "/api/v1/coffeeletter/messages/" + roomId,
+          type: "GET",
+          success: function (messages) {
+            $("#chatMessages").html("");
+            messages.forEach(function (message) {
+              showMessage(message);
+            });
+            scrollToBottom();
+          },
+        });
+      }
+
+      function showMessage(message) {
+        const userId = $("#userId").val().trim();
+        let messageClass = "";
+        let userRole = "";
+
+        if (
+          message.type === "SYSTEM" ||
+          message.type === "ENTER" ||
+          message.type === "LEAVE"
+        ) {
+          messageClass = "system";
+        } else if (message.senderId.toString() === userId) {
+          // 내 메시지는 항상 오른쪽에 표시
+          messageClass = "my-message";
+          userRole = currentUserType; // 'mentor' 또는 'mentee'
+        } else {
+          // 상대방 메시지는 항상 왼쪽에 표시
+          messageClass = "other-message";
+          userRole = currentUserType === "mentor" ? "mentee" : "mentor";
+        }
+
+        let messageContent = message.content;
+        const timestamp = new Date(message.timestamp).toLocaleTimeString();
+        const isUnread =
+          message.senderId.toString() !== userId && !message.read;
+
+        let messageHtml = "";
+
+        if (messageClass === "system") {
+          messageHtml =
+            '<div class="message ' +
+            messageClass +
+            '">' +
+            '<div class="message-content">' +
+            messageContent +
+            "</div>" +
+            '<div class="message-info">' +
+            timestamp +
+            "</div>" +
+            "</div>";
+        } else {
+          messageHtml =
+            '<div class="message ' +
+            messageClass +
+            " " +
+            userRole +
+            '" data-message-id="' +
+            message.id +
+            '">' +
+            '<div class="message-content">' +
+            messageContent;
+
+          // 읽지 않은 메시지 카운터 추가 (내 메시지가 아닌 경우에만)
+          if (isUnread && message.senderId.toString() !== userId) {
+            messageHtml += '<span class="unread-counter">1</span>';
+          }
+
+          messageHtml +=
+            "</div>" +
+            '<div class="message-info">' +
+            (message.senderId === 0 ? "System" : message.senderName) +
+            " • " +
+            timestamp +
+            "</div>" +
+            "</div>";
+        }
+
+        $("#chatMessages").append(messageHtml);
+        $("#chatMessages").append('<div class="clearfix"></div>');
+        scrollToBottom();
+      }
+
+      function scrollToBottom() {
+        const chatContainer = document.getElementById("chatMessages");
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+
+      function incrementUnreadCount(roomId) {
+        if (!unreadMessages[roomId]) {
+          unreadMessages[roomId] = 0;
+        }
+        unreadMessages[roomId]++;
+        updateUnreadCountDisplay(roomId);
+      }
+
+      function updateUnreadCountDisplay(roomId) {
+        if (roomId === currentRoomId) {
+          // 현재 활성화된 채팅방의 경우 메시지를 자동으로 읽음 처리
+          const userId = $("#userId").val().trim();
+          markMessagesAsRead(roomId, userId);
+        }
+      }
+
+      function markMessagesAsRead(roomId, userId) {
+        // 읽음 처리 API 호출
+        $.ajax({
+          url:
+            "/api/v1/coffeeletter/messages/" +
+            roomId +
+            "/mark-as-read/" +
+            userId,
+          type: "POST",
+          success: function () {
+            console.log("메시지 읽음 처리 완료");
+            unreadMessages[roomId] = 0;
+            // 읽지 않은 메시지 카운터 모두 제거
+            $(".unread-counter").remove();
+          },
+          error: function (error) {
+            console.error("읽음 처리 실패", error);
+          },
+        });
+      }
+
+      $(document).ready(function () {
+        $("#connectButton").click(connect);
+        $("#disconnectButton").click(disconnect);
+
+        $("#sendButton").click(sendMessage);
+        $("#messageInput").keypress(function (e) {
+          if (e.which === 13 && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+
+        // 사용자 유형에 따라 자동으로 ID 설정
+        $("#userType").change(function () {
+          const userType = $(this).val();
+          if (userType === "mentor") {
+            $("#userId").val($("#mentorId").val());
+            $("#username").val($("#mentorName").val());
+          } else {
+            $("#userId").val($("#menteeId").val());
+            $("#username").val($("#menteeName").val());
+          }
+        });
+
+        // ID 필드 자동 설정
+        $("#mentorId, #mentorName").change(function () {
+          if ($("#userType").val() === "mentor") {
+            $("#userId").val($("#mentorId").val());
+            $("#username").val($("#mentorName").val());
+          }
+        });
+
+        $("#menteeId, #menteeName").change(function () {
+          if ($("#userType").val() === "mentee") {
+            $("#userId").val($("#menteeId").val());
+            $("#username").val($("#menteeName").val());
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
