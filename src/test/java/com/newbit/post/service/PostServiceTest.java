@@ -33,7 +33,7 @@ class PostServiceTest {
     }
 
     @Test
-    void 게시글_수정_성공() {
+    void updatePost_success() {
         // given
         Long postId = 1L;
         String newTitle = "New Title";
@@ -50,7 +50,7 @@ class PostServiceTest {
     }
 
     @Test
-    void 게시글_수정_실패_게시글없음() {
+    void updatePost_fail_postNotFound() {
         // given
         Long invalidId = 999L;
         when(postRepository.findById(invalidId)).thenReturn(Optional.empty());
