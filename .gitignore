@@ -1,8 +1,9 @@
 HELP.md
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
 
 ### STS ###
 .apt_generated
@@ -12,12 +13,18 @@ target/
 .settings
 .springBeans
 .sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
 .idea
 *.iws
 *.iml
 *.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -25,9 +32,6 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
@@ -35,6 +39,9 @@ build/
 ### Application Properties ###
 src/main/resources/application.yml
 src/main/resources/application-*.yml
+src/test/resources/application.yml
+src/test/resources/application-*.yml
+
 
 ### Logs ###
 *.log
@@ -43,3 +50,43 @@ logs/
 ### OS ###
 .DS_Store
 Thumbs.db
+
+### Gradle ###
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+### Node ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+
+### Package Files ###
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+### Eclipse Patch ###
+# Eclipse Core
+# JDT-specific (Eclipse Java Development Tools)
+
+### Mac OS ###
+.DS_Store
