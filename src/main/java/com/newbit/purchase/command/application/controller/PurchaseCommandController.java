@@ -1,15 +1,13 @@
 package com.newbit.purchase.command.application.controller;
 
 import com.newbit.common.dto.ApiResponse;
+import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,8 +24,11 @@ public class PurchaseCommandController {
             responseCode = "200", description = "칼럼 구매 성공"
     )
     @PostMapping("/column")
-    public ResponseEntity<ApiResponse<Void>> purchaseColumn(@Valid @RequestBody ColumnPurchaseRequest request) {
-        purchaseCommandService.purchaseColumn(request);
+    public ResponseEntity<ApiResponse<Void>> purchaseColumn(
+            @PathVariable Long userId,
+            @Valid @RequestBody ColumnPurchaseRequest request
+    ) {
+        purchaseCommandService.purchaseColumn(userId, request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
