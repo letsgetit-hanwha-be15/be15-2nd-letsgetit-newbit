@@ -28,6 +28,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.newbit.coffeeletter.domain.chat.ChatMessage;
@@ -62,6 +67,8 @@ class ChatServiceTest {
     private List<CoffeeLetterRoom> rooms;
     private ChatMessageDTO messageDTO;
     private ChatMessage message;
+    private List<ChatMessage> messages;
+    private Page<ChatMessage> messagePage;
 
     @BeforeEach
     void setUp() {
@@ -93,6 +100,7 @@ class ChatServiceTest {
         messageDTO.setType(MessageType.CHAT);
         
         message = new ChatMessage();
+        message.setId("test-message-id");
         message.setRoomId("test-room-id");
         message.setSenderId(1L);
         message.setSenderName("멘토");
@@ -101,6 +109,10 @@ class ChatServiceTest {
         message.setTimestamp(LocalDateTime.now());
         message.setReadByMentor(true);
         message.setReadByMentee(false);
+        
+        // 메시지 목록 및 페이지 설정
+        messages = Arrays.asList(message);
+        messagePage = new PageImpl<>(messages);
         
         when(modelMapper.map(any(Object.class), eq(CoffeeLetterRoomDTO.class))).thenReturn(roomDTO);
         when(modelMapper.map(any(Object.class), eq(ChatMessageDTO.class))).thenReturn(messageDTO);
@@ -444,5 +456,118 @@ class ChatServiceTest {
         verify(roomRepository, times(1)).findById(roomId);
         verify(messageRepository, never()).save(any(ChatMessage.class));
         verify(messagingTemplate, never()).convertAndSend(anyString(), any(Object.class));
+    }
+    
+    @Test
+    void getMessagesByRoomId_채팅방_메시지_조회_성공() {
+        // given
+        String roomId = "test-room-id";
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(messageRepository.findByRoomId(roomId)).thenReturn(messages);
+        
+        // when
+        List<ChatMessageDTO> result = chatService.getMessagesByRoomId(roomId);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, times(1)).findByRoomId(roomId);
+    }
+    
+    @Test
+    void getMessagesByRoomId_빈_목록_반환() {
+        // given
+        String roomId = "test-room-id";
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(messageRepository.findByRoomId(roomId)).thenReturn(Collections.emptyList());
+        
+        // when
+        List<ChatMessageDTO> result = chatService.getMessagesByRoomId(roomId);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, times(1)).findByRoomId(roomId);
+    }
+    
+    @Test
+    void getMessagesByRoomId_존재하지_않는_채팅방_예외발생() {
+        // given
+        String roomId = "non-existent-room-id";
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.getMessagesByRoomId(roomId);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, never()).findByRoomId(anyString());
+    }
+    
+    @Test
+    void getMessagesByRoomId_페이징_메시지_조회_성공() {
+        // given
+        String roomId = "test-room-id";
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(messageRepository.findByRoomId(eq(roomId), any(Pageable.class))).thenReturn(messagePage);
+        
+        // when
+        Page<ChatMessageDTO> result = chatService.getMessagesByRoomId(roomId, pageable);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals(1, result.getTotalElements());
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, times(1)).findByRoomId(eq(roomId), any(Pageable.class));
+    }
+    
+    @Test
+    void getMessagesByRoomId_빈_페이지_반환() {
+        // given
+        String roomId = "test-room-id";
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+        Page<ChatMessage> emptyPage = new PageImpl<>(Collections.emptyList());
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.of(room));
+        when(messageRepository.findByRoomId(eq(roomId), any(Pageable.class))).thenReturn(emptyPage);
+        
+        // when
+        Page<ChatMessageDTO> result = chatService.getMessagesByRoomId(roomId, pageable);
+        
+        // then
+        assertNotNull(result);
+        assertEquals(0, result.getContent().size());
+        assertEquals(0, result.getTotalElements());
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, times(1)).findByRoomId(eq(roomId), any(Pageable.class));
+    }
+    
+    @Test
+    void getMessagesByRoomId_페이징_존재하지_않는_채팅방_예외발생() {
+        // given
+        String roomId = "non-existent-room-id";
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+        
+        when(roomRepository.findById(roomId)).thenReturn(Optional.empty());
+        
+        // when & then
+        assertThrows(IllegalArgumentException.class, () -> {
+            chatService.getMessagesByRoomId(roomId, pageable);
+        });
+        
+        verify(roomRepository, times(1)).findById(roomId);
+        verify(messageRepository, never()).findByRoomId(anyString(), any(Pageable.class));
     }
 } 

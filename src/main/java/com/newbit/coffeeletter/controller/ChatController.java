@@ -6,6 +6,9 @@ import com.newbit.coffeeletter.dto.ChatMessageDTO;
 import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
 import com.newbit.coffeeletter.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -80,6 +83,18 @@ public class ChatController {
         chatService.sendSystemMessage(roomId, chatMessage.getSenderName() + "님이 입장하셨습니다.");
     }
 
+    // 채팅 메시지 관련 API
 
+    @GetMapping("/messages/{roomId}")
+    public ResponseEntity<List<ChatMessageDTO>> getMessagesByRoomId(@PathVariable String roomId) {
+        return ResponseEntity.ok(chatService.getMessagesByRoomId(roomId));
+    }
+
+    @GetMapping("/messages/{roomId}/paging")
+    public ResponseEntity<Page<ChatMessageDTO>> getMessagesByRoomIdPaging(
+            @PathVariable String roomId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(chatService.getMessagesByRoomId(roomId, pageable));
+    }
 
 }

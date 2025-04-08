@@ -5,6 +5,8 @@ import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
 import com.newbit.coffeeletter.domain.chat.MessageType;
 import com.newbit.coffeeletter.dto.ChatMessageDTO;
 import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -24,5 +26,6 @@ public interface ChatService {
 
     ChatMessageDTO sendMessage(ChatMessageDTO messageDto);
     ChatMessageDTO sendSystemMessage(String roomId, String content);
-
+    List<ChatMessageDTO> getMessagesByRoomId(String roomId);
+    Page<ChatMessageDTO> getMessagesByRoomId(String roomId, Pageable pageable);
 }
