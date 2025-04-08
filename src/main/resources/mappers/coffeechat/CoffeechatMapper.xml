@@ -8,20 +8,9 @@
         c.request_message,
         c.confirmed_schedule,
         c.ended_at,
-        m.mentor_id,
-        m.temperature,
-        u_mentor.user_id as "mentor.user_id",
-        u_mentor.nickname as "mentor.nickname",
-        u_mentor.authority as "mentor.authority",
-        u_mentor.profile_image_url as "mentor.profile_image_url",
-        u_mentee.user_id as "mentee.user_id",
-        u_mentee.nickname as "mentee.nickname",
-        u_mentee.authority as "mentee.authority",
-        u_mentee.profile_image_url as "mentee.profile_image_url"
+        c.mentor_id,
+        c.mentee_id
         FROM coffeechat c
-        JOIN mentor m ON (c.mentor_id = m.mentor_id)
-        JOIN user u_mentor ON (m.user_id = u_mentor.user_id)
-        JOIN user u_mentee ON (c.mentee_id = u_mentee.user_id)
         WHERE coffeechat_id = #{ coffeechatId }
     </select>
 </mapper>

@@ -23,12 +23,8 @@ public class CoffeechatDto {
     private LocalDateTime confirmedSchedule;
     @Schema(description = "끝일시")
     private LocalDateTime endedAt;
-    @Schema(description = "멘토ID")
+    @Schema(description = "멘토 ID")
     private Long mentorId;
-    @Schema(description = "온도")
-    private Double temperature;
-    @Schema(description = "멘토")
-    private UserDto mentor;
-    @Schema(description = "멘티")
-    private UserDto mentee;
+    @Schema(description = "멘티 ID")
+    private Long menteeId;
 }

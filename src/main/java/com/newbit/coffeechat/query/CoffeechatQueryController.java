@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Coffeechat 도메인")
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/coffeechats")
 @RequiredArgsConstructor
 public class CoffeechatQueryController {
     private final CoffeechatQueryService coffeechatQueryService;
@@ -19,7 +19,7 @@ public class CoffeechatQueryController {
     @Operation(
             summary = "커피챗 상세 조회", description = "커피챗 상세 정보를 조회한다."
     )
-    @GetMapping("/coffeechats/{coffeechatId}")
+    @GetMapping("/{coffeechatId}")
     public ResponseEntity<ApiResponse<CoffeechatDetailResponse>> getCoffeechat(
             @PathVariable Long coffeechatId
     ) {

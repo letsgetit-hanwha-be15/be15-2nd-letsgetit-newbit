@@ -31,17 +31,7 @@ class CoffeechatQueryServiceTest {
 
     static Stream<CoffeechatTestParams> coffeechatProvider() {
         // 테스트에 사용할 공통 mentor, mentee
-        UserDto mentor = UserDto.builder()
-                .userId(1L)
-                .nickname("최강멘토")
-                .authority(Authority.MENTOR)
-                .build();
 
-        UserDto mentee = UserDto.builder()
-                .userId(2L)
-                .nickname("신입삐약")
-                .authority(Authority.USER)
-                .build();
 
         CoffeechatDto coffeechat1 = CoffeechatDto.builder()
                 .coffeechatId(1L)
@@ -49,10 +39,8 @@ class CoffeechatQueryServiceTest {
                 .requestMessage("첫번째 커피챗 신청드립니다.")
                 .confirmedSchedule(LocalDateTime.of(2025, 4, 11, 19, 0))
                 .endedAt(LocalDateTime.of(2025, 4, 11, 19, 30))
-                .mentorId(mentor.getUserId()) // 1L
-                .temperature(40.0)
-                .mentor(mentor)
-                .mentee(mentee)
+                .mentorId(1L) // 1L
+                .menteeId(1L)
                 .build();
 
         CoffeechatDto coffeechat2 = CoffeechatDto.builder()
@@ -61,10 +49,8 @@ class CoffeechatQueryServiceTest {
                 .requestMessage("두번째 커피챗도 부탁드립니다.")
                 .confirmedSchedule(LocalDateTime.of(2025, 4, 12, 19, 0))
                 .endedAt(LocalDateTime.of(2025, 4, 12, 19, 30))
-                .mentorId(mentor.getUserId()) // 1L
-                .temperature(40.0)
-                .mentor(mentor)
-                .mentee(mentee)
+                .mentorId(1L) // 1L
+                .menteeId(2L)
                 .build();
 
         return Stream.of(
