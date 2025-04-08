@@ -1,4 +1,4 @@
-package com.newbit.purchase.command.domain;
+package com.newbit.purchase.command.domain.aggregate;
 
 public enum ServiceType {
     COFFEECHAT,

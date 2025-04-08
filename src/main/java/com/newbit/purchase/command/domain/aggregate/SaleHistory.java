@@ -1,5 +1,5 @@
 
-package com.newbit.purchase.command.domain;
+package com.newbit.purchase.command.domain.aggregate;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

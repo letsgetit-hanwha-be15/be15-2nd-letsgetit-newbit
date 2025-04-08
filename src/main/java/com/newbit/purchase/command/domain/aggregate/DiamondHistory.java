@@ -1,6 +1,5 @@
-package com.newbit.purchase.command.domain;
+package com.newbit.purchase.command.domain.aggregate;
 
-import com.newbit.purchase.command.domain.aggregate.DiamondTransactionType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
