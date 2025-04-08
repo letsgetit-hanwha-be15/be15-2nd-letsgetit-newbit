@@ -21,9 +21,8 @@ public enum ErrorCode {
     // 그 외 기타 오류
     INTERNAL_SERVER_ERROR("50000", "내부 서버 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
-    //회원 관련 오류
-    ALREADY_REGISTERED_EMAIL("20000", "이미 가입된 회원입니다.", HttpStatus.CONFLICT)
-    ;
+    /*--------------- 커피챗 오류 ------------------*/
+    COFFEECHAT_NOT_FOUND("70001", "해당 커피챗을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;
