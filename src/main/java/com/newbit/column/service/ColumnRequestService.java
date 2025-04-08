@@ -1,9 +1,12 @@
 package com.newbit.column.service;
 
 import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import com.newbit.column.dto.response.CreateColumnResponseDto;
+import com.newbit.column.dto.response.UpdateColumnResponseDto;
 import com.newbit.column.entity.Column;
 import com.newbit.column.entity.ColumnRequest;
+import com.newbit.column.enums.RequestType;
 import com.newbit.column.mapper.ColumnMapper;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.repository.ColumnRequestRepository;
@@ -30,6 +33,32 @@ public class ColumnRequestService {
         ColumnRequest saved = columnRequestRepository.save(request);
 
         return CreateColumnResponseDto.builder()
+                .columnRequestId(saved.getColumnRequestId())
+                .build();
+    }
+
+    public UpdateColumnResponseDto updateColumnRequest(UpdateColumnRequestDto dto, Long columnId) {
+        // 1. columnId로 Column 조회
+        Column column = columnRepository.findById(columnId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 칼럼을 찾을 수 없습니다. columnId = " + columnId));
+
+        // 2. ColumnRequest 생성
+        ColumnRequest request = ColumnRequest.builder()
+                .requestType(RequestType.UPDATE)
+                .isApproved(false)
+                .updatedTitle(dto.getTitle())
+                .updatedContent(dto.getContent())
+                .updatedPrice(dto.getPrice())
+                .updatedThumbnailUrl(dto.getThumbnailUrl())
+                .adminUserId(1L)    // 임시 관리자 ID
+                .column(column)
+                .build();
+
+        // 3. 저장
+        ColumnRequest saved = columnRequestRepository.save(request);
+
+        // 4. 응답
+        return UpdateColumnResponseDto.builder()
                 .columnRequestId(saved.getColumnRequestId())
                 .build();
     }

@@ -2,6 +2,7 @@ package com.newbit.column.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,4 +48,26 @@ class ColumnRequestControllerTest {
                 .andExpect(jsonPath("$.data.columnRequestId").exists())
                 .andDo(print());
     }
+
+    @DisplayName("멘토 칼럼 수정 요청 성공")
+    @Test
+    void updateColumnRequest_success() throws Exception {
+        // given
+        Long columnId = 1L;
+        UpdateColumnRequestDto requestDto = UpdateColumnRequestDto.builder()
+                .title("수정된 칼럼 제목")
+                .content("이것은 수정된 칼럼 내용입니다.")
+                .price(2000)
+                .thumbnailUrl("https://example.com/updated-thumbnail.jpg")
+                .build();
+
+        // when & then
+        mockMvc.perform(post("/api/v1/columns/requests/{columnId}/edit", columnId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.columnRequestId").exists())
+                .andDo(print());
+    }
+
 }
