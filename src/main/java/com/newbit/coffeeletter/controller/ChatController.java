@@ -30,5 +30,10 @@ public class ChatController {
         return ResponseEntity.ok(chatService.endRoom(roomId));
     }
 
+    @PutMapping("/rooms/{roomId}/cancel")
+    public ResponseEntity<CoffeeLetterRoomDTO> cancelRoom(@PathVariable String roomId) {
+        return ResponseEntity.ok(chatService.cancelRoom(roomId));
+    }
+
 
 }

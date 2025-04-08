@@ -50,4 +50,16 @@ public class ChatServiceImpl implements ChatService {
         return modelMapper.map(savedRoom, CoffeeLetterRoomDTO.class);
     }
 
+    @Override
+    @Transactional
+    public CoffeeLetterRoomDTO cancelRoom(String roomId) {
+        CoffeeLetterRoom room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+
+        room.setStatus(CoffeeLetterRoom.RoomStatus.CANCELED);
+        CoffeeLetterRoom savedRoom = roomRepository.save(room);
+
+        return modelMapper.map(savedRoom, CoffeeLetterRoomDTO.class);
+    }
+
 }
