@@ -29,7 +29,6 @@ public class ColumnRequestService {
         Column savedColumn = columnRepository.save(column);
 
         // 2. ColumnRequest 저장
-        Long adminUserId = 1L; // 임시로 지정할 관리자 ID
         ColumnRequest request = columnMapper.toColumnRequest(dto, savedColumn);
 
         ColumnRequest saved = columnRequestRepository.save(request);
@@ -52,7 +51,6 @@ public class ColumnRequestService {
                 .updatedContent(dto.getContent())
                 .updatedPrice(dto.getPrice())
                 .updatedThumbnailUrl(dto.getThumbnailUrl())
-                .adminUserId(1L)    // 임시 관리자 ID
                 .column(column)
                 .build();
 
