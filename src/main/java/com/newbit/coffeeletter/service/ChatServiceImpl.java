@@ -3,6 +3,7 @@ package com.newbit.coffeeletter.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@Primary
 public class ChatServiceImpl implements ChatService {
 
     private final RoomService roomService;
