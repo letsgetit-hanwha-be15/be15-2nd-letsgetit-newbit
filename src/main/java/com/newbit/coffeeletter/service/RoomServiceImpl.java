@@ -2,7 +2,6 @@ package com.newbit.coffeeletter.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -13,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
 import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
 import com.newbit.coffeeletter.repository.CoffeeLetterRoomRepository;
+import com.newbit.coffeeletter.util.RoomUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,8 +35,8 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public CoffeeLetterRoomDTO createRoom(CoffeeLetterRoomDTO roomDto) {
-        Optional<CoffeeLetterRoom> existingRoom = roomRepository.findByCoffeeChatId(roomDto.getCoffeeChatId());
-        if (existingRoom.isPresent()) {
+        CoffeeLetterRoom existingRoom = RoomUtils.findRoomByCoffeeChatId(roomRepository, roomDto.getCoffeeChatId());
+        if (existingRoom != null) {
             throw new IllegalStateException("이미 존재하는 채팅방입니다.");
         }
 
@@ -54,8 +54,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public CoffeeLetterRoomDTO endRoom(String roomId) {
-        CoffeeLetterRoom room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+        CoffeeLetterRoom room = RoomUtils.getRoomById(roomRepository, roomId);
 
         room.setStatus(CoffeeLetterRoom.RoomStatus.INACTIVE);
         room.setEndTime(LocalDateTime.now());
@@ -69,8 +68,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public CoffeeLetterRoomDTO cancelRoom(String roomId) {
-        CoffeeLetterRoom room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+        CoffeeLetterRoom room = RoomUtils.getRoomById(roomRepository, roomId);
 
         room.setStatus(CoffeeLetterRoom.RoomStatus.CANCELED);
         CoffeeLetterRoom savedRoom = roomRepository.save(room);
@@ -89,8 +87,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public CoffeeLetterRoomDTO getRoomById(String roomId) {
-        CoffeeLetterRoom room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+        CoffeeLetterRoom room = RoomUtils.getRoomById(roomRepository, roomId);
         return modelMapper.map(room, CoffeeLetterRoomDTO.class);
     }
 
