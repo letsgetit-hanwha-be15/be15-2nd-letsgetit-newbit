@@ -50,7 +50,7 @@ class PurchaseCommandServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
-        when(columnPurchaseHistoryRepository.existsByUserUserIdAndColumnColumnId(userId, columnId)).thenReturn(false);
+        when(columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)).thenReturn(false);
         when(column.getPrice()).thenReturn(columnPrice);
 
         // user.useDiamond() 수행 시 예외가 없어야 하므로 doNothing()이 암시됨
@@ -94,7 +94,7 @@ class PurchaseCommandServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
         when(columnRepository.findById(columnId)).thenReturn(Optional.of(mock(Column.class)));
-        when(columnPurchaseHistoryRepository.existsByUserUserIdAndColumnColumnId(userId, columnId)).thenReturn(true);
+        when(columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)).thenReturn(true);
 
         BusinessException e = assertThrows(BusinessException.class, () ->
                 purchaseCommandService.purchaseColumn(userId, new ColumnPurchaseRequest(columnId)));
@@ -113,7 +113,7 @@ class PurchaseCommandServiceTest {
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
-        when(columnPurchaseHistoryRepository.existsByUserUserIdAndColumnColumnId(userId, columnId)).thenReturn(false);
+        when(columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)).thenReturn(false);
         when(column.getPrice()).thenReturn(100);
 
         // 다이아 부족 시 예외 던지도록 설정

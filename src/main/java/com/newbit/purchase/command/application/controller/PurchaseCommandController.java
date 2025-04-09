@@ -4,6 +4,7 @@ import com.newbit.common.dto.ApiResponse;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.service.PurchaseCommandService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class PurchaseCommandController {
     )
     @PostMapping("/column/{userId}")
     public ResponseEntity<ApiResponse<Void>> purchaseColumn(
-            @PathVariable Long userId,
+            @Parameter(description = "조회할 유저 ID", required = true) @PathVariable Long userId,
             @Valid @RequestBody ColumnPurchaseRequest request
     ) {
         purchaseCommandService.purchaseColumn(userId, request);
