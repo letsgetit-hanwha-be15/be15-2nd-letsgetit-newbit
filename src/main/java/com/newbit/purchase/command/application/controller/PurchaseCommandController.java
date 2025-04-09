@@ -1,6 +1,7 @@
 package com.newbit.purchase.command.application.controller;
 
 import com.newbit.common.dto.ApiResponse;
+import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.service.PurchaseCommandService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,4 +34,19 @@ public class PurchaseCommandController {
         purchaseCommandService.purchaseColumn(userId, request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @Operation(
+            summary = "커피챗 구매",
+            description = "사용자가 멘토와 확정된 커피챗을 구매합니다."
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200", description = "커피챗 구매 성공"
+    )
+    @PostMapping("/coffeechat")
+    public ResponseEntity<ApiResponse<Void>> purchaseCoffeeChat(
+            @Valid @RequestBody CoffeeChatPurchaseRequest request) {
+        purchaseCommandService.purchaseCoffeeChat(request);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }
