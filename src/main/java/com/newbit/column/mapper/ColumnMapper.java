@@ -1,8 +1,8 @@
 package com.newbit.column.mapper;
 
 import com.newbit.column.dto.request.CreateColumnRequestDto;
-import com.newbit.column.entity.Column;
-import com.newbit.column.entity.ColumnRequest;
+import com.newbit.column.domain.Column;
+import com.newbit.column.domain.ColumnRequest;
 import com.newbit.column.enums.RequestType;
 import org.springframework.stereotype.Component;
 

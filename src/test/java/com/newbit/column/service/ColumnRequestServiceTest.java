@@ -6,7 +6,7 @@ import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import com.newbit.column.dto.response.CreateColumnResponseDto;
 import com.newbit.column.dto.response.DeleteColumnResponseDto;
 import com.newbit.column.dto.response.UpdateColumnResponseDto;
-import com.newbit.column.entity.Column;
+import com.newbit.column.domain.Column;
 import com.newbit.column.enums.RequestType;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.repository.ColumnRequestRepository;
@@ -18,7 +18,7 @@ import org.mockito.Mock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-import com.newbit.column.entity.ColumnRequest;
+import com.newbit.column.domain.ColumnRequest;
 import com.newbit.column.mapper.ColumnMapper;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
