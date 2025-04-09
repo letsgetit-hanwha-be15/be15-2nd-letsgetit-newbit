@@ -1,6 +1,5 @@
-package com.newbit.column.entity;
+package com.newbit.column.domain;
 
-import com.newbit.column.dto.request.CreateColumnRequestDto;
 import com.newbit.column.enums.RequestType;
 import jakarta.persistence.*;
 import lombok.*;
