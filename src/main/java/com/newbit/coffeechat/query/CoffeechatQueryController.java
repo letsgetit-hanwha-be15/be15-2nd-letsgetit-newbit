@@ -3,6 +3,7 @@ package com.newbit.coffeechat.query;
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDetailResponse;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
+import com.newbit.coffeechat.query.dto.response.RequestTimeListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,7 +55,7 @@ public class CoffeechatQueryController {
             summary = "커피챗별 신청시간 목록 조회", description = "커피챗별 신청시간 목록 정보를 조회한다."
     )
     @GetMapping("/{coffeechatId}/request-times")
-    public ResponseEntity<ApiResponse<CoffeechatListResponse>> getCoffeechatRequestTimes(
+    public ResponseEntity<ApiResponse<RequestTimeListResponse>> getCoffeechatRequestTimes(
             @PathVariable Long coffeechatId
     ) {
 
@@ -62,7 +63,7 @@ public class CoffeechatQueryController {
 
         // TODO : 회원이 멘토인지 확인하고 멘토가 아니면 에러를 발생시킨다.
 
-        CoffeechatListResponse response = coffeechatQueryService.getCoffeechatRequestTimes(coffeechatId);
+        RequestTimeListResponse response = coffeechatQueryService.getCoffeechatRequestTimes(coffeechatId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
 
