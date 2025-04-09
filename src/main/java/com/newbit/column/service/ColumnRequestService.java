@@ -1,11 +1,13 @@
 package com.newbit.column.service;
 
 import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.dto.request.DeleteColumnRequestDto;
 import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import com.newbit.column.dto.response.CreateColumnResponseDto;
+import com.newbit.column.dto.response.DeleteColumnResponseDto;
 import com.newbit.column.dto.response.UpdateColumnResponseDto;
-import com.newbit.column.entity.Column;
-import com.newbit.column.entity.ColumnRequest;
+import com.newbit.column.domain.Column;
+import com.newbit.column.domain.ColumnRequest;
 import com.newbit.column.enums.RequestType;
 import com.newbit.column.mapper.ColumnMapper;
 import com.newbit.column.repository.ColumnRepository;
@@ -27,8 +29,7 @@ public class ColumnRequestService {
         Column savedColumn = columnRepository.save(column);
 
         // 2. ColumnRequest 저장
-        Long adminUserId = 1L; // 임시로 지정할 관리자 ID
-        ColumnRequest request = columnMapper.toColumnRequest(dto, savedColumn, adminUserId);
+        ColumnRequest request = columnMapper.toColumnRequest(dto, savedColumn);
 
         ColumnRequest saved = columnRequestRepository.save(request);
 
@@ -50,7 +51,6 @@ public class ColumnRequestService {
                 .updatedContent(dto.getContent())
                 .updatedPrice(dto.getPrice())
                 .updatedThumbnailUrl(dto.getThumbnailUrl())
-                .adminUserId(1L)    // 임시 관리자 ID
                 .column(column)
                 .build();
 
@@ -59,6 +59,23 @@ public class ColumnRequestService {
 
         // 4. 응답
         return UpdateColumnResponseDto.builder()
+                .columnRequestId(saved.getColumnRequestId())
+                .build();
+    }
+
+    public DeleteColumnResponseDto deleteColumnRequest(DeleteColumnRequestDto dto, Long columnId) {
+        Column column = columnRepository.findById(columnId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 칼럼을 찾을 수 없습니다. columnId = " + columnId));
+
+        ColumnRequest request = ColumnRequest.builder()
+                .requestType(RequestType.DELETE)
+                .isApproved(false)
+                .column(column)
+                .build();
+
+        ColumnRequest saved = columnRequestRepository.save(request);
+
+        return DeleteColumnResponseDto.builder()
                 .columnRequestId(saved.getColumnRequestId())
                 .build();
     }
