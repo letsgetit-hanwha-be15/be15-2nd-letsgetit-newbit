@@ -8,8 +8,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "post")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class Post {
 
@@ -20,20 +21,28 @@ public class Post {
 
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+
+    @Lob
     private String content;
 
+    @Builder.Default
     @Column(name = "like_count", nullable = false)
     private int likeCount = 0;
 
+    @Builder.Default
     @Column(name = "report_count", nullable = false)
     private int reportCount = 0;
 
+    @Builder.Default
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    @Builder.Default
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
+  
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -43,6 +52,10 @@ public class Post {
 
     @Column(name = "post_category_id", nullable = false)
     private Long postCategoryId;
+
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
 
     @PrePersist
     protected void onCreate() {

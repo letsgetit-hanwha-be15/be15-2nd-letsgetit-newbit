@@ -39,8 +39,11 @@ out/
 ### Application Properties ###
 src/main/resources/application.yml
 src/main/resources/application-*.yml
+src/main/resources/application.yaml
 src/test/resources/application.yml
 src/test/resources/application-*.yml
+src/test/resources/application.yaml
+
 
 
 ### Logs ###
@@ -89,5 +92,4 @@ yarn-error.log*
 # JDT-specific (Eclipse Java Development Tools)
 
 ### Mac OS ###
-.DS_Store
-.gradle
+
