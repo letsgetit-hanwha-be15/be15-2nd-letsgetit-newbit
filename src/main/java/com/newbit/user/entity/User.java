@@ -43,7 +43,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Authority role = Authority.USER;
+    private Authority authority = Authority.USER;
 
     @Column(nullable = false)
     private Boolean isSuspended = false;
