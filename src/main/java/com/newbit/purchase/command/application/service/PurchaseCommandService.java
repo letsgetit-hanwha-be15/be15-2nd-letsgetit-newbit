@@ -20,11 +20,6 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class PurchaseCommandService {
-
-    //TODO: 멘토 권한 가격 결정 필요(다이아, 포인트 별도)
-    private static final int MENTOR_AUTHORITY_DIAMOND_COST = 700;
-    private static final int MENTOR_AUTHORITY_POINT_COST = 2000;
-
     private final ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
     private final DiamondHistoryRepository diamondHistoryRepository;
     private final SaleHistoryRepository saleHistoryRepository;
@@ -45,7 +40,7 @@ public class PurchaseCommandService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
 
         // 3. 중복 구매 여부 확인
-        if (columnPurchaseHistoryRepository.existsByUserUserIdAndColumnColumnId(userId, columnId)) {
+        if (columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)) {
             throw new BusinessException(ErrorCode.COLUMN_ALREADY_PURCHASED);
         }
         // 4. 무료 칼럼일 경우 예외 발생
