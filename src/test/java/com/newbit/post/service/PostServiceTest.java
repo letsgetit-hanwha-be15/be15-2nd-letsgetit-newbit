@@ -2,24 +2,32 @@ package com.newbit.post.service;
 
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.request.PostCreateRequest;
-
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class PostServiceTest {
 
     private PostRepository postRepository;
     private PostService postService;
+    private PostCreateRequest request;
 
     @BeforeEach
     void setUp() {
         postRepository = mock(PostRepository.class);
         postService = new PostService(postRepository);
+
+        request = new PostCreateRequest();
+        request.setTitle("단위 테스트 제목");
+        request.setContent("단위 테스트 내용");
+        request.setUserId(1L);
+        request.setPostCategoryId(2L);
     }
 
     @Test
@@ -30,6 +38,8 @@ class PostServiceTest {
                 .id(postId)
                 .title("기존 제목")
                 .content("기존 내용")
+                .userId(1L)
+                .postCategoryId(1L)
                 .build();
 
         PostUpdateRequest updateRequest = PostUpdateRequest.builder()
@@ -62,30 +72,46 @@ class PostServiceTest {
         assertThatThrownBy(() -> postService.updatePost(postId, updateRequest))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("해당 게시글이 존재하지 않습니다.");
-
-
-    private PostCreateRequest request;
-
-    @BeforeEach
-    void setUp() {
-        request = new PostCreateRequest();
-        request.setTitle("단위 테스트 제목");
-        request.setContent("단위 테스트 내용");
-        request.setUserId(1L);
-        request.setPostCategoryId(2L);
     }
 
     @Test
     void 게시글_등록_성공() {
         // given
         when(postRepository.save(any(Post.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0)); // 저장된 Post를 그대로 리턴한다고 가정
+                .thenAnswer(invocation -> invocation.getArgument(0)); // 저장된 Post 그대로 반환
 
         // when
         postService.createPost(request);
 
         // then
-        verify(postRepository, times(1)).save(any(Post.class)); // postRepository.save()가 한 번 호출됐는지 확인
+        verify(postRepository, times(1)).save(any(Post.class));
+    }
 
+    @Test
+    void 게시글_삭제_성공() {
+        Long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .title("삭제할 제목")
+                .content("삭제할 내용")
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        postService.deletePost(postId);
+
+        assertThat(post.getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    void 게시글_삭제_실패_게시글이_없음() {
+        Long postId = 999L;
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.deletePost(postId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("해당 게시글이 존재하지 않습니다.");
     }
 }
