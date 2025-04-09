@@ -1,5 +1,7 @@
 package com.newbit.user.entity;
 
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -62,6 +64,14 @@ public class User {
 
     public void setEncodedPassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    // 보유 다이아 차감
+    public void useDiamond(int amount) {
+        if (this.diamond < amount) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND);
+        }
+        this.diamond -= amount;
     }
 
     public void findPassword(String newPassword) {

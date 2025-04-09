@@ -13,6 +13,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
+
 import java.util.UUID;
 
 import static com.newbit.common.exception.ErrorCode.FIND_EMAIL_BY_NAME_AND_PHONE_ERROR;
@@ -70,4 +73,23 @@ public class UserService {
     }
 
 
+
+    @Transactional(readOnly = true)
+    public Integer getDiamondBalance(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return user.getDiamond();
+    }
+
+    @Transactional
+    public void useDiamond(Long userId, int amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.getDiamond() < amount) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND);
+        }
+
+        user.useDiamond(amount); // 도메인 로직에 위임 (Entity 내부에 구현된 로직)
+    }
 }
