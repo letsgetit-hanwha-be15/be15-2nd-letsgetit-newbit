@@ -48,9 +48,10 @@ public class Report {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Report(Long userId, Long postId, Long reportTypeId, String content) {
+    private Report(Long userId, Long postId, Long commentId, Long reportTypeId, String content) {
         this.userId = userId;
         this.postId = postId;
+        this.commentId = commentId;
         this.reportTypeId = reportTypeId;
         this.content = content;
         this.status = ReportStatus.SUBMITTED;
@@ -66,6 +67,15 @@ public class Report {
         return Report.builder()
                 .userId(userId)
                 .postId(postId)
+                .reportTypeId(reportTypeId)
+                .content(content)
+                .build();
+    }
+    
+    public static Report createCommentReport(Long userId, Long commentId, Long reportTypeId, String content) {
+        return Report.builder()
+                .userId(userId)
+                .commentId(commentId)
                 .reportTypeId(reportTypeId)
                 .content(content)
                 .build();

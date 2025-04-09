@@ -28,4 +28,12 @@ public class ReportCreateRequest {
         this.reportTypeId = reportTypeId;
         this.content = content;
     }
+    
+
+    public ReportCreateRequest(Long userId, Long commentId, Long reportTypeId, String content, boolean isCommentReport) {
+        this.userId = userId;
+        this.commentId = commentId;
+        this.reportTypeId = reportTypeId;
+        this.content = content;
+    }
 }
