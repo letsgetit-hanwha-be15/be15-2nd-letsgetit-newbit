@@ -28,4 +28,11 @@ public class ReportCommandController {
         ApiResponse<ReportCommandResponse> apiResponse = ApiResponse.success(response);
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
+    
+    @PostMapping("/comment")
+    public ResponseEntity<ApiResponse<ReportCommandResponse>> createCommentReport(@RequestBody @Valid ReportCreateRequest request) {
+        ReportCommandResponse response = reportCommandService.createCommentReport(request);
+        ApiResponse<ReportCommandResponse> apiResponse = ApiResponse.success(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
+    }
 }
