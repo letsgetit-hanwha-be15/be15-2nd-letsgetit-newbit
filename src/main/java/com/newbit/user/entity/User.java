@@ -59,6 +59,9 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    @Column(name = "job_id")
+    private Long jobId;
+
     public void setEncodedPassword(String encodedPassword) {
         this.password = encodedPassword;
     }
