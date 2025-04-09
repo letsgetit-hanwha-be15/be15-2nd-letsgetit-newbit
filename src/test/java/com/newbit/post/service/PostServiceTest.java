@@ -86,4 +86,32 @@ class PostServiceTest {
         // then
         verify(postRepository, times(1)).save(any(Post.class));
     }
+
+    @Test
+    void 게시글_삭제_성공() {
+        Long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .title("삭제할 제목")
+                .content("삭제할 내용")
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        postService.deletePost(postId);
+
+        assertThat(post.getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    void 게시글_삭제_실패_게시글이_없음() {
+        Long postId = 999L;
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.deletePost(postId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("해당 게시글이 존재하지 않습니다.");
+    }
 }

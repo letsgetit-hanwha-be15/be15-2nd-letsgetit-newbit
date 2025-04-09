@@ -21,10 +21,10 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
 
         post.update(request.getTitle(), request.getContent());
-
         return new PostResponse(post);
     }
 
+    @Transactional
     public PostResponse createPost(PostCreateRequest request) {
         Post post = Post.builder()
                 .title(request.getTitle())
@@ -37,5 +37,12 @@ public class PostService {
 
         postRepository.save(post);
         return new PostResponse(post);
+    }
+
+    @Transactional
+    public void deletePost(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+        post.softDelete();
     }
 }
