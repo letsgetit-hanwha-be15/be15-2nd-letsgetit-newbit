@@ -13,11 +13,12 @@ public class PostResponse {
     private final String content;
     private final int likeCount;
     private final int reportCount;
+    private final boolean isNotice;
+    private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
+    private final LocalDateTime deletedAt;
     private final Long userId;
     private final Long postCategoryId;
-    private final LocalDateTime updatedAt;
-    private final LocalDateTime createdAt;
-
 
     public PostResponse(Post post) {
         this.id = post.getId();
@@ -25,10 +26,11 @@ public class PostResponse {
         this.content = post.getContent();
         this.likeCount = post.getLikeCount();
         this.reportCount = post.getReportCount();
+        this.isNotice = post.isNotice();
+        this.createdAt = post.getCreatedAt();
+        this.updatedAt = post.getUpdatedAt();
+        this.deletedAt = post.getDeletedAt();
         this.userId = post.getUserId();
         this.postCategoryId = post.getPostCategoryId();
-        this.updatedAt = post.getUpdatedAt();
-        this.createdAt = post.getCreatedAt();
-
     }
 }
