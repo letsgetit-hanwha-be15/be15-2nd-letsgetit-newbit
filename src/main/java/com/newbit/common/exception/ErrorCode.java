@@ -23,6 +23,7 @@ public enum ErrorCode {
 
     /*--------------- 회원 오류 ------------------*/
     ALREADY_REGISTERED_EMAIL("20001", "이미 가입한 아이디입니다.", HttpStatus.CONFLICT),
+    USER_NOT_FOUND("20002", "회원을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     /*--------------- 커피챗 오류 ------------------*/
     COFFEECHAT_NOT_FOUND("70001", "해당 커피챗을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

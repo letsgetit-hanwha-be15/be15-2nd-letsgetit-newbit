@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -30,5 +32,9 @@ public class UserService {
         User user = modelMapper.map(request, User.class);
         user.setEncodedPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
+    }
+
+    public Optional<User> getUserByUserId(Long userId) {
+        return userRepository.findById(userId);
     }
 }
