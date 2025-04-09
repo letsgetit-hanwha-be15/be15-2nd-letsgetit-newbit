@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,12 +20,14 @@ public class CoffeechatCommandController {
 
     private final CoffeechatCommandService coffeechatCommandService;
 
-    @PostMapping("{userId}")
+    @PostMapping("{userId}") // TODO : 로그인 기능 추가 시 제거
     public ResponseEntity<ApiResponse<CoffeechatCommandResponse>> createCoffeechat(
             @Valid @RequestBody CoffeechatCreateRequest coffeechatCreateRequest,
             @Parameter(description = "조회할 유저 ID", required = true) @PathVariable Long userId
+//            @AuthenticationPrincipal UserDetails userDetails // 로그인 기능 추가 시 사용
     ) {
 
+//        Long userId = userDetails.getUsername() // 로그인 기능 추가 시 사용
         Long coffeechatId = coffeechatCommandService.createCoffeechat(userId, coffeechatCreateRequest);
 
         CoffeechatCommandResponse response = CoffeechatCommandResponse.builder()
