@@ -1,6 +1,6 @@
 package com.newbit.purchase.command.application.service;
 
-import com.newbit.column.entity.Column;
+import com.newbit.column.domain.Column;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
