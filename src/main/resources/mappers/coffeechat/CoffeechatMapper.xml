@@ -13,4 +13,34 @@
         FROM coffeechat c
         WHERE coffeechat_id = #{ coffeechatId }
     </select>
+    <select id="selectCoffeechats" resultType="CoffeechatDto">
+        SELECT
+        c.coffeechat_id,
+        c.progress_status,
+        c.request_message,
+        c.mentor_id,
+        c.mentee_id,
+        c.confirmed_schedule
+        FROM coffeechat c
+        <where>
+            <if test="mentorId != null">
+                AND c.mentor_id = #{ mentorId }
+            </if>
+            <if test="menteeId != null">
+                AND c.mentee_id = #{ menteeId }
+            </if>
+        </where>
+    </select>
+    <select id="countCoffeechats" resultType="long">
+        SELECT COUNT(*)
+        FROM coffeechat c
+        <where>
+            <if test="mentorId != null">
+                AND c.mentor_id = #{ mentorId }
+            </if>
+            <if test="menteeId != null">
+                AND c.mentee_id = #{ menteeId }
+            </if>
+        </where>
+    </select>
 </mapper>
