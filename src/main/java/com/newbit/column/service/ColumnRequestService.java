@@ -70,7 +70,6 @@ public class ColumnRequestService {
         ColumnRequest request = ColumnRequest.builder()
                 .requestType(RequestType.DELETE)
                 .isApproved(false)
-                .rejectedReason(dto.getReason())  // 삭제 사유 rejectedReason에 임시 저장
                 .column(column)
                 .build();
 

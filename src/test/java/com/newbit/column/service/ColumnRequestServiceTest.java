@@ -113,7 +113,6 @@ class ColumnRequestServiceTest {
         Long columnId = 1L;
 
         DeleteColumnRequestDto dto = DeleteColumnRequestDto.builder()
-                .reason("삭제 요청 사유입니다.")
                 .build();
 
         Column column = Column.builder()
@@ -124,7 +123,6 @@ class ColumnRequestServiceTest {
                 .columnRequestId(200L)
                 .requestType(RequestType.DELETE)
                 .isApproved(false)
-                .rejectedReason(dto.getReason())
                 .column(column)
                 .build();
 
