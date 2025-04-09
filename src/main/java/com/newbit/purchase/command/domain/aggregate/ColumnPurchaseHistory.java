@@ -3,12 +3,16 @@ package com.newbit.purchase.command.domain.aggregate;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "column_purchase_history")
 public class ColumnPurchaseHistory {
 
@@ -26,9 +30,11 @@ public class ColumnPurchaseHistory {
     @Column(name = "price", nullable = false)
     private Integer price;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -39,7 +45,7 @@ public class ColumnPurchaseHistory {
         history.columnId = column.getColumnId();
         history.price = column.getPrice();
         history.createdAt = LocalDateTime.now();
-        history.updatedAt = LocalDateTime.now(); // DB에서도 업데이트 되지만 일단 맞춰둠
+        history.updatedAt = LocalDateTime.now();
         return history;
     }
 }
