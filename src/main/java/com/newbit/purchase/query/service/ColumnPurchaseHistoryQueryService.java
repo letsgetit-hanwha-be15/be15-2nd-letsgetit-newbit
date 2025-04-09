@@ -32,4 +32,7 @@ public class ColumnPurchaseHistoryQueryService {
                         .build()
                 ).build();
     }
+
+
+
 }
