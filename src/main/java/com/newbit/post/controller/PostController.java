@@ -1,6 +1,6 @@
 package com.newbit.post.controller;
 
-import com.newbit.post.dto.PostDto;
+import com.newbit.post.dto.PostCreateRequest;
 import com.newbit.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +13,9 @@ public class PostController {
 
     private final PostService postService;
 
-    @PutMapping("/{id}")
-    public ResponseEntity<String> post(@PathVariable Long id, @RequestBody PostDto request) {
-        postService.post(id, request.getTitle(), request.getContent());
-        return ResponseEntity.ok("게시글이 수정되었습니다.");
+    @PostMapping
+    public ResponseEntity<String> createPost(@RequestBody PostCreateRequest request) {
+        postService.createPost(request);
+        return ResponseEntity.ok("게시글이 등록되었습니다.");
     }
 }

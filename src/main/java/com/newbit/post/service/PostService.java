@@ -1,5 +1,6 @@
 package com.newbit.post.service;
 
+import com.newbit.post.dto.PostCreateRequest;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,9 +12,16 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public void post(Long id, String title, String content) {
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. id=" + id));
-        post.update(title, content);
+    public void createPost(PostCreateRequest request) {
+        Post post = Post.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .userId(request.getUserId())
+                .postCategoryId(request.getPostCategoryId())
+                .likeCount(0)
+                .reportCount(0)
+                .build();
+
+        postRepository.save(post);
     }
 }
