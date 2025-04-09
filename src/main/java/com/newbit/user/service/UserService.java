@@ -43,10 +43,6 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(FIND_EMAIL_BY_NAME_AND_PHONE_ERROR));
     }
 
-    public Optional<User> getUserByUserId(Long userId) {
-        return userRepository.findById(userId);
-    }
-
     @Transactional(readOnly = true)
     public Integer getDiamondBalance(Long userId) {
         User user = userRepository.findById(userId)

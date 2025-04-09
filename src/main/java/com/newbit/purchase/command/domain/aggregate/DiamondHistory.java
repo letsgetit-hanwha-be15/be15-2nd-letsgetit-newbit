@@ -1,6 +1,5 @@
 package com.newbit.purchase.command.domain.aggregate;
 
-import com.newbit.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
