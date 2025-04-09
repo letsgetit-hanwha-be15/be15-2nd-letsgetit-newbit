@@ -6,11 +6,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "post")
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "post")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
 public class Post {
 
@@ -20,6 +20,7 @@ public class Post {
     private Long id;
 
     private String title;
+
 
     @Lob
     private String content;
@@ -39,6 +40,9 @@ public class Post {
     @Builder.Default
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
+  
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -52,6 +56,15 @@ public class Post {
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 }

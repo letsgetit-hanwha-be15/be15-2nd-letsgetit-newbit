@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 public class PostResponse {
+
     private final Long id;
     private final String title;
     private final String content;
@@ -15,6 +16,8 @@ public class PostResponse {
     private final Long userId;
     private final Long postCategoryId;
     private final LocalDateTime updatedAt;
+    private final LocalDateTime createdAt;
+
 
     public PostResponse(Post post) {
         this.id = post.getId();
@@ -25,5 +28,7 @@ public class PostResponse {
         this.userId = post.getUserId();
         this.postCategoryId = post.getPostCategoryId();
         this.updatedAt = post.getUpdatedAt();
+        this.createdAt = post.getCreatedAt();
+
     }
 }
