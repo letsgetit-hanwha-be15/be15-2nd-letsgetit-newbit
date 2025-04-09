@@ -2,6 +2,7 @@ package com.newbit.post.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
+@EntityListeners(AuditingEntityListener.class) // 자동 시간 관리
 public class Post {
 
     @Id
@@ -20,7 +22,6 @@ public class Post {
     private Long id;
 
     private String title;
-
 
     @Lob
     private String content;
@@ -40,9 +41,6 @@ public class Post {
     @Builder.Default
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
-  
-    @Column(columnDefinition = "TEXT")
-    private String content;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -53,9 +51,15 @@ public class Post {
     @Column(name = "post_category_id", nullable = false)
     private Long postCategoryId;
 
+    @Column(name = "is_notice", nullable = false)
+    private boolean isNotice;
+
+
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -66,5 +70,9 @@ public class Post {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
     }
 }
