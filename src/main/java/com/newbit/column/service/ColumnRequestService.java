@@ -15,6 +15,8 @@ import com.newbit.column.repository.ColumnRequestRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class ColumnRequestService {
@@ -78,5 +80,9 @@ public class ColumnRequestService {
         return DeleteColumnResponseDto.builder()
                 .columnRequestId(saved.getColumnRequestId())
                 .build();
+    }
+
+    public Optional<Column> getColumnById(Long columnId) {
+        return columnRepository.findById(columnId);
     }
 }

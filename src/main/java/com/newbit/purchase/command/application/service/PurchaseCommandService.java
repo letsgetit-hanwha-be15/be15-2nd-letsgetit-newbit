@@ -2,6 +2,7 @@ package com.newbit.purchase.command.application.service;
 
 import com.newbit.column.domain.Column;
 import com.newbit.column.repository.ColumnRepository;
+import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
@@ -24,7 +25,7 @@ public class PurchaseCommandService {
     private final ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
     private final DiamondHistoryRepository diamondHistoryRepository;
     private final SaleHistoryRepository saleHistoryRepository;
-    private final ColumnRepository columnRepository;
+    private final ColumnRequestService columnService;
     private final UserService userService;
 
 
@@ -36,8 +37,8 @@ public class PurchaseCommandService {
         User user = userService.getUserByUserId(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         // 2. 칼럼 조회
-        Column column = columnRepository.findById(columnId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
+        Column column = columnService.getColumnById(columnId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
 
         // 3. 중복 구매 여부 확인
         if (columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)) {
