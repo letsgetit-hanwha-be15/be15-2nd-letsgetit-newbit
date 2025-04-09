@@ -81,8 +81,6 @@ public class PurchaseCommandService {
     @Transactional
     public void purchaseCoffeeChat(CoffeeChatPurchaseRequest request) {
         Long coffeechatId = request.getCoffeechatId();
-
-        // 1. 커피챗 상태 조회
         CoffeechatDto coffeeChat = coffeechatQueryService.getCoffeechat(coffeechatId).getCoffeechat();
 
         ProgressStatus coffeechatStatus = coffeeChat.getProgressStatus();
@@ -94,28 +92,27 @@ public class PurchaseCommandService {
         Integer price = mentorInfo.getPrice();
 
 
-        // 6. 상태 확인 (WAITING이어야 구매 가능)
+        // 1. 구매 가능한 상태인지 확인
         if (coffeechatStatus.equals(ProgressStatus.COFFEECHAT_WAITING)) {
             throw new BusinessException(ErrorCode.COFFEECHAT_NOT_PURCHASABLE);
         }
 
-        // 5. 가격 계산 (커피챗 수량 * 가격)
+        // 2. 총 구매가격 계산
         int totalPrice = coffeeChat.getPurchaseQuantity() * price;
 
-        // 6. 다이아 차감
+        // 3. 멘티 다이아 차감
         userService.useDiamond(menteeId, totalPrice);
 
-
         //TODO : coffeechat entity
-        // 7. 커피챗 상태 변경 + 구매일시 < 커피챗에서?
-        coffeechatQueryService.markAsPurchased();
+        // 4. 커피챗 상태 변경 + 구매일시 < 커피챗에서 만든 서비스 호출
+//        coffeechatQueryService.markAsPurchased();
 
         Integer balance = userService.getDiamondBalance(menteeId);
 
-        // 8. 다이아 기록 저장
+        // 5. 다이아 내역 저장
         diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
 
-        // 9. 판매 내역 저장
+        // 6. 판매 내역 저장
         saleHistoryRepository.save(SaleHistory.forCoffeechat(mentorId, totalPrice, coffeechatId));
     }
 }
