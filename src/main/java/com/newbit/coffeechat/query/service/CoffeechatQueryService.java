@@ -58,7 +58,7 @@ public class CoffeechatQueryService {
     public RequestTimeListResponse getCoffeechatRequestTimes(Long coffeechatId) {
         // 필요한 컨텐츠 조회
         List<RequestTimeDto> requestTimes = Optional.ofNullable(coffeechatMapper.selectRequestTimeByCoffeechatId(coffeechatId))
-                .orElseThrow(() -> new BusinessException(ErrorCode.REQUESTTIME_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_TIME_NOT_FOUND));
 
         return RequestTimeListResponse.builder()
                 .requestTimes(requestTimes)
