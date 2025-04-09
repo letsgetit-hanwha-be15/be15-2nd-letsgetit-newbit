@@ -83,7 +83,7 @@ public class UserService {
         return UserDTO.builder()
                 .authority(user.getAuthority())
                 .diamond(user.getDiamond())
+                .point(user.getPoint())
                 .build();
     }
-
 }

@@ -10,12 +10,10 @@ import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
-import com.newbit.purchase.command.domain.aggregate.ColumnPurchaseHistory;
-import com.newbit.purchase.command.domain.aggregate.DiamondHistory;
-import com.newbit.purchase.command.domain.aggregate.PurchaseAssetType;
-import com.newbit.purchase.command.domain.aggregate.SaleHistory;
+import com.newbit.purchase.command.domain.aggregate.*;
 import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
 import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
+import com.newbit.purchase.command.domain.repository.PointHistoryRepository;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.dto.response.UserDTO;
@@ -32,11 +30,12 @@ public class PurchaseCommandService {
     private final ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
     private final DiamondHistoryRepository diamondHistoryRepository;
     private final SaleHistoryRepository saleHistoryRepository;
+    private final PointHistoryRepository pointHistoryRepository;
     private final ColumnRequestService columnService;
     private final UserService userService;
     private final CoffeechatQueryService coffeechatQueryService;
     private final MentorService mentorService;
-    private final ColumnRepository columnRepository;
+
 
     private static final int MENTOR_AUTHORITY_DIAMOND_COST = 700;
     private static final int MENTOR_AUTHORITY_POINT_COST = 2000;
@@ -147,20 +146,14 @@ public class PurchaseCommandService {
             diamondHistoryRepository.save(DiamondHistory.forMentorAuthority(userId, userDto.getDiamond(), MENTOR_AUTHORITY_DIAMOND_COST));
         } else if (assetType == PurchaseAssetType.POINT) {
             userService.usePoint(userId, MENTOR_AUTHORITY_POINT_COST);
-            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId));
+            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId, userDto.getPoint()));
         } else {
             throw new BusinessException(ErrorCode.INVALID_PURCHASE_TYPE);
         }
 
 
-        // 3. 멘토 생성 및 저장 (기본 설정 적용)
-        mentorService.createMentor();
-//        Mentor mentor = Mentor.createDefault(user); // 정적 메서드에서 price 등 설정
-//        mentorRepository.save(mentor);
-
-        // 4. 권한 변경
-        user.grantMentorAuthority(); // User 내부 로직에서 Role 변경
-
+        // 3. 멘토 생성
+        mentorService.createMentor(userId);
     }
 
 }

@@ -14,4 +14,5 @@ import lombok.*;
 public class UserDTO {
     Authority authority;
     Integer diamond;
+    Integer point;
 }
