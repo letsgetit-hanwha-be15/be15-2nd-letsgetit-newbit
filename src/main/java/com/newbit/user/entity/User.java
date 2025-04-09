@@ -57,6 +57,8 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+
+
     public void setEncodedPassword(String encodedPassword) {
         this.password = encodedPassword;
     }

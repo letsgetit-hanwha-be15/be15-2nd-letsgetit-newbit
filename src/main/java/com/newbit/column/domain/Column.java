@@ -1,8 +1,7 @@
-package com.newbit.column.entity;
+package com.newbit.column.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.ArrayList;
 import java.util.List;

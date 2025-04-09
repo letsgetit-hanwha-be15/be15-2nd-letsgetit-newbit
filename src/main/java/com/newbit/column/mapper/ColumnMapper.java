@@ -1,8 +1,8 @@
 package com.newbit.column.mapper;
 
 import com.newbit.column.dto.request.CreateColumnRequestDto;
-import com.newbit.column.entity.Column;
-import com.newbit.column.entity.ColumnRequest;
+import com.newbit.column.domain.Column;
+import com.newbit.column.domain.ColumnRequest;
 import com.newbit.column.enums.RequestType;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +21,7 @@ public class ColumnMapper {
                 .build();
     }
 
-    public ColumnRequest toColumnRequest(CreateColumnRequestDto dto, Column column, Long adminUserId) {
+    public ColumnRequest toColumnRequest(CreateColumnRequestDto dto, Column column) {
         return ColumnRequest.builder()
                 .requestType(RequestType.CREATE)
                 .isApproved(false)
@@ -30,7 +30,6 @@ public class ColumnMapper {
                 .updatedPrice(dto.getPrice())
                 .updatedThumbnailUrl(dto.getThumbnailUrl())
                 .column(column)
-                .adminUserId(adminUserId)
                 .build();
     }
 }
