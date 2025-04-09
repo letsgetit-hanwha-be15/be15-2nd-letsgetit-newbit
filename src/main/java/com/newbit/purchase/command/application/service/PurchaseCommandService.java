@@ -13,6 +13,7 @@ import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
 import com.newbit.user.entity.User;
 import com.newbit.user.repository.UserRepository;
+import com.newbit.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class PurchaseCommandService {
     private final DiamondHistoryRepository diamondHistoryRepository;
     private final SaleHistoryRepository saleHistoryRepository;
     private final ColumnRepository columnRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
 
     @Transactional
@@ -32,9 +33,8 @@ public class PurchaseCommandService {
         Long columnId = request.getColumnId();
 
         // 1. 유저 조회
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
-
+        User user = userService.getUserByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         // 2. 칼럼 조회
         Column column = columnRepository.findById(columnId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PRODUCT_NOT_FOUND));
