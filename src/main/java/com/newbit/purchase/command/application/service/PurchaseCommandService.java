@@ -9,13 +9,17 @@ import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
+import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
 import com.newbit.purchase.command.domain.aggregate.ColumnPurchaseHistory;
 import com.newbit.purchase.command.domain.aggregate.DiamondHistory;
+import com.newbit.purchase.command.domain.aggregate.PurchaseAssetType;
 import com.newbit.purchase.command.domain.aggregate.SaleHistory;
 import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
 import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
 import com.newbit.user.dto.response.MentorDTO;
+import com.newbit.user.dto.response.UserDTO;
+import com.newbit.user.entity.Authority;
 import com.newbit.user.service.MentorService;
 import com.newbit.user.service.UserService;
 import jakarta.transaction.Transactional;
@@ -33,6 +37,10 @@ public class PurchaseCommandService {
     private final CoffeechatQueryService coffeechatQueryService;
     private final MentorService mentorService;
     private final ColumnRepository columnRepository;
+
+    private static final int MENTOR_AUTHORITY_DIAMOND_COST = 700;
+    private static final int MENTOR_AUTHORITY_POINT_COST = 2000;
+
 
 
     @Transactional
@@ -115,4 +123,44 @@ public class PurchaseCommandService {
         // 6. 판매 내역 저장
         saleHistoryRepository.save(SaleHistory.forCoffeechat(mentorId, totalPrice, coffeechatId));
     }
+
+
+    @Transactional
+    public void purchaseMentorAuthority(MentorAuthorityPurchaseRequest request) {
+
+        Long userId = request.getUserId();
+        PurchaseAssetType assetType = request.getAssetType();
+
+        // 1. 유저 조회
+        UserDTO userDto = userService.getUserByUserId(userId);
+
+
+        //2. 이미 멘토인지 확인
+        if (userDto.getAuthority() == Authority.MENTOR) {
+            throw new BusinessException(ErrorCode.ALREADY_MENTOR);
+        }
+
+
+        // 5. 재화 차감 및 히스토리 기록
+        if (assetType == PurchaseAssetType.DIAMOND) {
+            userService.useDiamond(userId, MENTOR_AUTHORITY_DIAMOND_COST);
+            diamondHistoryRepository.save(DiamondHistory.forMentorAuthority(userId, userDto.getDiamond(), MENTOR_AUTHORITY_DIAMOND_COST));
+        } else if (assetType == PurchaseAssetType.POINT) {
+            userService.usePoint(userId, MENTOR_AUTHORITY_POINT_COST);
+            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId));
+        } else {
+            throw new BusinessException(ErrorCode.INVALID_PURCHASE_TYPE);
+        }
+
+
+        // 3. 멘토 생성 및 저장 (기본 설정 적용)
+        mentorService.createMentor();
+//        Mentor mentor = Mentor.createDefault(user); // 정적 메서드에서 price 등 설정
+//        mentorRepository.save(mentor);
+
+        // 4. 권한 변경
+        user.grantMentorAuthority(); // User 내부 로직에서 Role 변경
+
+    }
+
 }

@@ -3,6 +3,7 @@ package com.newbit.user.service;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.user.dto.request.FindIdDTO;
+import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.dto.response.UserIdDTO;
 import com.newbit.user.entity.User;
 import com.newbit.user.dto.request.UserRequestDTO;
@@ -61,4 +62,28 @@ public class UserService {
 
         user.useDiamond(amount); // 도메인 로직에 위임 (Entity 내부에 구현된 로직)
     }
+
+    @Transactional
+    public void usePoint(Long userId, int amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.getDiamond() < amount) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_POINT);
+        }
+
+        user.useDiamond(amount); // 도메인 로직에 위임 (Entity 내부에 구현된 로직)
+    }
+
+
+    public UserDTO getUserByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        return UserDTO.builder()
+                .authority(user.getAuthority())
+                .diamond(user.getDiamond())
+                .build();
+    }
+
 }

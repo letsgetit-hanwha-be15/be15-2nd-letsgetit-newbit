@@ -83,4 +83,14 @@ public class DiamondHistory {
                 .balance(diamondBalance)  // 차감 이후 잔액
                 .build();
     }
+
+    public static DiamondHistory forMentorAuthority(Long userId, Integer diamond, int mentorAuthorityDiamondCost) {
+        return DiamondHistory.builder()
+                .userId(userId)
+                .serviceType(DiamondTransactionType.MENTOR_AUTHORITY)
+                .decreaseAmount(mentorAuthorityDiamondCost)
+                .increaseAmount(null)
+                .balance(diamond)  // 차감 이후 잔액
+                .build();
+    }
 }
