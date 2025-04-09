@@ -4,13 +4,13 @@ import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateReq
 import com.newbit.coffeechat.command.application.dto.response.CoffeechatCommandResponse;
 import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
 import com.newbit.common.dto.ApiResponse;
+import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,12 +19,13 @@ public class CoffeechatCommandController {
 
     private final CoffeechatCommandService coffeechatCommandService;
 
-    @PostMapping("")
+    @PostMapping("{userId}")
     public ResponseEntity<ApiResponse<CoffeechatCommandResponse>> createCoffeechat(
-            @Validated CoffeechatCreateRequest coffeechatCreateRequest
+            @Valid @RequestBody CoffeechatCreateRequest coffeechatCreateRequest,
+            @Parameter(description = "조회할 유저 ID", required = true) @PathVariable Long userId
     ) {
 
-        Long coffeechatId = coffeechatCommandService.createCoffeechat(coffeechatCreateRequest);
+        Long coffeechatId = coffeechatCommandService.createCoffeechat(userId, coffeechatCreateRequest);
 
         CoffeechatCommandResponse response = CoffeechatCommandResponse.builder()
                 .coffeechatId(coffeechatId)
