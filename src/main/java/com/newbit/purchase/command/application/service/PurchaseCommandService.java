@@ -43,7 +43,11 @@ public class PurchaseCommandService {
         if (columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)) {
             throw new BusinessException(ErrorCode.COLUMN_ALREADY_PURCHASED);
         }
+
         // 4. 무료 칼럼일 경우 예외 발생
+        if (column.getPrice() == 0) {
+            throw new BusinessException(ErrorCode.COLUMN_FREE_CANNOT_PURCHASE);
+        }
 
         // 5. 다이아 충분한지 확인 및 차감 (내부적으로 다이아 부족 시 예외 발생)
         user.useDiamond(column.getPrice());
@@ -52,11 +56,11 @@ public class PurchaseCommandService {
         ColumnPurchaseHistory purchaseHistory = ColumnPurchaseHistory.of(userId, column);
         columnPurchaseHistoryRepository.save(purchaseHistory);
 
-//        // 7. 다이아몬드 사용 내역 저장
+        // 7. 다이아몬드 사용 내역 저장
         DiamondHistory diamondHistory = DiamondHistory.forColumnPurchase(user, column);
         diamondHistoryRepository.save(diamondHistory);
-//
-//        // 8. 판매 내역 저장 (칼럼의 저자 기준)
+
+        // 8. 판매 내역 저장 (칼럼의 저자 기준)
         SaleHistory saleHistory = SaleHistory.forColumn(column);
         saleHistoryRepository.save(saleHistory);
     }
