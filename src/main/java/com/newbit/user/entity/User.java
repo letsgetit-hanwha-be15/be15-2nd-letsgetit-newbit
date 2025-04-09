@@ -64,5 +64,7 @@ public class User {
         this.password = encodedPassword;
     }
 
-
+    public void findPassword(String newPassword) {
+        this.password = newPassword;
+    }
 }
