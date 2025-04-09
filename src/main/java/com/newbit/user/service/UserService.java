@@ -46,4 +46,23 @@ public class UserService {
     public Optional<User> getUserByUserId(Long userId) {
         return userRepository.findById(userId);
     }
+
+    @Transactional(readOnly = true)
+    public Integer getDiamondBalance(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        return user.getDiamond();
+    }
+
+    @Transactional
+    public void useDiamond(Long userId, int amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.getDiamond() < amount) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND);
+        }
+
+        user.useDiamond(amount); // 도메인 로직에 위임 (Entity 내부에 구현된 로직)
+    }
 }

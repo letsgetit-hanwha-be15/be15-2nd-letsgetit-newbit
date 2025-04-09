@@ -1,7 +1,6 @@
 package com.newbit.purchase.command.application.service;
 
-import com.newbit.column.domain.Column;
-import com.newbit.column.repository.ColumnRepository;
+import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
@@ -11,15 +10,12 @@ import com.newbit.purchase.command.domain.aggregate.SaleHistory;
 import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
 import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
-import com.newbit.user.entity.User;
-import com.newbit.user.repository.UserRepository;
+import com.newbit.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.Optional;
+import static org.mockito.Mockito.*;
 
 class PurchaseCommandServiceTest {
 
@@ -29,8 +25,8 @@ class PurchaseCommandServiceTest {
     @Mock private ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
     @Mock private DiamondHistoryRepository diamondHistoryRepository;
     @Mock private SaleHistoryRepository saleHistoryRepository;
-    @Mock private ColumnRepository columnRepository;
-    @Mock private UserRepository userRepository;
+    @Mock private ColumnRequestService columnService;
+    @Mock private UserService userService;
 
     @BeforeEach
     void setUp() {
@@ -41,88 +37,71 @@ class PurchaseCommandServiceTest {
     void purchaseColumn_success() {
         // Given
         Long userId = 1L;
-        Long columnId = 2L;
-        int columnPrice = 100;
+        Long columnId = 10L;
+        int price = 100;
+        int diamondBalance = 400;
+        Long mentorId = 2L;
 
-        User user = mock(User.class);
-        Column column = mock(Column.class);
         ColumnPurchaseRequest request = new ColumnPurchaseRequest(columnId);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
+        when(columnService.getColumnPriceById(columnId)).thenReturn(price);
         when(columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)).thenReturn(false);
-        when(column.getPrice()).thenReturn(columnPrice);
+        doNothing().when(userService).useDiamond(userId, price);
+        when(userService.getDiamondBalance(userId)).thenReturn(diamondBalance);
+        when(columnService.getMentorId(columnId)).thenReturn(mentorId);
 
-        // user.useDiamond() 수행 시 예외가 없어야 하므로 doNothing()이 암시됨
-
-        // When
+        // When & Then
         assertDoesNotThrow(() -> purchaseCommandService.purchaseColumn(userId, request));
 
-        // Then
-        verify(user).useDiamond(columnPrice);
         verify(columnPurchaseHistoryRepository).save(any(ColumnPurchaseHistory.class));
         verify(diamondHistoryRepository).save(any(DiamondHistory.class));
         verify(saleHistoryRepository).save(any(SaleHistory.class));
     }
 
     @Test
-    void purchaseColumn_userNotFound() {
-        when(userRepository.findById(any())).thenReturn(Optional.empty());
-
-        BusinessException e = assertThrows(BusinessException.class, () ->
-                purchaseCommandService.purchaseColumn(1L, new ColumnPurchaseRequest(2L)));
-
-        assertEquals(ErrorCode.PRODUCT_NOT_FOUND, e.getErrorCode());
-    }
-
-    @Test
-    void purchaseColumn_columnNotFound() {
+    void purchaseColumn_whenAlreadyPurchased_thenThrow() {
         Long userId = 1L;
-        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
-        when(columnRepository.findById(any())).thenReturn(Optional.empty());
-
-        BusinessException e = assertThrows(BusinessException.class, () ->
-                purchaseCommandService.purchaseColumn(userId, new ColumnPurchaseRequest(2L)));
-
-        assertEquals(ErrorCode.PRODUCT_NOT_FOUND, e.getErrorCode());
-    }
-
-    @Test
-    void purchaseColumn_duplicatePurchase() {
-        Long userId = 1L;
-        Long columnId = 2L;
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(mock(User.class)));
-        when(columnRepository.findById(columnId)).thenReturn(Optional.of(mock(Column.class)));
-        when(columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)).thenReturn(true);
-
-        BusinessException e = assertThrows(BusinessException.class, () ->
-                purchaseCommandService.purchaseColumn(userId, new ColumnPurchaseRequest(columnId)));
-
-        assertEquals(ErrorCode.COLUMN_ALREADY_PURCHASED, e.getErrorCode());
-    }
-
-    @Test
-    void purchaseColumn_insufficientDiamond() {
-        Long userId = 1L;
-        Long columnId = 2L;
-
-        User user = mock(User.class);
-        Column column = mock(Column.class);
+        Long columnId = 10L;
         ColumnPurchaseRequest request = new ColumnPurchaseRequest(columnId);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
-        when(columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)).thenReturn(false);
-        when(column.getPrice()).thenReturn(100);
+        when(columnService.getColumnPriceById(columnId)).thenReturn(100);
+        when(columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)).thenReturn(true);
 
-        // 다이아 부족 시 예외 던지도록 설정
-        doThrow(new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND))
-                .when(user).useDiamond(anyInt());
-
-        BusinessException e = assertThrows(BusinessException.class, () ->
+        BusinessException exception = assertThrows(BusinessException.class, () ->
                 purchaseCommandService.purchaseColumn(userId, request));
 
-        assertEquals(ErrorCode.INSUFFICIENT_DIAMOND, e.getErrorCode());
+        assertEquals(ErrorCode.COLUMN_ALREADY_PURCHASED, exception.getErrorCode());
+    }
+
+    @Test
+    void purchaseColumn_whenColumnFree_thenThrow() {
+        Long userId = 1L;
+        Long columnId = 10L;
+        ColumnPurchaseRequest request = new ColumnPurchaseRequest(columnId);
+
+        when(columnService.getColumnPriceById(columnId)).thenReturn(0);
+
+        BusinessException exception = assertThrows(BusinessException.class, () ->
+                purchaseCommandService.purchaseColumn(userId, request));
+
+        assertEquals(ErrorCode.COLUMN_FREE_CANNOT_PURCHASE, exception.getErrorCode());
+    }
+
+    @Test
+    void purchaseColumn_whenInsufficientDiamond_thenThrow() {
+        Long userId = 1L;
+        Long columnId = 10L;
+        int price = 100;
+        ColumnPurchaseRequest request = new ColumnPurchaseRequest(columnId);
+
+        when(columnService.getColumnPriceById(columnId)).thenReturn(price);
+        when(columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)).thenReturn(false);
+        doThrow(new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND))
+                .when(userService).useDiamond(userId, price);
+
+        BusinessException exception = assertThrows(BusinessException.class, () ->
+                purchaseCommandService.purchaseColumn(userId, request));
+
+        assertEquals(ErrorCode.INSUFFICIENT_DIAMOND, exception.getErrorCode());
     }
 }

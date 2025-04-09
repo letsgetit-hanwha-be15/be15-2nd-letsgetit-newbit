@@ -12,6 +12,8 @@ import com.newbit.column.enums.RequestType;
 import com.newbit.column.mapper.ColumnMapper;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.repository.ColumnRequestRepository;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -82,7 +84,15 @@ public class ColumnRequestService {
                 .build();
     }
 
-    public Optional<Column> getColumnById(Long columnId) {
-        return columnRepository.findById(columnId);
+    public Integer getColumnPriceById(Long columnId) {
+        return columnRepository.findById(columnId)
+                .map(Column::getPrice)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
+    }
+
+    public Long getMentorId(Long columnId) {
+        return columnRepository.findById(columnId)
+                .map(Column::getMentorId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
     }
 }

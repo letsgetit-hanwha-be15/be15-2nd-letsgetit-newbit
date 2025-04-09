@@ -61,12 +61,12 @@ public class SaleHistory {
         this.isSettled = false;
     }
 
-    public static SaleHistory forColumn(com.newbit.column.domain.Column column) {
+    public static SaleHistory forColumn(Long columnId, Integer columnPrice, Long mentorId) {
         return SaleHistory.builder()
-                .saleAmount(BigDecimal.valueOf(column.getPrice()))
+                .saleAmount(BigDecimal.valueOf(columnPrice * 100))
                 .serviceType(ServiceType.COLUMN)
-                .serviceId(column.getColumnId())
-                .mentorId(column.getMentorId())
+                .serviceId(columnId)
+                .mentorId(mentorId)
                 .build();
     }
 

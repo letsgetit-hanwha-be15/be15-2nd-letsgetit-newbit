@@ -63,14 +63,14 @@ public class DiamondHistory {
     }
 
     // 칼럼 구매용 팩토리 메서드
-    public static DiamondHistory forColumnPurchase(User user, com.newbit.column.domain.Column column) {
+    public static DiamondHistory forColumnPurchase(Long userId, Long columnId, Integer price, Integer diamondBalance) {
         return DiamondHistory.builder()
-                .userId(user.getUserId())
+                .userId(userId)
                 .serviceType(DiamondTransactionType.COLUMN)
-                .serviceId(column.getColumnId())
-                .decreaseAmount(column.getPrice())
+                .serviceId(columnId)
+                .decreaseAmount(price)
                 .increaseAmount(null)
-                .balance(user.getDiamond())  // 차감 이후 잔액
+                .balance(diamondBalance)  // 차감 이후 잔액
                 .build();
     }
 }

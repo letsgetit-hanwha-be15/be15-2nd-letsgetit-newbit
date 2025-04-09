@@ -38,12 +38,12 @@ public class ColumnPurchaseHistory {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public static ColumnPurchaseHistory of(Long userId, com.newbit.column.domain.Column column
-    ) {
+    public static ColumnPurchaseHistory of(Long userId, Long columnId, Integer price)
+    {
         ColumnPurchaseHistory history = new ColumnPurchaseHistory();
         history.userId = userId;
-        history.columnId = column.getColumnId();
-        history.price = column.getPrice();
+        history.columnId = columnId;
+        history.price = price;
         history.createdAt = LocalDateTime.now();
         history.updatedAt = LocalDateTime.now();
         return history;

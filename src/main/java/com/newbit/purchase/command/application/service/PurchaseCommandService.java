@@ -1,7 +1,6 @@
 package com.newbit.purchase.command.application.service;
 
 import com.newbit.column.domain.Column;
-import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
@@ -13,7 +12,6 @@ import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryReposi
 import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
 import com.newbit.user.entity.User;
-import com.newbit.user.repository.UserRepository;
 import com.newbit.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -33,36 +31,39 @@ public class PurchaseCommandService {
     public void purchaseColumn(Long userId, ColumnPurchaseRequest request) {
         Long columnId = request.getColumnId();
 
-        // 1. 유저 조회
-        User user = userService.getUserByUserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        // 2. 칼럼 조회
-        Column column = columnService.getColumnById(columnId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
 
-        // 3. 중복 구매 여부 확인
+        // 1. 칼럼 가격 조회
+        Integer columnPrice = columnService.getColumnPriceById(columnId);
+
+        // 2. 중복 구매 여부 확인
         if (columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)) {
             throw new BusinessException(ErrorCode.COLUMN_ALREADY_PURCHASED);
         }
 
-        // 4. 무료 칼럼일 경우 예외 발생
-        if (column.getPrice() == 0) {
+        // 3. 무료 칼럼일 경우 예외 발생
+        if (columnPrice == 0) {
             throw new BusinessException(ErrorCode.COLUMN_FREE_CANNOT_PURCHASE);
         }
 
-        // 5. 다이아 충분한지 확인 및 차감 (내부적으로 다이아 부족 시 예외 발생)
-        user.useDiamond(column.getPrice());
+        // 4. 다이아 충분한지 확인 및 차감 (내부에서 다이아 부족 시 예외 발생)
+        userService.useDiamond(userId, columnPrice);
 
         // 6. 구매 내역 저장
-        ColumnPurchaseHistory purchaseHistory = ColumnPurchaseHistory.of(userId, column);
+        ColumnPurchaseHistory purchaseHistory = ColumnPurchaseHistory.of(userId, columnId, columnPrice);
         columnPurchaseHistoryRepository.save(purchaseHistory);
 
-        // 7. 다이아몬드 사용 내역 저장
-        DiamondHistory diamondHistory = DiamondHistory.forColumnPurchase(user, column);
+        // 7. 회원의 현재 보유 다이아값 조회
+        Integer diamondBalance = userService.getDiamondBalance(userId);
+
+        // 8. 다이아몬드 사용 내역 저장
+        DiamondHistory diamondHistory = DiamondHistory.forColumnPurchase(userId, columnId, columnPrice, diamondBalance);
         diamondHistoryRepository.save(diamondHistory);
 
-        // 8. 판매 내역 저장 (칼럼의 저자 기준)
-        SaleHistory saleHistory = SaleHistory.forColumn(column);
+        // 9. 멘토ID 조회
+        Long mentorId = columnService.getMentorId(columnId);
+
+        // 10. 판매 내역 저장
+        SaleHistory saleHistory = SaleHistory.forColumn(columnId, columnPrice, mentorId);
         saleHistoryRepository.save(saleHistory);
     }
 
