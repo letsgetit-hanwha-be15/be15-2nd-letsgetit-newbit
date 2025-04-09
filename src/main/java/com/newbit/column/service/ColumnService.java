@@ -5,7 +5,6 @@ import com.newbit.column.dto.response.GetColumnDetailResponseDto;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
 import com.newbit.purchase.query.service.ColumnPurchaseHistoryQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
