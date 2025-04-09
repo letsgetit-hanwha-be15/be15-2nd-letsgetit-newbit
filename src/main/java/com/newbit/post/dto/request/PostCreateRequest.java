@@ -1,4 +1,4 @@
-package com.newbit.post.dto;
+package com.newbit.post.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

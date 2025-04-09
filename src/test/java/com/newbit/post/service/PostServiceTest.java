@@ -1,6 +1,6 @@
 package com.newbit.post.service;
 
-import com.newbit.post.dto.PostCreateRequest;
+import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
