@@ -38,7 +38,7 @@ public class ColumnPurchaseHistory {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public static ColumnPurchaseHistory of(Long userId, com.newbit.column.entity.Column column
+    public static ColumnPurchaseHistory of(Long userId, com.newbit.column.domain.Column column
     ) {
         ColumnPurchaseHistory history = new ColumnPurchaseHistory();
         history.userId = userId;

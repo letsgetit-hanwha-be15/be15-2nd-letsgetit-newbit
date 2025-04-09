@@ -61,7 +61,7 @@ public class SaleHistory {
         this.isSettled = false;
     }
 
-    public static SaleHistory forColumn(com.newbit.column.entity.Column column) {
+    public static SaleHistory forColumn(com.newbit.column.domain.Column column) {
         return SaleHistory.builder()
                 .saleAmount(BigDecimal.valueOf(column.getPrice()))
                 .serviceType(ServiceType.COLUMN)

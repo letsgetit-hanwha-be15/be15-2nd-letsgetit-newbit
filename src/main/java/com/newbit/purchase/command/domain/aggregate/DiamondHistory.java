@@ -63,7 +63,7 @@ public class DiamondHistory {
     }
 
     // 칼럼 구매용 팩토리 메서드
-    public static DiamondHistory forColumnPurchase(User user, com.newbit.column.entity.Column column) {
+    public static DiamondHistory forColumnPurchase(User user, com.newbit.column.domain.Column column) {
         return DiamondHistory.builder()
                 .userId(user.getUserId())
                 .serviceType(DiamondTransactionType.COLUMN)
