@@ -10,10 +10,12 @@ import com.newbit.report.query.dto.response.ReportDTO;
 
 public interface ReportQueryRepository {
 
+    // 전체 조회
+    List<ReportDTO> findAllWithoutPaging();
+
+    // 신고 상태별 조회
     Page<ReportDTO> findReports(ReportStatus status, Pageable pageable);
 
-    List<ReportDTO> findAllWithoutPaging();
-    
     // 게시글 ID 기반 조회
     Page<ReportDTO> findReportsByPostId(Long postId, Pageable pageable);
     
