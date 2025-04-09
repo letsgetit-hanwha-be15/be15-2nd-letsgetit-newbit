@@ -1,63 +1,89 @@
 package com.newbit.post.service;
 
+import com.newbit.post.dto.request.PostUpdateRequest;
+import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class PostServiceTest {
 
-    @InjectMocks
-    private PostService postService;
-
-    @Mock
     private PostRepository postRepository;
-
-    private Post post;
+    private PostService postService;
+    private PostCreateRequest request;
 
     @BeforeEach
     void setUp() {
-        post = new Post();
-        post.setId(1L);
-        post.setTitle("Old Title");
-        post.setContent("Old Content");
+        postRepository = mock(PostRepository.class);
+        postService = new PostService(postRepository);
+
+        request = new PostCreateRequest();
+        request.setTitle("단위 테스트 제목");
+        request.setContent("단위 테스트 내용");
+        request.setUserId(1L);
+        request.setPostCategoryId(2L);
     }
 
     @Test
-    void updatePost_success() {
+    void 게시글_수정_성공() {
         // given
         Long postId = 1L;
-        String newTitle = "New Title";
-        String newContent = "New Content";
+        Post originalPost = Post.builder()
+                .id(postId)
+                .title("기존 제목")
+                .content("기존 내용")
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
 
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
+                .title("수정된 제목")
+                .content("수정된 내용")
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(originalPost));
 
         // when
-        postService.post(postId, newTitle, newContent);
+        postService.updatePost(postId, updateRequest);
 
         // then
-        assertThat(post.getTitle()).isEqualTo(newTitle);
-        assertThat(post.getContent()).isEqualTo(newContent);
+        assertThat(originalPost.getTitle()).isEqualTo("수정된 제목");
+        assertThat(originalPost.getContent()).isEqualTo("수정된 내용");
     }
 
     @Test
-    void updatePost_fail_postNotFound() {
+    void 게시글_수정_실패_게시글이_없음() {
         // given
-        Long invalidId = 999L;
-        when(postRepository.findById(invalidId)).thenReturn(Optional.empty());
+        Long postId = 999L;
+        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
+                .title("수정된 제목")
+                .content("수정된 내용")
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> postService.post(invalidId, "x", "y"))
+        assertThatThrownBy(() -> postService.updatePost(postId, updateRequest))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("해당 게시글이 없습니다.");
+                .hasMessage("해당 게시글이 존재하지 않습니다.");
+    }
+
+    @Test
+    void 게시글_등록_성공() {
+        // given
+        when(postRepository.save(any(Post.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0)); // 저장된 Post 그대로 반환
+
+        // when
+        postService.createPost(request);
+
+        // then
+        verify(postRepository, times(1)).save(any(Post.class));
     }
 }
