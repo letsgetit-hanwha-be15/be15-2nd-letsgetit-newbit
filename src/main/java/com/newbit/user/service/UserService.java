@@ -2,6 +2,8 @@ package com.newbit.user.service;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.user.dto.request.FindIdDTO;
+import com.newbit.user.dto.response.UserIdDTO;
 import com.newbit.user.entity.User;
 import com.newbit.user.dto.request.UserRequestDTO;
 import com.newbit.user.repository.UserRepository;
@@ -10,7 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import static com.newbit.common.exception.ErrorCode.FIND_EMAIL_BY_NAME_AND_PHONE_ERROR;
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -30,5 +32,11 @@ public class UserService {
         User user = modelMapper.map(request, User.class);
         user.setEncodedPassword(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
+    }
+
+    public UserIdDTO findEmailByNameAndPhone(FindIdDTO findIdDTO) {
+        return userRepository.findByUserNameAndPhoneNumber(findIdDTO.getUserName(), findIdDTO.getPhoneNumber())
+                .map(UserIdDTO::from)
+                .orElseThrow(() -> new BusinessException(FIND_EMAIL_BY_NAME_AND_PHONE_ERROR));
     }
 }
