@@ -79,12 +79,12 @@ class ColumnServiceTest {
     @Test
     void getPublicColumnDetail_notFound_throwsException() {
         // given
-        Long columnId = 3L;
-        when(columnRepository.findById(columnId)).thenReturn(Optional.empty());
+        Long invalidId = 3L;
+        when(columnRepository.findById(invalidId)).thenReturn(Optional.empty());
 
         // when & then
-        assertThatThrownBy(() -> columnService.getColumnDetail(columnId))
+        assertThatThrownBy(() -> columnService.getColumnDetail(invalidId))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("해당 칼럼이 존재하지 않습니다");
+                .hasMessageContaining("해당 칼럼을 찾을 수 없습니다. columnId = " + invalidId);
     }
 }
