@@ -6,8 +6,13 @@ import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -44,5 +49,12 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
         post.softDelete();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostResponse> getPostList(Pageable pageable) {
+        Page<Post> postPage = postRepository.findAll(pageable);
+        return postRepository.findAll(pageable)
+                .map(PostResponse::new);
     }
 }
