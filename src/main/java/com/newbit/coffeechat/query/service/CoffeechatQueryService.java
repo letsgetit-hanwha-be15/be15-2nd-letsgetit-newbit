@@ -56,4 +56,5 @@ public class CoffeechatQueryService {
                         .build())
                 .build();
     }
+
 }

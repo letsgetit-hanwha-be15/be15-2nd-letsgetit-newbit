@@ -1,9 +1,9 @@
 package com.newbit.purchase.command.application.service;
 
-import com.newbit.coffeechat.query.dto.response.CoffeechatDetailResponse;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
+import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
@@ -16,11 +16,9 @@ import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryReposi
 import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
 import com.newbit.user.dto.response.MentorDTO;
-import com.newbit.user.entity.Mentor;
 import com.newbit.user.service.MentorService;
 import com.newbit.user.service.UserService;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +32,7 @@ public class PurchaseCommandService {
     private final UserService userService;
     private final CoffeechatQueryService coffeechatQueryService;
     private final MentorService mentorService;
+    private final ColumnRepository columnRepository;
 
 
     @Transactional
@@ -101,18 +100,22 @@ public class PurchaseCommandService {
         }
 
         // 5. 가격 계산 (커피챗 수량 * 가격)
-        int totalPrice = (int) (coffeeChat.getPurchaseQuantity() * price);
+        int totalPrice = coffeeChat.getPurchaseQuantity() * price;
 
         // 6. 다이아 차감
         userService.useDiamond(menteeId, totalPrice);
 
+
+        //TODO : coffeechat entity
         // 7. 커피챗 상태 변경 + 구매일시 < 커피챗에서?
-        coffeeChat.markAsPurchased();
+        coffeechatQueryService.markAsPurchased();
+
+        Integer balance = userService.getDiamondBalance(menteeId);
 
         // 8. 다이아 기록 저장
-        diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(mentee, coffeeChat, totalPrice));
+        diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
 
         // 9. 판매 내역 저장
-        saleHistoryRepository.save(SaleHistory.forCoffeechat(mentor.getMentorId(), totalPrice, coffeeChat.getCoffeechatId()));
+        saleHistoryRepository.save(SaleHistory.forCoffeechat(mentorId, totalPrice, coffeechatId));
     }
 }

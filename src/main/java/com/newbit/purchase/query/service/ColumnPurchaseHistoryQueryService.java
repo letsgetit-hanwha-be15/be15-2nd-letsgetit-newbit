@@ -33,6 +33,4 @@ public class ColumnPurchaseHistoryQueryService {
                 ).build();
     }
 
-
-
 }
