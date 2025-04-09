@@ -6,6 +6,7 @@ import com.newbit.column.repository.ColumnRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
+import com.newbit.purchase.query.service.ColumnPurchaseHistoryQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class ColumnService {
 
     private final ColumnRepository columnRepository;
-    private final ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
+    private final ColumnPurchaseHistoryQueryService columnPurchaseHistoryQueryService;
 
     public GetColumnDetailResponseDto getColumnDetail(Long userId, Long columnId) {
         Column column = columnRepository.findById(columnId)
@@ -24,7 +25,7 @@ public class ColumnService {
             throw new BusinessException(ErrorCode.COLUMN_NOT_FOUND);
         }
 
-        boolean isPurchased = columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId);
+        boolean isPurchased = columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId);
         if(!isPurchased) {
             throw new BusinessException(ErrorCode.COLUMN_NOT_PURCHASED);
         }
