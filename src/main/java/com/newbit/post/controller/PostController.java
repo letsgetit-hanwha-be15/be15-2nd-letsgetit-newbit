@@ -5,6 +5,7 @@ import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,14 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "게시글 삭제", description = "게시글을 소프트 딜리트 방식으로 삭제합니다.")
+    @Operation(
+            summary = "게시글 삭제",
+            description = "게시글을 소프트 딜리트 방식으로 삭제합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "삭제 성공"),
+                    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+            }
+    )
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
