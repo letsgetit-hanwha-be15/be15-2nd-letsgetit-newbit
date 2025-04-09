@@ -61,8 +61,6 @@ public class CoffeechatQueryController {
 
         // TODO : 로그인한 회원 정보 읽어오기
 
-        // TODO : 회원이 멘토인지 확인하고 멘토가 아니면 에러를 발생시킨다.
-
         RequestTimeListResponse response = coffeechatQueryService.getCoffeechatRequestTimes(coffeechatId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
