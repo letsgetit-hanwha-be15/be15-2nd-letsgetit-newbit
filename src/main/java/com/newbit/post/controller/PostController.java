@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
@@ -29,4 +31,12 @@ public class PostController {
         PostResponse response = postService.createPost(request);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/search")
+    @Operation(summary = "게시글 검색", description = "키워드를 통해 게시글 제목 또는 내용에서 검색합니다.")
+    public ResponseEntity<List<PostResponse>> searchPosts(@RequestParam("keyword") String keyword) {
+        List<PostResponse> responses = postService.searchPosts(keyword);
+        return ResponseEntity.ok(responses);
+    }
+
 }
