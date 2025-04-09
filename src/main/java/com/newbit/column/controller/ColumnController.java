@@ -1,8 +1,13 @@
 package com.newbit.column.controller;
 
+import com.newbit.column.dto.response.GetColumnDetailResponseDto;
 import com.newbit.column.service.ColumnService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,4 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ColumnController {
 
     private final ColumnService columnService;
+
+    @GetMapping("/{columnId}")
+    @Operation(summary = "공개된 칼럼 상세 조회", description = "columnId에 해당하는 공개된 칼럼의 상세 정보를 조회합니다.")
+    public GetColumnDetailResponseDto getColumnDetail(
+            @Parameter(description = "조회할 칼럼 ID", example = "1") @PathVariable Long columnId
+    ) {
+        return columnService.getColumnDetail(columnId);
+    }
 }
