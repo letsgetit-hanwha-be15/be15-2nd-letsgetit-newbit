@@ -3,6 +3,9 @@ package com.newbit.column.service;
 import com.newbit.column.domain.Column;
 import com.newbit.column.dto.response.GetColumnDetailResponseDto;
 import com.newbit.column.repository.ColumnRepository;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +14,19 @@ import org.springframework.stereotype.Service;
 public class ColumnService {
 
     private final ColumnRepository columnRepository;
+    private final ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
 
-    public GetColumnDetailResponseDto getColumnDetail(Long columnId) {
+    public GetColumnDetailResponseDto getColumnDetail(Long userId, Long columnId) {
         Column column = columnRepository.findById(columnId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 칼럼을 찾을 수 없습니다. columnId = " + columnId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
 
         if(!column.isPublic()) {
-            throw new IllegalArgumentException("공개된 칼럼이 아닙니다.");
+            throw new BusinessException(ErrorCode.COLUMN_NOT_FOUND);
+        }
+
+        boolean isPurchased = columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId);
+        if(!isPurchased) {
+            throw new BusinessException(ErrorCode.COLUMN_NOT_PURCHASED);
         }
 
         return GetColumnDetailResponseDto.builder()

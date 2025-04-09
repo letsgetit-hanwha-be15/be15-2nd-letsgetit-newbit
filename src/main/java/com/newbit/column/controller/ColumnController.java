@@ -19,11 +19,12 @@ public class ColumnController {
 
     private final ColumnService columnService;
 
-    @GetMapping("/{columnId}")
-    @Operation(summary = "공개된 칼럼 상세 조회", description = "columnId에 해당하는 공개된 칼럼의 상세 정보를 조회합니다.")
+    @GetMapping("/{columnId}/user/{userId}")
+    @Operation(summary = "공개된 칼럼 상세 조회", description = "columnId에 해당하는 칼럼을 구매한 사용자의 상세 정보를 조회합니다.")
     public GetColumnDetailResponseDto getColumnDetail(
-            @Parameter(description = "조회할 칼럼 ID", example = "1") @PathVariable Long columnId
+            @Parameter(description = "조회할 칼럼 ID", example = "1") @PathVariable Long columnId,
+            @Parameter(description = "조회할 유저 ID", example = "10") @PathVariable Long userId
     ) {
-        return columnService.getColumnDetail(columnId);
+        return columnService.getColumnDetail(userId, columnId);
     }
 }
