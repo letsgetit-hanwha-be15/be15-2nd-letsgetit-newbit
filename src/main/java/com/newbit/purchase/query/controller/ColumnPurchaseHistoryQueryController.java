@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "칼럼 구매 내역", description = "칼럼 구매 이력 조회 API")
+@Tag(name = "구매관련 API", description = "칼럼 구매 이력 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/purchase/column/history")
