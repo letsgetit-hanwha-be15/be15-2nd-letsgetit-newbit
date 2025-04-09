@@ -6,8 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
+@Schema(description = "멘토 칼럼 삭제 요청 DTO (별도 요청 사유 없음)")
 public class DeleteColumnRequestDto {
 
-    @Schema(description = "삭제 요청 사유", example = "더 이상 제공하지 않는 칼럼입니다.")
-    private String reason; // 삭제 요청 사유
 }
