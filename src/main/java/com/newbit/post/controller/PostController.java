@@ -1,7 +1,9 @@
 package com.newbit.post.controller;
 
-import com.newbit.post.dto.PostDto;
+import com.newbit.post.dto.request.PostCreateRequest;
+import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.service.PostService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +15,10 @@ public class PostController {
 
     private final PostService postService;
 
-    @PutMapping("/{id}")
-    public ResponseEntity<String> post(@PathVariable Long id, @RequestBody PostDto request) {
-        postService.post(id, request.getTitle(), request.getContent());
-        return ResponseEntity.ok("게시글이 수정되었습니다.");
+    @PostMapping
+    @Operation(summary = "게시글 등록", description = "게시글을 등록하고 결과를 반환합니다.")
+    public ResponseEntity<PostResponse> createPost(@RequestBody PostCreateRequest request) {
+        PostResponse response = postService.createPost(request);
+        return ResponseEntity.ok(response);
     }
 }
