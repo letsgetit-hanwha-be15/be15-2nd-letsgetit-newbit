@@ -1,8 +1,13 @@
 package com.newbit.purchase.command.application.service;
 
+import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
+import com.newbit.coffeechat.query.dto.response.CoffeechatDetailResponse;
+import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
+import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
 import com.newbit.purchase.command.domain.aggregate.*;
@@ -10,6 +15,8 @@ import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryReposi
 import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
 import com.newbit.purchase.command.domain.repository.PointHistoryRepository;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
+import com.newbit.user.dto.response.MentorDTO;
+import com.newbit.user.service.MentorService;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.entity.Authority;
 import com.newbit.user.service.MentorService;
@@ -17,6 +24,8 @@ import com.newbit.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.awt.*;
 
@@ -36,6 +45,9 @@ class PurchaseCommandServiceTest {
     @Mock private UserService userService;
     @Mock private MentorService mentorService;
     private final Long userId = 1L;
+    @Mock private CoffeechatQueryService coffeechatQueryService;
+    @Mock private MentorService mentorService;
+    @Mock private CoffeechatCommandService coffeechatCommandService;
 
     @BeforeEach
     void setUp() {
@@ -112,6 +124,54 @@ class PurchaseCommandServiceTest {
                 purchaseCommandService.purchaseColumn(userId, request));
 
         assertEquals(ErrorCode.INSUFFICIENT_DIAMOND, exception.getErrorCode());
+    }
+
+
+    @Test
+    void purchaseCoffeeChat_success() {
+            // given
+            Long coffeechatId = 1L;
+            Long menteeId = 2L;
+            Long mentorId = 3L;
+            int purchaseQuantity = 2;
+            int price = 500;
+            int balanceAfterPurchase = 1000;
+
+            CoffeeChatPurchaseRequest request = new CoffeeChatPurchaseRequest();
+            request.setCoffeechatId(coffeechatId);
+
+            CoffeechatDto coffeechatDto = mock(CoffeechatDto.class);
+            when(coffeechatDto.getMenteeId()).thenReturn(menteeId);
+            when(coffeechatDto.getMentorId()).thenReturn(mentorId);
+            when(coffeechatDto.getPurchaseQuantity()).thenReturn(purchaseQuantity);
+            CoffeechatDetailResponse response = CoffeechatDetailResponse.builder()
+                .coffeechat(coffeechatDto)
+                .build();
+
+
+
+            when(coffeechatQueryService.getCoffeechat(coffeechatId)).thenReturn(response);
+            MentorDTO mentorDTO = new MentorDTO();
+            mentorDTO.setPrice(price);
+            when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
+
+            when(userService.getDiamondBalance(menteeId)).thenReturn(balanceAfterPurchase);
+
+            // when
+            purchaseCommandService.purchaseCoffeeChat(request);
+
+            // then
+            verify(coffeechatCommandService).markAsPurchased(coffeechatId);
+            verify(userService).useDiamond(menteeId, purchaseQuantity * price);
+            verify(userService).getDiamondBalance(menteeId);
+
+            ArgumentCaptor<DiamondHistory> diamondCaptor = ArgumentCaptor.forClass(DiamondHistory.class);
+            verify(diamondHistoryRepository).save(diamondCaptor.capture());
+            assertThat(diamondCaptor.getValue().getUserId()).isEqualTo(menteeId);
+
+            ArgumentCaptor<SaleHistory> saleCaptor = ArgumentCaptor.forClass(SaleHistory.class);
+            verify(saleHistoryRepository).save(saleCaptor.capture());
+            assertThat(saleCaptor.getValue().getMentorId()).isEqualTo(mentorId);
     }
 
     @Test

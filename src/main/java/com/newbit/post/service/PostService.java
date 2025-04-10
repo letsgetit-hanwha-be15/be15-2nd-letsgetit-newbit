@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,8 +48,8 @@ public class PostService {
         List<Post> posts = postRepository.searchByKeyword(keyword);
         return posts.stream().map(PostResponse::new).toList();
     }
-}
 
+    @Transactional
     public void deletePost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
@@ -61,6 +60,5 @@ public class PostService {
     public Page<PostResponse> getPostList(Pageable pageable) {
         Page<Post> postPage = postRepository.findAll(pageable);
         return postPage.map(PostResponse::new);
-
     }
 }

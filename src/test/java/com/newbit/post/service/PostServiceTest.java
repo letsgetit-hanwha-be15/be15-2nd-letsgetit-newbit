@@ -123,7 +123,6 @@ class PostServiceTest {
     void 게시글_목록_조회_성공() {
         // given
         Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
-        Page<Post> postPage = new PageImpl<>(postList, pageable, postList.size());
 
 
 
