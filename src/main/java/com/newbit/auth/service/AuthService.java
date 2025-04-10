@@ -45,8 +45,6 @@ public class AuthService {
 
         refreshTokenRepository.save(tokenEntity);
 
-        pointRewardCommandService.givePointByType(user.getUserId(), "첫 로그인 적립", null);
-
         return TokenResponseDTO.builder()
                 .userId(Long.valueOf(user.getUserId()))
                 .email(user.getEmail())
