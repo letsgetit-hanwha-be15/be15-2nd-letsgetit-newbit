@@ -94,5 +94,11 @@ public class AuthService {
                 .build();
     }
 
+    public void logout(String refreshToken) {
+        jwtTokenProvider.validateToken(refreshToken);
+        String email = jwtTokenProvider.getUsernameFromJWT(refreshToken);
+        refreshTokenRepository.deleteById(email);
+    }
+
 
 }

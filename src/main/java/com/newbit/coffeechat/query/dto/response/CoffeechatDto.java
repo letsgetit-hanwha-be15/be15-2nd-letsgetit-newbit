@@ -19,6 +19,8 @@ public class CoffeechatDto {
     private ProgressStatus progressStatus;
     @Schema(description = "요청메시지")
     private String requestMessage;
+    @Schema(description = "구매 수량")
+    private Integer purchaseQuantity;
     @Schema(description = "확정일시")
     private LocalDateTime confirmedSchedule;
     @Schema(description = "끝일시")

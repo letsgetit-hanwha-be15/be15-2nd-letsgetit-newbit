@@ -27,13 +27,11 @@ class CommentServiceTest {
     void setUp() {
         commentRepository = mock(CommentRepository.class);
         postRepository = mock(PostRepository.class);
-
         commentService = new CommentService(commentRepository, postRepository);
     }
 
     @Test
     void 댓글_조회_성공() {
-        // given
         Long postId = 1L;
 
         Post post = Post.builder()
@@ -60,28 +58,18 @@ class CommentServiceTest {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        List<Comment> mockComments = Arrays.asList(comment1, comment2);
+        when(commentRepository.findByPostIdAndDeletedAtIsNull(postId))
+                .thenReturn(Arrays.asList(comment1, comment2));
 
-        when(commentRepository.findByPostIdAndDeletedAtIsNull(postId)).thenReturn(mockComments);
-
-        // when
         List<CommentResponse> responses = commentService.getCommentsByPostId(postId);
 
-        // then
         assertThat(responses).hasSize(2);
         assertThat(responses.get(0).getContent()).isEqualTo("첫 번째 댓글");
         assertThat(responses.get(1).getContent()).isEqualTo("두 번째 댓글");
-        verify(commentRepository, times(1)).findByPostIdAndDeletedAtIsNull(postId);
-
-        postRepository = mock(PostRepository.class); // ← 추가
-
-        commentService = new CommentService(commentRepository, postRepository); // ← 수정
-
     }
 
     @Test
     void 댓글_등록_성공() {
-        // given
         Long postId = 10L;
 
         CommentCreateRequest request = CommentCreateRequest.builder()
@@ -102,11 +90,65 @@ class CommentServiceTest {
         when(commentRepository.save(any(Comment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // when
         CommentResponse response = commentService.createComment(postId, request);
 
-        // then
         assertThat(response.getContent()).isEqualTo("댓글 내용입니다.");
         verify(commentRepository, times(1)).save(any(Comment.class));
+    }
+
+    @Test
+    void 댓글_삭제_성공() {
+        Long postId = 1L;
+        Long commentId = 100L;
+
+        Post post = Post.builder().id(postId).build();
+
+        Comment comment = Comment.builder()
+                .id(commentId)
+                .content("삭제할 댓글입니다.")
+                .userId(1L)
+                .post(post)
+                .build();
+
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        commentService.deleteComment(postId, commentId);
+
+        assertThat(comment.getDeletedAt()).isNotNull();
+        verify(commentRepository).findById(commentId);
+    }
+
+    @Test
+    void 댓글_삭제_실패_댓글이_존재하지_않음() {
+        Long postId = 1L;
+        Long commentId = 999L;
+
+        when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> commentService.deleteComment(postId, commentId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("해당 댓글이 존재하지 않습니다.");
+    }
+
+    @Test
+    void 댓글_삭제_실패_postId_불일치() {
+        Long postId = 1L;
+        Long wrongPostId = 2L;
+        Long commentId = 100L;
+
+        Post post = Post.builder().id(postId).build();
+
+        Comment comment = Comment.builder()
+                .id(commentId)
+                .content("댓글 내용")
+                .userId(1L)
+                .post(post)
+                .build();
+
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        assertThatThrownBy(() -> commentService.deleteComment(wrongPostId, commentId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("해당 댓글이 존재하지 않거나 게시글과 매칭되지 않습니다.");
     }
 }
