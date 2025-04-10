@@ -4,6 +4,8 @@ package com.newbit.purchase.query.controller;
 import com.newbit.common.dto.ApiResponse;
 import com.newbit.purchase.query.dto.request.HistoryRequest;
 import com.newbit.purchase.query.dto.response.ColumnPurchaseHistoryListResponse;
+import com.newbit.purchase.query.dto.response.SaleHistoryListResponse;
+import com.newbit.purchase.query.service.SaleHistoryQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,7 +27,7 @@ public class SaleHistoryQueryController {
             @Parameter(description = "조회할 유저 ID", required = true) @PathVariable Long userId,
             @ModelAttribute HistoryRequest requestDto) {
         requestDto.setUserId(userId);
-        ColumnPurchaseHistoryListResponse response = saleHistoryQueryService.getSaleHistories(requestDto);
+        SaleHistoryListResponse response = saleHistoryQueryService.getSaleHistories(requestDto);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
