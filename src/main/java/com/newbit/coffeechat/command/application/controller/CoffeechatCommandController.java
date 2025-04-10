@@ -6,7 +6,6 @@ import com.newbit.coffeechat.command.application.dto.response.CoffeechatCommandR
 import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
 import com.newbit.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,7 @@ public class CoffeechatCommandController {
 
     @Operation(
             summary = "커피챗 등록",
-            description = "사용자가 멘토에게 커피챗을 구매합니다."
+            description = "사용자가 멘토에게 커피챗을 요청합니다."
     )
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<CoffeechatCommandResponse>> createCoffeechat(
