@@ -1,5 +1,6 @@
 package com.newbit.column.domain;
 
+import com.newbit.user.entity.Mentor;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -54,6 +55,11 @@ public class Column {
     @OneToMany(mappedBy = "column", cascade = CascadeType.ALL)
     @Builder.Default
     private List<ColumnRequest> requests = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "mentor_id")
+    private Mentor mentor;
+
 
     public void markAsDeleted() {
         this.deletedAt = LocalDateTime.now();
