@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.newbit.report.command.domain.aggregate.Report;
 import com.newbit.report.command.domain.aggregate.ReportStatus;
+import com.newbit.report.command.domain.aggregate.ReportType;
 
 import lombok.Getter;
 
@@ -13,7 +14,7 @@ public class ReportCommandResponse {
     private final Long userId;
     private final Long postId;
     private final Long commentId;
-    private final Long reportTypeId;
+    private final ReportType reportType;
     private final String content;
     private final ReportStatus status;
     private final LocalDateTime createdAt;
@@ -24,10 +25,14 @@ public class ReportCommandResponse {
         this.userId = report.getUserId();
         this.postId = report.getPostId();
         this.commentId = report.getCommentId();
-        this.reportTypeId = report.getReportTypeId();
+        this.reportType = report.getReportType();
         this.content = report.getContent();
         this.status = report.getStatus();
         this.createdAt = report.getCreatedAt();
         this.updatedAt = report.getUpdatedAt();
+    }
+    
+    public Long getReportTypeId() {
+        return reportType != null ? reportType.getId() : null;
     }
 }

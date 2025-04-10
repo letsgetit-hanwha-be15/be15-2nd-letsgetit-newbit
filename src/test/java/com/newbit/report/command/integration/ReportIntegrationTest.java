@@ -16,7 +16,9 @@ import com.newbit.report.command.application.dto.response.ReportCommandResponse;
 import com.newbit.report.command.application.service.ReportCommandService;
 import com.newbit.report.command.domain.aggregate.Report;
 import com.newbit.report.command.domain.aggregate.ReportStatus;
+import com.newbit.report.command.domain.aggregate.ReportType;
 import com.newbit.report.command.domain.repository.ReportRepository;
+import com.newbit.report.command.domain.repository.ReportTypeRepository;
 
 @SpringBootTest
 @Transactional
@@ -32,12 +34,16 @@ class ReportIntegrationTest {
     private PostRepository postRepository;
     
     @Autowired
+    private ReportTypeRepository reportTypeRepository;
+    
+    @Autowired
     private JdbcTemplate jdbcTemplate;
     
     private Long testPostId;
     private Long testUserId = 1L;
     private Long testCategoryId = 1L;
     private Long testCommentId;
+    private ReportType testReportType;
     
     @BeforeEach
     void setUp() {
@@ -54,7 +60,6 @@ class ReportIntegrationTest {
             testPostId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
             System.out.println("게시글 삽입 성공. 생성된 ID: " + testPostId);
             
-            // 댓글 삽입
             System.out.println("SQL 실행: INSERT INTO comment (user_id, post_id, content, deleted_at) VALUES ("
                     + testUserId + ", " + testPostId + ", '테스트 댓글입니다.', null)");
             
@@ -77,6 +82,10 @@ class ReportIntegrationTest {
                 );
                 System.out.println("신고 유형 추가 완료");
             }
+            
+            testReportType = reportTypeRepository.findById(1L)
+                    .orElseThrow(() -> new RuntimeException("테스트에 필요한 신고 유형이 DB에 없습니다. ID: 1"));
+            System.out.println("신고 유형 가져오기 완료: " + testReportType.getName());
             
             System.out.println("===== setUp 완료 =====");
         } catch (Exception e) {
