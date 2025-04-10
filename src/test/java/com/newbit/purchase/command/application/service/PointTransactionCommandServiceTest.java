@@ -17,10 +17,10 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
-class PointRewardCommandServiceTest {
+class PointTransactionCommandServiceTest {
 
     @InjectMocks
-    private PointRewardCommandService pointRewardCommandService;
+    private PointTransactionCommandService pointTransactionCommandService;
 
     @Mock
     private UserService userService;
@@ -48,7 +48,7 @@ class PointRewardCommandServiceTest {
         Mockito.when(userService.addPoint(userId, 10)).thenReturn(110);
 
         // when
-        pointRewardCommandService.givePointByType(userId, pointTypeName, serviceId);
+        pointTransactionCommandService.givePointByType(userId, pointTypeName, serviceId);
 
         // then
         Mockito.verify(userService).addPoint(userId, 10);
@@ -70,6 +70,6 @@ class PointRewardCommandServiceTest {
 
         // when & then
         assertThrows(BusinessException.class,
-                () -> pointRewardCommandService.givePointByType(1L, pointTypeName, null));
+                () -> pointTransactionCommandService.givePointByType(1L, pointTypeName, null));
     }
 }
