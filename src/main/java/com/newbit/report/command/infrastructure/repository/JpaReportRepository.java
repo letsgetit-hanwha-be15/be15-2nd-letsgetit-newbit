@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 interface JpaReportJpaRepository extends JpaRepository<Report, Long> {
     List<Report> findAllByPostId(Long postId);
+    List<Report> findAllByCommentId(Long commentId);
 }
 
 @Repository
@@ -32,5 +33,9 @@ public class JpaReportRepository implements ReportRepository {
     
     public List<Report> findAllByPostId(Long postId) {
         return jpaRepository.findAllByPostId(postId);
+    }
+    
+    public List<Report> findAllByCommentId(Long commentId) {
+        return jpaRepository.findAllByCommentId(commentId);
     }
 }
