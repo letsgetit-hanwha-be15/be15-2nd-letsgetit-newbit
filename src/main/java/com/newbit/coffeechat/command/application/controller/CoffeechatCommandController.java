@@ -25,7 +25,7 @@ public class CoffeechatCommandController {
 
     @Operation(
             summary = "커피챗 등록",
-            description = "사용자가 멘토에게 커피챗을 구매합니다."
+            description = "사용자가 멘토에게 커피챗을 요청합니다."
     )
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<CoffeechatCommandResponse>> createCoffeechat(
