@@ -1,5 +1,6 @@
 package com.newbit.purchase.command.application.service;
 
+import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
@@ -32,7 +33,7 @@ public class PurchaseCommandService {
     private final UserService userService;
     private final CoffeechatQueryService coffeechatQueryService;
     private final MentorService mentorService;
-    private final ColumnRepository columnRepository;
+    private final CoffeechatCommandService coffeechatCommandService;
 
 
     @Transactional
@@ -91,21 +92,17 @@ public class PurchaseCommandService {
 
         Integer price = mentorInfo.getPrice();
 
-
-        // 1. 구매 가능한 상태인지 확인
-        if (coffeechatStatus.equals(ProgressStatus.COFFEECHAT_WAITING)) {
-            throw new BusinessException(ErrorCode.COFFEECHAT_NOT_PURCHASABLE);
-        }
-
         // 2. 총 구매가격 계산
         int totalPrice = coffeeChat.getPurchaseQuantity() * price;
 
-        // 3. 멘티 다이아 차감
-        userService.useDiamond(menteeId, totalPrice);
 
         //TODO : coffeechat entity
         // 4. 커피챗 상태 변경 + 구매일시 < 커피챗에서 만든 서비스 호출
-//        coffeechatQueryService.markAsPurchased();
+        coffeechatCommandService.markAsPurchased(coffeechatId);
+
+
+        // 3. 멘티 다이아 차감
+        userService.useDiamond(menteeId, totalPrice);
 
         Integer balance = userService.getDiamondBalance(menteeId);
 
