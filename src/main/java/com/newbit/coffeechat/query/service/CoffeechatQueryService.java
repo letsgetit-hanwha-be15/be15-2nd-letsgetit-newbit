@@ -1,6 +1,5 @@
 package com.newbit.coffeechat.query.service;
 
-import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.*;
 import com.newbit.coffeechat.query.mapper.CoffeechatMapper;
