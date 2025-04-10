@@ -18,6 +18,8 @@ public class PointRewardCommandService {
     private final PointTypeRepository pointTypeRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
+
+    // 포인트 지급
     @Transactional
     public void applyPointType(Long userId, String pointTypeName, Long serviceId) {
         // 1. 포인트 유형 조회

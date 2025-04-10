@@ -10,10 +10,7 @@ import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
 import com.newbit.purchase.command.domain.aggregate.*;
-import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
-import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
-import com.newbit.purchase.command.domain.repository.PointHistoryRepository;
-import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
+import com.newbit.purchase.command.domain.repository.*;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.entity.Authority;
@@ -30,10 +27,12 @@ public class PurchaseCommandService {
     private final DiamondHistoryRepository diamondHistoryRepository;
     private final SaleHistoryRepository saleHistoryRepository;
     private final PointHistoryRepository pointHistoryRepository;
+    private final PointTypeRepository pointTypeRepository;
     private final ColumnRequestService columnService;
     private final UserService userService;
     private final CoffeechatQueryService coffeechatQueryService;
     private final MentorService mentorService;
+
 
 
     private static final int MENTOR_AUTHORITY_DIAMOND_COST = 700;
@@ -115,6 +114,9 @@ public class PurchaseCommandService {
         // 1. 유저 조회
         UserDTO userDto = userService.getUserByUserId(userId);
 
+        PointType mentorAuthorityType = pointTypeRepository.findById(5L)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
+
 
         //2. 이미 멘토인지 확인
         if (userDto.getAuthority() == Authority.MENTOR) {
@@ -128,7 +130,7 @@ public class PurchaseCommandService {
             diamondHistoryRepository.save(DiamondHistory.forMentorAuthority(userId, diamondBalance, MENTOR_AUTHORITY_DIAMOND_COST));
         } else if (assetType == PurchaseAssetType.POINT) {
             Integer pointBalance = userService.usePoint(userId, MENTOR_AUTHORITY_POINT_COST);
-            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId, pointBalance, MENTOR_AUTHORITY_POINT_COST));
+            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId, mentorAuthorityType, pointBalance, MENTOR_AUTHORITY_POINT_COST));
         } else {
             throw new BusinessException(ErrorCode.INVALID_PURCHASE_TYPE);
         }
