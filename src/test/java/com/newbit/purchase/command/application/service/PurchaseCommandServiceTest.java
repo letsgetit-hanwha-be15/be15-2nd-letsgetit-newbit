@@ -285,7 +285,7 @@ class PurchaseCommandServiceTest {
         Long coffeechatId = 1L;
         Long menteeId = 100L;
         Long mentorId = 200L;
-        Integer refundAmount = 5000;
+        int refundAmount = 5000;
         Integer updatedBalance = 10000;
 
         // 멘티 다이아 추가 후 새로운 잔액 리턴
@@ -298,7 +298,7 @@ class PurchaseCommandServiceTest {
         when(diamondHistoryRepository.save(any(DiamondHistory.class))).thenReturn(mockHistory);
 
         // when
-        purchaseCommandService.refundCoffeeChat(coffeechatId, menteeId, mentorId, refundAmount);
+        purchaseCommandService.refundCoffeeChat(coffeechatId, menteeId, refundAmount);
 
         // then
         verify(userService).addDiamond(menteeId, refundAmount);
