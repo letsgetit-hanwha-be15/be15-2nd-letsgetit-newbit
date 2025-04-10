@@ -31,6 +31,7 @@ public class ColumnController {
         return columnService.getColumnDetail(userId, columnId);
     }
 
+    // 추후에 페이징 기능 적용할 예정
     @GetMapping("/public-list")
     @Operation(summary = "공개된 칼럼 목록 조회", description = "공개된 모든 칼럼을 목록으로 조회합니다.")
     public List<GetColumnListResponseDto> getPublicColumnList() {
