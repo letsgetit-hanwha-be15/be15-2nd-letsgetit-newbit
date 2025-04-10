@@ -281,4 +281,36 @@ class PurchaseCommandServiceTest {
 
         assertEquals(ErrorCode.INSUFFICIENT_POINT, ex.getErrorCode());
     }
+
+    @Test
+    void refundCoffeeChat_success() {
+        // given
+        Long coffeechatId = 1L;
+        Long menteeId = 100L;
+        Long mentorId = 200L;
+        Integer refundAmount = 5000;
+        Integer updatedBalance = 10000;
+
+        // 멘티 다이아 추가 후 새로운 잔액 리턴
+        when(userService.addDiamond(menteeId, refundAmount)).thenReturn(updatedBalance);
+
+        // 다이아 내역 엔티티 반환 설정
+        DiamondHistory mockHistory = DiamondHistory.forCoffeechatRefund(menteeId, coffeechatId, refundAmount, updatedBalance);
+
+        // diamondHistoryRepository.save() 호출 시 mockHistory 반환
+        when(diamondHistoryRepository.save(any(DiamondHistory.class))).thenReturn(mockHistory);
+
+        // when
+        purchaseCommandService.refundCoffeeChat(coffeechatId, menteeId, mentorId, refundAmount);
+
+        // then
+        verify(userService).addDiamond(menteeId, refundAmount);
+        verify(diamondHistoryRepository).save(argThat(history ->
+                history.getUserId().equals(menteeId)
+                        && history.getServiceId().equals(coffeechatId)
+                        && history.getIncreaseAmount().equals(refundAmount)
+                        && history.getBalance().equals(updatedBalance)
+                        && history.getServiceType().name().equals("COFFEECHAT")
+        ));
+    }
 }
