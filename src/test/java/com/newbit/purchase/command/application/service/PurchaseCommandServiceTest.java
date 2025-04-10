@@ -19,15 +19,12 @@ import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.entity.Authority;
-import com.newbit.user.service.MentorService;
 import com.newbit.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.awt.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -280,5 +277,37 @@ class PurchaseCommandServiceTest {
                 purchaseCommandService.purchaseMentorAuthority(userId, request));
 
         assertEquals(ErrorCode.INSUFFICIENT_POINT, ex.getErrorCode());
+    }
+
+    @Test
+    void refundCoffeeChat_success() {
+        // given
+        Long coffeechatId = 1L;
+        Long menteeId = 100L;
+        Long mentorId = 200L;
+        int refundAmount = 5000;
+        Integer updatedBalance = 10000;
+
+        // 멘티 다이아 추가 후 새로운 잔액 리턴
+        when(userService.addDiamond(menteeId, refundAmount)).thenReturn(updatedBalance);
+
+        // 다이아 내역 엔티티 반환 설정
+        DiamondHistory mockHistory = DiamondHistory.forCoffeechatRefund(menteeId, coffeechatId, refundAmount, updatedBalance);
+
+        // diamondHistoryRepository.save() 호출 시 mockHistory 반환
+        when(diamondHistoryRepository.save(any(DiamondHistory.class))).thenReturn(mockHistory);
+
+        // when
+        purchaseCommandService.refundCoffeeChat(coffeechatId, menteeId, refundAmount);
+
+        // then
+        verify(userService).addDiamond(menteeId, refundAmount);
+        verify(diamondHistoryRepository).save(argThat(history ->
+                history.getUserId().equals(menteeId)
+                        && history.getServiceId().equals(coffeechatId)
+                        && history.getIncreaseAmount().equals(refundAmount)
+                        && history.getBalance().equals(updatedBalance)
+                        && history.getServiceType().name().equals("COFFEECHAT")
+        ));
     }
 }
