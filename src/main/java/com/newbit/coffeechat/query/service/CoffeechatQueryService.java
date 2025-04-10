@@ -1,6 +1,7 @@
 package com.newbit.coffeechat.query.service;
 
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
+import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.*;
 import com.newbit.coffeechat.query.mapper.CoffeechatMapper;
 import com.newbit.common.dto.Pagination;
@@ -33,16 +34,16 @@ public class CoffeechatQueryService {
 
     /* 커피챗 목록 조회 */
     @Transactional(readOnly = true)
-    public CoffeechatListResponse getCoffeechats(CoffeechatSearchRequest coffeechatSearchRequest) {
+    public CoffeechatListResponse getCoffeechats(CoffeechatSearchServiceRequest coffeechatSearchServiceRequest) {
 
         // 필요한 컨텐츠 조회
-        List<CoffeechatDto> coffeechats = coffeechatMapper.selectCoffeechats(coffeechatSearchRequest);
+        List<CoffeechatDto> coffeechats = coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest);
 
         // 해당 검색 조건으로 총 몇개의 컨텐츠가 있는지 조회 (페이징을 위한 속성 값 계산이 필요)
-        long totalItems = coffeechatMapper.countCoffeechats(coffeechatSearchRequest);
+        long totalItems = coffeechatMapper.countCoffeechats(coffeechatSearchServiceRequest);
 
-        int page = coffeechatSearchRequest.getPage();
-        int size = coffeechatSearchRequest.getSize();
+        int page = coffeechatSearchServiceRequest.getPage();
+        int size = coffeechatSearchServiceRequest.getSize();
 
 
         return CoffeechatListResponse.builder()
