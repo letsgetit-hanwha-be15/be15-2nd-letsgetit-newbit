@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -39,7 +41,13 @@ public class PostService {
         return new PostResponse(post);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    public List<PostResponse> searchPosts(String keyword) {
+        List<Post> posts = postRepository.searchByKeyword(keyword);
+        return posts.stream().map(PostResponse::new).toList();
+    }
+}
+
     public void deletePost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
