@@ -2,12 +2,16 @@ package com.newbit.column.service;
 
 import com.newbit.column.domain.Column;
 import com.newbit.column.dto.response.GetColumnDetailResponseDto;
+import com.newbit.column.dto.response.GetColumnListResponseDto;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.query.service.ColumnPurchaseHistoryQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,5 +42,20 @@ public class ColumnService {
                 .likeCount(column.getLikeCount())
                 .mentorId(column.getMentorId())
                 .build();
+    }
+
+    public List<GetColumnListResponseDto> getPublicColumnList() {
+        List<Column> columns = columnRepository.findAllByIsPublicTrueOrderByCreatedAtDesc();
+
+        return columns.stream()
+                .map(column -> GetColumnListResponseDto.builder()
+                        .columnId(column.getColumnId())
+                        .title(column.getTitle())
+                        .thumbnailUrl(column.getThumbnailUrl())
+                        .price(column.getPrice())
+                        .likeCount(column.getLikeCount())
+                        .mentorId(column.getMentorId())
+                        .build()
+                ).collect(Collectors.toList());
     }
 }
