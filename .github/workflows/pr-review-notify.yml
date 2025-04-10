@@ -3,6 +3,7 @@ name: Notify Reviewers on PR
 on:
   pull_request:
     types: [review_requested]
+    workflow_dispatch:
 
 jobs:
   notify:
