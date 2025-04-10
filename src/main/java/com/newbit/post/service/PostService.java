@@ -2,14 +2,19 @@ package com.newbit.post.service;
 
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.request.PostUpdateRequest;
+import com.newbit.post.dto.response.CommentResponse;
+import com.newbit.post.dto.response.PostDetailResponse;
 import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.entity.Post;
+import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.newbit.post.entity.Comment;
+
 
 import java.util.List;
 
@@ -18,6 +23,8 @@ import java.util.List;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+
 
     @Transactional
     public PostResponse updatePost(Long postId, PostUpdateRequest request) {
@@ -61,4 +68,21 @@ public class PostService {
         Page<Post> postPage = postRepository.findAll(pageable);
         return postPage.map(PostResponse::new);
     }
+
+    @Transactional(readOnly = true)
+    public PostDetailResponse getPostDetail(Long postId) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+
+        List<Comment> comments = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
+        List<CommentResponse> commentResponses = comments.stream()
+                .map(CommentResponse::new)
+                .toList();
+
+        String writerName = post.getUser().getUserName();
+        String categoryName = post.getPostCategory().getName();
+
+        return new PostDetailResponse(post, commentResponses, writerName, categoryName);
+    }
+
 }
