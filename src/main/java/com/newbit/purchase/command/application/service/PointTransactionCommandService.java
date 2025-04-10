@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
-
 @Service
 @RequiredArgsConstructor
 public class PointTransactionCommandService {
@@ -20,37 +19,18 @@ public class PointTransactionCommandService {
     private final PointTypeRepository pointTypeRepository;
     private final PointHistoryRepository pointHistoryRepository;
 
+    private static final Set<Integer> ALLOWED_TIP_AMOUNTS = Set.of(20, 40, 60, 80, 100);
 
-    // 포인트 지급
     @Transactional
     public void givePointByType(Long userId, String pointTypeName, Long serviceId) {
-        // 1. 포인트 유형 조회
-        PointType pointType = pointTypeRepository.findByPointTypeName(pointTypeName)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
+        PointType pointType = findPointType(pointTypeName);
+        Integer updatedBalance = applyPoint(userId, pointType);
 
-        // 2. 포인트 증감 처리
-        Integer updatedBalance;
-        if (pointType.getIncreaseAmount() != null) {
-            updatedBalance = userService.addPoint(userId, pointType.getIncreaseAmount());
-        } else {
-            updatedBalance = userService.usePoint(userId, pointType.getDecreaseAmount());
-        }
-
-        // 3. 포인트 내역 저장
-        PointHistory history = PointHistory.builder()
-                .userId(userId)
-                .pointType(pointType)
-                .serviceId(serviceId)
-                .balance(updatedBalance)
-                .build();
-        pointHistoryRepository.save(history);
+        savePointHistory(userId, pointType, serviceId, updatedBalance);
     }
-
 
     @Transactional
     public void giveTipPoint(Long reviewId, Long menteeId, Long mentorId, Integer amount) {
-        Set<Integer> ALLOWED_TIP_AMOUNTS = Set.of(20, 40, 60, 80, 100);
-
         if (!ALLOWED_TIP_AMOUNTS.contains(amount)) {
             throw new BusinessException(ErrorCode.INVALID_TIP_AMOUNT);
         }
@@ -58,28 +38,30 @@ public class PointTransactionCommandService {
         Integer menteeBalance = userService.addPoint(menteeId, amount);
         Integer mentorBalance = userService.addPoint(mentorId, amount);
 
-        String menteePointTypeName = "팁 " + amount + "제공";
-        String mentorPointTypeName = "팁 " + amount + "수령";
+        savePointHistory(menteeId, findPointType("팁 " + amount + "제공"), reviewId, menteeBalance);
+        savePointHistory(mentorId, findPointType("팁 " + amount + "수령"), reviewId, mentorBalance);
+    }
 
-        PointType menteePointType = pointTypeRepository.findByPointTypeName(menteePointTypeName)
+    private PointType findPointType(String pointTypeName) {
+        return pointTypeRepository.findByPointTypeName(pointTypeName)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
-        PointType mentorPointType = pointTypeRepository.findByPointTypeName(mentorPointTypeName)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
+    }
 
-        PointHistory menteeHistory = PointHistory.builder()
-                .userId(menteeId)
-                .pointType(menteePointType)
-                .serviceId(reviewId)
-                .balance(menteeBalance)
-                .build();
-        pointHistoryRepository.save(menteeHistory);
+    private Integer applyPoint(Long userId, PointType pointType) {
+        if (pointType.getIncreaseAmount() != null) {
+            return userService.addPoint(userId, pointType.getIncreaseAmount());
+        } else {
+            return userService.usePoint(userId, pointType.getDecreaseAmount());
+        }
+    }
 
-        PointHistory mentorHistory = PointHistory.builder()
-                .userId(mentorId)
-                .pointType(mentorPointType)
-                .serviceId(reviewId)
-                .balance(mentorBalance)
+    private void savePointHistory(Long userId, PointType pointType, Long serviceId, Integer balance) {
+        PointHistory history = PointHistory.builder()
+                .userId(userId)
+                .pointType(pointType)
+                .serviceId(serviceId)
+                .balance(balance)
                 .build();
-        pointHistoryRepository.save(mentorHistory);
+        pointHistoryRepository.save(history);
     }
 }
