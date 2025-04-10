@@ -9,6 +9,9 @@ import com.newbit.post.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -23,9 +26,57 @@ class CommentServiceTest {
     @BeforeEach
     void setUp() {
         commentRepository = mock(CommentRepository.class);
+        postRepository = mock(PostRepository.class);
+
+        commentService = new CommentService(commentRepository, postRepository);
+    }
+
+    @Test
+    void 댓글_조회_성공() {
+        // given
+        Long postId = 1L;
+
+        Post post = Post.builder()
+                .id(postId)
+                .title("테스트 게시글")
+                .content("내용")
+                .userId(1L)
+                .postCategoryId(2L)
+                .build();
+
+        Comment comment1 = Comment.builder()
+                .id(1L)
+                .content("첫 번째 댓글")
+                .userId(1L)
+                .post(post)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Comment comment2 = Comment.builder()
+                .id(2L)
+                .content("두 번째 댓글")
+                .userId(2L)
+                .post(post)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        List<Comment> mockComments = Arrays.asList(comment1, comment2);
+
+        when(commentRepository.findByPostIdAndDeletedAtIsNull(postId)).thenReturn(mockComments);
+
+        // when
+        List<CommentResponse> responses = commentService.getCommentsByPostId(postId);
+
+        // then
+        assertThat(responses).hasSize(2);
+        assertThat(responses.get(0).getContent()).isEqualTo("첫 번째 댓글");
+        assertThat(responses.get(1).getContent()).isEqualTo("두 번째 댓글");
+        verify(commentRepository, times(1)).findByPostIdAndDeletedAtIsNull(postId);
+
         postRepository = mock(PostRepository.class); // ← 추가
 
         commentService = new CommentService(commentRepository, postRepository); // ← 수정
+
     }
 
     @Test
