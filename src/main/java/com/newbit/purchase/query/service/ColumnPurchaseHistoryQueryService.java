@@ -1,6 +1,7 @@
 package com.newbit.purchase.query.service;
 
 import com.newbit.common.dto.Pagination;
+import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
 import com.newbit.purchase.query.dto.request.HistoryRequest;
 import com.newbit.purchase.query.dto.response.ColumnPurchaseHistoryDto;
 import com.newbit.purchase.query.dto.response.ColumnPurchaseHistoryListResponse;
@@ -16,6 +17,7 @@ import java.util.List;
 public class ColumnPurchaseHistoryQueryService {
 
     private final ColumnPurchaseHistoryMapper columnPurchaseHistoryMapper;
+    private final ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
 
     @Transactional(readOnly = true)
     public ColumnPurchaseHistoryListResponse getColumnPurchaseHistories(HistoryRequest request)
@@ -32,4 +34,10 @@ public class ColumnPurchaseHistoryQueryService {
                         .build()
                 ).build();
     }
+
+    public boolean hasUserPurchasedColumn(Long userId, Long columnId) {
+        return columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId);
+    }
+
+
 }

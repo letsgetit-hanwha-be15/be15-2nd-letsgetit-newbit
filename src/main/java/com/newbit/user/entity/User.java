@@ -1,6 +1,10 @@
 package com.newbit.user.entity;
 
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,6 +18,8 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@Builder
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -62,6 +68,40 @@ public class User {
 
     public void setEncodedPassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    // 보유 다이아 차감
+    public void useDiamond(int amount) {
+        if (this.diamond < amount) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND);
+        }
+        this.diamond -= amount;
+    }
+
+    // 보유 다이아 증가
+    public void addDiamond(int amount) {
+        this.diamond += amount;
+    }
+
+    // 보유 포인트 차감
+    public void usePoint(int amount) {
+        if (this.point < amount) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND);
+        }
+        this.point -= amount;
+    }
+
+    // 권한이 멘토로 변경
+    public void grantMentorAuthority() {
+        if (this.getAuthority() == Authority.MENTOR) {
+            throw new BusinessException(ErrorCode.ALREADY_MENTOR);
+        }
+        this.authority = Authority.MENTOR;
+    }
+
+
+    public void findPassword(String newPassword) {
+        this.password = newPassword;
     }
 
 
