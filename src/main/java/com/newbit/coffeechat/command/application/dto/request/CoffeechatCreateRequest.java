@@ -26,5 +26,5 @@ public class CoffeechatCreateRequest {
     private Long menteeId;
     @NotNull
     @Size(max = 3)
-    private List<RequestTimeDto> requestTimes;
+    private final List<RequestTimeDto> requestTimes;
 }
