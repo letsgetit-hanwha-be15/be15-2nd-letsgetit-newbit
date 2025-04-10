@@ -1,12 +1,14 @@
 package com.newbit.coffeechat.command.application.dto.request;
 
-import com.newbit.coffeechat.command.domain.aggregate.ProgressStatus;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @RequiredArgsConstructor
@@ -22,4 +24,7 @@ public class CoffeechatCreateRequest {
     private final Long mentorId;        
     @Setter
     private Long menteeId;
+    @NotNull
+    @Size(max = 3)
+    private List<RequestTimeDto> requestTimes;
 }
