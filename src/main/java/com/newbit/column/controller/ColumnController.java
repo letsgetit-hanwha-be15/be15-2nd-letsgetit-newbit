@@ -1,6 +1,7 @@
 package com.newbit.column.controller;
 
 import com.newbit.column.dto.response.GetColumnDetailResponseDto;
+import com.newbit.column.dto.response.GetColumnListResponseDto;
 import com.newbit.column.service.ColumnService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/columns")
@@ -26,5 +29,11 @@ public class ColumnController {
             @Parameter(description = "조회할 유저 ID", example = "10") @PathVariable Long userId
     ) {
         return columnService.getColumnDetail(userId, columnId);
+    }
+
+    @GetMapping("/public-list")
+    @Operation(summary = "공개된 칼럼 목록 조회", description = "공개된 모든 칼럼을 목록으로 조회합니다.")
+    public List<GetColumnListResponseDto> getPublicColumnList() {
+        return columnService.getPublicColumnList();
     }
 }
