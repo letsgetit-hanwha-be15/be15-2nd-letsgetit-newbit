@@ -78,6 +78,11 @@ public class User {
         this.diamond -= amount;
     }
 
+    // 보유 다이아 증가
+    public void addDiamond(int amount) {
+        this.diamond += amount;
+    }
+
     // 보유 포인트 차감
     public void usePoint(int amount) {
         if (this.point < amount) {
@@ -98,4 +103,6 @@ public class User {
     public void findPassword(String newPassword) {
         this.password = newPassword;
     }
+
+
 }

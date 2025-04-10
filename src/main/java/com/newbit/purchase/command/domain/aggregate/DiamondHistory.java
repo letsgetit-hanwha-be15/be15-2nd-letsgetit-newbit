@@ -94,4 +94,15 @@ public class DiamondHistory {
                 .balance(diamond)  // 차감 이후 잔액
                 .build();
     }
+
+    public static DiamondHistory forCoffeechatRefund(Long userId, Long coffeechatId, int totalPrice, Integer diamondBalance) {
+        return DiamondHistory.builder()
+                .userId(userId)
+                .serviceType(DiamondTransactionType.COFFEECHAT)
+                .serviceId(coffeechatId)
+                .decreaseAmount(totalPrice)
+                .increaseAmount(null)
+                .balance(diamondBalance)  // 차감 이후 잔액
+                .build();
+    }
 }

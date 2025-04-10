@@ -143,4 +143,32 @@ public class PurchaseCommandService {
         mentorService.createMentor(userId);
     }
 
+
+    public void refundCoffeeChat(Long coffeechatId) {
+        CoffeechatDto coffeeChat = coffeechatQueryService.getCoffeechat(coffeechatId).getCoffeechat();
+        MentorDTO mentorInfo = mentorService.getMentorInfo(coffeechatId);
+        ProgressStatus coffeechatStatus = coffeeChat.getProgressStatus();
+        Long menteeId = coffeeChat.getMenteeId();
+
+
+        if (!coffeechatStatus.equals(ProgressStatus.COMPLETE)) {
+            throw new BusinessException(ErrorCode.COFFEECHAT_NOT_REFUNDABLE);
+        }
+
+        int totalPrice = coffeeChat.getPurchaseQuantity() * mentorInfo.getPrice();
+
+        // 1. 멘티 다이아 추가
+        Integer balance = userService.addDiamond(menteeId, totalPrice);
+
+        // 2. 커피챗 상태 변경 + 구매일시 < 환불 요청한 쪽에서 해결할 가능성 있음
+//      coffeechatQueryService.markAsPurchased();
+
+        // 5. 다이아 내역 저장
+        diamondHistoryRepository.save(DiamondHistory.forCoffeechatRefund(menteeId, coffeechatId, totalPrice, balance));
+
+        // 6. 판매 내역 저장
+        saleHistoryRepository.save(SaleHistory.forCoffeechat(mentorId, totalPrice, coffeechatId));
+
+    }
+
 }
