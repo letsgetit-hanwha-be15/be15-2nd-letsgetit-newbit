@@ -2,7 +2,10 @@ package com.newbit.column.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +40,22 @@ public class Column {
 
     private Long mentorId;
 
+    @CreatedDate
+    @jakarta.persistence.Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @jakarta.persistence.Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @jakarta.persistence.Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @OneToMany(mappedBy = "column", cascade = CascadeType.ALL)
     @Builder.Default
     private List<ColumnRequest> requests = new ArrayList<>();
+
+    public void markAsDeleted() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }
