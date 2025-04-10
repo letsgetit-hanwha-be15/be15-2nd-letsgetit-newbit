@@ -23,7 +23,6 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-    private final PointRewardCommandService pointRewardCommandService;
 
     public TokenResponseDTO login(LoginRequestDTO request) {
 
