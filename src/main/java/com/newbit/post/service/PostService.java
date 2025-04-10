@@ -86,12 +86,6 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getPostsByLoggedInUser(Long userId) {
-        List<Post> posts = postRepository.findByUserIdAndDeletedAtIsNull(userId);
-        return posts.stream().map(PostResponse::new).toList();
-    }
-
-    @Transactional(readOnly = true)
     public List<PostResponse> getMyPosts(Long userId) {
         List<Post> posts = postRepository.findByUserIdAndDeletedAtIsNull(userId);
         return posts.stream()

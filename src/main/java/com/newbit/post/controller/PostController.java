@@ -82,7 +82,7 @@ public class PostController {
     @GetMapping("/my")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<PostResponse>> getMyPosts(@AuthenticationPrincipal CustomUser user) {
-        List<PostResponse> myPosts = postService.getPostsByLoggedInUser(user.getUserId());
+        List<PostResponse> myPosts = postService.getMyPosts(user.getUserId());
         return ResponseEntity.ok(myPosts);
     }
 
