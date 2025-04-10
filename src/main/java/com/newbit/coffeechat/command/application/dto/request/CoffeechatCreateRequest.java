@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @RequiredArgsConstructor
@@ -18,5 +19,7 @@ public class CoffeechatCreateRequest {
     private final int purchaseQuantity;
     @NotNull
     @Min(value = 1)
-    private final Long mentorId;
+    private final Long mentorId;        
+    @Setter
+    private Long menteeId;
 }

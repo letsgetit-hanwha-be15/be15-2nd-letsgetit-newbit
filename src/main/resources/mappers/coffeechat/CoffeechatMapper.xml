@@ -29,6 +29,9 @@
             <if test="menteeId != null">
                 AND c.mentee_id = #{ menteeId }
             </if>
+            <if test="isProgressing != null">
+                AND c.progress_status NOT IN ('COMPLETE')
+            </if>
         </where>
         ORDER BY c.coffeechat_id DESC
         LIMIT #{ limit } OFFSET #{ offset }
