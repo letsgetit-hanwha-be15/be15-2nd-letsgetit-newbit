@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/coffeechat")
+@RequestMapping("/api/v1/coffeechats")
 public class CoffeechatCommandController {
 
     private final CoffeechatCommandService coffeechatCommandService;
@@ -24,10 +24,10 @@ public class CoffeechatCommandController {
     public ResponseEntity<ApiResponse<CoffeechatCommandResponse>> createCoffeechat(
             @Valid @RequestBody CoffeechatCreateRequest coffeechatCreateRequest,
             @Parameter(description = "조회할 유저 ID", required = true) @PathVariable Long userId
-//            @AuthenticationPrincipal UserDetails userDetails // 로그인 기능 추가 시 사용
+//            @AuthenticationPrincipal UserDetails userDetails // TODO : 로그인 기능 추가 시 사용
     ) {
 
-//        Long userId = userDetails.getUsername() // 로그인 기능 추가 시 사용
+//        Long userId = userDetails.getUsername() // TODO : 로그인 기능 추가 시 사용
         Long coffeechatId = coffeechatCommandService.createCoffeechat(userId, coffeechatCreateRequest);
 
         CoffeechatCommandResponse response = CoffeechatCommandResponse.builder()
