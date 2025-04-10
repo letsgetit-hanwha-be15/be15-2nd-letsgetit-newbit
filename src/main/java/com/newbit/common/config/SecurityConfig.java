@@ -66,21 +66,7 @@ public class SecurityConfig {
                 )
                 // 요청 http method, url 기준으로 인증, 인가 필요 여부 설정
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(HttpMethod.POST,
-                                        "/api/v1/user/signup",
-                                        "/api/v1/auth/login",
-                                        "/api/v1/auth/refresh",
-                                        "/api/v1/user/find-id",
-                                        "/api/v1/user/find-password").permitAll()
-                                .requestMatchers(
-                                        "/swagger-ui/**",
-                                        "/swagger-ui.html",
-                                        "/v3/api-docs",
-                                        "/v3/api-docs/**",
-                                        "/swagger-resources/**",
-                                        "/webjars/**"
-                                ).permitAll()
-                                .anyRequest().authenticated()
+                        auth.anyRequest().permitAll()
                 )
                 // 커스텀 인증 필터(JWT 토큰 사용하여 확인)를 인증 필터 앞에 삽입
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
