@@ -5,6 +5,7 @@ import com.newbit.common.exception.ErrorCode;
 import com.newbit.user.dto.request.FindIdDTO;
 import com.newbit.user.dto.response.UserIdDTO;
 import com.newbit.user.entity.User;
+import com.newbit.user.support.MailServiceSupport;
 import com.newbit.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,13 +22,16 @@ class FindEmailByNameAndPhoneTest {
     private UserService userService;
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
+    private MailServiceSupport mailServiceSupport;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
         ModelMapper modelMapper = new ModelMapper();
         passwordEncoder = mock(PasswordEncoder.class);
-        userService = new UserService(userRepository, modelMapper, passwordEncoder);
+        MailServiceSupport mailServiceSupport = mock(MailServiceSupport.class);
+        userService = new UserService(userRepository, modelMapper, passwordEncoder, mailServiceSupport);
+
     }
 
     @Test

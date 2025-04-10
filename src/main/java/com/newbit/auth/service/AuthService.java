@@ -1,0 +1,98 @@
+package com.newbit.auth.service;
+
+import com.newbit.auth.dto.request.LoginRequestDTO;
+import com.newbit.auth.dto.response.TokenResponseDTO;
+import com.newbit.auth.entity.RefreshToken;
+import com.newbit.auth.repository.RefreshTokenRepository;
+import com.newbit.auth.jwt.JwtTokenProvider;
+import com.newbit.user.entity.User;
+import com.newbit.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+
+    public TokenResponseDTO login(LoginRequestDTO request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BadCredentialsException("올바르지 않은 아이디 혹은 비밀번호"));
+
+        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("올바르지 않은 아이디 혹은 비밀번호");
+        }
+
+        String accessToken = jwtTokenProvider.createToken(user.getEmail(), user.getAuthority().name());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getAuthority().name());
+
+        RefreshToken tokenEntity = RefreshToken.builder()
+                .email(user.getEmail())
+                .token(refreshToken)
+                .expiryDate(new Date(System.currentTimeMillis() + jwtTokenProvider.getRefreshExpiration()))
+                .build();
+
+        refreshTokenRepository.save(tokenEntity);
+
+        return TokenResponseDTO.builder()
+                .userId(Long.valueOf(user.getUserId()))
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .authority(user.getAuthority().name())
+                .profileImageUrl(user.getProfileImageUrl())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    public TokenResponseDTO refreshToken(String providedRefreshToken) {
+        jwtTokenProvider.validateToken(providedRefreshToken);
+        String email = jwtTokenProvider.getUsernameFromJWT(providedRefreshToken);
+
+        RefreshToken storedToken = refreshTokenRepository.findById(email)
+                .orElseThrow(() -> new BadCredentialsException("해당 유저로 조회되는 리프레시 토큰 없음"));
+
+        if(!storedToken.getToken().equals(providedRefreshToken)) {
+            throw new BadCredentialsException("리프레시 토큰 일치하지 않음");
+        }
+
+        if(storedToken.getExpiryDate().before(new Date())) {
+            throw new BadCredentialsException("리프레시 토큰 유효시간 만료");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("해당 리프레시 토큰을 위한 유저 없음"));
+
+        String accessToken = jwtTokenProvider.createToken(user.getEmail(), user.getAuthority().name());
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getAuthority().name());
+
+        RefreshToken tokenEntity = RefreshToken.builder()
+                .email(user.getEmail())
+                .token(refreshToken)
+                .expiryDate(new Date(System.currentTimeMillis() + jwtTokenProvider.getRefreshExpiration()))
+                .build();
+
+        refreshTokenRepository.save(tokenEntity);
+
+        return TokenResponseDTO.builder()
+                .userId(Long.valueOf(user.getUserId()))
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .authority(user.getAuthority().name())
+                .profileImageUrl(user.getProfileImageUrl())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+
+}
