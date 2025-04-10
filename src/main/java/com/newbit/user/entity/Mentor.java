@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import jakarta.persistence.Column;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "mentor")
 @Getter
@@ -20,7 +23,7 @@ public class Mentor {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private Integer temperature;
+    private BigDecimal temperature;
 
     @Column(nullable = false, length = 255)
     private String preferredTime;
@@ -29,15 +32,15 @@ public class Mentor {
 
     private Integer price;
 
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 
-    private java.time.LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
 
     public static Mentor createDefault(User user) {
         return Mentor.builder()
                 .user(user)
                 .price(500) // 기본 커피챗 가격
-                .temperature(36) // 초기 신뢰 온도 (정수로 변경)
+                .temperature(BigDecimal.valueOf(36.5)) // 초기 신뢰 온도 (정수로 변경)
                 .isActive(true) // 기본 활성 상태
                 .createdAt(java.time.LocalDateTime.now())
                 .updatedAt(java.time.LocalDateTime.now())

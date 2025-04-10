@@ -3,6 +3,7 @@ package com.newbit.purchase.command.application.controller;
 import com.newbit.common.dto.ApiResponse;
 import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
+import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
 import com.newbit.purchase.command.application.service.PurchaseCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,7 +29,7 @@ public class PurchaseCommandController {
     )
     @PostMapping("/column/{userId}")
     public ResponseEntity<ApiResponse<Void>> purchaseColumn(
-            @Parameter(description = "조회할 유저 ID", required = true) @PathVariable Long userId,
+            @Parameter(description = "구매할 유저 ID", required = true) @PathVariable Long userId,
             @Valid @RequestBody ColumnPurchaseRequest request
     ) {
         purchaseCommandService.purchaseColumn(userId, request);
@@ -46,6 +47,23 @@ public class PurchaseCommandController {
     public ResponseEntity<ApiResponse<Void>> purchaseCoffeeChat(
             @Valid @RequestBody CoffeeChatPurchaseRequest request) {
         purchaseCommandService.purchaseCoffeeChat(request);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+
+    @Operation(
+            summary = "멘토 권한 구매",
+            description = "사용자가 포인트 혹은 다이아를 사용하여 멘토 권한을 구매합니다."
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200", description = "멘토 권한 구매 성공"
+    )
+    @PostMapping("/mentor-authority/{userId}")
+    public ResponseEntity<ApiResponse<Void>> purchaseMentorAuthority(
+            @Parameter(description = "구매할 유저 ID", required = true) @PathVariable Long userId,
+            @Valid @RequestBody MentorAuthorityPurchaseRequest request
+    ) {
+        purchaseCommandService.purchaseMentorAuthority(userId, request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
