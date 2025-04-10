@@ -22,7 +22,7 @@ public class SaleHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "settlement_history_id")
+    @Column(name = "sale_history_id")
     private Long id;
 
     @Column(name = "is_settled", nullable = false)

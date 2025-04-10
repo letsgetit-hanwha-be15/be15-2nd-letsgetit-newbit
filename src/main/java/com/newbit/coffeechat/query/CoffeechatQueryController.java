@@ -15,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Coffeechat 도메인")
+@Tag(name = "커피챗 API", description = "커피챗 조회 API")
 @RestController
 @RequestMapping("/api/v1/coffeechats")
 @RequiredArgsConstructor
