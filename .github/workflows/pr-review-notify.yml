@@ -2,7 +2,7 @@ name: Notify Reviewers on PR
 
 on:
   pull_request:
-    types: [review_requested, review_request_removed]
+    types: [review_requested]
 
 jobs:
   notify:
@@ -12,6 +12,8 @@ jobs:
       - name: Convert GitHub usernames to Discord mentions
         id: get-mentions
         run: |
+          echo "🔄 Mapping GitHub reviewers to Discord IDs..."
+
           declare -A USER_MAP=(
             ["64etuor"]="637937081875824650"
             ["sezeme"]="534088965050073089"
@@ -21,22 +23,26 @@ jobs:
             ["oyk0510"]="1329009837912096788"
           )
 
-          reviewers="${{ toJson(github.event.pull_request.requested_reviewers) }}"
+          reviewers_json='${{ toJson(github.event.pull_request.requested_reviewers) }}'
           mentions=""
 
-          for reviewer in $(echo "$reviewers" | jq -r '.[] | .login'); do
-            id=${USER_MAP[$reviewer]}
+          echo "$reviewers_json" | jq -r '.[].login' | while read login; do
+            id=${USER_MAP[$login]}
             if [ -n "$id" ]; then
               mentions+="<@$id> "
+            else
+              echo "⚠️ No Discord ID mapped for $login"
             fi
           done
 
-          echo "mentions=$mentions" >> $GITHUB_OUTPUT
+          echo "mentions=$mentions" >> "$GITHUB_OUTPUT"
 
       - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           curl -X POST -H "Content-Type: application/json" \
           -d "{
-            \"content\": \"📣 ${{ steps.get-mentions.outputs.mentions }}님! Pull Request 리뷰어로 지정됐습니다. 확인해 주세요. \\n PR: ${{ github.event.pull_request.html_url }}\"
+            \"content\": \"📣 ${{ steps.get-mentions.outputs.mentions }}님! Pull Request 리뷰어로 지정됐습니다. 확인해 주세요.\\n🔗 PR: ${{ github.event.pull_request.html_url }}\"
           }" \
-          ${{ secrets.DISCORD_WEBHOOK_URL }}
+          "$DISCORD_WEBHOOK_URL"
