@@ -21,7 +21,7 @@ public class PointRewardCommandService {
 
     // 포인트 지급
     @Transactional
-    public void applyPointType(Long userId, String pointTypeName, Long serviceId) {
+    public void givePointByType(Long userId, String pointTypeName, Long serviceId) {
         // 1. 포인트 유형 조회
         PointType pointType = pointTypeRepository.findByPointTypeName(pointTypeName)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
