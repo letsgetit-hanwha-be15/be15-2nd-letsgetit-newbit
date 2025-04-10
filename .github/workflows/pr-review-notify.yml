@@ -1,0 +1,42 @@
+name: Notify Reviewers on PR
+
+on:
+  pull_request:
+    types: [review_requested, review_request_removed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Convert GitHub usernames to Discord mentions
+        id: get-mentions
+        run: |
+          declare -A USER_MAP=(
+            ["64etuor"]="637937081875824650"
+            ["sezeme"]="534088965050073089"
+            ["gyeongmin03"]="377380180467122178"
+            ["Kihong12"]="385400409654820864"
+            ["kimjy8937"]="592708683687788557"
+            ["oyk0510"]="1329009837912096788"
+          )
+
+          reviewers="${{ toJson(github.event.pull_request.requested_reviewers) }}"
+          mentions=""
+
+          for reviewer in $(echo "$reviewers" | jq -r '.[] | .login'); do
+            id=${USER_MAP[$reviewer]}
+            if [ -n "$id" ]; then
+              mentions+="<@$id> "
+            fi
+          done
+
+          echo "mentions=$mentions" >> $GITHUB_OUTPUT
+
+      - name: Send Discord Notification
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d "{
+            \"content\": \"📣 ${{ steps.get-mentions.outputs.mentions }}님! Pull Request 리뷰어로 지정됐습니다. 확인해 주세요. \\n PR: ${{ github.event.pull_request.html_url }}\"
+          }" \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
