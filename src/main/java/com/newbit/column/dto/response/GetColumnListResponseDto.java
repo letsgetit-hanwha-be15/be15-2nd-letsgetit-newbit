@@ -1,11 +1,9 @@
 package com.newbit.column.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder
 public class GetColumnListResponseDto {
 
     @Schema(description = "칼럼 ID", example = "1")
@@ -25,5 +23,21 @@ public class GetColumnListResponseDto {
 
     @Schema(description = "멘토 ID", example = "5")
     private Long mentorId;
+
+    @Schema(description = "멘토 닉네임", example = "개발자도토리")
+    private String mentorNickname;
+
+    public GetColumnListResponseDto(Long columnId, String title, String thumbnailUrl,
+                                    Integer price, Integer likeCount,
+                                    Long mentorId, String mentorNickname) {
+        this.columnId = columnId;
+        this.title = title;
+        this.thumbnailUrl = thumbnailUrl;
+        this.price = price;
+        this.likeCount = likeCount;
+        this.mentorId = mentorId;
+        this.mentorNickname = mentorNickname;
+    }
+
 }
 
