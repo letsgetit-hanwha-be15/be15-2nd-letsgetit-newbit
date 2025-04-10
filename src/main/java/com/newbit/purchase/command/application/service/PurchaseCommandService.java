@@ -2,9 +2,7 @@ package com.newbit.purchase.command.application.service;
 
 import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
-import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
-import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;

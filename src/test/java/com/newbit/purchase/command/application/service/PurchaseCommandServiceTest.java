@@ -19,15 +19,12 @@ import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.entity.Authority;
-import com.newbit.user.service.MentorService;
 import com.newbit.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.awt.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
