@@ -1,5 +1,6 @@
 package com.newbit.auth.service;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.user.entity.User;
 import com.newbit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +23,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("유저 찾지 못함"));
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                Collections.singleton(new SimpleGrantedAuthority(user.getAuthority().name()))
-        );
+        // 권한 enum을 "ROLE_" prefix와 함께 Spring Security 권한 객체로 변환
+        String role = "ROLE_" + user.getAuthority().name();
+
+        return CustomUser.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .authorities(Collections.singleton(new SimpleGrantedAuthority(role)))
+                .build();
     }
 }
