@@ -8,6 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.*;
 
+
+import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -122,6 +125,7 @@ class PostServiceTest {
         // given
         Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
 
+
         Post post1 = Post.builder()
                 .id(1L)
                 .title("테스트 제목1")
@@ -139,6 +143,7 @@ class PostServiceTest {
                 .build();
 
         Page<Post> postPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
+
 
         when(postRepository.findAll(pageable)).thenReturn(postPage);
 

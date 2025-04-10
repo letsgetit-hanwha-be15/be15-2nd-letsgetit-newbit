@@ -15,7 +15,11 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "게시글 API", description = "게시글 등록, 수정, 삭제 관련")
+
+@Tag(name = "게시글 API", description = "게시글 등록, 수정, 삭제, 조회 관련")
+
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
@@ -37,6 +41,13 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "게시글 검색", description = "키워드를 통해 게시글 제목 또는 내용에서 검색합니다.")
+    public ResponseEntity<List<PostResponse>> searchPosts(@RequestParam("keyword") String keyword) {
+        List<PostResponse> responses = postService.searchPosts(keyword);
+        return ResponseEntity.ok(responses);
+    }
+
     @DeleteMapping("/{id}")
     @Operation(
             summary = "게시글 삭제",
@@ -52,10 +63,12 @@ public class PostController {
     }
 
     @GetMapping
-    @Operation(summary = "게시글 목록 조회", description = "페이지 정보를 기반으로 게시글 목록을 조회합니다.")
+
+    @Operation(summary = "게시글 목록 조회", description = "페이징 정보를 기반으로 게시글 목록을 조회합니다.")
     public ResponseEntity<Page<PostResponse>> getPostList(
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
-        Page<PostResponse> postList = postService.getPostList(pageable);
-        return ResponseEntity.ok(postList);
+        Page<PostResponse> responses = postService.getPostList(pageable);
+        return ResponseEntity.ok(responses);
+
     }
 }
