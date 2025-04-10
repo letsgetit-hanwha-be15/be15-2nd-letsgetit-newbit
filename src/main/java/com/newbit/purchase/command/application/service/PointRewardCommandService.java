@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class PointRewardCommandService {
@@ -42,5 +44,42 @@ public class PointRewardCommandService {
                 .balance(updatedBalance)
                 .build();
         pointHistoryRepository.save(history);
+    }
+
+
+    @Transactional
+    public void giveTipPoint(Long reviewId, Long menteeId, Long mentorId, Integer amount) {
+        Set<Integer> ALLOWED_TIP_AMOUNTS = Set.of(20, 40, 60, 80, 100);
+
+        if (!ALLOWED_TIP_AMOUNTS.contains(amount)) {
+            throw new BusinessException(ErrorCode.INVALID_TIP_AMOUNT);
+        }
+
+        Integer menteeBalance = userService.addPoint(menteeId, amount);
+        Integer mentorBalance = userService.addPoint(mentorId, amount);
+
+        String menteePointTypeName = "팁 " + amount + "제공";
+        String mentorPointTypeName = "팁 " + amount + "수령";
+
+        PointType menteePointType = pointTypeRepository.findByPointTypeName(menteePointTypeName)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
+        PointType mentorPointType = pointTypeRepository.findByPointTypeName(mentorPointTypeName)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
+
+        PointHistory menteeHistory = PointHistory.builder()
+                .userId(menteeId)
+                .pointType(menteePointType)
+                .serviceId(reviewId)
+                .balance(menteeBalance)
+                .build();
+        pointHistoryRepository.save(menteeHistory);
+
+        PointHistory mentorHistory = PointHistory.builder()
+                .userId(mentorId)
+                .pointType(mentorPointType)
+                .serviceId(reviewId)
+                .balance(mentorBalance)
+                .build();
+        pointHistoryRepository.save(mentorHistory);
     }
 }
