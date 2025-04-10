@@ -76,7 +76,7 @@ public class DiamondHistory {
     public static DiamondHistory forCoffeechatPurchase(Long userId, Long coffeechatId, Integer totalPrice, Integer diamondBalance) {
         return DiamondHistory.builder()
                 .userId(userId)
-                .serviceType(DiamondTransactionType.COFFEE_CHAT)
+                .serviceType(DiamondTransactionType.COFFEECHAT)
                 .serviceId(coffeechatId)
                 .decreaseAmount(totalPrice)
                 .increaseAmount(null)

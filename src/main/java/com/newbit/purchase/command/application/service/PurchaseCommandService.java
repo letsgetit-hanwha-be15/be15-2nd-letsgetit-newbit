@@ -83,8 +83,6 @@ public class PurchaseCommandService {
     public void purchaseCoffeeChat(CoffeeChatPurchaseRequest request) {
         Long coffeechatId = request.getCoffeechatId();
         CoffeechatDto coffeeChat = coffeechatQueryService.getCoffeechat(coffeechatId).getCoffeechat();
-
-        ProgressStatus coffeechatStatus = coffeeChat.getProgressStatus();
         Long menteeId = coffeeChat.getMenteeId();
         Long mentorId = coffeeChat.getMentorId();
 
@@ -92,24 +90,20 @@ public class PurchaseCommandService {
 
         Integer price = mentorInfo.getPrice();
 
-        // 2. 총 구매가격 계산
         int totalPrice = coffeeChat.getPurchaseQuantity() * price;
 
-
-        //TODO : coffeechat entity
-        // 4. 커피챗 상태 변경 + 구매일시 < 커피챗에서 만든 서비스 호출
+        // 1. 커피챗 상태 변경
         coffeechatCommandService.markAsPurchased(coffeechatId);
 
-
-        // 3. 멘티 다이아 차감
+        // 2. 멘티 다이아 차감
         userService.useDiamond(menteeId, totalPrice);
 
         Integer balance = userService.getDiamondBalance(menteeId);
 
-        // 5. 다이아 내역 저장
+        // 3. 다이아 내역 저장
         diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
 
-        // 6. 판매 내역 저장
+        // 4. 판매 내역 저장
         saleHistoryRepository.save(SaleHistory.forCoffeechat(mentorId, totalPrice, coffeechatId));
     }
 }

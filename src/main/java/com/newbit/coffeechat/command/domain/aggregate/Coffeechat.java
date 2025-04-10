@@ -63,6 +63,6 @@ public class Coffeechat {
     }
 
     public void markAsPurchased() {
-        this.progressStatus = ProgressStatus.COMPLETE;
+        this.progressStatus = ProgressStatus.COFFEECHAT_WAITING;
     }
 }
