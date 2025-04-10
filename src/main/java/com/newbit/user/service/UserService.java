@@ -83,6 +83,7 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
         return UserDTO.builder()
+                .userId(userId)
                 .authority(user.getAuthority())
                 .diamond(user.getDiamond())
                 .point(user.getPoint())

@@ -12,6 +12,7 @@ import lombok.*;
 @ToString
 @Schema(description = "회원 DTO")
 public class UserDTO {
+    Long userId;
     Authority authority;
     Integer diamond;
     Integer point;

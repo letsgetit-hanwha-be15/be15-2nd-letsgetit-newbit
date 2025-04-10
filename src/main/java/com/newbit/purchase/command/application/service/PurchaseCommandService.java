@@ -61,23 +61,20 @@ public class PurchaseCommandService {
         }
 
         // 4. 다이아 충분한지 확인 및 차감 (내부에서 다이아 부족 시 예외 발생)
-        userService.useDiamond(userId, columnPrice);
+        Integer diamondBalance = userService.useDiamond(userId, columnPrice);
 
-        // 6. 구매 내역 저장
+        // 5. 구매 내역 저장
         ColumnPurchaseHistory purchaseHistory = ColumnPurchaseHistory.of(userId, columnId, columnPrice);
         columnPurchaseHistoryRepository.save(purchaseHistory);
 
-        // 7. 회원의 현재 보유 다이아값 조회
-        Integer diamondBalance = userService.getDiamondBalance(userId);
-
-        // 8. 다이아몬드 사용 내역 저장
+        // 6. 다이아몬드 사용 내역 저장
         DiamondHistory diamondHistory = DiamondHistory.forColumnPurchase(userId, columnId, columnPrice, diamondBalance);
         diamondHistoryRepository.save(diamondHistory);
 
-        // 9. 멘토ID 조회
+        // 7. 멘토ID 조회
         Long mentorId = columnService.getMentorId(columnId);
 
-        // 10. 판매 내역 저장
+        // 8. 판매 내역 저장
         SaleHistory saleHistory = SaleHistory.forColumn(columnId, columnPrice, mentorId);
         saleHistoryRepository.save(saleHistory);
     }
@@ -138,7 +135,7 @@ public class PurchaseCommandService {
         }
 
 
-        // 5. 재화 차감 및 히스토리 기록
+        // 3. 다이아 혹은 포인트 내역 생성
         if (assetType == PurchaseAssetType.DIAMOND) {
             Integer diamondBalance = userService.useDiamond(userId, MENTOR_AUTHORITY_DIAMOND_COST);
             diamondHistoryRepository.save(DiamondHistory.forMentorAuthority(userId, diamondBalance, MENTOR_AUTHORITY_DIAMOND_COST));
@@ -150,7 +147,7 @@ public class PurchaseCommandService {
         }
 
 
-        // 3. 멘토 생성
+        // 4. 멘토 등록
         mentorService.createMentor(userId);
     }
 
