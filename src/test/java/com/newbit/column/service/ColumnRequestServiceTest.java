@@ -10,6 +10,8 @@ import com.newbit.column.domain.Column;
 import com.newbit.column.enums.RequestType;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.repository.ColumnRequestRepository;
+import com.newbit.user.entity.Mentor;
+import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -37,6 +39,9 @@ class ColumnRequestServiceTest {
     @Mock
     private ColumnMapper columnMapper;
 
+    @Mock
+    private MentorService mentorService;
+
     @InjectMocks
     private ColumnRequestService columnRequestService;
 
@@ -51,10 +56,14 @@ class ColumnRequestServiceTest {
                 .thumbnailUrl("https://test.com/thumb.jpg")
                 .build();
 
-        Column column = Column.builder().columnId(1L).build();
+        Long mentorId = 1L;
+        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
+
+        Column column = Column.builder().columnId(1L).mentor(mentor).build();
         ColumnRequest columnRequest = ColumnRequest.builder().columnRequestId(100L).build();
 
-        when(columnMapper.toColumn(dto, 1L)).thenReturn(column);
+        when(mentorService.getMentorEntityById(mentorId)).thenReturn(mentor);
+        when(columnMapper.toColumn(dto, mentor)).thenReturn(column);
         when(columnRepository.save(column)).thenReturn(column);
         when(columnMapper.toColumnRequest(dto, column)).thenReturn(columnRequest);
         when(columnRequestRepository.save(columnRequest)).thenReturn(columnRequest);
