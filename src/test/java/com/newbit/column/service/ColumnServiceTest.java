@@ -40,9 +40,6 @@ class ColumnServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-//    public ColumnServiceTest() {
-//        MockitoAnnotations.openMocks(this);
-//    }
 
     @DisplayName("공개된 칼럼 상세 조회 성공")
     @Test
