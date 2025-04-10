@@ -1,6 +1,5 @@
 package com.newbit.column.service;
 
-import com.newbit.column.domain.Column;
 import com.newbit.column.dto.response.GetColumnDetailResponseDto;
 import com.newbit.column.dto.response.GetColumnListResponseDto;
 import com.newbit.column.repository.ColumnRepository;
@@ -9,13 +8,9 @@ import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.query.service.ColumnPurchaseHistoryQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,27 +20,15 @@ public class ColumnService {
     private final ColumnPurchaseHistoryQueryService columnPurchaseHistoryQueryService;
 
     public GetColumnDetailResponseDto getColumnDetail(Long userId, Long columnId) {
-        Column column = columnRepository.findById(columnId)
+        GetColumnDetailResponseDto dto = columnRepository.findPublicColumnDetailById(columnId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
-
-        if (!column.isPublic()) {
-            throw new BusinessException(ErrorCode.COLUMN_NOT_FOUND);
-        }
 
         boolean isPurchased = columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId);
         if (!isPurchased) {
             throw new BusinessException(ErrorCode.COLUMN_NOT_PURCHASED);
         }
 
-        return GetColumnDetailResponseDto.builder()
-                .columnId(column.getColumnId())
-                .title(column.getTitle())
-                .content(column.getContent())
-                .price(column.getPrice())
-                .thumbnailUrl(column.getThumbnailUrl())
-                .likeCount(column.getLikeCount())
-                .mentorId(column.getMentorId())
-                .build();
+        return dto;
     }
 
     public Page<GetColumnListResponseDto> getPublicColumnList(int page, int size) {

@@ -29,4 +29,19 @@ public class GetColumnDetailResponseDto {
 
     @Schema(description = "멘토 ID", example = "3")
     private Long mentorId;
+
+    @Schema(description = "멘토 닉네임", example = "개발자도토리")
+    private String mentorNickname;
+
+    public GetColumnDetailResponseDto(Long columnId, String title, String content, Integer price,
+                                      String thumbnailUrl, int likeCount, Long mentorId, String mentorNickname) {
+        this.columnId = columnId;
+        this.title = title;
+        this.content = content;
+        this.price = price;
+        this.thumbnailUrl = thumbnailUrl;
+        this.likeCount = likeCount;
+        this.mentorId = mentorId;
+        this.mentorNickname = mentorNickname;
+    }
 }
