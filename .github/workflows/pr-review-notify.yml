@@ -28,14 +28,14 @@ jobs:
 
           mentions=""
 
-          echo "$REVIEWERS_JSON" | jq -r '.[].login' | while read login; do
+          while read login; do
             id=${USER_MAP[$login]}
             if [ -n "$id" ]; then
               mentions+="<@$id> "
             else
               echo "⚠️ No Discord ID mapped for $login"
             fi
-          done
+          done < <(echo "$REVIEWERS_JSON" | jq -r '.[].login')
 
           echo "mentions=$mentions" >> "$GITHUB_OUTPUT"
 
