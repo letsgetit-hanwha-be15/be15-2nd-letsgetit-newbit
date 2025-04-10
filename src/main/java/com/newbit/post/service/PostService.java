@@ -1,7 +1,7 @@
 package com.newbit.post.service;
 
-import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.request.PostCreateRequest;
+import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.PostRepository;
@@ -44,7 +44,13 @@ public class PostService {
         return new PostResponse(post);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    public List<PostResponse> searchPosts(String keyword) {
+        List<Post> posts = postRepository.searchByKeyword(keyword);
+        return posts.stream().map(PostResponse::new).toList();
+    }
+}
+
     public void deletePost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
@@ -54,7 +60,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponse> getPostList(Pageable pageable) {
         Page<Post> postPage = postRepository.findAll(pageable);
-        return postRepository.findAll(pageable)
-                .map(PostResponse::new);
+        return postPage.map(PostResponse::new);
+
     }
 }

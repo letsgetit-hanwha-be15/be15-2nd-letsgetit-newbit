@@ -72,6 +72,11 @@ class CommentServiceTest {
         assertThat(responses.get(0).getContent()).isEqualTo("첫 번째 댓글");
         assertThat(responses.get(1).getContent()).isEqualTo("두 번째 댓글");
         verify(commentRepository, times(1)).findByPostIdAndDeletedAtIsNull(postId);
+
+        postRepository = mock(PostRepository.class); // ← 추가
+
+        commentService = new CommentService(commentRepository, postRepository); // ← 수정
+
     }
 
     @Test
