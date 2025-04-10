@@ -34,4 +34,9 @@ public class MentorService {
         user.grantMentorAuthority();
         mentorRepository.save(mentor);
     }
+
+    public Mentor getMentorEntityById(Long mentorId) {
+        return mentorRepository.findById(mentorId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MENTOR_NOT_FOUND));
+    }
 }
