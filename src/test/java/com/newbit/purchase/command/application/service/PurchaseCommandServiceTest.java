@@ -46,7 +46,6 @@ class PurchaseCommandServiceTest {
     @Mock private MentorService mentorService;
     private final Long userId = 1L;
     @Mock private CoffeechatQueryService coffeechatQueryService;
-    @Mock private MentorService mentorService;
     @Mock private CoffeechatCommandService coffeechatCommandService;
 
     @BeforeEach
