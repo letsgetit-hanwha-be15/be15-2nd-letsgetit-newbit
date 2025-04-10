@@ -74,6 +74,14 @@ public class User {
         this.diamond -= amount;
     }
 
+    // 보유 포인트 차감
+    public void usePoint(int amount) {
+        if (this.point < amount) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND);
+        }
+        this.point -= amount;
+    }
+
     // 권한이 멘토로 변경
     public void grantMentorAuthority() {
         if (this.getAuthority() == Authority.MENTOR) {
@@ -81,5 +89,6 @@ public class User {
         }
         this.authority = Authority.MENTOR;
     }
+
 
 }

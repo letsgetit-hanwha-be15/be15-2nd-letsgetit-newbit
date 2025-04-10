@@ -52,7 +52,7 @@ public class UserService {
     }
 
     @Transactional
-    public void useDiamond(Long userId, int amount) {
+    public Integer useDiamond(Long userId, int amount) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
@@ -60,19 +60,21 @@ public class UserService {
             throw new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND);
         }
 
-        user.useDiamond(amount); // 도메인 로직에 위임 (Entity 내부에 구현된 로직)
+        user.useDiamond(amount);// 도메인 로직에 위임 (Entity 내부에 구현된 로직)
+        return user.getDiamond();
     }
 
     @Transactional
-    public void usePoint(Long userId, int amount) {
+    public Integer usePoint(Long userId, int amount) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        if (user.getDiamond() < amount) {
+        if (user.getPoint() < amount) {
             throw new BusinessException(ErrorCode.INSUFFICIENT_POINT);
         }
 
-        user.useDiamond(amount); // 도메인 로직에 위임 (Entity 내부에 구현된 로직)
+        user.usePoint(amount);// 도메인 로직에 위임 (Entity 내부에 구현된 로직)
+        return user.getPoint();
     }
 
 

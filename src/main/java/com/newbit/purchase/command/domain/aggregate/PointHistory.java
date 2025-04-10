@@ -53,7 +53,7 @@ public class PointHistory {
      * 멘토 권한 구매용 히스토리 생성
      * PointType은 서비스 계층에서 조회해서 넘겨줘야 함 (예: ID = 5)
      */
-    public static PointHistory forMentorAuthority(Long userId, Integer point) {
+    public static PointHistory forMentorAuthority(Long userId, Integer point, Integer price) {
         return PointHistory.builder()
                 .userId(userId)
                 .pointTypeId(5L)

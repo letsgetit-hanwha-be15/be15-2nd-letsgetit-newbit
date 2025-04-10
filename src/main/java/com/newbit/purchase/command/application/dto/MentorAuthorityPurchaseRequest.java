@@ -12,11 +12,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class MentorAuthorityPurchaseRequest {
-
-    @NotNull(message = "userId는 필수입니다.")
-    @Schema(description = "구매자 유저 ID", example = "1")
-    private Long userId;
-
     @NotNull(message = "재화 타입은 필수입니다.")
     @Schema(description = "사용할 재화 타입 (DIAMOND or POINT)", example = "DIAMOND")
     private PurchaseAssetType assetType;

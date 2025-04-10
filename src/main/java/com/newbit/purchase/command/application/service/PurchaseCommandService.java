@@ -125,9 +125,7 @@ public class PurchaseCommandService {
 
 
     @Transactional
-    public void purchaseMentorAuthority(MentorAuthorityPurchaseRequest request) {
-
-        Long userId = request.getUserId();
+    public void purchaseMentorAuthority(Long userId, MentorAuthorityPurchaseRequest request) {
         PurchaseAssetType assetType = request.getAssetType();
 
         // 1. 유저 조회
@@ -142,11 +140,11 @@ public class PurchaseCommandService {
 
         // 5. 재화 차감 및 히스토리 기록
         if (assetType == PurchaseAssetType.DIAMOND) {
-            userService.useDiamond(userId, MENTOR_AUTHORITY_DIAMOND_COST);
-            diamondHistoryRepository.save(DiamondHistory.forMentorAuthority(userId, userDto.getDiamond(), MENTOR_AUTHORITY_DIAMOND_COST));
+            Integer diamondBalance = userService.useDiamond(userId, MENTOR_AUTHORITY_DIAMOND_COST);
+            diamondHistoryRepository.save(DiamondHistory.forMentorAuthority(userId, diamondBalance, MENTOR_AUTHORITY_DIAMOND_COST));
         } else if (assetType == PurchaseAssetType.POINT) {
-            userService.usePoint(userId, MENTOR_AUTHORITY_POINT_COST);
-            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId, userDto.getPoint()));
+            Integer pointBalance = userService.usePoint(userId, MENTOR_AUTHORITY_POINT_COST);
+            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId, pointBalance, MENTOR_AUTHORITY_POINT_COST));
         } else {
             throw new BusinessException(ErrorCode.INVALID_PURCHASE_TYPE);
         }
