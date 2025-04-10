@@ -44,4 +44,16 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void deleteComment(Long postId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
+
+        if (!comment.getPost().getId().equals(postId)) {
+            throw new IllegalArgumentException("해당 댓글이 존재하지 않거나 게시글과 매칭되지 않습니다.");
+        }
+
+        comment.softDelete();
+    }
+
 }
