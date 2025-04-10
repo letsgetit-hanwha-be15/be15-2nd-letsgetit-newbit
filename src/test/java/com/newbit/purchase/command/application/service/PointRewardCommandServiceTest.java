@@ -48,7 +48,7 @@ class PointRewardCommandServiceTest {
         Mockito.when(userService.addPoint(userId, 10)).thenReturn(110);
 
         // when
-        pointRewardCommandService.applyPointType(userId, pointTypeName, serviceId);
+        pointRewardCommandService.givePointByType(userId, pointTypeName, serviceId);
 
         // then
         Mockito.verify(userService).addPoint(userId, 10);
@@ -70,6 +70,6 @@ class PointRewardCommandServiceTest {
 
         // when & then
         assertThrows(BusinessException.class,
-                () -> pointRewardCommandService.applyPointType(1L, pointTypeName, null));
+                () -> pointRewardCommandService.givePointByType(1L, pointTypeName, null));
     }
 }
