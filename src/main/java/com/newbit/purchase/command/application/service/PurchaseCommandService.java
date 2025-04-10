@@ -149,4 +149,11 @@ public class PurchaseCommandService {
         diamondHistoryRepository.save(DiamondHistory.forCoffeechatRefund(menteeId, coffeechatId, totalPrice, balance));
     }
 
+    // 멘토 멘티 구매 확정시 판매내역 추가 메서드
+    @Transactional
+    public void addSaleHistory(Long mentorId, Integer price, Long serviceId) {
+        SaleHistory saleHistory = SaleHistory.forCoffeechat(mentorId, price, serviceId);
+        saleHistoryRepository.save(saleHistory);
+    }
+
 }
