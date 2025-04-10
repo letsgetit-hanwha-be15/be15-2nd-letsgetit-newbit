@@ -6,9 +6,9 @@ import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(description = "칼럼 수정 요청 응답 DTO")
+@Schema(description = "멘토 칼럼 수정 요청 응답")
 public class UpdateColumnResponseDto {
 
-    @Schema(description = "생성된 수정 요청 ID", example = "5")
+    @Schema(description = "칼럼 요청 ID", example = "5")
     private Long columnRequestId;
 }

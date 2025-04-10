@@ -74,4 +74,7 @@ public class User {
         this.diamond -= amount;
     }
 
+    public void findPassword(String newPassword) {
+        this.password = newPassword;
+    }
 }
