@@ -1,9 +1,11 @@
 package com.newbit.coffeechat.command.application.service;
 
 import com.newbit.coffeechat.command.application.dto.request.RequestTimeDto;
+import com.newbit.coffeechat.command.domain.aggregate.RequestTime;
 import com.newbit.coffeechat.command.domain.repository.CoffeechatRepository;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
 import com.newbit.coffeechat.command.domain.aggregate.Coffeechat;
+import com.newbit.coffeechat.command.domain.repository.RequestTimeRepository;
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
@@ -20,6 +22,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -38,6 +41,8 @@ class CoffeechatCommandServiceTest {
     private CoffeechatRepository coffeechatRepository;
     @Mock
     private CoffeechatQueryService coffeechatQueryService;
+    @Mock
+    private RequestTimeRepository requestTimeRepository;
 
     @DisplayName("커피챗 요청 등록 성공")
     @Test
@@ -46,15 +51,15 @@ class CoffeechatCommandServiceTest {
         Long userId = 8L;
         LocalDateTime pastStartDateTime = LocalDateTime.now().plusDays(1);
         LocalDateTime pastEndDateTime = pastStartDateTime.plusHours(1);
-        RequestTimeDto invalidTimeDto = new RequestTimeDto();
-        ReflectionTestUtils.setField(invalidTimeDto, "startDateTime", pastStartDateTime);
-        ReflectionTestUtils.setField(invalidTimeDto, "endDateTime", pastEndDateTime);
+        RequestTimeDto requestTimeDto = new RequestTimeDto();
+        ReflectionTestUtils.setField(requestTimeDto, "startDateTime", pastStartDateTime);
+        ReflectionTestUtils.setField(requestTimeDto, "endDateTime", pastEndDateTime);
 
         CoffeechatCreateRequest request = new CoffeechatCreateRequest(
                 "취업 관련 꿀팁 얻고 싶어요.",
                 2,
                 2L,
-                List.of(invalidTimeDto));
+                List.of(requestTimeDto));
 
         Coffeechat mockCoffeechat = Coffeechat.of(userId,
                 request.getMentorId(),
@@ -62,16 +67,28 @@ class CoffeechatCommandServiceTest {
                 request.getPurchaseQuantity());
 
         // private 필드인 coffeechatId에 직접 주입
-        ReflectionTestUtils.setField(mockCoffeechat, "coffeechatId", 10L);
-
+        ReflectionTestUtils.setField(mockCoffeechat, "coffeechatId", 999L);
         when(coffeechatRepository.save(any(Coffeechat.class))).thenReturn(mockCoffeechat);
+
+        // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
+        CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
+                .coffeechats(new LinkedList<>()).build();
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchRequest.class))).thenReturn(coffeechatListResponse);
+
+        // requestTimeRepository::save 시 requestTime 반환
+        RequestTime requestTime = RequestTime.of(
+                requestTimeDto.getStartDateTime().toLocalDate(),
+                requestTimeDto.getStartDateTime(),
+                requestTimeDto.getEndDateTime(),
+                999L);
+        when(requestTimeRepository.save(any(RequestTime.class))).thenReturn(requestTime);
 
         // when
         Long result = coffeechatCommandService.createCoffeechat(userId, request);
 
         // then
         assertNotNull(result);
-        assertEquals(10L, result);
+        assertEquals(999L, result);
         verify(coffeechatRepository).save(any(Coffeechat.class));
 
     }
@@ -133,6 +150,20 @@ class CoffeechatCommandServiceTest {
                 2L,
                 List.of(invalidTimeDto));
 
+        Coffeechat mockCoffeechat = Coffeechat.of(userId,
+                request.getMentorId(),
+                request.getRequestMessage(),
+                request.getPurchaseQuantity());
+
+        // private 필드인 coffeechatId에 직접 주입
+        ReflectionTestUtils.setField(mockCoffeechat, "coffeechatId", 999L);
+        when(coffeechatRepository.save(any(Coffeechat.class))).thenReturn(mockCoffeechat);
+
+        // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
+        CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
+                .coffeechats(new LinkedList<>()).build();
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchRequest.class))).thenReturn(coffeechatListResponse);
+
         // when & then
         assertThrows(
                 BusinessException.class,
@@ -156,6 +187,21 @@ class CoffeechatCommandServiceTest {
                 2,
                 2L,
                 List.of(invalidTimeDto));
+
+        Coffeechat mockCoffeechat = Coffeechat.of(userId,
+                request.getMentorId(),
+                request.getRequestMessage(),
+                request.getPurchaseQuantity());
+
+        // private 필드인 coffeechatId에 직접 주입
+        ReflectionTestUtils.setField(mockCoffeechat, "coffeechatId", 999L);
+        when(coffeechatRepository.save(any(Coffeechat.class))).thenReturn(mockCoffeechat);
+
+        // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
+        CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
+                .coffeechats(new LinkedList<>()).build();
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchRequest.class))).thenReturn(coffeechatListResponse);
+
 
         // when
         Throwable thrown = catchThrowable(() -> coffeechatCommandService.createCoffeechat(userId, request));
@@ -187,6 +233,22 @@ class CoffeechatCommandServiceTest {
                 2,
                 2L,
                 List.of(invalidTimeDto));
+
+
+        Coffeechat mockCoffeechat = Coffeechat.of(userId,
+                request.getMentorId(),
+                request.getRequestMessage(),
+                request.getPurchaseQuantity());
+
+        // private 필드인 coffeechatId에 직접 주입
+        ReflectionTestUtils.setField(mockCoffeechat, "coffeechatId", 999L);
+        when(coffeechatRepository.save(any(Coffeechat.class))).thenReturn(mockCoffeechat);
+
+        // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
+        CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
+                .coffeechats(new LinkedList<>()).build();
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchRequest.class))).thenReturn(coffeechatListResponse);
+
 
         // when
         Throwable thrown = catchThrowable(() -> coffeechatCommandService.createCoffeechat(userId, request));
