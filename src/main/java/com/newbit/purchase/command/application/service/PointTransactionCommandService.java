@@ -30,7 +30,7 @@ public class PointTransactionCommandService {
     }
 
     @Transactional
-    public void giveTipPoint(Long reviewId, Long menteeId, Long mentorId, Integer amount) {
+    public void giveTipPoint(Long coffeechatId, Long menteeId, Long mentorId, Integer amount) {
         if (!ALLOWED_TIP_AMOUNTS.contains(amount)) {
             throw new BusinessException(ErrorCode.INVALID_TIP_AMOUNT);
         }
@@ -38,8 +38,8 @@ public class PointTransactionCommandService {
         Integer menteeBalance = userService.addPoint(menteeId, amount);
         Integer mentorBalance = userService.addPoint(mentorId, amount);
 
-        savePointHistory(menteeId, findPointType("팁 " + amount + "제공"), reviewId, menteeBalance);
-        savePointHistory(mentorId, findPointType("팁 " + amount + "수령"), reviewId, mentorBalance);
+        savePointHistory(menteeId, findPointType("팁 " + amount + "제공"), coffeechatId, menteeBalance);
+        savePointHistory(mentorId, findPointType("팁 " + amount + "수령"), coffeechatId, mentorBalance);
     }
 
     private PointType findPointType(String pointTypeName) {
