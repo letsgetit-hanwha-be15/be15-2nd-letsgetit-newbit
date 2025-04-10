@@ -83,6 +83,11 @@ public class User {
         this.diamond += amount;
     }
 
+    // 보유 포인트 증가
+    public void addPoint(int amount) {
+        this.point += amount;
+    }
+
     // 보유 포인트 차감
     public void usePoint(int amount) {
         if (this.point < amount) {
