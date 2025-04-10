@@ -8,7 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.*;
 
+
 import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -122,28 +124,26 @@ class PostServiceTest {
     void 게시글_목록_조회_성공() {
         // given
         Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
-        List<Post> postList = List.of(
-                Post.builder()
-                        .id(1L)
-                        .title("제목1")
-                        .content("내용1")
-                        .userId(1L)
-                        .postCategoryId(1L)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .build(),
-                Post.builder()
-                        .id(2L)
-                        .title("제목2")
-                        .content("내용2")
-                        .userId(2L)
-                        .postCategoryId(1L)
-                        .createdAt(LocalDateTime.now())
-                        .updatedAt(LocalDateTime.now())
-                        .build()
-        );
 
-        Page<Post> postPage = new PageImpl<>(postList, pageable, postList.size());
+
+        Post post1 = Post.builder()
+                .id(1L)
+                .title("테스트 제목1")
+                .content("테스트 내용1")
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
+
+        Post post2 = Post.builder()
+                .id(2L)
+                .title("테스트 제목2")
+                .content("테스트 내용2")
+                .userId(2L)
+                .postCategoryId(1L)
+                .build();
+
+        Page<Post> postPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
+
 
         when(postRepository.findAll(pageable)).thenReturn(postPage);
 
@@ -152,7 +152,8 @@ class PostServiceTest {
 
         // then
         assertThat(result.getContent()).hasSize(2);
-        assertThat(result.getContent().get(0).getTitle()).isEqualTo("제목1");
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("테스트 제목1");
+        assertThat(result.getContent().get(1).getTitle()).isEqualTo("테스트 제목2");
         verify(postRepository, times(1)).findAll(pageable);
     }
 }

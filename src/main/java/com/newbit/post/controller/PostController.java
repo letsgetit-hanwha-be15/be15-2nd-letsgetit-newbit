@@ -63,10 +63,12 @@ public class PostController {
     }
 
     @GetMapping
+
     @Operation(summary = "게시글 목록 조회", description = "페이징 정보를 기반으로 게시글 목록을 조회합니다.")
     public ResponseEntity<Page<PostResponse>> getPostList(
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
         Page<PostResponse> responses = postService.getPostList(pageable);
         return ResponseEntity.ok(responses);
+
     }
 }
