@@ -33,6 +33,9 @@
             <if test="isProgressing != null">
                 AND c.progress_status NOT IN ('COMPLETE')
             </if>
+            <if test="progressStatus != null">
+                AND c.progress_status = #{ progressStatus }
+            </if>
         </where>
         ORDER BY c.coffeechat_id DESC
         LIMIT #{ limit } OFFSET #{ offset }
