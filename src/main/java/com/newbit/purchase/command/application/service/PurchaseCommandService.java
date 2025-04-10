@@ -1,8 +1,14 @@
 package com.newbit.purchase.command.application.service;
 
+import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
+import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
+import com.newbit.coffeechat.query.dto.response.ProgressStatus;
+import com.newbit.coffeechat.query.service.CoffeechatQueryService;
+import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.domain.aggregate.ColumnPurchaseHistory;
 import com.newbit.purchase.command.domain.aggregate.DiamondHistory;
@@ -10,6 +16,8 @@ import com.newbit.purchase.command.domain.aggregate.SaleHistory;
 import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
 import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
+import com.newbit.user.dto.response.MentorDTO;
+import com.newbit.user.service.MentorService;
 import com.newbit.user.service.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +31,9 @@ public class PurchaseCommandService {
     private final SaleHistoryRepository saleHistoryRepository;
     private final ColumnRequestService columnService;
     private final UserService userService;
+    private final CoffeechatQueryService coffeechatQueryService;
+    private final MentorService mentorService;
+    private final CoffeechatCommandService coffeechatCommandService;
 
 
     @Transactional
@@ -65,4 +76,34 @@ public class PurchaseCommandService {
         saleHistoryRepository.save(saleHistory);
     }
 
+
+
+
+    @Transactional
+    public void purchaseCoffeeChat(CoffeeChatPurchaseRequest request) {
+        Long coffeechatId = request.getCoffeechatId();
+        CoffeechatDto coffeeChat = coffeechatQueryService.getCoffeechat(coffeechatId).getCoffeechat();
+        Long menteeId = coffeeChat.getMenteeId();
+        Long mentorId = coffeeChat.getMentorId();
+
+        MentorDTO mentorInfo = mentorService.getMentorInfo(mentorId);
+
+        Integer price = mentorInfo.getPrice();
+
+        int totalPrice = coffeeChat.getPurchaseQuantity() * price;
+
+        // 1. 커피챗 상태 변경
+        coffeechatCommandService.markAsPurchased(coffeechatId);
+
+        // 2. 멘티 다이아 차감
+        userService.useDiamond(menteeId, totalPrice);
+
+        Integer balance = userService.getDiamondBalance(menteeId);
+
+        // 3. 다이아 내역 저장
+        diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
+
+        // 4. 판매 내역 저장
+        saleHistoryRepository.save(SaleHistory.forCoffeechat(mentorId, totalPrice, coffeechatId));
+    }
 }
