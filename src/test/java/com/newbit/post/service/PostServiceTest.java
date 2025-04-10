@@ -10,7 +10,6 @@ import org.springframework.data.domain.*;
 
 
 import java.time.LocalDateTime;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -124,6 +123,8 @@ class PostServiceTest {
     void 게시글_목록_조회_성공() {
         // given
         Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
+        Page<Post> postPage = new PageImpl<>(postList, pageable, postList.size());
+
 
 
         Post post1 = Post.builder()
@@ -144,7 +145,6 @@ class PostServiceTest {
 
         Page<Post> postPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
 
-
         when(postRepository.findAll(pageable)).thenReturn(postPage);
 
         // when
@@ -152,8 +152,10 @@ class PostServiceTest {
 
         // then
         assertThat(result.getContent()).hasSize(2);
+
         assertThat(result.getContent().get(0).getTitle()).isEqualTo("테스트 제목1");
         assertThat(result.getContent().get(1).getTitle()).isEqualTo("테스트 제목2");
+
         verify(postRepository, times(1)).findAll(pageable);
     }
 }

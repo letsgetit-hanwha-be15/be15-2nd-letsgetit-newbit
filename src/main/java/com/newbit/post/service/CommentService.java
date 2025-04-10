@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -31,6 +34,14 @@ public class CommentService {
 
         commentRepository.save(comment);
         return new CommentResponse(comment);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommentResponse> getCommentsByPostId(Long postId) {
+        List<Comment> comments = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
+        return comments.stream()
+                .map(CommentResponse::new)
+                .collect(Collectors.toList());
     }
 
 }
