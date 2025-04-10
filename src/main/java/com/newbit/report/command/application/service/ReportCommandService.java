@@ -1,14 +1,20 @@
 package com.newbit.report.command.application.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.newbit.post.entity.Post;
+import com.newbit.post.repository.PostRepository;
 import com.newbit.report.command.application.dto.request.ReportCreateRequest;
 import com.newbit.report.command.application.dto.response.ReportCommandResponse;
 import com.newbit.report.command.domain.aggregate.Report;
+import com.newbit.report.command.domain.aggregate.ReportStatus;
 import com.newbit.report.command.domain.aggregate.ReportType;
 import com.newbit.report.command.domain.repository.ReportRepository;
 import com.newbit.report.command.domain.repository.ReportTypeRepository;
+import com.newbit.report.command.infrastructure.repository.JpaReportRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +25,10 @@ public class ReportCommandService {
 
     private final ReportRepository reportRepository;
     private final ReportTypeRepository reportTypeRepository;
+    private final PostRepository postRepository;
+    private final JpaReportRepository jpaReportRepository;
 
+    private static final int REPORT_THRESHOLD = 50;
 
     public ReportCommandResponse createPostReport(ReportCreateRequest request) {
         if (request.getPostId() == null) {
@@ -37,6 +46,8 @@ public class ReportCommandService {
         );
         
         Report savedReport = reportRepository.save(report);
+        
+        incrementPostReportCount(request.getPostId());
         
         return new ReportCommandResponse(savedReport);
     }
@@ -59,5 +70,43 @@ public class ReportCommandService {
         Report savedReport = reportRepository.save(report);
         
         return new ReportCommandResponse(savedReport);
+    }
+    
+    private boolean incrementPostReportCount(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+        
+        post.setReportCount(post.getReportCount() + 1);
+        
+        if (post.getReportCount() >= REPORT_THRESHOLD) {
+            post.softDelete();
+            
+            List<Report> reports = jpaReportRepository.findAllByPostId(postId);
+            for (Report report : reports) {
+                report.updateStatus(ReportStatus.DELETED);
+            }
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public ReportCommandResponse processReport(Long reportId, ReportStatus newStatus) {
+        Report report = reportRepository.findById(reportId);
+        if (report == null) {
+            throw new IllegalArgumentException("존재하지 않는 신고입니다.");
+        }
+        
+        report.updateStatus(newStatus);
+        
+        if (newStatus == ReportStatus.DELETED && report.getPostId() != null) {
+            Post post = postRepository.findById(report.getPostId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+            
+            post.softDelete();
+        }
+        
+        return new ReportCommandResponse(report);
     }
 }
