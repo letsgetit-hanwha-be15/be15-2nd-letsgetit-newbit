@@ -16,6 +16,7 @@ import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.user.entity.Mentor;
 import com.newbit.user.repository.MentorRepository;
+import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,13 +26,12 @@ public class ColumnRequestService {
 
     private final ColumnRepository columnRepository;
     private final ColumnRequestRepository columnRequestRepository;
-    private final MentorRepository mentorRepository;
+    private final MentorService mentorService;
     private final ColumnMapper columnMapper;
 
     public CreateColumnResponseDto createColumnRequest(CreateColumnRequestDto dto, Long mentorId) {
         // 1. Mentor 조회
-        Mentor mentor = mentorRepository.findById(mentorId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MENTOR_NOT_FOUND));
+        Mentor mentor = mentorService.getMentorEntityById(mentorId);
 
         // 2. Column 저장
         Column column = columnMapper.toColumn(dto, mentor);
