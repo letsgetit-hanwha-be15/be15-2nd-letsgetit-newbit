@@ -54,8 +54,6 @@ public class CoffeechatCommandService {
     private void createRequestTime(Long coffeechatId, List<RequestTimeDto> requestTimeDtos, int purchaseQuantity) {
         List<RequestTime> requestTimes = new LinkedList<>();
         requestTimeDtos.forEach(timeDto -> {
-            System.out.print("timeDto 출력 : ");
-            System.out.println(timeDto);
             if (!timeDto.getStartDateTime().toLocalDate().isEqual(timeDto.getEndDateTime().toLocalDate())) {
                 throw new BusinessException(ErrorCode.INVALID_REQUEST_DATE); // 시작 날짜와 끝 날짜가 다릅니다.
             }

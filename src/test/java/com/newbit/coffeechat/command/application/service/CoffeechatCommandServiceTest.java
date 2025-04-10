@@ -35,7 +35,7 @@ class CoffeechatCommandServiceTest {
     @Mock
     private CoffeechatQueryService coffeechatQueryService;
 
-    @DisplayName("1-1. 커피챗 요청 등록 성공")
+    @DisplayName("커피챗 요청 등록 성공")
     @Test
     void createCoffeechat_성공() {
         // given
@@ -62,7 +62,7 @@ class CoffeechatCommandServiceTest {
 
     }
 
-    @DisplayName("1-2. 이미 진행중인 커피챗이 존재할 시 에러 반환")
+    @DisplayName("이미 진행중인 커피챗이 존재할 시 에러 반환")
     @Test
     void createCoffeechat_진행중인_커피챗이_존재() {
         // given
@@ -91,5 +91,5 @@ class CoffeechatCommandServiceTest {
         verify(coffeechatRepository, never()).save(any(Coffeechat.class));
 
     }
-
+    
 }
