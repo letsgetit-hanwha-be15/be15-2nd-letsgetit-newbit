@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CoffeechatSearchRequest {
+    private Long userId;
     private Integer page = 1;
     private Integer size = 10;
     private Long mentorId; // TODO : 회원가입 기능 생기면 삭제
