@@ -100,8 +100,8 @@ public class DiamondHistory {
                 .userId(userId)
                 .serviceType(DiamondTransactionType.COFFEECHAT)
                 .serviceId(coffeechatId)
-                .decreaseAmount(totalPrice)
-                .increaseAmount(null)
+                .decreaseAmount(null)
+                .increaseAmount(totalPrice)
                 .balance(diamondBalance)  // 차감 이후 잔액
                 .build();
     }

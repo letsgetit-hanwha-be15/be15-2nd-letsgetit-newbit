@@ -141,8 +141,7 @@ public class PurchaseCommandService {
     }
 
 
-
-
+    @Transactional
     public void refundCoffeeChat(Long coffeechatId, Long menteeId, Long mentorId, Integer totalPrice) {
 
         // 1. 멘티 다이아 추가
