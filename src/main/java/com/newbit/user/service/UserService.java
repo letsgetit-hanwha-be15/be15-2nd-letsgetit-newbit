@@ -137,4 +137,7 @@ public class UserService {
     }
 
 
+    public Long findUserIdByEmail(String email) {
+        return null;
+    }
 }
