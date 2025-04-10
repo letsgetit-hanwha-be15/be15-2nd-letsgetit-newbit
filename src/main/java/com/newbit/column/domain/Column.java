@@ -25,6 +25,7 @@ public class Column {
     private String content;
 
     @jakarta.persistence.Column(nullable = false)
+    @Builder.Default
     private boolean isPublic = false;
 
     @jakarta.persistence.Column(nullable = false)
@@ -37,5 +38,6 @@ public class Column {
     private Long mentorId;
 
     @OneToMany(mappedBy = "column", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<ColumnRequest> requests = new ArrayList<>();
 }

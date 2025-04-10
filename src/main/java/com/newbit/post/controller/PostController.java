@@ -15,7 +15,11 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @Tag(name = "게시글 API", description = "게시글 등록, 수정, 삭제, 조회 관련")
+
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
@@ -35,6 +39,13 @@ public class PostController {
     public ResponseEntity<PostResponse> createPost(@RequestBody PostCreateRequest request) {
         PostResponse response = postService.createPost(request);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "게시글 검색", description = "키워드를 통해 게시글 제목 또는 내용에서 검색합니다.")
+    public ResponseEntity<List<PostResponse>> searchPosts(@RequestParam("keyword") String keyword) {
+        List<PostResponse> responses = postService.searchPosts(keyword);
+        return ResponseEntity.ok(responses);
     }
 
     @DeleteMapping("/{id}")
