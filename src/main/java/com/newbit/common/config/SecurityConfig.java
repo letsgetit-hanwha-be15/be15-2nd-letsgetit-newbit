@@ -66,7 +66,11 @@ public class SecurityConfig {
                 )
                 // 요청 http method, url 기준으로 인증, 인가 필요 여부 설정
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers(HttpMethod.POST, "/api/v1/user/signup", "/api/v1/auth/login", "/api/v1/auth/refresh","/api/v1/user/find-id",
+                        auth.requestMatchers(HttpMethod.POST,
+                                        "/api/v1/user/signup",
+                                        "/api/v1/auth/login",
+                                        "/api/v1/auth/refresh",
+                                        "/api/v1/user/find-id",
                                         "/api/v1/user/find-password").permitAll()
                                 .requestMatchers(
                                         "/swagger-ui/**",
