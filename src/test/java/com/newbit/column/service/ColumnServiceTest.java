@@ -2,6 +2,7 @@ package com.newbit.column.service;
 
 import com.newbit.column.domain.Column;
 import com.newbit.column.dto.response.GetColumnDetailResponseDto;
+import com.newbit.column.dto.response.GetColumnListResponseDto;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
@@ -12,7 +13,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -34,9 +40,6 @@ class ColumnServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
-//    public ColumnServiceTest() {
-//        MockitoAnnotations.openMocks(this);
-//    }
 
     @DisplayName("공개된 칼럼 상세 조회 성공")
     @Test
@@ -44,18 +47,18 @@ class ColumnServiceTest {
         // given
         Long userId = 1L;
         Long columnId = 1L;
-        Column column = Column.builder()
-                .columnId(columnId)
-                .title("테스트 제목")
-                .content("테스트 내용")
-                .price(1000)
-                .thumbnailUrl("https://example.com/image.jpg")
-                .likeCount(5)
-                .mentorId(10L)
-                .isPublic(true)
-                .build();
+        GetColumnDetailResponseDto responseDto = new GetColumnDetailResponseDto(
+                columnId,
+                "테스트 제목",
+                "테스트 내용",
+                1000,
+                "https://example.com/image.jpg",
+                5,
+                10L,
+                "개발자도토리"
+        );
 
-        when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
+        when(columnRepository.findPublicColumnDetailById(columnId)).thenReturn(Optional.of(responseDto));
         when(columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId)).thenReturn(true);
 
         // when
@@ -69,6 +72,7 @@ class ColumnServiceTest {
         assertThat(result.getThumbnailUrl()).isEqualTo("https://example.com/image.jpg");
         assertThat(result.getLikeCount()).isEqualTo(5);
         assertThat(result.getMentorId()).isEqualTo(10L);
+        assertThat(result.getMentorNickname()).isEqualTo("개발자도토리");
     }
 
     @DisplayName("비공개 칼럼일 경우 예외 발생")
@@ -122,5 +126,59 @@ class ColumnServiceTest {
         assertThatThrownBy(() -> columnService.getColumnDetail(userId, columnId))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.COLUMN_NOT_PURCHASED.getMessage());
+    }
+
+    @DisplayName("공개된 칼럼 목록 조회 - 페이징 적용")
+    @Test
+    void getPublicColumnList_paging_success() {
+        // given
+        int page = 0;
+        int size = 2;
+        Pageable pageable = PageRequest.of(page, size);
+
+        GetColumnListResponseDto dto1 = GetColumnListResponseDto.builder()
+                .columnId(1L)
+                .title("이직을 위한 포트폴리오 전략")
+                .thumbnailUrl("https://example.com/img1.jpg")
+                .price(1000)
+                .likeCount(12)
+                .mentorId(101L)
+                .mentorNickname("개발자도토리")
+                .build();
+
+        GetColumnListResponseDto dto2 = GetColumnListResponseDto.builder()
+                .columnId(2L)
+                .title("개발자 연봉 협상법")
+                .thumbnailUrl("https://example.com/img2.jpg")
+                .price(2000)
+                .likeCount(20)
+                .mentorId(102L)
+                .mentorNickname("연봉왕")
+                .build();
+
+        List<GetColumnListResponseDto> dtoList = List.of(dto1, dto2);
+        Page<GetColumnListResponseDto> columnPage = new PageImpl<>(dtoList, pageable, dtoList.size());
+
+        when(columnRepository.findAllByIsPublicTrueOrderByCreatedAtDesc(pageable)).thenReturn(columnPage);
+
+        // when
+        Page<GetColumnListResponseDto> result = columnService.getPublicColumnList(page, size);
+
+        // then
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getTotalPages()).isEqualTo(1);
+        assertThat(result.getNumber()).isEqualTo(0);
+        assertThat(result.getSize()).isEqualTo(2);
+
+        GetColumnListResponseDto resultDto1 = result.getContent().get(0);
+        assertThat(resultDto1.getColumnId()).isEqualTo(1L);
+        assertThat(resultDto1.getTitle()).isEqualTo("이직을 위한 포트폴리오 전략");
+        assertThat(resultDto1.getMentorNickname()).isEqualTo("개발자도토리");
+
+        GetColumnListResponseDto resultDto2 = result.getContent().get(1);
+        assertThat(resultDto2.getColumnId()).isEqualTo(2L);
+        assertThat(resultDto2.getTitle()).isEqualTo("개발자 연봉 협상법");
+        assertThat(resultDto2.getMentorNickname()).isEqualTo("연봉왕");
     }
 }

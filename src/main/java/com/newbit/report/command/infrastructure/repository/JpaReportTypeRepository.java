@@ -10,18 +10,23 @@ import com.newbit.report.command.domain.repository.ReportTypeRepository;
 
 import lombok.RequiredArgsConstructor;
 
-interface JpaReportTypeJpaRepository extends JpaRepository<ReportType, Long> {
+
+interface ReportTypeJpaRepository extends JpaRepository<ReportType, Long> {
 }
 
 @Repository
 @RequiredArgsConstructor
 public class JpaReportTypeRepository implements ReportTypeRepository {
     
-    private final JpaReportTypeJpaRepository jpaRepository;
+    private final ReportTypeJpaRepository jpaRepository;
     
     @Override
     public Optional<ReportType> findById(Long id) {
         return jpaRepository.findById(id);
     }
     
+    @Override
+    public ReportType save(ReportType reportType) {
+        return jpaRepository.save(reportType);
+    }
 } 

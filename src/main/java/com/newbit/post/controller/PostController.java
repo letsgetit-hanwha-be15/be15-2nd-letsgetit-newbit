@@ -2,6 +2,7 @@ package com.newbit.post.controller;
 
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.request.PostUpdateRequest;
+import com.newbit.post.dto.response.PostDetailResponse;
 import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +16,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-
 
 @Tag(name = "게시글 API", description = "게시글 등록, 수정, 삭제, 조회 관련")
 @RestController
@@ -66,6 +66,12 @@ public class PostController {
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
         Page<PostResponse> responses = postService.getPostList(pageable);
         return ResponseEntity.ok(responses);
-
     }
+
+    @GetMapping("/{postId}")
+    @Operation(summary = "게시글 상세 조회", description = "게시글 상세정보를 조회합니다.")
+    public ResponseEntity<PostDetailResponse> getPostDetail(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.getPostDetail(postId));
+    }
+
 }

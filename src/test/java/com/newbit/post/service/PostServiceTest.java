@@ -2,8 +2,12 @@ package com.newbit.post.service;
 
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.request.PostCreateRequest;
+import com.newbit.post.entity.Comment;
 import com.newbit.post.entity.Post;
+import com.newbit.post.entity.PostCategory;
+import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
+import com.newbit.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.*;
@@ -21,11 +25,13 @@ class PostServiceTest {
     private PostRepository postRepository;
     private PostService postService;
     private PostCreateRequest request;
+    private CommentRepository commentRepository;
 
     @BeforeEach
     void setUp() {
         postRepository = mock(PostRepository.class);
-        postService = new PostService(postRepository);
+        commentRepository = mock(CommentRepository.class);
+        postService = new PostService(postRepository, commentRepository);
 
         request = new PostCreateRequest();
         request.setTitle("단위 테스트 제목");
@@ -157,4 +163,56 @@ class PostServiceTest {
 
         verify(postRepository, times(1)).findAll(pageable);
     }
+
+    @Test
+    void 게시글_상세_조회_성공() {
+        // given
+        Long postId = 1L;
+
+        Post post = Post.builder()
+                .id(postId)
+                .title("상세 제목")
+                .content("상세 내용")
+                .userId(1L)
+                .postCategoryId(2L)
+                .build();
+
+        User mockUser = User.builder()
+                .userId(1L)
+                .userName("작성자이름")
+                .build();
+
+        PostCategory mockCategory = PostCategory.builder()
+                .id(2L)
+                .name("카테고리이름")
+                .build();
+
+        post.setUser(mockUser);
+        post.setPostCategory(mockCategory);
+
+        Comment comment = Comment.builder()
+                .id(1L)
+                .post(post)
+                .userId(2L)
+                .content("댓글입니다")
+                .build();
+
+        when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
+        CommentRepository commentRepository = mock(CommentRepository.class);
+        when(commentRepository.findByPostIdAndDeletedAtIsNull(postId)).thenReturn(List.of(comment));
+
+        // PostService를 다시 생성해서 의존성 주입
+        PostService postServiceWithMocks = new PostService(postRepository, commentRepository);
+
+        // when
+        var response = postServiceWithMocks.getPostDetail(postId);
+
+        // then
+        assertThat(response.getTitle()).isEqualTo("상세 제목");
+        assertThat(response.getWriterName()).isEqualTo("작성자이름");
+        assertThat(response.getCategoryName()).isEqualTo("카테고리이름");
+        assertThat(response.getComments()).hasSize(1);
+        assertThat(response.getComments().get(0).getContent()).isEqualTo("댓글입니다");
+    }
+
 }
