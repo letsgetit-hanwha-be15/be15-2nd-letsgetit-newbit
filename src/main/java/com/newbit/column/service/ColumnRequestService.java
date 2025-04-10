@@ -5,6 +5,7 @@ import com.newbit.column.dto.request.DeleteColumnRequestDto;
 import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import com.newbit.column.dto.response.CreateColumnResponseDto;
 import com.newbit.column.dto.response.DeleteColumnResponseDto;
+import com.newbit.column.dto.response.GetMyColumnRequestResponseDto;
 import com.newbit.column.dto.response.UpdateColumnResponseDto;
 import com.newbit.column.domain.Column;
 import com.newbit.column.domain.ColumnRequest;
@@ -15,10 +16,12 @@ import com.newbit.column.repository.ColumnRequestRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.user.entity.Mentor;
-import com.newbit.user.repository.MentorRepository;
 import com.newbit.user.service.MentorService;
+import com.newbit.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,30 +30,31 @@ public class ColumnRequestService {
     private final ColumnRepository columnRepository;
     private final ColumnRequestRepository columnRequestRepository;
     private final MentorService mentorService;
+    private final UserService  userService;
     private final ColumnMapper columnMapper;
 
-    public CreateColumnResponseDto createColumnRequest(CreateColumnRequestDto dto, Long mentorId) {
+    public CreateColumnResponseDto createColumnRequest(CreateColumnRequestDto dto, String email) {
         // 1. Mentor 조회
-        Mentor mentor = mentorService.getMentorEntityById(mentorId);
+        Long userId = userService.findUserIdByEmail(email);
+        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
 
         // 2. Column 저장
         Column column = columnMapper.toColumn(dto, mentor);
         Column savedColumn = columnRepository.save(column);
 
-        // 2. ColumnRequest 저장
+        // 3. ColumnRequest 저장
         ColumnRequest request = columnMapper.toColumnRequest(dto, savedColumn);
-
-        ColumnRequest saved = columnRequestRepository.save(request);
+        ColumnRequest savedRequest = columnRequestRepository.save(request);
 
         return CreateColumnResponseDto.builder()
-                .columnRequestId(saved.getColumnRequestId())
+                .columnRequestId(savedRequest.getColumnRequestId())
                 .build();
     }
 
     public UpdateColumnResponseDto updateColumnRequest(UpdateColumnRequestDto dto, Long columnId) {
         // 1. columnId로 Column 조회
         Column column = columnRepository.findById(columnId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 칼럼을 찾을 수 없습니다. columnId = " + columnId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
 
         // 2. ColumnRequest 생성
         ColumnRequest request = ColumnRequest.builder()
@@ -74,7 +78,7 @@ public class ColumnRequestService {
 
     public DeleteColumnResponseDto deleteColumnRequest(DeleteColumnRequestDto dto, Long columnId) {
         Column column = columnRepository.findById(columnId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 칼럼을 찾을 수 없습니다. columnId = " + columnId));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
 
         ColumnRequest request = ColumnRequest.builder()
                 .requestType(RequestType.DELETE)
@@ -87,6 +91,17 @@ public class ColumnRequestService {
         return DeleteColumnResponseDto.builder()
                 .columnRequestId(saved.getColumnRequestId())
                 .build();
+    }
+
+    public List<GetMyColumnRequestResponseDto> getMyColumnRequests(String email) {
+        Long userId = userService.findUserIdByEmail(email);
+        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
+
+        List<ColumnRequest> requests = columnRequestRepository.findAllByColumn_Mentor_MentorIdOrderByCreatedAtDesc(mentor.getMentorId());
+
+        return requests.stream()
+                .map(columnMapper::toMyColumnRequestResponseDto)
+                .toList();
     }
 
     public Integer getColumnPriceById(Long columnId) {
