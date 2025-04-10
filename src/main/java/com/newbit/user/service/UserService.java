@@ -115,6 +115,14 @@ public class UserService {
         return user.getPoint();
     }
 
+    @Transactional
+    public Integer addPoint(Long userId, int amount) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        user.addPoint(amount);// 도메인 로직에 위임 (Entity 내부에 구현된 로직)
+        return user.getPoint();
+    }
+
 
     public UserDTO getUserByUserId(Long userId) {
         User user = userRepository.findById(userId)
