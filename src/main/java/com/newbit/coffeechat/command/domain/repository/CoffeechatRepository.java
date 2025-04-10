@@ -1,4 +1,4 @@
-package com.newbit.coffeechat.command.application.domain.repository;
+package com.newbit.coffeechat.command.domain.repository;
 
 import com.newbit.coffeechat.command.domain.aggregate.Coffeechat;
 

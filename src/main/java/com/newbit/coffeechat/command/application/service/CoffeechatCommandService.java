@@ -1,6 +1,6 @@
 package com.newbit.coffeechat.command.application.service;
 
-import com.newbit.coffeechat.command.application.domain.repository.CoffeechatRepository;
+import com.newbit.coffeechat.command.domain.repository.CoffeechatRepository;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
 import com.newbit.coffeechat.command.domain.aggregate.Coffeechat;
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
