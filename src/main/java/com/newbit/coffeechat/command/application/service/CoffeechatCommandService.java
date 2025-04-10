@@ -6,7 +6,6 @@ import com.newbit.coffeechat.command.domain.repository.CoffeechatRepository;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
 import com.newbit.coffeechat.command.domain.aggregate.Coffeechat;
 import com.newbit.coffeechat.command.domain.repository.RequestTimeRepository;
-import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
