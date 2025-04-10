@@ -50,18 +50,18 @@ class ColumnServiceTest {
         // given
         Long userId = 1L;
         Long columnId = 1L;
-        Column column = Column.builder()
-                .columnId(columnId)
-                .title("테스트 제목")
-                .content("테스트 내용")
-                .price(1000)
-                .thumbnailUrl("https://example.com/image.jpg")
-                .likeCount(5)
-                .mentorId(10L)
-                .isPublic(true)
-                .build();
+        GetColumnDetailResponseDto responseDto = new GetColumnDetailResponseDto(
+                columnId,
+                "테스트 제목",
+                "테스트 내용",
+                1000,
+                "https://example.com/image.jpg",
+                5,
+                10L,
+                "개발자도토리"
+        );
 
-        when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
+        when(columnRepository.findPublicColumnDetailById(columnId)).thenReturn(Optional.of(responseDto));
         when(columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId)).thenReturn(true);
 
         // when
@@ -75,6 +75,7 @@ class ColumnServiceTest {
         assertThat(result.getThumbnailUrl()).isEqualTo("https://example.com/image.jpg");
         assertThat(result.getLikeCount()).isEqualTo(5);
         assertThat(result.getMentorId()).isEqualTo(10L);
+        assertThat(result.getMentorNickname()).isEqualTo("개발자도토리");
     }
 
     @DisplayName("비공개 칼럼일 경우 예외 발생")
@@ -138,28 +139,28 @@ class ColumnServiceTest {
         int size = 2;
         Pageable pageable = PageRequest.of(page, size);
 
-        Column column1 = Column.builder()
+        GetColumnListResponseDto dto1 = GetColumnListResponseDto.builder()
                 .columnId(1L)
                 .title("이직을 위한 포트폴리오 전략")
                 .thumbnailUrl("https://example.com/img1.jpg")
                 .price(1000)
                 .likeCount(12)
                 .mentorId(101L)
-                .isPublic(true)
+                .mentorNickname("개발자도토리")
                 .build();
 
-        Column column2 = Column.builder()
+        GetColumnListResponseDto dto2 = GetColumnListResponseDto.builder()
                 .columnId(2L)
                 .title("개발자 연봉 협상법")
                 .thumbnailUrl("https://example.com/img2.jpg")
                 .price(2000)
                 .likeCount(20)
                 .mentorId(102L)
-                .isPublic(true)
+                .mentorNickname("연봉왕")
                 .build();
 
-        List<Column> columnList = List.of(column1, column2);
-        Page<Column> columnPage = new PageImpl<>(columnList, pageable, columnList.size());
+        List<GetColumnListResponseDto> dtoList = List.of(dto1, dto2);
+        Page<GetColumnListResponseDto> columnPage = new PageImpl<>(dtoList, pageable, dtoList.size());
 
         when(columnRepository.findAllByIsPublicTrueOrderByCreatedAtDesc(pageable)).thenReturn(columnPage);
 
@@ -173,12 +174,14 @@ class ColumnServiceTest {
         assertThat(result.getNumber()).isEqualTo(0);
         assertThat(result.getSize()).isEqualTo(2);
 
-        GetColumnListResponseDto dto1 = result.getContent().get(0);
-        assertThat(dto1.getColumnId()).isEqualTo(1L);
-        assertThat(dto1.getTitle()).isEqualTo("이직을 위한 포트폴리오 전략");
+        GetColumnListResponseDto resultDto1 = result.getContent().get(0);
+        assertThat(resultDto1.getColumnId()).isEqualTo(1L);
+        assertThat(resultDto1.getTitle()).isEqualTo("이직을 위한 포트폴리오 전략");
+        assertThat(resultDto1.getMentorNickname()).isEqualTo("개발자도토리");
 
-        GetColumnListResponseDto dto2 = result.getContent().get(1);
-        assertThat(dto2.getColumnId()).isEqualTo(2L);
-        assertThat(dto2.getTitle()).isEqualTo("개발자 연봉 협상법");
+        GetColumnListResponseDto resultDto2 = result.getContent().get(1);
+        assertThat(resultDto2.getColumnId()).isEqualTo(2L);
+        assertThat(resultDto2.getTitle()).isEqualTo("개발자 연봉 협상법");
+        assertThat(resultDto2.getMentorNickname()).isEqualTo("연봉왕");
     }
 }
