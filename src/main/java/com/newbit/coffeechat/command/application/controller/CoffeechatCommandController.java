@@ -1,5 +1,6 @@
 package com.newbit.coffeechat.command.application.controller;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
 import com.newbit.coffeechat.command.application.dto.response.CoffeechatCommandResponse;
 import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
@@ -10,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,14 +20,13 @@ public class CoffeechatCommandController {
 
     private final CoffeechatCommandService coffeechatCommandService;
 
-    @PostMapping("{userId}") // TODO : 로그인 기능 추가 시 제거
+    @PostMapping("/register")
     public ResponseEntity<ApiResponse<CoffeechatCommandResponse>> createCoffeechat(
             @Valid @RequestBody CoffeechatCreateRequest coffeechatCreateRequest,
-            @Parameter(description = "조회할 유저 ID", required = true) @PathVariable Long userId
-//            @AuthenticationPrincipal UserDetails userDetails // TODO : 로그인 기능 추가 시 사용
+            @AuthenticationPrincipal CustomUser customUser
     ) {
 
-//        Long userId = userDetails.getUsername() // TODO : 로그인 기능 추가 시 사용
+        Long userId = customUser.getUserId();
         Long coffeechatId = coffeechatCommandService.createCoffeechat(userId, coffeechatCreateRequest);
 
         CoffeechatCommandResponse response = CoffeechatCommandResponse.builder()
