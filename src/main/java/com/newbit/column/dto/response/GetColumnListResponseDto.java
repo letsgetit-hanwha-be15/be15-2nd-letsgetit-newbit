@@ -1,9 +1,12 @@
 package com.newbit.column.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
+@Schema(description = "공개 칼럼 리스트 조회 응답")
 public class GetColumnListResponseDto {
 
     @Schema(description = "칼럼 ID", example = "1")
