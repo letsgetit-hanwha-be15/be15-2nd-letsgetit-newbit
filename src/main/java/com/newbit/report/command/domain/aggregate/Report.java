@@ -6,9 +6,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -32,8 +35,9 @@ public class Report {
 
     private Long postId;
 
-    @Column(nullable = false)
-    private Long reportTypeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "report_type_id", nullable = false)
+    private ReportType reportType;
 
     @Column(length = 255)
     private String content;
@@ -48,11 +52,11 @@ public class Report {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Report(Long userId, Long postId, Long commentId, Long reportTypeId, String content) {
+    private Report(Long userId, Long postId, Long commentId, ReportType reportType, String content) {
         this.userId = userId;
         this.postId = postId;
         this.commentId = commentId;
-        this.reportTypeId = reportTypeId;
+        this.reportType = reportType;
         this.content = content;
         this.status = ReportStatus.SUBMITTED;
         this.createdAt = LocalDateTime.now();
@@ -63,20 +67,20 @@ public class Report {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public static Report createPostReport(Long userId, Long postId, Long reportTypeId, String content) {
+    public static Report createPostReport(Long userId, Long postId, ReportType reportType, String content) {
         return Report.builder()
                 .userId(userId)
                 .postId(postId)
-                .reportTypeId(reportTypeId)
+                .reportType(reportType)
                 .content(content)
                 .build();
     }
     
-    public static Report createCommentReport(Long userId, Long commentId, Long reportTypeId, String content) {
+    public static Report createCommentReport(Long userId, Long commentId, ReportType reportType, String content) {
         return Report.builder()
                 .userId(userId)
                 .commentId(commentId)
-                .reportTypeId(reportTypeId)
+                .reportType(reportType)
                 .content(content)
                 .build();
     }
