@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.newbit.purchase.query.repository.SaleHistoryMapper">
+    <select id="findSaleHistories" resultType="com.newbit.purchase.query.dto.response.SaleHistoryDto">
+        SELECT
+        sh.sale_history_id AS settlementHistoryId,
+        sh.is_settled AS isSettled,
+        sh.settled_at AS settledAt,
+        sh.sale_amount AS saleAmount,
+        sh.service_type AS serviceType,
+        sh.service_id AS serviceId,
+        sh.created_at AS createdAt,
+        sh.updated_at AS updatedAt,
+        sh.mentor_id AS mentorId
+        FROM
+        sale_history sh
+        JOIN
+        mentor m ON sh.mentor_id = m.mentor_id
+        WHERE
+        m.user_id = #{userId}
+    </select>
+
+    <select id="countSaleHistories" resultType="long">
+        SELECT
+        COUNT(*)
+        FROM
+        sale_history sh
+        JOIN
+        mentor m ON sh.mentor_id = m.mentor_id
+        WHERE
+        m.user_id = #{userId}
+    </select>
+</mapper>
