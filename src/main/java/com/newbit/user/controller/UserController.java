@@ -2,6 +2,7 @@ package com.newbit.user.controller;
 
 import com.newbit.common.dto.ApiResponse;
 import com.newbit.user.dto.request.FindIdDTO;
+import com.newbit.user.dto.request.FindPasswordDTO;
 import com.newbit.user.dto.request.UserRequestDTO;
 import com.newbit.user.dto.response.UserIdDTO;
 import com.newbit.user.service.UserService;
@@ -38,5 +39,12 @@ public class UserController {
     public ResponseEntity<UserIdDTO> findEmail(@RequestBody FindIdDTO findIdDTO) {
         UserIdDTO userIdDTO = userService.findEmailByNameAndPhone(findIdDTO);
         return ResponseEntity.ok(userIdDTO);
+    }
+
+    @Operation(summary = "비밀번호 찾기", description = "비밀번호 찾기 기능")
+    @PostMapping("/find-password")
+    public ResponseEntity<Void> findPassword(@RequestBody FindPasswordDTO requestDto) {
+        userService.findPasswordByEmail(requestDto.getEmail()); // ✅ .email() → .getEmail()
+        return ResponseEntity.ok().build();
     }
 }

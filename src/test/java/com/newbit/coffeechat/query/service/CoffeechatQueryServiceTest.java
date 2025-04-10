@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mybatis.spring.SqlSessionTemplate;
 
 import java.awt.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -177,6 +178,58 @@ class CoffeechatQueryServiceTest {
         assertEquals("첫번째 커피챗 신청드립니다.", results.getCoffeechats().get(0).getRequestMessage());
         // 해당 객체에서 메소드 호출 여부 확인 -> 서비스 내부의 상호 작용이 기대한 대로 이루어졌는지
         verify(coffeechatMapper).selectCoffeechats(coffeechatSearchRequest);
+    }
+
+    @DisplayName("3-1. 커피챗 요청 목록 조회 - 성공")
+    @Test
+    void getCoffeechatRequestTimes_성공() {
+        // given
+        Long coffeechatId = 4L;
+
+        RequestTimeDto request1 = RequestTimeDto.builder()
+                .requestTimeId(1L)
+                .eventDate(LocalDate.of(2025, 4, 11))
+                .startTime(LocalDateTime.of(2025, 4, 11, 19, 30))
+                .endTime(LocalDateTime.of(2025, 4, 11, 21, 30))
+                .coffeechatId(coffeechatId)
+                .build();
+
+        RequestTimeDto request2 = RequestTimeDto.builder()
+                .requestTimeId(1L)
+                .eventDate(LocalDate.of(2025, 4, 12))
+                .startTime(LocalDateTime.of(2025, 4, 12, 19, 30))
+                .endTime(LocalDateTime.of(2025, 4, 12, 21, 30))
+                .coffeechatId(coffeechatId)
+                .build();
+
+
+        List<RequestTimeDto> originalList = Arrays.asList(request1, request2);
+        when(coffeechatMapper.selectRequestTimeByCoffeechatId(coffeechatId)).thenReturn(originalList);
+
+        // when
+        RequestTimeListResponse results = coffeechatQueryService.getCoffeechatRequestTimes(coffeechatId);
+
+        // then
+
+        // 주어진 결과 값이 올바른 비즈니스 로직을 통해 가공되었는지 확인
+        assertNotNull(results);
+        assertEquals(2, results.getRequestTimes().size());
+        // 해당 객체에서 메소드 호출 여부 확인 -> 서비스 내부의 상호 작용이 기대한 대로 이루어졌는지
+        verify(coffeechatMapper).selectRequestTimeByCoffeechatId(coffeechatId);
+    }
+
+    @DisplayName("3-2. 커피챗 요청 목록 조회 - 실패")
+    @Test
+    void getCoffeechatRequestTimes_실패() {
+        // given
+        Long invalidCoffeechatId = 22L;
+        when(coffeechatMapper.selectRequestTimeByCoffeechatId(invalidCoffeechatId)).thenReturn(null);
+
+        // when
+        assertThatThrownBy(() -> coffeechatQueryService.getCoffeechatRequestTimes(invalidCoffeechatId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.REQUEST_TIME_NOT_FOUND.getMessage());
+
     }
 
     static class CoffeechatTestParams {

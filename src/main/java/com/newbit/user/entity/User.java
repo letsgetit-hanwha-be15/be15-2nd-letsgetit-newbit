@@ -91,4 +91,7 @@ public class User {
     }
 
 
+    public void findPassword(String newPassword) {
+        this.password = newPassword;
+    }
 }

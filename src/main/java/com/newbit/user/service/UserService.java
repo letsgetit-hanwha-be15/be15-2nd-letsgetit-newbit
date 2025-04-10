@@ -8,6 +8,7 @@ import com.newbit.user.dto.response.UserIdDTO;
 import com.newbit.user.entity.User;
 import com.newbit.user.dto.request.UserRequestDTO;
 import com.newbit.user.repository.UserRepository;
+import com.newbit.user.support.MailServiceSupport;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
+
+import java.util.UUID;
 
 import static com.newbit.common.exception.ErrorCode.FIND_EMAIL_BY_NAME_AND_PHONE_ERROR;
 @Service
@@ -24,6 +27,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+    private  final MailServiceSupport mailServiceSupport;
 
     // 회원 가입
     @Transactional
@@ -43,6 +47,33 @@ public class UserService {
                 .map(UserIdDTO::from)
                 .orElseThrow(() -> new BusinessException(FIND_EMAIL_BY_NAME_AND_PHONE_ERROR));
     }
+
+    @Transactional
+    public void findPasswordByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+
+        String tempPassword = generateTempPassword();
+        user.findPassword(passwordEncoder.encode(tempPassword));
+
+        sendTemporaryPassword(email, tempPassword);
+    }
+
+    private String generateTempPassword() {
+        return UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    public void sendTemporaryPassword(String toEmail, String tempPassword) {
+        String subject = "Newbit 임시 비밀번호 안내";
+        String content = "<p>안녕하세요!,</p>" +
+                "<p>임시 비밀번호는 다음과 같습니다:</p>" +
+                "<h3>" + tempPassword + "</h3>" +
+                "<p>로그인 후 비밀번호를 반드시 변경해주세요.</p>";
+
+        mailServiceSupport.sendMailSupport(toEmail, subject, content);
+    }
+
+
 
     @Transactional(readOnly = true)
     public Integer getDiamondBalance(Long userId) {

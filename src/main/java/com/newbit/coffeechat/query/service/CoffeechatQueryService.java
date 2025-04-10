@@ -1,9 +1,7 @@
 package com.newbit.coffeechat.query.service;
 
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
-import com.newbit.coffeechat.query.dto.response.CoffeechatDetailResponse;
-import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
-import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
+import com.newbit.coffeechat.query.dto.response.*;
 import com.newbit.coffeechat.query.mapper.CoffeechatMapper;
 import com.newbit.common.dto.Pagination;
 import com.newbit.common.exception.BusinessException;
@@ -57,4 +55,13 @@ public class CoffeechatQueryService {
                 .build();
     }
 
+    public RequestTimeListResponse getCoffeechatRequestTimes(Long coffeechatId) {
+        // 필요한 컨텐츠 조회
+        List<RequestTimeDto> requestTimes = Optional.ofNullable(coffeechatMapper.selectRequestTimeByCoffeechatId(coffeechatId))
+                .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_TIME_NOT_FOUND));
+
+        return RequestTimeListResponse.builder()
+                .requestTimes(requestTimes)
+                .build();
+    }
 }
