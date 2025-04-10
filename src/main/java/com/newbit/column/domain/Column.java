@@ -39,8 +39,6 @@ public class Column {
 
     private String thumbnailUrl;
 
-    private Long mentorId;
-
     @CreatedDate
     @jakarta.persistence.Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
