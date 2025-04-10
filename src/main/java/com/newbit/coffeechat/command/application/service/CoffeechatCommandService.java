@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -56,6 +57,9 @@ public class CoffeechatCommandService {
         requestTimeDtos.forEach(timeDto -> {
             if (!timeDto.getStartDateTime().toLocalDate().isEqual(timeDto.getEndDateTime().toLocalDate())) {
                 throw new BusinessException(ErrorCode.INVALID_REQUEST_DATE); // 시작 날짜와 끝 날짜가 다릅니다.
+            }
+            if (timeDto.getStartDateTime().isBefore(LocalDateTime.now())) {
+                throw new BusinessException(ErrorCode.REQUEST_DATE_IN_PAST); // 시작 날짜가 오늘보다 이전입니다.
             }
 
             long minutesDiff = ChronoUnit.MINUTES.between(timeDto.getStartDateTime(), timeDto.getEndDateTime());
