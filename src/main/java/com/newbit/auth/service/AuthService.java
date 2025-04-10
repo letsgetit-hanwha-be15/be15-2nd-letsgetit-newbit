@@ -5,6 +5,7 @@ import com.newbit.auth.dto.response.TokenResponseDTO;
 import com.newbit.auth.entity.RefreshToken;
 import com.newbit.auth.repository.RefreshTokenRepository;
 import com.newbit.auth.jwt.JwtTokenProvider;
+import com.newbit.purchase.command.application.service.PointRewardCommandService;
 import com.newbit.user.entity.User;
 import com.newbit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final PointRewardCommandService pointRewardCommandService;
 
     public TokenResponseDTO login(LoginRequestDTO request) {
 
