@@ -50,19 +50,7 @@ public class ColumnService {
 
     public Page<GetColumnListResponseDto> getPublicColumnList(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Column> columnsPage = columnRepository.findAllByIsPublicTrueOrderByCreatedAtDesc(pageable);
 
-        List<GetColumnListResponseDto> dtoList = columnsPage.stream()
-                .map(column -> GetColumnListResponseDto.builder()
-                        .columnId(column.getColumnId())
-                        .title(column.getTitle())
-                        .thumbnailUrl(column.getThumbnailUrl())
-                        .price(column.getPrice())
-                        .likeCount(column.getLikeCount())
-                        .mentorId(column.getMentorId())
-                        .build())
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(dtoList, pageable, columnsPage.getTotalElements());
+        return columnRepository.findAllByIsPublicTrueOrderByCreatedAtDesc(pageable);
     }
 }
