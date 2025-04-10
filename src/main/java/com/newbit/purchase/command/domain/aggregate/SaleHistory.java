@@ -70,4 +70,13 @@ public class SaleHistory {
                 .build();
     }
 
+    public static SaleHistory forCoffeechat(long mentorId, int totalPrice, long coffeechatId) {
+        return SaleHistory.builder()
+                .saleAmount(BigDecimal.valueOf(totalPrice * 100L))
+                .serviceType(ServiceType.COFFEECHAT)
+                .serviceId(coffeechatId)
+                .mentorId(mentorId)
+                .build();
+    }
+
 }

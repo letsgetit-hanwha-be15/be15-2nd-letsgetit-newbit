@@ -39,4 +39,5 @@ public class ColumnPurchaseHistoryQueryService {
         return columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId);
     }
 
+
 }

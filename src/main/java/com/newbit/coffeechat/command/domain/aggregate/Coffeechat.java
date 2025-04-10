@@ -1,5 +1,6 @@
 package com.newbit.coffeechat.command.domain.aggregate;
 
+import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -59,5 +60,9 @@ public class Coffeechat {
         coffeechat.purchaseQuantity = purchaseQuantity;
 
         return coffeechat;
+    }
+
+    public void markAsPurchased() {
+        this.progressStatus = ProgressStatus.COFFEECHAT_WAITING;
     }
 }
