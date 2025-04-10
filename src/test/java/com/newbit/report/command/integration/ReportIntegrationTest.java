@@ -55,12 +55,12 @@ class ReportIntegrationTest {
             System.out.println("게시글 삽입 성공. 생성된 ID: " + testPostId);
             
             // 댓글 삽입
-            System.out.println("SQL 실행: INSERT INTO comment (user_id, post_id, content, deleted_at) VALUES ("
-                    + testUserId + ", " + testPostId + ", '테스트 댓글입니다.', null)");
+            System.out.println("SQL 실행: INSERT INTO comment (user_id, post_id, content) VALUES ("
+                    + testUserId + ", " + testPostId + ", '테스트 댓글입니다.')");
             
             jdbcTemplate.update(
-                "INSERT INTO comment (user_id, post_id, content, deleted_at) VALUES (?, ?, ?, ?)",
-                testUserId, testPostId, "테스트 댓글입니다.", null
+                "INSERT INTO comment (user_id, post_id, content) VALUES (?, ?, ?)",
+                testUserId, testPostId, "테스트 댓글입니다."
             );
             
             testCommentId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
@@ -92,19 +92,19 @@ class ReportIntegrationTest {
     void createPostReportIntegrationTest() {
         System.out.println("\n\n===== 게시글 신고 생성 테스트 시작 =====");
         
-        // Given
+        // given
         Long reportTypeId = 1L;
         String content = "이 게시글은 스팸입니다.";
 
         ReportCreateRequest request = new ReportCreateRequest(testUserId, testPostId, reportTypeId, content);
         System.out.println("신고 생성 요청 준비: userId=" + testUserId + ", postId=" + testPostId + ", reportTypeId=" + reportTypeId);
 
-        // When
+        // when
         System.out.println("신고 생성 서비스 호출");
         ReportCommandResponse response = reportCommandService.createPostReport(request);
         System.out.println("신고 생성 완료: reportId=" + response.getReportId());
 
-        // Then
+        // then
         System.out.println("===== 응답 검증 시작 =====");
         // 1. 응답 값 검증
         assertThat(response).isNotNull();
@@ -144,8 +144,8 @@ class ReportIntegrationTest {
         assertThat(savedReport.getPostId()).isEqualTo(testPostId);
         System.out.println("저장된 postId 일치 검증 완료: " + savedReport.getPostId());
         
-        assertThat(savedReport.getReportTypeId()).isEqualTo(reportTypeId);
-        System.out.println("저장된 reportTypeId 일치 검증 완료: " + savedReport.getReportTypeId());
+        assertThat(savedReport.getReportType().getId()).isEqualTo(reportTypeId);
+        System.out.println("저장된 reportTypeId 일치 검증 완료: " + savedReport.getReportType().getId());
         
         assertThat(savedReport.getContent()).isEqualTo(content);
         System.out.println("저장된 content 일치 검증 완료");
@@ -162,19 +162,19 @@ class ReportIntegrationTest {
     void createCommentReportIntegrationTest() {
         System.out.println("\n\n===== 댓글 신고 생성 테스트 시작 =====");
         
-        // Given
+        // given
         Long reportTypeId = 1L;
         String content = "이 댓글은 스팸입니다.";
 
         ReportCreateRequest request = new ReportCreateRequest(testUserId, testCommentId, reportTypeId, content, true);
         System.out.println("신고 생성 요청 준비: userId=" + testUserId + ", commentId=" + testCommentId + ", reportTypeId=" + reportTypeId);
 
-        // When
+        // when
         System.out.println("신고 생성 서비스 호출");
         ReportCommandResponse response = reportCommandService.createCommentReport(request);
         System.out.println("신고 생성 완료: reportId=" + response.getReportId());
 
-        // Then
+        // then
         System.out.println("===== 응답 검증 시작 =====");
         // 1. 응답 값 검증
         assertThat(response).isNotNull();
@@ -214,8 +214,8 @@ class ReportIntegrationTest {
         assertThat(savedReport.getCommentId()).isEqualTo(testCommentId);
         System.out.println("저장된 commentId 일치 검증 완료: " + savedReport.getCommentId());
         
-        assertThat(savedReport.getReportTypeId()).isEqualTo(reportTypeId);
-        System.out.println("저장된 reportTypeId 일치 검증 완료: " + savedReport.getReportTypeId());
+        assertThat(savedReport.getReportType().getId()).isEqualTo(reportTypeId);
+        System.out.println("저장된 reportTypeId 일치 검증 완료: " + savedReport.getReportType().getId());
         
         assertThat(savedReport.getContent()).isEqualTo(content);
         System.out.println("저장된 content 일치 검증 완료");

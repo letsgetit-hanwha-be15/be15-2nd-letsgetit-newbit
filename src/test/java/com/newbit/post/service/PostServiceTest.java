@@ -6,7 +6,11 @@ import com.newbit.post.entity.Post;
 import com.newbit.post.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.*;
 
+
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -113,5 +117,45 @@ class PostServiceTest {
         assertThatThrownBy(() -> postService.deletePost(postId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("해당 게시글이 존재하지 않습니다.");
+    }
+
+    @Test
+    void 게시글_목록_조회_성공() {
+        // given
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
+        Page<Post> postPage = new PageImpl<>(postList, pageable, postList.size());
+
+
+
+        Post post1 = Post.builder()
+                .id(1L)
+                .title("테스트 제목1")
+                .content("테스트 내용1")
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
+
+        Post post2 = Post.builder()
+                .id(2L)
+                .title("테스트 제목2")
+                .content("테스트 내용2")
+                .userId(2L)
+                .postCategoryId(1L)
+                .build();
+
+        Page<Post> postPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
+
+        when(postRepository.findAll(pageable)).thenReturn(postPage);
+
+        // when
+        var result = postService.getPostList(pageable);
+
+        // then
+        assertThat(result.getContent()).hasSize(2);
+
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("테스트 제목1");
+        assertThat(result.getContent().get(1).getTitle()).isEqualTo("테스트 제목2");
+
+        verify(postRepository, times(1)).findAll(pageable);
     }
 }
