@@ -2,9 +2,7 @@ package com.newbit.purchase.command.application.service;
 
 import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
-import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
-import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
@@ -107,9 +105,6 @@ public class PurchaseCommandService {
 
         // 3. 다이아 내역 저장
         diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
-
-        // 4. 판매 내역 저장
-        saleHistoryRepository.save(SaleHistory.forCoffeechat(mentorId, totalPrice, coffeechatId));
     }
 
 
@@ -141,6 +136,25 @@ public class PurchaseCommandService {
 
         // 4. 멘토 등록
         mentorService.createMentor(userId);
+    }
+
+    // 커피챗 다이아 환불
+    @Transactional
+    public void refundCoffeeChat(Long coffeechatId, Long menteeId, Integer totalPrice) {
+
+        // 1. 멘티 다이아 추가 후 현재 다이아값 반환
+        Integer balance = userService.addDiamond(menteeId, totalPrice);
+
+        // 2. 다이아 내역 저장
+        diamondHistoryRepository.save(DiamondHistory.forCoffeechatRefund(menteeId, coffeechatId, totalPrice, balance));
+    }
+
+
+    // 멘토 멘티 구매 확정시 판매내역 추가
+    @Transactional
+    public void addSaleHistory(Long mentorId, Integer price, Long serviceId) {
+        SaleHistory saleHistory = SaleHistory.forCoffeechat(mentorId, price, serviceId);
+        saleHistoryRepository.save(saleHistory);
     }
 
 }

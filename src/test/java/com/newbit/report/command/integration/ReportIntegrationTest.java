@@ -16,7 +16,9 @@ import com.newbit.report.command.application.dto.response.ReportCommandResponse;
 import com.newbit.report.command.application.service.ReportCommandService;
 import com.newbit.report.command.domain.aggregate.Report;
 import com.newbit.report.command.domain.aggregate.ReportStatus;
+import com.newbit.report.command.domain.aggregate.ReportType;
 import com.newbit.report.command.domain.repository.ReportRepository;
+import com.newbit.report.command.domain.repository.ReportTypeRepository;
 
 @SpringBootTest
 @Transactional
@@ -32,12 +34,16 @@ class ReportIntegrationTest {
     private PostRepository postRepository;
     
     @Autowired
+    private ReportTypeRepository reportTypeRepository;
+    
+    @Autowired
     private JdbcTemplate jdbcTemplate;
     
     private Long testPostId;
     private Long testUserId = 1L;
     private Long testCategoryId = 1L;
     private Long testCommentId;
+    private ReportType testReportType;
     
     @BeforeEach
     void setUp() {
@@ -54,13 +60,12 @@ class ReportIntegrationTest {
             testPostId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
             System.out.println("게시글 삽입 성공. 생성된 ID: " + testPostId);
             
-            // 댓글 삽입
-            System.out.println("SQL 실행: INSERT INTO comment (user_id, post_id, content) VALUES ("
-                    + testUserId + ", " + testPostId + ", '테스트 댓글입니다.')");
+            System.out.println("SQL 실행: INSERT INTO comment (user_id, post_id, content, deleted_at) VALUES ("
+                    + testUserId + ", " + testPostId + ", '테스트 댓글입니다.', null)");
             
             jdbcTemplate.update(
-                "INSERT INTO comment (user_id, post_id, content) VALUES (?, ?, ?)",
-                testUserId, testPostId, "테스트 댓글입니다."
+                "INSERT INTO comment (user_id, post_id, content, deleted_at) VALUES (?, ?, ?, ?)",
+                testUserId, testPostId, "테스트 댓글입니다.", null
             );
             
             testCommentId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
@@ -78,6 +83,10 @@ class ReportIntegrationTest {
                 System.out.println("신고 유형 추가 완료");
             }
             
+            testReportType = reportTypeRepository.findById(1L)
+                    .orElseThrow(() -> new RuntimeException("테스트에 필요한 신고 유형이 DB에 없습니다. ID: 1"));
+            System.out.println("신고 유형 가져오기 완료: " + testReportType.getName());
+            
             System.out.println("===== setUp 완료 =====");
         } catch (Exception e) {
             System.err.println("===== setUp 중 오류 발생 =====");
@@ -92,19 +101,19 @@ class ReportIntegrationTest {
     void createPostReportIntegrationTest() {
         System.out.println("\n\n===== 게시글 신고 생성 테스트 시작 =====");
         
-        // given
+        // Given
         Long reportTypeId = 1L;
         String content = "이 게시글은 스팸입니다.";
 
         ReportCreateRequest request = new ReportCreateRequest(testUserId, testPostId, reportTypeId, content);
         System.out.println("신고 생성 요청 준비: userId=" + testUserId + ", postId=" + testPostId + ", reportTypeId=" + reportTypeId);
 
-        // when
+        // When
         System.out.println("신고 생성 서비스 호출");
         ReportCommandResponse response = reportCommandService.createPostReport(request);
         System.out.println("신고 생성 완료: reportId=" + response.getReportId());
 
-        // then
+        // Then
         System.out.println("===== 응답 검증 시작 =====");
         // 1. 응답 값 검증
         assertThat(response).isNotNull();
@@ -144,8 +153,8 @@ class ReportIntegrationTest {
         assertThat(savedReport.getPostId()).isEqualTo(testPostId);
         System.out.println("저장된 postId 일치 검증 완료: " + savedReport.getPostId());
         
-        assertThat(savedReport.getReportType().getId()).isEqualTo(reportTypeId);
-        System.out.println("저장된 reportTypeId 일치 검증 완료: " + savedReport.getReportType().getId());
+        assertThat(savedReport.getReportTypeId()).isEqualTo(reportTypeId);
+        System.out.println("저장된 reportTypeId 일치 검증 완료: " + savedReport.getReportTypeId());
         
         assertThat(savedReport.getContent()).isEqualTo(content);
         System.out.println("저장된 content 일치 검증 완료");
@@ -162,19 +171,19 @@ class ReportIntegrationTest {
     void createCommentReportIntegrationTest() {
         System.out.println("\n\n===== 댓글 신고 생성 테스트 시작 =====");
         
-        // given
+        // Given
         Long reportTypeId = 1L;
         String content = "이 댓글은 스팸입니다.";
 
         ReportCreateRequest request = new ReportCreateRequest(testUserId, testCommentId, reportTypeId, content, true);
         System.out.println("신고 생성 요청 준비: userId=" + testUserId + ", commentId=" + testCommentId + ", reportTypeId=" + reportTypeId);
 
-        // when
+        // When
         System.out.println("신고 생성 서비스 호출");
         ReportCommandResponse response = reportCommandService.createCommentReport(request);
         System.out.println("신고 생성 완료: reportId=" + response.getReportId());
 
-        // then
+        // Then
         System.out.println("===== 응답 검증 시작 =====");
         // 1. 응답 값 검증
         assertThat(response).isNotNull();
@@ -214,8 +223,8 @@ class ReportIntegrationTest {
         assertThat(savedReport.getCommentId()).isEqualTo(testCommentId);
         System.out.println("저장된 commentId 일치 검증 완료: " + savedReport.getCommentId());
         
-        assertThat(savedReport.getReportType().getId()).isEqualTo(reportTypeId);
-        System.out.println("저장된 reportTypeId 일치 검증 완료: " + savedReport.getReportType().getId());
+        assertThat(savedReport.getReportTypeId()).isEqualTo(reportTypeId);
+        System.out.println("저장된 reportTypeId 일치 검증 완료: " + savedReport.getReportTypeId());
         
         assertThat(savedReport.getContent()).isEqualTo(content);
         System.out.println("저장된 content 일치 검증 완료");
