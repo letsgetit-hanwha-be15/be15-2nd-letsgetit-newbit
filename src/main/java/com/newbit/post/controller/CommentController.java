@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts/{postId}/comments")
@@ -25,4 +27,12 @@ public class CommentController {
         CommentResponse response = commentService.createComment(postId, request);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping
+    @Operation(summary = "댓글 조회", description = "게시글에 달린 댓글 목록을 조회합니다.")
+    public ResponseEntity<List<CommentResponse>> getComments(@PathVariable Long postId) {
+        List<CommentResponse> responses = commentService.getCommentsByPostId(postId);
+        return ResponseEntity.ok(responses);
+    }
+
 }
