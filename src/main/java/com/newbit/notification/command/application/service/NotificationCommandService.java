@@ -1,12 +1,12 @@
 package com.newbit.notification.command.application.service;
 
+import com.newbit.notification.command.application.dto.response.NotificationResponse;
 import com.newbit.notification.command.domain.aggregate.Notification;
 import com.newbit.notification.command.domain.aggregate.NotificationType;
 import com.newbit.notification.command.domain.repository.NotificationRepository;
 import com.newbit.notification.command.domain.repository.NotificationTypeRepository;
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.notification.command.infrastructure.SseEmitterRepository;
-import com.newbit.notification.query.dto.NotificationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
