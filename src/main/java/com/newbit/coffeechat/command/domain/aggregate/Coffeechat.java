@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -24,6 +25,7 @@ public class Coffeechat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coffeechat_id")
     private Long coffeechatId;
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "progress_status", nullable = false)
     private ProgressStatus progressStatus = ProgressStatus.IN_PROGRESS;
@@ -65,4 +67,11 @@ public class Coffeechat {
     public void markAsPurchased() {
         this.progressStatus = ProgressStatus.COFFEECHAT_WAITING;
     }
+
+    public void confirmSchedule(LocalDateTime confirmedSchedule) {
+        this.confirmedSchedule = confirmedSchedule;
+        this.endedAt = confirmedSchedule.plusMinutes(purchaseQuantity * 30L);
+        this.setProgressStatus(ProgressStatus.PAYMENT_WAITING);
+    }
+
 }

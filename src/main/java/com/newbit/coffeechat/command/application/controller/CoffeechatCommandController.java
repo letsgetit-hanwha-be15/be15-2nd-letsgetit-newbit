@@ -11,6 +11,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,5 +44,21 @@ public class CoffeechatCommandController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response));
+    }
+
+    @Operation(
+            summary = "커피챗 일정 승인",
+            description = "멘토가 커피챗 일정을 승인합니다."
+    )
+    @PostMapping("/{requestTimeId}")
+    @PreAuthorize("hasAuthority('MENTOR')")
+    public ResponseEntity<ApiResponse<Void>> acceptCoffeechatTime(
+            @PathVariable Long requestTimeId
+    ) {
+
+        coffeechatCommandService.acceptCoffeechatTime(requestTimeId);
+
+        return ResponseEntity
+                .ok(ApiResponse.success(null));
     }
 }

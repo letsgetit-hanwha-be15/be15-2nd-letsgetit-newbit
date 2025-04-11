@@ -1,6 +1,5 @@
 package com.newbit.coffeechat.command.application.service;
 
-import com.newbit.coffeechat.command.application.dto.request.RequestTimeDto;
 import com.newbit.coffeechat.command.domain.aggregate.RequestTime;
 import com.newbit.coffeechat.command.domain.repository.CoffeechatRepository;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
@@ -29,6 +28,11 @@ public class CoffeechatCommandService {
     private final CoffeechatQueryService coffeechatQueryService;
     private final RequestTimeRepository requestTimeRepository;
 
+    /**
+     * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
+     * requestTimeService 로직 대신 repository 직접 호출해서 사용
+     */
+
     /* 커피챗 등록 */
     @Transactional
     public Long createCoffeechat(Long userId, CoffeechatCreateRequest request) {
@@ -51,30 +55,20 @@ public class CoffeechatCommandService {
         return coffeechat.getCoffeechatId();
     }
 
-    private void createRequestTime(Long coffeechatId, List<RequestTimeDto> requestTimeDtos, int purchaseQuantity) {
-        List<RequestTime> requestTimes = new LinkedList<>();
-        requestTimeDtos.forEach(timeDto -> {
-            if (!timeDto.getStartDateTime().toLocalDate().isEqual(timeDto.getEndDateTime().toLocalDate())) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST_DATE); // 시작 날짜와 끝 날짜가 다릅니다.
-            }
-            if (timeDto.getStartDateTime().isBefore(LocalDateTime.now())) {
+    private void createRequestTime(Long coffeechatId, List<LocalDateTime> requestTimes, int purchaseQuantity) {
+        requestTimes.forEach(time -> {
+            if (time.isBefore(LocalDateTime.now())) {
                 throw new BusinessException(ErrorCode.REQUEST_DATE_IN_PAST); // 시작 날짜가 오늘보다 이전입니다.
             }
 
-            long minutesDiff = ChronoUnit.MINUTES.between(timeDto.getStartDateTime(), timeDto.getEndDateTime());
-            long requiredMinutes = purchaseQuantity * 30L;
-            if (minutesDiff < requiredMinutes) {
-                throw new BusinessException(ErrorCode.INVALID_REQUEST_TIME); // 시작 시간과 끝 시간 구매 수량 x 30분 보다 작습니다.
-            }
-            requestTimes.add(RequestTime.of(
-                    timeDto.getStartDateTime().toLocalDate(),
-                    timeDto.getStartDateTime(),
-                    timeDto.getEndDateTime(),
+            LocalDateTime endTime = time.plusMinutes(30L * purchaseQuantity);
+            requestTimeRepository.save(RequestTime.of(
+                    time.toLocalDate(),
+                    time,
+                    endTime,
                     coffeechatId
             ));
         });
-
-        requestTimes.forEach(requestTimeRepository::save);
     }
 
 
@@ -88,5 +82,25 @@ public class CoffeechatCommandService {
         }
 
         coffeechat.markAsPurchased();
+    }
+
+    @Transactional
+    public void acceptCoffeechatTime(Long requestTimeId) {
+        // 1. requestTime 객체 찾기
+        RequestTime requestTime = requestTimeRepository.findById(requestTimeId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_TIME_NOT_FOUND));
+
+        // 2. 커피챗 ID로 커피챗 객체 찾기
+        Coffeechat coffeechat = coffeechatRepository.findById(requestTime.getCoffeechatId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.COFFEECHAT_NOT_FOUND));
+
+        // 3. 커피챗 객체 update하기
+        coffeechat.confirmSchedule(requestTime.getStartTime());
+
+        // 4. 해당 coffeechatId에 대한 requestTime 객체 리스트 찾기
+        List<RequestTime> requests = requestTimeRepository.findAllByCoffeechatId(coffeechat.getCoffeechatId());
+
+        // 5. 해당 객체들 삭제
+        requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
     }
 }
