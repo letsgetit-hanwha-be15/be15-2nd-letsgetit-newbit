@@ -152,6 +152,7 @@ public class CoffeechatCommandService {
         MentorDTO mentorDTO = mentorService.getMentorInfo(coffeechat.getMentorId());
 
         // 4. 정산내역에 추가하기
-        saleCommandService.addSaleHistory(coffeechat.getMentorId(), mentorDTO.getPrice(), coffeechatId);
+        int totalQuantity = mentorDTO.getPrice() * coffeechat.getPurchaseQuantity();
+        saleCommandService.addSaleHistory(coffeechat.getMentorId(), totalQuantity, coffeechatId);
     }
 }
