@@ -87,4 +87,11 @@ public class PostService {
         return new PostDetailResponse(post, commentResponses, writerName, categoryName);
     }
 
+    @Transactional(readOnly = true)
+    public List<PostResponse> getMyPosts(Long userId) {
+        List<Post> posts = postRepository.findByUserIdAndDeletedAtIsNull(userId);
+        return posts.stream()
+                .map(PostResponse::new)
+                .toList();
+    }
 }

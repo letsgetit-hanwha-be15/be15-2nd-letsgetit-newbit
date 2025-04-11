@@ -1,5 +1,6 @@
 package com.newbit.post.controller;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.response.PostDetailResponse;
@@ -7,6 +8,7 @@ import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -21,6 +25,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
+@SecurityRequirement(name = "bearerAuth")
 public class PostController {
 
     private final PostService postService;
@@ -72,6 +77,13 @@ public class PostController {
     @Operation(summary = "게시글 상세 조회", description = "게시글 상세정보를 조회합니다.")
     public ResponseEntity<PostDetailResponse> getPostDetail(@PathVariable Long postId) {
         return ResponseEntity.ok(postService.getPostDetail(postId));
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<PostResponse>> getMyPosts(@AuthenticationPrincipal CustomUser user) {
+        List<PostResponse> myPosts = postService.getMyPosts(user.getUserId());
+        return ResponseEntity.ok(myPosts);
     }
 
 }
