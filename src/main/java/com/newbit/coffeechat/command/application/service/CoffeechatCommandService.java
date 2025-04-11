@@ -106,6 +106,7 @@ public class CoffeechatCommandService {
         // 6. TODO : 멘티에게 승인 알림 보내주기
     }
 
+    @Transactional
     public void rejectCoffeechatTime(Long coffeechatId) {
         // 1. 커피챗 ID로 커피챗 객체 찾기
         Coffeechat coffeechat = coffeechatRepository.findById(coffeechatId)
