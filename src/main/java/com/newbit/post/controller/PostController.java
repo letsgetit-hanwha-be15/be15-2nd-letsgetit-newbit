@@ -30,10 +30,15 @@ public class PostController {
 
     private final PostService postService;
 
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
     @Operation(summary = "게시글 수정", description = "기존 게시글의 제목과 내용을 수정합니다.")
-    public ResponseEntity<PostResponse> updatePost(@PathVariable Long id, @RequestBody @Valid PostUpdateRequest request) {
-        PostResponse response = postService.updatePost(id, request);
+    public ResponseEntity<PostResponse> updatePost(
+            @PathVariable Long id,
+            @RequestBody @Valid PostUpdateRequest request,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        PostResponse response = postService.updatePost(id, request, user);
         return ResponseEntity.ok(response);
     }
 
