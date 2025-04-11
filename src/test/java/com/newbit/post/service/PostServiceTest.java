@@ -1,5 +1,6 @@
 package com.newbit.post.service;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.response.PostResponse;
@@ -12,6 +13,7 @@ import com.newbit.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.*;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 
 import java.time.LocalDateTime;
@@ -86,16 +88,52 @@ class PostServiceTest {
     }
 
     @Test
-    void 게시글_등록_성공() {
+    void 게시글_등록_성공_일반사용자() {
         // given
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .password("encoded")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        PostCreateRequest userRequest = new PostCreateRequest();
+        userRequest.setTitle("일반 글");
+        userRequest.setContent("내용");
+        userRequest.setPostCategoryId(1L);
+
         when(postRepository.save(any(Post.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0)); // 저장된 Post 그대로 반환
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        postService.createPost(request);
+        PostResponse response = postService.createPost(userRequest, user);
 
         // then
+        assertThat(response.getTitle()).isEqualTo("일반 글");
         verify(postRepository, times(1)).save(any(Post.class));
+    }
+
+    @Test
+    void 게시글_등록_실패_관리자() {
+        // given
+        CustomUser adminUser = CustomUser.builder()
+                .userId(2L)
+                .email("admin@example.com")
+                .password("encoded")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .build();
+
+        PostCreateRequest adminRequest = new PostCreateRequest();
+        adminRequest.setTitle("관리자 글");
+        adminRequest.setContent("관리자가 작성한 글");
+        adminRequest.setPostCategoryId(1L);
+
+        // when & then
+        assertThatThrownBy(() -> postService.createPost(adminRequest, adminUser))
+                .isInstanceOf(SecurityException.class)
+                .hasMessage("게시글은 일반 사용자만 작성할 수 있습니다.");
+
+        verify(postRepository, never()).save(any(Post.class));
     }
 
     @Test
