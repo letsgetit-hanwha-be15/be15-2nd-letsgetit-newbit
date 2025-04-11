@@ -2,9 +2,7 @@ package com.newbit.purchase.command.application.service;
 
 import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
-import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
-import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
@@ -12,10 +10,7 @@ import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
 import com.newbit.purchase.command.domain.aggregate.*;
-import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
-import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
-import com.newbit.purchase.command.domain.repository.PointHistoryRepository;
-import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
+import com.newbit.purchase.command.domain.repository.*;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.entity.Authority;
@@ -32,10 +27,12 @@ public class PurchaseCommandService {
     private final DiamondHistoryRepository diamondHistoryRepository;
     private final SaleHistoryRepository saleHistoryRepository;
     private final PointHistoryRepository pointHistoryRepository;
+    private final PointTypeRepository pointTypeRepository;
     private final ColumnRequestService columnService;
     private final UserService userService;
     private final CoffeechatQueryService coffeechatQueryService;
     private final MentorService mentorService;
+
 
 
     private static final int MENTOR_AUTHORITY_DIAMOND_COST = 700;
@@ -107,9 +104,6 @@ public class PurchaseCommandService {
 
         // 3. 다이아 내역 저장
         diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
-
-        // 4. 판매 내역 저장
-        saleHistoryRepository.save(SaleHistory.forCoffeechat(mentorId, totalPrice, coffeechatId));
     }
 
 
@@ -119,6 +113,9 @@ public class PurchaseCommandService {
 
         // 1. 유저 조회
         UserDTO userDto = userService.getUserByUserId(userId);
+
+        PointType mentorAuthorityType = pointTypeRepository.findById(5L)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
 
 
         //2. 이미 멘토인지 확인
@@ -133,7 +130,7 @@ public class PurchaseCommandService {
             diamondHistoryRepository.save(DiamondHistory.forMentorAuthority(userId, diamondBalance, MENTOR_AUTHORITY_DIAMOND_COST));
         } else if (assetType == PurchaseAssetType.POINT) {
             Integer pointBalance = userService.usePoint(userId, MENTOR_AUTHORITY_POINT_COST);
-            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId, pointBalance, MENTOR_AUTHORITY_POINT_COST));
+            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId, mentorAuthorityType, pointBalance, MENTOR_AUTHORITY_POINT_COST));
         } else {
             throw new BusinessException(ErrorCode.INVALID_PURCHASE_TYPE);
         }
@@ -141,6 +138,25 @@ public class PurchaseCommandService {
 
         // 4. 멘토 등록
         mentorService.createMentor(userId);
+    }
+
+    // 커피챗 다이아 환불
+    @Transactional
+    public void refundCoffeeChat(Long coffeechatId, Long menteeId, Integer totalPrice) {
+
+        // 1. 멘티 다이아 추가 후 현재 다이아값 반환
+        Integer balance = userService.addDiamond(menteeId, totalPrice);
+
+        // 2. 다이아 내역 저장
+        diamondHistoryRepository.save(DiamondHistory.forCoffeechatRefund(menteeId, coffeechatId, totalPrice, balance));
+    }
+
+
+    // 멘토 멘티 구매 확정시 판매내역 추가
+    @Transactional
+    public void addSaleHistory(Long mentorId, Integer price, Long serviceId) {
+        SaleHistory saleHistory = SaleHistory.forCoffeechat(mentorId, price, serviceId);
+        saleHistoryRepository.save(saleHistory);
     }
 
 }

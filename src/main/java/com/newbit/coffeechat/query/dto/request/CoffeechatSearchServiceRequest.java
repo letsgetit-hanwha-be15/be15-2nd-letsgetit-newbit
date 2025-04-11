@@ -1,16 +1,18 @@
 package com.newbit.coffeechat.query.dto.request;
 
+import com.newbit.coffeechat.command.domain.aggregate.ProgressStatus;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class CoffeechatSearchRequest {
-    private Long userId;
+public class CoffeechatSearchServiceRequest {
     private Integer page = 1;
     private Integer size = 10;
-    private Long mentorId; // TODO : 회원가입 기능 생기면 삭제
-    private Long menteeId; // TODO : 회원가입 기능 생기면 삭제
+    private Long mentorId;
+    private Long menteeId;
+    private ProgressStatus progressStatus;
+    private Boolean isProgressing;
 
     public int getOffset() {
         return (page - 1) * size;

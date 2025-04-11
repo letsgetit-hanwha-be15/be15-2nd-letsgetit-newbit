@@ -31,21 +31,18 @@ public class PointHistory {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "point_type_id", nullable = false)
-//    private PointType pointType;
-
-    @Column(name = "point_type_id", nullable = false)
-    private Long pointTypeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "point_type_id", nullable = false)
+    private PointType pointType;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Builder
-    private PointHistory(Long serviceId, Integer balance, Long pointTypeId, Long userId) {
+    private PointHistory(Long serviceId, Integer balance, PointType pointType, Long userId) {
         this.serviceId = serviceId;
         this.balance = balance;
-        this.pointTypeId = pointTypeId;
+        this.pointType = pointType;
         this.userId = userId;
     }
 
@@ -53,10 +50,10 @@ public class PointHistory {
      * 멘토 권한 구매용 히스토리 생성
      * PointType은 서비스 계층에서 조회해서 넘겨줘야 함 (예: ID = 5)
      */
-    public static PointHistory forMentorAuthority(Long userId, Integer point, Integer price) {
+    public static PointHistory forMentorAuthority(Long userId, PointType pointType, Integer point, Integer price) {
         return PointHistory.builder()
                 .userId(userId)
-                .pointTypeId(5L)
+                .pointType(pointType)
                 .balance(point)  // 차감 이후 잔여 포인트
                 .serviceId(null)
                 .build();

@@ -4,18 +4,19 @@ import com.newbit.column.dto.request.CreateColumnRequestDto;
 import com.newbit.column.domain.Column;
 import com.newbit.column.domain.ColumnRequest;
 import com.newbit.column.enums.RequestType;
+import com.newbit.user.entity.Mentor;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ColumnMapper {
 
-    public Column toColumn(CreateColumnRequestDto dto, Long mentorId) {
+    public Column toColumn(CreateColumnRequestDto dto, Mentor mentor) {
         return Column.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .price(dto.getPrice())
                 .thumbnailUrl(dto.getThumbnailUrl())
-                .mentorId(mentorId)
+                .mentor(mentor)
                 .isPublic(false)
                 .likeCount(0)
                 .build();

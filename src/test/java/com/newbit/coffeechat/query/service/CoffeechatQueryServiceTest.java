@@ -1,23 +1,19 @@
 package com.newbit.coffeechat.query.service;
 
-import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
+import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.*;
 import com.newbit.coffeechat.query.mapper.CoffeechatMapper;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mybatis.spring.SqlSessionTemplate;
 
-import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -107,8 +103,8 @@ class CoffeechatQueryServiceTest {
     @Test
     void getCoffeechats_멘토() {
         // given
-        CoffeechatSearchRequest coffeechatSearchRequest = new CoffeechatSearchRequest();
-        coffeechatSearchRequest.setMentorId(1L);
+        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
+        coffeechatSearchServiceRequest.setMentorId(1L);
 
         CoffeechatDto coffeechat1 = CoffeechatDto.builder()
                 .coffeechatId(1L)
@@ -131,10 +127,10 @@ class CoffeechatQueryServiceTest {
                 .build();
 
         List<CoffeechatDto> originalList = Arrays.asList(coffeechat1, coffeechat2);
-        when(coffeechatMapper.selectCoffeechats(coffeechatSearchRequest)).thenReturn(originalList);
+        when(coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest)).thenReturn(originalList);
 
         // when
-        CoffeechatListResponse results = coffeechatQueryService.getCoffeechats(coffeechatSearchRequest);
+        CoffeechatListResponse results = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
 
         // then
 
@@ -144,15 +140,15 @@ class CoffeechatQueryServiceTest {
         assertEquals("첫번째 커피챗 신청드립니다.", results.getCoffeechats().get(0).getRequestMessage());
         assertEquals("두번째 커피챗도 부탁드립니다.", results.getCoffeechats().get(1).getRequestMessage());
         // 해당 객체에서 메소드 호출 여부 확인 -> 서비스 내부의 상호 작용이 기대한 대로 이루어졌는지
-        verify(coffeechatMapper).selectCoffeechats(coffeechatSearchRequest);
+        verify(coffeechatMapper).selectCoffeechats(coffeechatSearchServiceRequest);
     }
 
     @DisplayName("2-2. 커피챗 목록 조회 - 멘티가 조회")
     @Test
     void getCoffeechats_멘티() {
         // given
-        CoffeechatSearchRequest coffeechatSearchRequest = new CoffeechatSearchRequest();
-        coffeechatSearchRequest.setMenteeId(1L);
+        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
+        coffeechatSearchServiceRequest.setMenteeId(1L);
 
         CoffeechatDto coffeechat1 = CoffeechatDto.builder()
                 .coffeechatId(1L)
@@ -165,10 +161,10 @@ class CoffeechatQueryServiceTest {
                 .build();
 
         List<CoffeechatDto> originalList = Arrays.asList(coffeechat1);
-        when(coffeechatMapper.selectCoffeechats(coffeechatSearchRequest)).thenReturn(originalList);
+        when(coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest)).thenReturn(originalList);
 
         // when
-        CoffeechatListResponse results = coffeechatQueryService.getCoffeechats(coffeechatSearchRequest);
+        CoffeechatListResponse results = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
 
         // then
 
@@ -177,7 +173,7 @@ class CoffeechatQueryServiceTest {
         assertEquals(1, results.getCoffeechats().size());
         assertEquals("첫번째 커피챗 신청드립니다.", results.getCoffeechats().get(0).getRequestMessage());
         // 해당 객체에서 메소드 호출 여부 확인 -> 서비스 내부의 상호 작용이 기대한 대로 이루어졌는지
-        verify(coffeechatMapper).selectCoffeechats(coffeechatSearchRequest);
+        verify(coffeechatMapper).selectCoffeechats(coffeechatSearchServiceRequest);
     }
 
     @DisplayName("3-1. 커피챗 요청 목록 조회 - 성공")
@@ -240,5 +236,39 @@ class CoffeechatQueryServiceTest {
             this.coffeechatId = coffeechatId;
             this.coffeechatDto = coffeechatDto;
         }
+    }
+
+    @DisplayName("멘토에게 요청온 커피챗 목록 조회")
+    @Test
+    void getCoffeechats_멘토_요청() {
+        // given
+        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
+        coffeechatSearchServiceRequest.setMentorId(1L);
+        coffeechatSearchServiceRequest.setProgressStatus(com.newbit.coffeechat.command.domain.aggregate.ProgressStatus.IN_PROGRESS);
+
+        CoffeechatDto coffeechat2 = CoffeechatDto.builder()
+                .coffeechatId(2L)
+                .progressStatus(ProgressStatus.IN_PROGRESS)
+                .requestMessage("두번째 커피챗도 부탁드립니다.")
+                .confirmedSchedule(LocalDateTime.of(2025, 4, 12, 19, 0))
+                .endedAt(LocalDateTime.of(2025, 4, 12, 19, 30))
+                .mentorId(1L) // 1L
+                .menteeId(2L)
+                .build();
+
+        List<CoffeechatDto> originalList = Arrays.asList(coffeechat2);
+        when(coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest)).thenReturn(originalList);
+
+        // when
+        CoffeechatListResponse results = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
+
+        // then
+
+        // 주어진 결과 값이 올바른 비즈니스 로직을 통해 가공되었는지 확인
+        assertNotNull(results);
+        assertEquals(1, results.getCoffeechats().size());
+        assertEquals("두번째 커피챗도 부탁드립니다.", results.getCoffeechats().get(0).getRequestMessage());
+        // 해당 객체에서 메소드 호출 여부 확인 -> 서비스 내부의 상호 작용이 기대한 대로 이루어졌는지
+        verify(coffeechatMapper).selectCoffeechats(coffeechatSearchServiceRequest);
     }
 }
