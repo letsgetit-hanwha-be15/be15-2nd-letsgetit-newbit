@@ -5,8 +5,10 @@ import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.entity.Post;
+import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
 import com.newbit.post.service.PostService;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,12 +21,17 @@ import static org.mockito.Mockito.*;
 class PostServiceNoticeTest {
 
     private PostRepository postRepository;
+    private CommentRepository commentRepository;
+    private PointTransactionCommandService pointTransactionCommandService;
     private PostService postService;
 
     @BeforeEach
     void setUp() {
         postRepository = mock(PostRepository.class);
-        postService = new PostService(postRepository, null); // 댓글은 필요 없음
+        commentRepository = mock(CommentRepository.class); // ✅
+        pointTransactionCommandService = mock(PointTransactionCommandService.class);
+
+        postService = new PostService(postRepository, commentRepository, pointTransactionCommandService); // 댓글은 필요 없음
     }
 
     @Test
