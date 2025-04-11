@@ -7,7 +7,6 @@ import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateReq
 import com.newbit.coffeechat.command.domain.aggregate.Coffeechat;
 import com.newbit.coffeechat.command.domain.repository.RequestTimeRepository;
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
-import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
@@ -108,5 +107,11 @@ public class CoffeechatCommandService {
 
         // 3. 커피챗 객체 update하기
         coffeechat.confirmSchedule(requestTime.getStartTime());
+
+        // 4. 해당 coffeechatId에 대한 requestTime 객체 리스트 찾기
+        List<RequestTime> requests = requestTimeRepository.findAllByCoffeechatId(coffeechat.getCoffeechatId());
+
+        // 5. 해당 객체들 삭제
+        requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
     }
 }
