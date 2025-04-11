@@ -11,6 +11,9 @@ import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.purchase.command.application.service.PurchaseCommandService;
+import com.newbit.user.dto.response.MentorDTO;
+import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +45,10 @@ class CoffeechatCommandServiceTest {
     private CoffeechatQueryService coffeechatQueryService;
     @Mock
     private RequestTimeRepository requestTimeRepository;
+    @Mock
+    private MentorService mentorService;
+    @Mock
+    private PurchaseCommandService purchaseCommandService;
 
     @DisplayName("커피챗 요청 등록 성공")
     @Test
@@ -296,6 +303,46 @@ class CoffeechatCommandServiceTest {
 
         // when & then
         BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.closeCoffeechat(coffeechatId));
+        assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("멘티 구매 확정 성공")
+    @Test
+    void confirmPurchaseCoffeechat_성공() {
+        // given
+        Long coffeechatId = 999L;
+        Long mentorId = 2L;
+
+        // coffeechat repo setting
+        Coffeechat mockCoffeechat = Coffeechat.of(12L,
+                mentorId,
+                "취업 관련 꿀팁 얻고 싶어요.",
+                2);
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+
+        // mentorService setting
+        MentorDTO mentorDTO = MentorDTO.builder()
+                .price(10)
+                .isActive(true)
+                .build();
+        when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
+        doNothing().when(purchaseCommandService).addSaleHistory(mentorId, 10, coffeechatId);
+
+        // when & then: 예외가 발생하지 않으면 테스트 통과
+        assertDoesNotThrow(() -> coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId));
+    }
+
+    @DisplayName("구매확정 시 객체 찾지 못함")
+    @Test
+    void confirmPurchaseCoffeechat_실패() {
+        // given
+        Long coffeechatId = 999L;
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.empty());
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId));
         assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
     }
 }
