@@ -49,7 +49,6 @@ class PostServiceTest {
 
     @Test
     void 게시글_수정_성공() {
-        // given
         Long postId = 1L;
         Post originalPost = Post.builder()
                 .id(postId)
@@ -64,31 +63,70 @@ class PostServiceTest {
                 .content("수정된 내용")
                 .build();
 
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .password("encoded")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
         when(postRepository.findById(postId)).thenReturn(Optional.of(originalPost));
 
-        // when
-        postService.updatePost(postId, updateRequest);
+        postService.updatePost(postId, updateRequest, user);
 
-        // then
         assertThat(originalPost.getTitle()).isEqualTo("수정된 제목");
         assertThat(originalPost.getContent()).isEqualTo("수정된 내용");
     }
 
     @Test
     void 게시글_수정_실패_게시글이_없음() {
-        // given
         Long postId = 999L;
         PostUpdateRequest updateRequest = PostUpdateRequest.builder()
                 .title("수정된 제목")
                 .content("수정된 내용")
                 .build();
 
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .password("encoded")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        // when & then
-        assertThatThrownBy(() -> postService.updatePost(postId, updateRequest))
+        assertThatThrownBy(() -> postService.updatePost(postId, updateRequest, user))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("해당 게시글이 존재하지 않습니다.");
+    }
+
+    @Test
+    void 게시글_수정_실패_작성자가_아님() {
+        Long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .title("원래 제목")
+                .content("원래 내용")
+                .userId(100L) // 작성자 ID
+                .postCategoryId(1L)
+                .build();
+
+        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
+                .title("수정 시도 제목")
+                .content("수정 시도 내용")
+                .build();
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L) // 다른 사용자
+                .email("not-author@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        assertThatThrownBy(() -> postService.updatePost(postId, updateRequest, user))
+                .isInstanceOf(SecurityException.class)
+                .hasMessage("게시글은 작성자만 수정할 수 있습니다.");
     }
 
     @Test
