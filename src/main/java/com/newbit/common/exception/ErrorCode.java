@@ -33,8 +33,6 @@ public enum ErrorCode {
     INVALID_PASSWORD_FORMAT("20009", "비밀번호 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
     INVALID_CURRENT_PASSWORD("20010", "비밀번호가 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
 
-
-
     /*--------------- 커피챗 오류 ------------------*/
     COFFEECHAT_NOT_FOUND("70001", "해당 커피챗을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     REQUEST_TIME_NOT_FOUND("70002", "해당 커피챗 시간 요청내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -46,7 +44,6 @@ public enum ErrorCode {
     COLUMN_ALREADY_PURCHASED("60000", "이미 구매한 칼럼입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INSUFFICIENT_DIAMOND("60001", "보유한 다이아가 부족합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     COLUMN_FREE_CANNOT_PURCHASE("60002", "무료 칼럼은 구매할 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    COLUMN_NOT_FOUND("60003", "해당 칼럼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     COLUMN_NOT_PURCHASED("60004", "칼럼을 구매한 사용자만 조회할 수 있습니다.", HttpStatus.FORBIDDEN),
     COFFEECHAT_NOT_PURCHASABLE("60005", "커피챗이 구매할 수 없는 상태입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     ALREADY_MENTOR("60005", "이미 멘토인 회원입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -56,6 +53,14 @@ public enum ErrorCode {
     INVALID_TIP_AMOUNT("60009", "잘못된 팁 제공량 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     COFFEECHAT_PURCHASE_NOT_ALLOWED("60010", "본인의 커피챗만 구매 가능합니다.", HttpStatus.FORBIDDEN),
 
+    /*--------------- 칼럼/시리즈 오류 ------------------*/
+    // 칼럼 오류
+    COLUMN_NOT_FOUND("60003", "해당 칼럼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COLUMN_NOT_OWNED("60011", "해당 칼럼에 대한 권한이 없습니다.", HttpStatus.FORBIDDEN),
+    COLUMN_ALREADY_IN_SERIES("60012", "해당 칼럼은 이미 다른 시리즈에 속해있습니다.", HttpStatus.BAD_REQUEST),
+
+    // 시리즈 오류
+    SERIES_CREATION_REQUIRES_COLUMNS("30000", "시리즈는 최소 1개 이상의 칼럼으로 생성되어야 합니다.", HttpStatus.BAD_REQUEST),
 
     /*--------------- JWT 토큰 오류 ------------------*/
     JWT_INVALID("80001", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
