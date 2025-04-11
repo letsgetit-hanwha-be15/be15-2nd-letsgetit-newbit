@@ -2,7 +2,9 @@ package com.newbit.column.controller;
 
 import com.newbit.auth.model.CustomUser;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
+import com.newbit.column.dto.request.UpdateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
+import com.newbit.column.dto.response.UpdateSeriesResponseDto;
 import com.newbit.column.service.SeriesService;
 import com.newbit.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,10 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,5 +29,15 @@ public class SeriesController {
             @AuthenticationPrincipal CustomUser customUser
             ) {
         return ApiResponse.success(seriesService.createSeries(dto, customUser.getUserId()));
+    }
+
+    @PatchMapping("/{seriesId}")
+    @Operation(summary = "시리즈 수정", description = "기존 시리즈 정보를 수정합니다.")
+    public ApiResponse<UpdateSeriesResponseDto> updateSeries(
+            @PathVariable Long seriesId,
+            @RequestBody @Valid UpdateSeriesRequestDto dto,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        return ApiResponse.success(seriesService.updateSeries(seriesId, dto, customUser.getUserId()));
     }
 }
