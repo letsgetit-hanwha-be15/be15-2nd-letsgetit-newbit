@@ -1,6 +1,6 @@
 package com.newbit.notification.command.infrastructure;
 
-import com.newbit.notification.command.application.dto.response.NotificationResponse;
+import com.newbit.notification.command.application.dto.response.NotificationSendResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -31,7 +31,7 @@ public class SseEmitterRepository {
         userEmitterMap.forEach((userId, emitterIds) -> emitterIds.remove(emitterId));
     }
 
-    public void send(Long userId, NotificationResponse response) {
+    public void send(Long userId, NotificationSendResponse response) {
         List<String> emitterIds = userEmitterMap.getOrDefault(userId, new ArrayList<>());
 
         for (String emitterId : emitterIds) {

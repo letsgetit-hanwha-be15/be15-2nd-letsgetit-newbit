@@ -2,7 +2,7 @@ package com.newbit.notification.command.application.service;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.notification.command.application.dto.response.NotificationResponse;
+import com.newbit.notification.command.application.dto.response.NotificationSendResponse;
 import com.newbit.notification.command.domain.aggregate.Notification;
 import com.newbit.notification.command.domain.aggregate.NotificationType;
 import com.newbit.notification.command.domain.repository.NotificationRepository;
@@ -10,8 +10,10 @@ import com.newbit.notification.command.domain.repository.NotificationTypeReposit
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.notification.command.infrastructure.SseEmitterRepository;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +38,26 @@ public class NotificationCommandService {
         notificationRepository.save(notification);
 
         // 3. 실시간 알림 전송
-        NotificationResponse response = NotificationResponse.from(notification);
+        NotificationSendResponse response = NotificationSendResponse.from(notification);
         sseEmitterRepository.send(request.getUserId(), response);
+    }
+
+
+
+    @Transactional
+    public void markAsRead(Long userId, Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND));
+
+        if (!notification.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        notification.markAsRead(); // 내부에서 isRead = true 처리
+    }
+
+    @Transactional
+    public void markAllAsRead(Long userId) {
+        notificationRepository.markAllAsReadByUserId(userId);
     }
 }
