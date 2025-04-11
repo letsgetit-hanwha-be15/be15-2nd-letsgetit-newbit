@@ -1,19 +1,39 @@
 package com.newbit.user.dto.response;
 
+import com.newbit.user.entity.User;
 import com.newbit.user.entity.Authority;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Builder
-@Setter
-@ToString
-@Schema(description = "회원 DTO")
+@AllArgsConstructor
 public class UserDTO {
-    Long userId;
-    Authority authority;
-    Integer diamond;
-    Integer point;
+
+    private Long userId;
+    private String email;
+    private String phoneNumber;
+    private String userName;
+    private String nickname;
+    private Integer point;
+    private Integer diamond;
+    private Authority authority;
+    private String profileImageUrl;
+    private String jobId;
+
+    public static UserDTO fromEntity(User user) {
+        return UserDTO.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .userName(user.getUserName())
+                .nickname(user.getNickname())
+                .point(user.getPoint())
+                .diamond(user.getDiamond())
+                .authority(user.getAuthority())
+                .profileImageUrl(user.getProfileImageUrl())
+                .jobId((user.getJobId() != null) ? user.getJobId().toString() : null)
+                .build();
+    }
 }
