@@ -3,10 +3,14 @@ package com.newbit.column.service;
 import com.newbit.column.domain.Column;
 import com.newbit.column.dto.response.GetColumnDetailResponseDto;
 import com.newbit.column.dto.response.GetColumnListResponseDto;
+import com.newbit.column.dto.response.GetMyColumnListResponseDto;
+import com.newbit.column.mapper.ColumnMapper;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.query.service.ColumnPurchaseHistoryQueryService;
+import com.newbit.user.entity.Mentor;
+import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +35,12 @@ class ColumnServiceTest {
 
     @Mock
     private ColumnPurchaseHistoryQueryService columnPurchaseHistoryQueryService;
+
+    @Mock
+    private MentorService mentorService;
+
+    @Mock
+    private ColumnMapper columnMapper;
 
     @InjectMocks
     private ColumnService columnService;
@@ -187,4 +197,72 @@ class ColumnServiceTest {
         assertThat(resultDto2.getTitle()).isEqualTo("개발자 연봉 협상법");
         assertThat(resultDto2.getMentorNickname()).isEqualTo("연봉왕");
     }
+
+    @DisplayName("멘토 본인 칼럼 목록 조회 - 성공")
+    @Test
+    void getMyColumnList_success() {
+        // given
+        Long userId = 1L;
+        Long mentorId = 10L;
+
+        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
+
+        Column column1 = Column.builder()
+                .columnId(1L)
+                .title("멘토 칼럼 1")
+                .thumbnailUrl("https://example.com/thumb1.jpg")
+                .price(1000)
+                .likeCount(5)
+                .isPublic(true)
+                .mentor(mentor)
+                .build();
+
+        Column column2 = Column.builder()
+                .columnId(2L)
+                .title("멘토 칼럼 2")
+                .thumbnailUrl("https://example.com/thumb2.jpg")
+                .price(1500)
+                .likeCount(10)
+                .isPublic(true)
+                .mentor(mentor)
+                .build();
+
+        List<Column> columns = List.of(column1, column2);
+
+        when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
+        when(columnRepository.findAllByMentor_MentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId)).thenReturn(columns);
+        when(columnMapper.toMyColumnListDto(column1)).thenReturn(
+                GetMyColumnListResponseDto.builder()
+                        .columnId(1L)
+                        .title("멘토 칼럼 1")
+                        .thumbnailUrl("https://example.com/thumb1.jpg")
+                        .price(1000)
+                        .likeCount(5)
+                        .build()
+        );
+        when(columnMapper.toMyColumnListDto(column2)).thenReturn(
+                GetMyColumnListResponseDto.builder()
+                        .columnId(2L)
+                        .title("멘토 칼럼 2")
+                        .thumbnailUrl("https://example.com/thumb2.jpg")
+                        .price(1500)
+                        .likeCount(10)
+                        .build()
+        );
+
+        // when
+        List<GetMyColumnListResponseDto> result = columnService.getMyColumnList(userId);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getColumnId()).isEqualTo(1L);
+        assertThat(result.get(0).getTitle()).isEqualTo("멘토 칼럼 1");
+        assertThat(result.get(1).getTitle()).isEqualTo("멘토 칼럼 2");
+
+        verify(mentorService).getMentorEntityByUserId(userId);
+        verify(columnRepository).findAllByMentor_MentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId);
+        verify(columnMapper).toMyColumnListDto(column1);
+        verify(columnMapper).toMyColumnListDto(column2);
+    }
+
 }

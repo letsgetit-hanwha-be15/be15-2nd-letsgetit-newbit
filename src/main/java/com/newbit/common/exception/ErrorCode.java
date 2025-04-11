@@ -30,12 +30,15 @@ public enum ErrorCode {
     USER_INFO_NOT_FOUND("20006", "정보 조회에 실패했습니다.", HttpStatus.NOT_FOUND),
     ALREADY_REGISTERED_PHONENUMBER("20007", "이미 존재하는 핸드폰 번호입니다.", HttpStatus.BAD_REQUEST),
     ALREADY_REGISTERED_NICKNAME("20008", "이미 존재하는 닉네임입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_PASSWORD_FORMAT("20009", "비밀번호 형식이 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
+    INVALID_CURRENT_PASSWORD("20010", "비밀번호가 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
+
+
+
     /*--------------- 커피챗 오류 ------------------*/
     COFFEECHAT_NOT_FOUND("70001", "해당 커피챗을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     REQUEST_TIME_NOT_FOUND("70002", "해당 커피챗 시간 요청내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     COFFEECHAT_ALREADY_EXIST("70003", "해당 멘토와의 커피챗이 이미 존재합니다.", HttpStatus.CONFLICT),
-    INVALID_REQUEST_DATE("70004", "시작 날짜와 끝 날짜가 다릅니다.", HttpStatus.UNPROCESSABLE_ENTITY),
-    INVALID_REQUEST_TIME("70005", "시작 시간과 끝 시간 구매 수량 x 30분 보다 작습니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     REQUEST_DATE_IN_PAST("70006", "시작 날짜가 오늘보다 이전입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     COFFEECHAT_NOT_REFUNDABLE("70008", "커피챗이 환불 가능한 상태가 아닙니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
