@@ -28,7 +28,6 @@ public class NotificationCommandController {
 
     private final SseEmitterRepository sseEmitterRepository;
     private final NotificationCommandService notificationCommandService;
-    private final NotificationRepository notificationRepository;
 
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
