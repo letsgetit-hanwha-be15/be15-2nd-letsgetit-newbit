@@ -189,22 +189,61 @@ class PostServiceTest {
                 .postCategoryId(1L)
                 .build();
 
+        CustomUser user = CustomUser.builder()
+                .userId(1L) // 작성자 본인
+                .email("user@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
-        postService.deletePost(postId);
+        postService.deletePost(postId, user);
 
         assertThat(post.getDeletedAt()).isNotNull();
     }
 
+
     @Test
     void 게시글_삭제_실패_게시글이_없음() {
         Long postId = 999L;
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> postService.deletePost(postId))
+        assertThatThrownBy(() -> postService.deletePost(postId, user))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("해당 게시글이 존재하지 않습니다.");
     }
+
+    @Test
+    void 게시글_삭제_실패_작성자가_아님() {
+        Long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .title("삭제 대상")
+                .content("삭제 내용")
+                .userId(100L) // 실제 작성자
+                .postCategoryId(1L)
+                .build();
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L) // 삭제 시도자
+                .email("not-author@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        assertThatThrownBy(() -> postService.deletePost(postId, user))
+                .isInstanceOf(SecurityException.class)
+                .hasMessage("게시글은 작성자만 삭제할 수 있습니다.");
+    }
+
 
     @Test
     void 게시글_목록_조회_성공() {
