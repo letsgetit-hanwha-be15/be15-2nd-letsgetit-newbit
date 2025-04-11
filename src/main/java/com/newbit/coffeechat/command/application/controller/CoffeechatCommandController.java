@@ -93,4 +93,19 @@ public class CoffeechatCommandController {
         return ResponseEntity
                 .ok(ApiResponse.success(null));
     }
+
+    @Operation(
+            summary = "커피챗 구매확정",
+            description = "멘티가 커피챗 구매확정합니다."
+    )
+    @PutMapping("/confirm-purchase/{coffeechatId}")
+    public ResponseEntity<ApiResponse<Void>> confirmPurchaseCoffeechat(
+            @PathVariable Long coffeechatId
+    ) {
+
+        coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId);
+
+        return ResponseEntity
+                .ok(ApiResponse.success(null));
+    }
 }

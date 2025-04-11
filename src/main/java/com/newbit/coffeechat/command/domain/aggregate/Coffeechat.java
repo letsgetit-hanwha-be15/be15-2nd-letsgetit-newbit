@@ -83,4 +83,8 @@ public class Coffeechat {
         progressStatus = ProgressStatus.COMPLETE;
         saleConfirmedAt = LocalDateTime.now();
     }
+
+    public void confirmPurchaseSchedule() {
+        purchaseConfirmedAt = LocalDateTime.now();
+    }
 }

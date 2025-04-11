@@ -58,8 +58,16 @@ public class Column {
     @JoinColumn(name = "mentor_id")
     private Mentor mentor;
 
+    @ManyToOne
+    @JoinColumn(name = "series_id")
+    private Series series;
+
 
     public void markAsDeleted() {
         this.deletedAt = LocalDateTime.now();
+    }
+
+    public void updateSeries(Series series) {
+        this.series = series;
     }
 }
