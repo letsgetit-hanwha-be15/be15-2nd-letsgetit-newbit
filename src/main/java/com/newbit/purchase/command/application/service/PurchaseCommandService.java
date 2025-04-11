@@ -157,13 +157,4 @@ public class PurchaseCommandService {
         // 2. 다이아 내역 저장
         diamondHistoryRepository.save(DiamondHistory.forCoffeechatRefund(menteeId, coffeechatId, totalPrice, balance));
     }
-
-
-    // 멘토 멘티 구매 확정시 판매내역 추가
-    @Transactional
-    public void addSaleHistory(Long mentorId, Integer price, Long serviceId) {
-        SaleHistory saleHistory = SaleHistory.forCoffeechat(mentorId, price, serviceId);
-        saleHistoryRepository.save(saleHistory);
-    }
-
 }
