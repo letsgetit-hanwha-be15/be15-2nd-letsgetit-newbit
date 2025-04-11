@@ -49,16 +49,12 @@ class CoffeechatCommandServiceTest {
         // given
         Long userId = 8L;
         LocalDateTime pastStartDateTime = LocalDateTime.now().plusDays(1);
-        LocalDateTime pastEndDateTime = pastStartDateTime.plusHours(1);
-        RequestTimeDto requestTimeDto = new RequestTimeDto();
-        ReflectionTestUtils.setField(requestTimeDto, "startDateTime", pastStartDateTime);
-        ReflectionTestUtils.setField(requestTimeDto, "endDateTime", pastEndDateTime);
 
         CoffeechatCreateRequest request = new CoffeechatCreateRequest(
                 "취업 관련 꿀팁 얻고 싶어요.",
                 2,
                 2L,
-                List.of(requestTimeDto));
+                List.of(pastStartDateTime));
 
         Coffeechat mockCoffeechat = Coffeechat.of(userId,
                 request.getMentorId(),
@@ -76,9 +72,9 @@ class CoffeechatCommandServiceTest {
 
         // requestTimeRepository::save 시 requestTime 반환
         RequestTime requestTime = RequestTime.of(
-                requestTimeDto.getStartDateTime().toLocalDate(),
-                requestTimeDto.getStartDateTime(),
-                requestTimeDto.getEndDateTime(),
+                pastStartDateTime.toLocalDate(),
+                pastStartDateTime,
+                pastStartDateTime.plusMinutes(60L),
                 999L);
         when(requestTimeRepository.save(any(RequestTime.class))).thenReturn(requestTime);
 
@@ -98,16 +94,12 @@ class CoffeechatCommandServiceTest {
         // given
         Long userId = 8L;
         LocalDateTime pastStartDateTime = LocalDateTime.now().plusDays(1);
-        LocalDateTime pastEndDateTime = pastStartDateTime.plusHours(1);
-        RequestTimeDto invalidTimeDto = new RequestTimeDto();
-        ReflectionTestUtils.setField(invalidTimeDto, "startDateTime", pastStartDateTime);
-        ReflectionTestUtils.setField(invalidTimeDto, "endDateTime", pastEndDateTime);
 
         CoffeechatCreateRequest request = new CoffeechatCreateRequest(
                 "취업 관련 꿀팁 얻고 싶어요.",
                 2,
                 2L,
-                List.of(invalidTimeDto));
+                List.of(pastStartDateTime));
 
         List<CoffeechatDto> coffeechatDtos = new ArrayList<>();
         coffeechatDtos.add(new CoffeechatDto());
@@ -138,16 +130,12 @@ class CoffeechatCommandServiceTest {
         // given
         Long userId = 8L;
         LocalDateTime pastStartDateTime = LocalDateTime.now().minusDays(1);
-        LocalDateTime pastEndDateTime = pastStartDateTime.plusHours(1);
-        RequestTimeDto invalidTimeDto = new RequestTimeDto();
-        ReflectionTestUtils.setField(invalidTimeDto, "startDateTime", pastStartDateTime);
-        ReflectionTestUtils.setField(invalidTimeDto, "endDateTime", pastEndDateTime);
 
         CoffeechatCreateRequest request = new CoffeechatCreateRequest(
                 "취업 관련 꿀팁 얻고 싶어요.",
                 2,
                 2L,
-                List.of(invalidTimeDto));
+                List.of(pastStartDateTime));
 
         Coffeechat mockCoffeechat = Coffeechat.of(userId,
                 request.getMentorId(),
