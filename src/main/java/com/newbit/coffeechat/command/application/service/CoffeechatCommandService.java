@@ -102,6 +102,8 @@ public class CoffeechatCommandService {
 
         // 5. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
+
+        // 6. TODO : 멘티에게 승인 알림 보내주기
     }
 
     public void rejectCoffeechatTime(Long coffeechatId) {
@@ -117,5 +119,7 @@ public class CoffeechatCommandService {
 
         // 4. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
+
+        // 5. TODO : 멘토에게 거절 알림 보내주기
     }
 }
