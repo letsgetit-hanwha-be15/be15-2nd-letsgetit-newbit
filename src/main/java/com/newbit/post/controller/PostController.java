@@ -37,12 +37,17 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping
-    @Operation(summary = "게시글 등록", description = "게시글을 등록하고 결과를 반환합니다.")
-    public ResponseEntity<PostResponse> createPost(@RequestBody PostCreateRequest request) {
-        PostResponse response = postService.createPost(request);
+    @Operation(summary = "게시글 등록", description = "일반 사용자만 게시글을 등록할 수 있습니다.")
+    public ResponseEntity<PostResponse> createPost(
+            @RequestBody @Valid PostCreateRequest request,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        PostResponse response = postService.createPost(request, user);
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/search")
     @Operation(summary = "게시글 검색", description = "키워드를 통해 게시글 제목 또는 내용에서 검색합니다.")
