@@ -86,4 +86,46 @@ public class PostController {
         return ResponseEntity.ok(myPosts);
     }
 
+    @GetMapping("/popular")
+    @Operation(summary = "인기 게시글 조회", description = "좋아요 10개 이상 받은 게시글을 좋아요 순으로 조회합니다.")
+    public ResponseEntity<List<PostResponse>> getPopularPosts() {
+        List<PostResponse> responses = postService.getPopularPosts();
+        return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/notices")
+    @Operation(summary = "공지사항 등록", description = "관리자만 공지사항을 등록할 수 있습니다.")
+    public ResponseEntity<PostResponse> createNotice(
+            @RequestBody @Valid PostCreateRequest request,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        PostResponse response = postService.createNotice(request, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/notices/{postId}")
+    @Operation(summary = "공지사항 수정", description = "관리자가 기존 공지사항을 수정합니다.")
+    public ResponseEntity<PostResponse> updateNotice(
+            @PathVariable Long postId,
+            @RequestBody @Valid PostUpdateRequest request,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        PostResponse response = postService.updateNotice(postId, request, user);
+        return ResponseEntity.ok(response);
+    }
+
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/notices/{postId}")
+    @Operation(summary = "공지사항 삭제", description = "관리자가 공지사항을 삭제합니다.")
+    public ResponseEntity<Void> deleteNotice(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        postService.deleteNotice(postId, user);
+        return ResponseEntity.noContent().build();
+    }
+
 }

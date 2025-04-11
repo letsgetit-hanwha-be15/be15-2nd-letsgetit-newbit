@@ -14,6 +14,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> searchByKeyword(@Param("keyword") String keyword);
     Optional<Post> findByIdAndDeletedAtIsNull(Long postId);
     List<Post> findByUserIdAndDeletedAtIsNull(Long userId);
+    @Query("SELECT p FROM Post p WHERE p.deletedAt IS NULL AND p.likeCount >= :minLikes ORDER BY p.likeCount DESC")
+    List<Post> findPopularPosts(@Param("minLikes") int minLikes);
 
 
 }
