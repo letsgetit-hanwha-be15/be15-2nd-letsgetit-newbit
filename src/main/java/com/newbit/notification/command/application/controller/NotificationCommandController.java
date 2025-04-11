@@ -21,6 +21,7 @@ public class NotificationCommandController {
     public SseEmitter subscribe(
             @AuthenticationPrincipal CustomUser customUser
     ) {
+        Long userId = customUser.getUserId();
         SseEmitter emitter = new SseEmitter(60 * 1000L);
         sseEmitterRepository.addEmitter(userId, emitter);
 
