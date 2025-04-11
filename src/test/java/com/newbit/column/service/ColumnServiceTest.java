@@ -114,12 +114,18 @@ class ColumnServiceTest {
         // given
         Long userId = 1L;
         Long columnId = 4L;
-        Column column = Column.builder()
-                .columnId(columnId)
-                .isPublic(true)
-                .build();
+        GetColumnDetailResponseDto responseDto = new GetColumnDetailResponseDto(
+                columnId,
+                "테스트 제목",
+                "테스트 내용",
+                1000,
+                "https://example.com/image.jpg",
+                5,
+                10L,
+                "개발자도토리"
+        );
 
-        when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
+        when(columnRepository.findPublicColumnDetailById(columnId)).thenReturn(Optional.of(responseDto));
         when(columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId)).thenReturn(false);
 
         // when & then
