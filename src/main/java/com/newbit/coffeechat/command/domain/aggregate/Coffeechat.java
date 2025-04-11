@@ -76,5 +76,11 @@ public class Coffeechat {
 
     public void rejectSchedule() {
         progressStatus = ProgressStatus.CANCEL;
+        cancelReasonId = 3L;
+    }
+
+    public void closeSchedule() {
+        progressStatus = ProgressStatus.COMPLETE;
+        saleConfirmedAt = LocalDateTime.now();
     }
 }

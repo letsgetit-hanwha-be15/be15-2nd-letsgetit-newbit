@@ -263,5 +263,39 @@ class CoffeechatCommandServiceTest {
 
         // when & then
         BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.rejectCoffeechatTime(coffeechatId));
-        assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());}
+        assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("커피챗 종료 성공")
+    @Test
+    void closeCoffeechat_성공() {
+        // given
+        Long coffeechatId = 999L;
+
+        // 커피챗 객체 만들어주기
+        Coffeechat mockCoffeechat = Coffeechat.of(12L,
+                2L,
+                "취업 관련 꿀팁 얻고 싶어요.",
+                2);
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+
+        // when & then: 예외가 발생하지 않으면 테스트 통과
+        assertDoesNotThrow(() -> coffeechatCommandService.closeCoffeechat(coffeechatId));
+    }
+
+    @DisplayName("커피챗 종료 시 객체 찾지 못함")
+    @Test
+    void closeCoffeechat_실패() {
+        // given
+        Long coffeechatId = 999L;
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.empty());
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.closeCoffeechat(coffeechatId));
+        assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
+    }
 }
