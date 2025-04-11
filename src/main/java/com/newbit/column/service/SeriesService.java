@@ -13,6 +13,7 @@ import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class SeriesService {
     private final MentorService mentorService;
     private final SeriesMapper seriesMapper;
 
+    @Transactional
     public CreateSeriesResponseDto createSeries(CreateSeriesRequestDto dto, Long userId) {
         // 1. 유저 → 멘토 엔티티 조회
         Mentor mentor = mentorService.getMentorEntityByUserId(userId);
