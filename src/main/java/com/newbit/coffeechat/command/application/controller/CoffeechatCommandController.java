@@ -79,8 +79,8 @@ public class CoffeechatCommandController {
     }
 
     @Operation(
-            summary = "커피챗 일정 거절",
-            description = "멘토가 커피챗 일정을 거절합니다."
+            summary = "커피챗 종료",
+            description = "멘토가 커피챗을 종료합니다."
     )
     @PutMapping("/close/{coffeechatId}")
 //    @PreAuthorize("hasAuthority('MENTOR')")
