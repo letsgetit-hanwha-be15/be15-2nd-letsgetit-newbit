@@ -36,13 +36,20 @@ public class ColumnMapper {
     }
 
     public GetMyColumnRequestResponseDto toMyColumnRequestResponseDto(ColumnRequest columnRequest) {
+        Column column = columnRequest.getColumn();
+
+        boolean isCreate = columnRequest.getRequestType() == RequestType.CREATE;
+
         return GetMyColumnRequestResponseDto.builder()
                 .columnRequestId(columnRequest.getColumnRequestId())
                 .requestType(columnRequest.getRequestType())
                 .isApproved(columnRequest.getIsApproved())
-                .title(columnRequest.getUpdatedTitle())
-                .price(columnRequest.getUpdatedPrice())
-                .thumbnailUrl(columnRequest.getUpdatedThumbnailUrl())
+
+                // CREATE 요청이면 Column 테이블의 값 사용, 아니면 updated 값 사용
+                .title(isCreate ? column.getTitle() : columnRequest.getUpdatedTitle())
+                .price(isCreate ? column.getPrice() : columnRequest.getUpdatedPrice())
+                .thumbnailUrl(isCreate ? column.getThumbnailUrl() : columnRequest.getUpdatedThumbnailUrl())
+
                 .createdAt(columnRequest.getCreatedAt())
                 .build();
     }
