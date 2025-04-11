@@ -77,4 +77,20 @@ public class CoffeechatCommandController {
         return ResponseEntity
                 .ok(ApiResponse.success(null));
     }
+
+    @Operation(
+            summary = "커피챗 종료",
+            description = "멘토가 커피챗을 종료합니다."
+    )
+    @PutMapping("/close/{coffeechatId}")
+//    @PreAuthorize("hasAuthority('MENTOR')")
+    public ResponseEntity<ApiResponse<Void>> closeCoffeechat(
+            @PathVariable Long coffeechatId
+    ) {
+
+        coffeechatCommandService.closeCoffeechat(coffeechatId);
+
+        return ResponseEntity
+                .ok(ApiResponse.success(null));
+    }
 }
