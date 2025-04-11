@@ -2,6 +2,7 @@ package com.newbit.user.controller;
 
 import com.newbit.common.dto.ApiResponse;
 import com.newbit.user.dto.request.ChangePasswordRequestDTO;
+import com.newbit.user.dto.request.DeleteUserRequestDTO;
 import com.newbit.user.dto.request.UserInfoUpdateRequestDTO;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.service.UserInfoService;
@@ -43,5 +44,13 @@ public class UserInfoController {
         userInfoService.changePassword(request.getCurrentPassword(), request.getNewPassword());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @Operation(summary = "회원 탈퇴", description = "비밀번호 확인 후 회원 탈퇴")
+    @DeleteMapping("/unsubscribe")
+    public ResponseEntity<ApiResponse<String>> deleteUser(@RequestBody @Valid DeleteUserRequestDTO request) {
+        userInfoService.unsubscribeService(request);
+        return ResponseEntity.ok(ApiResponse.success("회원 탈퇴가 완료되었습니다."));
+    }
+
 }
 

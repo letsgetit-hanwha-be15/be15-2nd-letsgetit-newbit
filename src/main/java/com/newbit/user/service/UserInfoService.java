@@ -3,6 +3,7 @@ package com.newbit.user.service;
 import com.newbit.auth.model.CustomUser;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.user.dto.request.DeleteUserRequestDTO;
 import com.newbit.user.dto.request.UserInfoUpdateRequestDTO;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.entity.User;
@@ -75,5 +76,20 @@ public class UserInfoService {
 
         // 비밀번호 변경
         user.setEncodedPassword(passwordEncoder.encode(newPassword));
+    }
+
+    @Transactional
+    public void unsubscribeService(DeleteUserRequestDTO request) {
+        CustomUser customUser = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userid = customUser.getUserId();
+
+        User user = userRepository.findByUserId(userid)
+                .orElseThrow(() -> new BusinessException(USER_INFO_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_CURRENT_PASSWORD);
+        }
+
+        userRepository.delete(user); // 실제 삭제
     }
 }
