@@ -2,6 +2,7 @@ package com.newbit.post.service;
 
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.request.PostCreateRequest;
+import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.entity.Comment;
 import com.newbit.post.entity.Post;
 import com.newbit.post.entity.PostCategory;
@@ -214,5 +215,42 @@ class PostServiceTest {
         assertThat(response.getComments()).hasSize(1);
         assertThat(response.getComments().get(0).getContent()).isEqualTo("댓글입니다");
     }
+
+    @Test
+    void 본인_게시글_조회_성공() {
+        // given
+        Long userId = 1L;
+
+        Post post1 = Post.builder()
+                .id(1L)
+                .title("내 게시글 1")
+                .content("내용 1")
+                .userId(userId)
+                .postCategoryId(1L)
+                .build();
+
+        Post post2 = Post.builder()
+                .id(2L)
+                .title("내 게시글 2")
+                .content("내용 2")
+                .userId(userId)
+                .postCategoryId(1L)
+                .build();
+
+        List<Post> myPosts = List.of(post1, post2);
+
+        when(postRepository.findByUserIdAndDeletedAtIsNull(userId)).thenReturn(myPosts);
+
+        // when
+        List<PostResponse> result = postService.getMyPosts(userId);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getTitle()).isEqualTo("내 게시글 1");
+        assertThat(result.get(1).getTitle()).isEqualTo("내 게시글 2");
+
+        verify(postRepository, times(1)).findByUserIdAndDeletedAtIsNull(userId);
+    }
+
 
 }

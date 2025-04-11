@@ -1,10 +1,12 @@
 package com.newbit.column.controller;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.column.dto.request.CreateColumnRequestDto;
 import com.newbit.column.dto.request.DeleteColumnRequestDto;
 import com.newbit.column.dto.request.UpdateColumnRequestDto;
 import com.newbit.column.dto.response.CreateColumnResponseDto;
 import com.newbit.column.dto.response.DeleteColumnResponseDto;
+import com.newbit.column.dto.response.GetMyColumnRequestResponseDto;
 import com.newbit.column.dto.response.UpdateColumnResponseDto;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.dto.ApiResponse;
@@ -13,7 +15,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/columns/requests")
@@ -28,9 +33,9 @@ public class ColumnRequestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<CreateColumnResponseDto> createColumnRequest(
             @RequestBody @Valid CreateColumnRequestDto dto,
-            @RequestParam Long mentorId // 프론트에서 mentorId 넘겨준다고 가정
+            @AuthenticationPrincipal CustomUser customUser
     ) {
-        return ApiResponse.success(columnRequestService.createColumnRequest(dto, mentorId));
+        return ApiResponse.success(columnRequestService.createColumnRequest(dto, customUser.getUserId()));
     }
 
     // 칼럼 수정 요청 API
@@ -54,5 +59,15 @@ public class ColumnRequestController {
             ) {
         return ApiResponse.success(columnRequestService.deleteColumnRequest(dto, columnId));
 
+    }
+
+    // 본인 칼럼 요청 조회
+    @Operation(summary = "멘토 본인 칼럼 요청 조회", description = "멘토가 등록, 수정, 삭제 요청한 칼럼 목록을 조회합니다.")
+    @GetMapping("/my")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<GetMyColumnRequestResponseDto>> getMyColumnRequests(
+            @AuthenticationPrincipal CustomUser customUser
+            ) {
+        return ApiResponse.success(columnRequestService.getMyColumnRequests(customUser.getUserId()));
     }
 }

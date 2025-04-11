@@ -1,5 +1,6 @@
 package com.newbit.purchase.command.application.controller;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.common.dto.ApiResponse;
 import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,12 +29,12 @@ public class PurchaseCommandController {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200", description = "칼럼 구매 성공"
     )
-    @PostMapping("/column/{userId}")
+    @PostMapping("/column")
     public ResponseEntity<ApiResponse<Void>> purchaseColumn(
-            @Parameter(description = "구매할 유저 ID", required = true) @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUser customUser,
             @Valid @RequestBody ColumnPurchaseRequest request
     ) {
-        purchaseCommandService.purchaseColumn(userId, request);
+        purchaseCommandService.purchaseColumn(customUser.getUserId(), request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -45,8 +47,9 @@ public class PurchaseCommandController {
     )
     @PostMapping("/coffeechat")
     public ResponseEntity<ApiResponse<Void>> purchaseCoffeeChat(
+            @AuthenticationPrincipal CustomUser customUser,
             @Valid @RequestBody CoffeeChatPurchaseRequest request) {
-        purchaseCommandService.purchaseCoffeeChat(request);
+        purchaseCommandService.purchaseCoffeeChat(customUser.getUserId(), request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -58,12 +61,12 @@ public class PurchaseCommandController {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200", description = "멘토 권한 구매 성공"
     )
-    @PostMapping("/mentor-authority/{userId}")
+    @PostMapping("/mentor-authority")
     public ResponseEntity<ApiResponse<Void>> purchaseMentorAuthority(
-            @Parameter(description = "구매할 유저 ID", required = true) @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUser customUser,
             @Valid @RequestBody MentorAuthorityPurchaseRequest request
     ) {
-        purchaseCommandService.purchaseMentorAuthority(userId, request);
+        purchaseCommandService.purchaseMentorAuthority(customUser.getUserId(), request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
