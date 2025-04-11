@@ -6,6 +6,7 @@ import com.newbit.auth.dto.request.RefreshTokenRequestDTO;
 import com.newbit.auth.dto.response.TokenResponseDTO;
 import com.newbit.auth.service.AuthService;
 import com.newbit.common.dto.ApiResponse;
+import com.newbit.user.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final LoginService loginService;
 
     @Operation(summary = "로그인", description = "로그인 기능")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<TokenResponseDTO>> login(@RequestBody LoginRequestDTO request) {
         TokenResponseDTO token = authService.login(request);
+        loginService.handleLoginSuccess(token.getUserId());
         return ResponseEntity.ok(ApiResponse.success(token));
     }
 

@@ -6,6 +6,7 @@ import com.newbit.post.entity.Comment;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final PointTransactionCommandService pointTransactionCommandService;
 
     @Transactional
     public CommentResponse createComment(Long postId, CommentCreateRequest request) {
@@ -33,6 +35,7 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
+        pointTransactionCommandService.givePointByType(request.getUserId(), "댓글 적립", comment.getId());
         return new CommentResponse(comment);
     }
 

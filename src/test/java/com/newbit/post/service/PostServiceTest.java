@@ -9,6 +9,7 @@ import com.newbit.post.entity.Post;
 import com.newbit.post.entity.PostCategory;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 import com.newbit.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ class PostServiceTest {
 
     private PostRepository postRepository;
     private PostService postService;
+    private PointTransactionCommandService pointTransactionCommandService;
     private PostCreateRequest request;
     private CommentRepository commentRepository;
 
@@ -34,7 +36,9 @@ class PostServiceTest {
     void setUp() {
         postRepository = mock(PostRepository.class);
         commentRepository = mock(CommentRepository.class);
-        postService = new PostService(postRepository, commentRepository);
+        pointTransactionCommandService = mock(PointTransactionCommandService.class);
+
+        postService = new PostService(postRepository, commentRepository, pointTransactionCommandService);
 
         request = new PostCreateRequest();
         request.setTitle("단위 테스트 제목");
@@ -241,7 +245,9 @@ class PostServiceTest {
         when(commentRepository.findByPostIdAndDeletedAtIsNull(postId)).thenReturn(List.of(comment));
 
         // PostService를 다시 생성해서 의존성 주입
-        PostService postServiceWithMocks = new PostService(postRepository, commentRepository);
+        PointTransactionCommandService pointTransactionCommandService = mock(PointTransactionCommandService.class);
+        PostService postServiceWithMocks = new PostService(postRepository, commentRepository, pointTransactionCommandService);
+
 
         // when
         var response = postServiceWithMocks.getPostDetail(postId);
