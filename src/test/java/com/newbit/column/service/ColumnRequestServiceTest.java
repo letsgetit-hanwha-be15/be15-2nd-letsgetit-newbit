@@ -55,7 +55,6 @@ class ColumnRequestServiceTest {
     @DisplayName("칼럼 등록 요청 - 성공")
     void createColumnRequest_success() {
         // given
-        String email = "mentor@example.com";
         Long userId = 10L;
         Long mentorId = 1L;
 
@@ -70,7 +69,6 @@ class ColumnRequestServiceTest {
         Column column = Column.builder().columnId(1L).mentor(mentor).build();
         ColumnRequest columnRequest = ColumnRequest.builder().columnRequestId(100L).build();
 
-        when(userService.findUserIdByEmail(email)).thenReturn(userId);
         when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
         when(columnMapper.toColumn(dto, mentor)).thenReturn(column);
         when(columnRepository.save(column)).thenReturn(column);
@@ -78,7 +76,7 @@ class ColumnRequestServiceTest {
         when(columnRequestRepository.save(columnRequest)).thenReturn(columnRequest);
 
         // when
-        CreateColumnResponseDto response = columnRequestService.createColumnRequest(dto, email);
+        CreateColumnResponseDto response = columnRequestService.createColumnRequest(dto, userId);
 
         // then
         assertThat(response.getColumnRequestId()).isEqualTo(100L);
@@ -156,11 +154,10 @@ class ColumnRequestServiceTest {
         verify(columnRequestRepository).save(any(ColumnRequest.class));
     }
 
-    @DisplayName("멘토 본인 칼럼 요청 목록 조회 - 성공")
+    @DisplayName("멘토 본인 칼럼 요청 조회 - 성공")
     @Test
     void getMyColumnRequests_success() {
         // given
-        String email = "mentor@example.com";
         Long userId = 10L;
         Long mentorId = 1L;
 
@@ -191,14 +188,13 @@ class ColumnRequestServiceTest {
                 .createdAt(columnRequest.getCreatedAt())
                 .build();
 
-        when(userService.findUserIdByEmail(email)).thenReturn(userId);
         when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
         when(columnRequestRepository.findAllByColumn_Mentor_MentorIdOrderByCreatedAtDesc(mentorId))
                 .thenReturn(columnRequests);
         when(columnMapper.toMyColumnRequestResponseDto(columnRequest)).thenReturn(dto);
 
         // when
-        List<GetMyColumnRequestResponseDto> result = columnRequestService.getMyColumnRequests(email);
+        List<GetMyColumnRequestResponseDto> result = columnRequestService.getMyColumnRequests(userId);
 
         // then
         assertThat(result).hasSize(1);
@@ -206,7 +202,6 @@ class ColumnRequestServiceTest {
         assertThat(result.get(0).getRequestType()).isEqualTo(RequestType.CREATE);
         assertThat(result.get(0).getTitle()).isEqualTo("요청 제목");
 
-        verify(userService).findUserIdByEmail(email);
         verify(mentorService).getMentorEntityByUserId(userId);
         verify(columnRequestRepository).findAllByColumn_Mentor_MentorIdOrderByCreatedAtDesc(mentorId);
         verify(columnMapper).toMyColumnRequestResponseDto(columnRequest);
