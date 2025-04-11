@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
@@ -261,6 +262,71 @@ class CoffeechatCommandServiceTest {
         assertThat(businessException.getErrorCode()).isEqualTo(ErrorCode.INVALID_REQUEST_TIME);
         // 메시지를 함께 검증하고 싶다면
         assertThat(businessException.getMessage()).contains("시작 시간과 끝 시간 구매 수량 x 30분 보다 작습니다.");
+
+    }
+
+    @DisplayName("커피챗 승인 성공")
+    @Test
+    void acceptCoffeechatTime_성공() {
+        // given
+        Long requestTimeId = 1L;
+        Long coffeechatId = 999L;
+
+        // requestTime 객체 만들어주기
+        LocalDateTime start = LocalDateTime.of(2025, 5, 1, 10, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 5, 1, 11, 30);
+        RequestTime requestTime = RequestTime.of(start.toLocalDate(), start, end, coffeechatId);
+
+        // 커피챗 객체 만들어주기
+        Coffeechat mockCoffeechat = Coffeechat.of(12L,
+                2L,
+                "취업 관련 꿀팁 얻고 싶어요.",
+                2);
+
+        // repo setting
+        when(requestTimeRepository.findById(requestTimeId)).thenReturn(Optional.of(requestTime));
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+
+        // when & then: 예외가 발생하지 않으면 테스트 통과
+        assertDoesNotThrow(() -> coffeechatCommandService.acceptCoffeechatTime(requestTimeId));
+    }
+
+    @DisplayName("requsetTime 객체를 찾을 수 없습니다")
+    @Test
+    void acceptCoffeechatTime_requsetTime_없음() {
+        // given
+        Long requestTimeId = 1L;
+        Long coffeechatId = 999L;
+
+        // repo setting
+        when(requestTimeRepository.findById(requestTimeId)).thenReturn(Optional.empty());
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.acceptCoffeechatTime(requestTimeId));
+        // 에러 코드가 REQUEST_TIME_NOT_FOUND 인지 검증
+        assertEquals(ErrorCode.REQUEST_TIME_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("coffeechat 객체를 찾을 수 없습니다")
+    @Test
+    void acceptCoffeechatTime_coffeechat_없음() {
+        // given
+        Long requestTimeId = 1L;
+        Long coffeechatId = 999L;
+
+        // requestTime 객체 만들어주기
+        LocalDateTime start = LocalDateTime.of(2025, 5, 1, 10, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 5, 1, 11, 30);
+        RequestTime requestTime = RequestTime.of(start.toLocalDate(), start, end, coffeechatId);
+
+        // repo setting
+        when(requestTimeRepository.findById(requestTimeId)).thenReturn(Optional.of(requestTime));
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.empty());
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.acceptCoffeechatTime(requestTimeId));
+        // 에러 코드가 REQUEST_TIME_NOT_FOUND 인지 검증
+        assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
 
     }
 }
