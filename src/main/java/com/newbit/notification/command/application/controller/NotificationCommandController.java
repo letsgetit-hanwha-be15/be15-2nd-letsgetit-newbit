@@ -4,6 +4,7 @@ import com.newbit.auth.model.CustomUser;
 import com.newbit.common.dto.ApiResponse;
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.notification.command.domain.repository.NotificationRepository;
 import com.newbit.notification.command.infrastructure.SseEmitterRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -58,4 +60,23 @@ public class NotificationCommandController {
         notificationCommandService.sendNotification(request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PatchMapping("/{notificationId}/read")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<Void>> markAsRead(
+            @AuthenticationPrincipal CustomUser user,
+            @PathVariable Long notificationId
+    ) {
+        notificationCommandService.markAsRead(user.getUserId(), notificationId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/read-all")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal CustomUser user) {
+        notificationCommandService.markAllAsRead(user.getUserId());
+        return ResponseEntity.ok().build();
+    }
+
+
 }
