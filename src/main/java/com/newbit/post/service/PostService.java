@@ -8,6 +8,7 @@ import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +25,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-
+    private final PointTransactionCommandService pointTransactionCommandService;
 
     @Transactional
     public PostResponse updatePost(Long postId, PostUpdateRequest request) {
@@ -47,6 +48,7 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
+        pointTransactionCommandService.givePointByType(request.getUserId(), "게시글 적립", post.getId());
         return new PostResponse(post);
     }
 
