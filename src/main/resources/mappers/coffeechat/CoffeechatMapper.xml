@@ -6,6 +6,7 @@
         c.coffeechat_id,
         c.progress_status,
         c.request_message,
+        c.purchase_quantity,
         c.confirmed_schedule,
         c.ended_at,
         c.mentor_id,
@@ -29,7 +30,15 @@
             <if test="menteeId != null">
                 AND c.mentee_id = #{ menteeId }
             </if>
+            <if test="isProgressing != null">
+                AND c.progress_status NOT IN ('COMPLETE')
+            </if>
+            <if test="progressStatus != null">
+                AND c.progress_status = #{ progressStatus }
+            </if>
         </where>
+        ORDER BY c.coffeechat_id DESC
+        LIMIT #{ limit } OFFSET #{ offset }
     </select>
     <select id="countCoffeechats" resultType="long">
         SELECT COUNT(*)
