@@ -46,12 +46,13 @@ public enum ErrorCode {
     COLUMN_FREE_CANNOT_PURCHASE("60002", "무료 칼럼은 구매할 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     COLUMN_NOT_PURCHASED("60004", "칼럼을 구매한 사용자만 조회할 수 있습니다.", HttpStatus.FORBIDDEN),
     COFFEECHAT_NOT_PURCHASABLE("60005", "커피챗이 구매할 수 없는 상태입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    ALREADY_MENTOR("60005", "이미 멘토인 회원입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INSUFFICIENT_POINT("60006", "보유한 포인트가 부족합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_PURCHASE_TYPE("60007", "알수없는 재화 타입", HttpStatus.INTERNAL_SERVER_ERROR),
-    POINT_TYPE_NOT_FOUND("60008", "포인트 유형이 잘못 되었습니다.", HttpStatus.NOT_FOUND),
-    INVALID_TIP_AMOUNT("60009", "잘못된 팁 제공량 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    COFFEECHAT_PURCHASE_NOT_ALLOWED("60010", "본인의 커피챗만 구매 가능합니다.", HttpStatus.FORBIDDEN),
+    ALREADY_MENTOR("60006", "이미 멘토인 회원입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    INSUFFICIENT_POINT("60007", "보유한 포인트가 부족합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_PURCHASE_TYPE("60008", "알수없는 재화 타입", HttpStatus.INTERNAL_SERVER_ERROR),
+    POINT_TYPE_NOT_FOUND("60009", "포인트 유형이 잘못 되었습니다.", HttpStatus.NOT_FOUND),
+    INVALID_TIP_AMOUNT("600010", "잘못된 팁 제공량 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    COFFEECHAT_PURCHASE_NOT_ALLOWED("60011", "본인의 커피챗만 구매 가능합니다.", HttpStatus.FORBIDDEN),
+    COFFEECHAT_CANCEL_NOT_ALLOWED("60012", "본인의 커피챗만 취소 가능합니다.", HttpStatus.FORBIDDEN),
 
     /*--------------- 칼럼/시리즈 오류 ------------------*/
     // 칼럼 오류

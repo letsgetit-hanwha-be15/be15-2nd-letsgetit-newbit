@@ -1,5 +1,6 @@
 package com.newbit.coffeechat.command.application.service;
 
+import com.newbit.coffeechat.command.application.dto.request.CoffeechatCancelRequest;
 import com.newbit.coffeechat.command.domain.aggregate.RequestTime;
 import com.newbit.coffeechat.command.domain.repository.CoffeechatRepository;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
@@ -11,9 +12,11 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.post.entity.Post;
 import com.newbit.purchase.command.application.service.SaleCommandService;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -154,5 +157,22 @@ public class CoffeechatCommandService {
         // 4. 정산내역에 추가하기
         int totalQuantity = mentorDTO.getPrice() * coffeechat.getPurchaseQuantity();
         saleCommandService.addSaleHistory(coffeechat.getMentorId(), totalQuantity, coffeechatId);
+    }
+
+    public void cancelCoffeechat(Long userId, CoffeechatCancelRequest coffeechatCancelRequest) {
+        // 1. 커피챗 ID로 커피챗 객체 찾기
+        Coffeechat coffeechat = coffeechatRepository.findById(coffeechatCancelRequest.getCoffeechatId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.COFFEECHAT_NOT_FOUND));
+
+        // 2. userId가 멘티Id인지 확인하기
+        if(!coffeechat.getMenteeId().equals(userId)) {
+            throw new BusinessException(ErrorCode.COFFEECHAT_CANCEL_NOT_ALLOWED);
+        }
+
+        // 3. 커피챗이 coffeechat_waiting 상태이면 환불 진행하기
+        
+
+        // 4. 커피챗 객체 업데이트하기
+
     }
 }
