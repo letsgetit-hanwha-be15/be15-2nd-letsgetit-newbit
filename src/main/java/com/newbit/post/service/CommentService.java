@@ -1,5 +1,6 @@
 package com.newbit.post.service;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.post.dto.request.CommentCreateRequest;
 import com.newbit.post.dto.response.CommentResponse;
 import com.newbit.post.entity.Comment;
@@ -23,19 +24,19 @@ public class CommentService {
     private final PointTransactionCommandService pointTransactionCommandService;
 
     @Transactional
-    public CommentResponse createComment(Long postId, CommentCreateRequest request) {
+    public CommentResponse createComment(Long postId, CommentCreateRequest request, CustomUser user) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
 
         Comment comment = Comment.builder()
                 .content(request.getContent())
-                .userId(request.getUserId())
+                .userId(user.getUserId()) // 인증 사용자 ID 사용
                 .reportCount(0)
                 .post(post)
                 .build();
 
         commentRepository.save(comment);
-        pointTransactionCommandService.givePointByType(request.getUserId(), "댓글 적립", comment.getId());
+        pointTransactionCommandService.givePointByType(user.getUserId(), "댓글 적립", comment.getId());
         return new CommentResponse(comment);
     }
 

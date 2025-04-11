@@ -1,5 +1,6 @@
 package com.newbit.post.service;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.post.dto.request.CommentCreateRequest;
 import com.newbit.post.dto.response.CommentResponse;
 import com.newbit.post.entity.Comment;
@@ -9,6 +10,7 @@ import com.newbit.post.repository.PostRepository;
 import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -78,8 +80,12 @@ class CommentServiceTest {
 
         CommentCreateRequest request = CommentCreateRequest.builder()
                 .content("댓글 내용입니다.")
+                .build();
+
+        CustomUser user = CustomUser.builder()
                 .userId(1L)
-                .postId(postId)
+                .email("user@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
                 .build();
 
         Post mockPost = Post.builder()
@@ -94,11 +100,13 @@ class CommentServiceTest {
         when(commentRepository.save(any(Comment.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        CommentResponse response = commentService.createComment(postId, request);
+        CommentResponse response = commentService.createComment(postId, request, user);
 
         assertThat(response.getContent()).isEqualTo("댓글 내용입니다.");
         verify(commentRepository, times(1)).save(any(Comment.class));
     }
+
+
 
     @Test
     void 댓글_삭제_성공() {
