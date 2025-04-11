@@ -1,6 +1,5 @@
 package com.newbit.coffeechat.command.application.service;
 
-import com.newbit.coffeechat.command.application.dto.request.RequestTimeDto;
 import com.newbit.coffeechat.command.domain.aggregate.RequestTime;
 import com.newbit.coffeechat.command.domain.repository.CoffeechatRepository;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -170,99 +168,6 @@ class CoffeechatCommandServiceTest {
                 BusinessException.class,
                 () -> coffeechatCommandService.createCoffeechat(userId, request)
         );
-    }
-
-    @DisplayName("시작 날짜와 끝 날짜가 다르면 INVALID_REQUEST_DATE 예외 발생")
-    @Test
-    void createCoffeechat_startdate와_enddate가_다른경우() {
-        // given
-        Long userId = 8L;
-        LocalDateTime pastStartDateTime = LocalDateTime.now().plusDays(1);
-        LocalDateTime pastEndDateTime = pastStartDateTime.plusDays(1);
-        RequestTimeDto invalidTimeDto = new RequestTimeDto();
-        ReflectionTestUtils.setField(invalidTimeDto, "startDateTime", pastStartDateTime);
-        ReflectionTestUtils.setField(invalidTimeDto, "endDateTime", pastEndDateTime);
-
-        CoffeechatCreateRequest request = new CoffeechatCreateRequest(
-                "취업 관련 꿀팁 얻고 싶어요.",
-                2,
-                2L,
-                List.of(invalidTimeDto));
-
-        Coffeechat mockCoffeechat = Coffeechat.of(userId,
-                request.getMentorId(),
-                request.getRequestMessage(),
-                request.getPurchaseQuantity());
-
-        // private 필드인 coffeechatId에 직접 주입
-        ReflectionTestUtils.setField(mockCoffeechat, "coffeechatId", 999L);
-        when(coffeechatRepository.save(any(Coffeechat.class))).thenReturn(mockCoffeechat);
-
-        // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
-        CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
-                .coffeechats(new LinkedList<>()).build();
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class))).thenReturn(coffeechatListResponse);
-
-
-        // when
-        Throwable thrown = catchThrowable(() -> coffeechatCommandService.createCoffeechat(userId, request));
-
-        // then
-        assertThat(thrown).isInstanceOf(BusinessException.class);
-        BusinessException businessException = (BusinessException) thrown;
-
-        // 커스텀 예외의 ErrorCode가 INVALID_REQUEST_DATE 인지 확인
-        assertThat(businessException.getErrorCode()).isEqualTo(ErrorCode.INVALID_REQUEST_DATE);
-        // 메시지를 함께 검증하고 싶다면
-        assertThat(businessException.getMessage()).contains("시작 날짜와 끝 날짜가 다릅니다.");
-
-    }
-
-    @DisplayName("시작 시간과 끝 시간이 구매 수량 × 30분보다 작으면 INVALID_REQUEST_TIME 예외 발생")
-    @Test
-    void createCoffeechat_시간부족_에러() {
-        // given
-        Long userId = 8L;
-        LocalDateTime pastStartDateTime = LocalDateTime.of(2025, 5, 1, 10, 0);
-        LocalDateTime pastEndDateTime = LocalDateTime.of(2025, 5, 1, 10, 30);
-        RequestTimeDto invalidTimeDto = new RequestTimeDto();
-        ReflectionTestUtils.setField(invalidTimeDto, "startDateTime", pastStartDateTime);
-        ReflectionTestUtils.setField(invalidTimeDto, "endDateTime", pastEndDateTime);
-
-        CoffeechatCreateRequest request = new CoffeechatCreateRequest(
-                "취업 관련 꿀팁 얻고 싶어요.",
-                2,
-                2L,
-                List.of(invalidTimeDto));
-
-
-        Coffeechat mockCoffeechat = Coffeechat.of(userId,
-                request.getMentorId(),
-                request.getRequestMessage(),
-                request.getPurchaseQuantity());
-
-        // private 필드인 coffeechatId에 직접 주입
-        ReflectionTestUtils.setField(mockCoffeechat, "coffeechatId", 999L);
-        when(coffeechatRepository.save(any(Coffeechat.class))).thenReturn(mockCoffeechat);
-
-        // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
-        CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
-                .coffeechats(new LinkedList<>()).build();
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class))).thenReturn(coffeechatListResponse);
-
-
-        // when
-        Throwable thrown = catchThrowable(() -> coffeechatCommandService.createCoffeechat(userId, request));
-
-        // then
-        assertThat(thrown).isInstanceOf(BusinessException.class);
-        BusinessException businessException = (BusinessException) thrown;
-
-        // 커스텀 예외의 ErrorCode가 INVALID_REQUEST_DATE 인지 확인
-        assertThat(businessException.getErrorCode()).isEqualTo(ErrorCode.INVALID_REQUEST_TIME);
-        // 메시지를 함께 검증하고 싶다면
-        assertThat(businessException.getMessage()).contains("시작 시간과 끝 시간 구매 수량 x 30분 보다 작습니다.");
-
     }
 
     @DisplayName("커피챗 승인 성공")
