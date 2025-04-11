@@ -22,7 +22,7 @@ public class SaleHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "settlement_history_id")
+    @Column(name = "sale_history_id")
     private Long id;
 
     @Column(name = "is_settled", nullable = false)
@@ -66,6 +66,15 @@ public class SaleHistory {
                 .saleAmount(BigDecimal.valueOf(columnPrice * 100))
                 .serviceType(ServiceType.COLUMN)
                 .serviceId(columnId)
+                .mentorId(mentorId)
+                .build();
+    }
+
+    public static SaleHistory forCoffeechat(long mentorId, int totalPrice, long coffeechatId) {
+        return SaleHistory.builder()
+                .saleAmount(BigDecimal.valueOf(totalPrice * 100L))
+                .serviceType(ServiceType.COFFEECHAT)
+                .serviceId(coffeechatId)
                 .mentorId(mentorId)
                 .build();
     }

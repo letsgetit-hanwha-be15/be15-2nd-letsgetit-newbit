@@ -1,23 +1,29 @@
 package com.newbit.coffeechat.query;
 
-import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
+import com.newbit.auth.model.CustomUser;
+import com.newbit.coffeechat.command.domain.aggregate.ProgressStatus;
+import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDetailResponse;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.dto.response.RequestTimeListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.common.dto.ApiResponse;
+import com.newbit.user.service.MentorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Coffeechat 도메인")
+@Tag(name = "커피챗 API", description = "커피챗 조회 API")
 @RestController
 @RequestMapping("/api/v1/coffeechats")
 @RequiredArgsConstructor
 public class CoffeechatQueryController {
     private final CoffeechatQueryService coffeechatQueryService;
+    private final MentorService mentorService;
 
     @Operation(
             summary = "커피챗 상세 조회", description = "커피챗 상세 정보를 조회한다."
@@ -34,18 +40,66 @@ public class CoffeechatQueryController {
     }
 
     @Operation(
-            summary = "커피챗 목록 조회", description = "커피챗 목록 정보를 조회한다."
+            summary = "멘토의 커피챗 목록 조회", description = "멘토ID로 커피챗 목록 정보를 조회한다."
     )
-    @GetMapping({"/", ""})
-    public ResponseEntity<ApiResponse<CoffeechatListResponse>> getCoffeechats(
-            CoffeechatSearchRequest coffeechatSearchRequest
+    @GetMapping({"/mentor"})
+//    @PreAuthorize("hasAuthority('MENTOR')")
+    public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMentorCoffeechats(
+            @AuthenticationPrincipal CustomUser customUser
     ) {
 
-        // TODO : 로그인한 회원 정보 읽어오기
+        // 유저 아이디로 멘토 아이디를 찾아오기
+        Long userId = customUser.getUserId();
+        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
 
-        // TODO : 회원이 멘토인지 확인하고 멘토이면 멘토변수에 멘토ID, 멘티이면 멘티변수에 회원ID를 넣어서 coffeechatSearchReqeust를 가공해서 넣는다.
+        // 서비스 레이어에 보낼 request 생성
+        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
 
-        CoffeechatListResponse response = coffeechatQueryService.getCoffeechats(coffeechatSearchRequest);
+        coffeechatSearchServiceRequest.setMentorId(mentorId);
+
+        CoffeechatListResponse response = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+
+    }
+
+    @Operation(
+            summary = "멘토의 커피챗 요청 목록 조회", description = "멘토ID로 커피챗 요청(IN_PROGRESSING) 목록 정보를 조회한다."
+    )
+    @GetMapping({"/mentor/in-progress"})
+//    @PreAuthorize("hasAuthority('MENTOR')")
+    public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMentorInProgressCoffeechats(
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        // 유저 아이디로 멘토 아이디를 찾아오기
+        Long userId = customUser.getUserId();
+        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
+
+        // 서비스 레이어에 보낼 request 생성
+        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
+        coffeechatSearchServiceRequest.setMentorId(mentorId);
+        coffeechatSearchServiceRequest.setProgressStatus(ProgressStatus.IN_PROGRESS);
+
+        CoffeechatListResponse response = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+
+    }
+
+    @Operation(
+            summary = "멘티의 커피챗 목록 조회", description = "멘티ID로 커피챗 목록 정보를 조회한다."
+    )
+    @GetMapping({"/mentee"})
+    public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMenteeCoffeechats(
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+
+        // 서비스 레이어에 보낼 request 생성
+        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
+        Long menteeId = customUser.getUserId();
+        coffeechatSearchServiceRequest.setMentorId(menteeId);
+
+        CoffeechatListResponse response = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
 
         return ResponseEntity.ok(ApiResponse.success(response));
 
