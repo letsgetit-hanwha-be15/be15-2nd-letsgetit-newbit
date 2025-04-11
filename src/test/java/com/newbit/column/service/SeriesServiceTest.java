@@ -3,6 +3,7 @@ package com.newbit.column.service;
 import com.newbit.column.domain.Column;
 import com.newbit.column.domain.Series;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
+import com.newbit.column.dto.request.UpdateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
 import com.newbit.column.mapper.SeriesMapper;
 import com.newbit.column.repository.ColumnRepository;
@@ -83,4 +84,53 @@ class SeriesServiceTest {
         verify(columnRepository).saveAll(columns);
         verify(seriesMapper).toCreateSeriesResponseDto(series);
     }
+
+    @DisplayName("시리즈 수정 - 성공")
+    @Test
+    void updateSeries_success() {
+        // given
+        Long userId = 1L;
+        Long mentorId = 10L;
+        Long seriesId = 100L;
+
+        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
+
+        Column oldColumn1 = Column.builder().columnId(1L).mentor(mentor).build();
+        Column oldColumn2 = Column.builder().columnId(2L).mentor(mentor).build();
+        List<Column> existingColumns = List.of(oldColumn1, oldColumn2);
+
+        Column newColumn1 = Column.builder().columnId(3L).mentor(mentor).build();
+        Column newColumn2 = Column.builder().columnId(4L).mentor(mentor).build();
+        List<Column> newColumns = List.of(newColumn1, newColumn2);
+
+        Series series = Series.builder().seriesId(seriesId).title("기존 제목").description("기존 설명").build();
+
+        UpdateSeriesRequestDto dto = new UpdateSeriesRequestDto(
+                "수정된 제목",
+                "수정된 설명",
+                "https://example.com/updated.jpg",
+                List.of(3L, 4L)
+        );
+
+        when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
+        when(seriesRepository.findById(seriesId)).thenReturn(java.util.Optional.of(series));
+        when(columnRepository.findAllById(dto.getColumnIds())).thenReturn(newColumns);
+        when(columnRepository.findAllBySeries_SeriesId(seriesId)).thenReturn(existingColumns);
+
+        // when
+        seriesService.updateSeries(seriesId, dto, userId);
+
+        // then
+        verify(mentorService).getMentorEntityByUserId(userId);
+        verify(seriesRepository).findById(seriesId);
+        verify(columnRepository).findAllById(dto.getColumnIds());
+        verify(columnRepository).findAllBySeries_SeriesId(seriesId);
+        verify(columnRepository).saveAll(existingColumns);
+        verify(columnRepository).saveAll(newColumns);
+
+        assertThat(series.getTitle()).isEqualTo("수정된 제목");
+        assertThat(series.getDescription()).isEqualTo("수정된 설명");
+        assertThat(series.getThumbnailUrl()).isEqualTo("https://example.com/updated.jpg");
+    }
+
 }

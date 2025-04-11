@@ -37,4 +37,10 @@ public class Series {
 
     @OneToMany(mappedBy = "series", cascade = CascadeType.PERSIST)
     private List<Column> columns = new ArrayList<>();
+
+    public void update(String title, String description, String thumbnailUrl) {
+        this.title = title;
+        this.description = description;
+        this.thumbnailUrl = thumbnailUrl;
+    }
 }
