@@ -11,7 +11,7 @@ import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.purchase.command.application.service.PurchaseCommandService;
+import com.newbit.purchase.command.application.service.SaleCommandService;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.DisplayName;
@@ -48,7 +48,7 @@ class CoffeechatCommandServiceTest {
     @Mock
     private MentorService mentorService;
     @Mock
-    private PurchaseCommandService purchaseCommandService;
+    private SaleCommandService saleCommandService;
 
     @DisplayName("커피챗 요청 등록 성공")
     @Test
@@ -326,7 +326,7 @@ class CoffeechatCommandServiceTest {
                 .isActive(true)
                 .build();
         when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
-        doNothing().when(purchaseCommandService).addSaleHistory(mentorId, 10, coffeechatId);
+        doNothing().when(saleCommandService).addSaleHistory(mentorId, 10, coffeechatId);
 
         // when & then: 예외가 발생하지 않으면 테스트 통과
         assertDoesNotThrow(() -> coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId));
