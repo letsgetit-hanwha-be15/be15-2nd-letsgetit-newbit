@@ -154,7 +154,7 @@ class PurchaseCommandServiceTest {
             when(userService.getDiamondBalance(menteeId)).thenReturn(balanceAfterPurchase);
 
             // when
-            purchaseCommandService.purchaseCoffeeChat(request);
+            purchaseCommandService.purchaseCoffeeChat(userId, request);
 
             // then
             verify(coffeechatCommandService).markAsPurchased(coffeechatId);
