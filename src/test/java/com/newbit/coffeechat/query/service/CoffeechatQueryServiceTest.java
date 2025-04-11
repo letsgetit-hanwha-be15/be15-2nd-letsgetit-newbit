@@ -237,4 +237,38 @@ class CoffeechatQueryServiceTest {
             this.coffeechatDto = coffeechatDto;
         }
     }
+
+    @DisplayName("멘토에게 요청온 커피챗 목록 조회")
+    @Test
+    void getCoffeechats_멘토_요청() {
+        // given
+        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
+        coffeechatSearchServiceRequest.setMentorId(1L);
+        coffeechatSearchServiceRequest.setProgressStatus(com.newbit.coffeechat.command.domain.aggregate.ProgressStatus.IN_PROGRESS);
+
+        CoffeechatDto coffeechat2 = CoffeechatDto.builder()
+                .coffeechatId(2L)
+                .progressStatus(ProgressStatus.IN_PROGRESS)
+                .requestMessage("두번째 커피챗도 부탁드립니다.")
+                .confirmedSchedule(LocalDateTime.of(2025, 4, 12, 19, 0))
+                .endedAt(LocalDateTime.of(2025, 4, 12, 19, 30))
+                .mentorId(1L) // 1L
+                .menteeId(2L)
+                .build();
+
+        List<CoffeechatDto> originalList = Arrays.asList(coffeechat2);
+        when(coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest)).thenReturn(originalList);
+
+        // when
+        CoffeechatListResponse results = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
+
+        // then
+
+        // 주어진 결과 값이 올바른 비즈니스 로직을 통해 가공되었는지 확인
+        assertNotNull(results);
+        assertEquals(1, results.getCoffeechats().size());
+        assertEquals("두번째 커피챗도 부탁드립니다.", results.getCoffeechats().get(0).getRequestMessage());
+        // 해당 객체에서 메소드 호출 여부 확인 -> 서비스 내부의 상호 작용이 기대한 대로 이루어졌는지
+        verify(coffeechatMapper).selectCoffeechats(coffeechatSearchServiceRequest);
+    }
 }
