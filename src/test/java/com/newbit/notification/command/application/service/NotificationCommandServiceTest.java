@@ -87,4 +87,69 @@ class NotificationCommandServiceTest {
         verify(notificationRepository, never()).save(any());
         verify(sseEmitterRepository, never()).send(any(), any());
     }
+
+    @Test
+    void markAsRead_success() {
+        // given
+        Long userId = 1L;
+        Long notificationId = 10L;
+        NotificationType type = NotificationType.builder()
+                .id(1L)
+                .name("COMMENT")
+                .build();
+
+        Notification notification = Notification.create(userId, type, "댓글이 달렸습니다");
+
+        when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
+
+        // when
+        notificationCommandService.markAsRead(userId, notificationId);
+
+        // then
+        assert notification.getIsRead(); // 읽음 여부 확인
+        verify(notificationRepository).findById(notificationId);
+    }
+
+    @Test
+    void markAsRead_whenNotificationNotFound_thenThrow() {
+        // given
+        when(notificationRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        // expect
+        assertThatThrownBy(() -> notificationCommandService.markAsRead(1L, 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.NOTIFICATION_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    void markAsRead_whenAccessAnotherUsersNotification_thenThrow() {
+        // given
+        Long userId = 1L;
+        Long otherUserId = 2L;
+        Long notificationId = 5L;
+        NotificationType type = NotificationType.builder()
+                .id(1L)
+                .name("COMMENT")
+                .build();
+
+        Notification notification = Notification.create(otherUserId, type, "다른 유저 알림");
+        when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
+
+        // expect
+        assertThatThrownBy(() -> notificationCommandService.markAsRead(userId, notificationId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.UNAUTHORIZED_ACCESS.getMessage());
+    }
+
+    @Test
+    void markAllAsRead_success() {
+        // given
+        Long userId = 1L;
+
+        // when
+        notificationCommandService.markAllAsRead(userId);
+
+        // then
+        verify(notificationRepository, times(1)).markAllAsReadByUserId(userId);
+    }
 }
