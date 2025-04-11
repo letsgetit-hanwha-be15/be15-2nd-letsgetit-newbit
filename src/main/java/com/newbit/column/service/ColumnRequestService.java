@@ -33,9 +33,8 @@ public class ColumnRequestService {
     private final UserService  userService;
     private final ColumnMapper columnMapper;
 
-    public CreateColumnResponseDto createColumnRequest(CreateColumnRequestDto dto, String email) {
+    public CreateColumnResponseDto createColumnRequest(CreateColumnRequestDto dto, Long userId) {
         // 1. Mentor 조회
-        Long userId = userService.findUserIdByEmail(email);
         Mentor mentor = mentorService.getMentorEntityByUserId(userId);
 
         // 2. Column 저장
@@ -93,8 +92,7 @@ public class ColumnRequestService {
                 .build();
     }
 
-    public List<GetMyColumnRequestResponseDto> getMyColumnRequests(String email) {
-        Long userId = userService.findUserIdByEmail(email);
+    public List<GetMyColumnRequestResponseDto> getMyColumnRequests(Long userId) {
         Mentor mentor = mentorService.getMentorEntityByUserId(userId);
 
         List<ColumnRequest> requests = columnRequestRepository.findAllByColumn_Mentor_MentorIdOrderByCreatedAtDesc(mentor.getMentorId());
