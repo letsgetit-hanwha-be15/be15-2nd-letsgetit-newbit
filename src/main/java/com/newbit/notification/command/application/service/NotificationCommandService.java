@@ -1,5 +1,7 @@
 package com.newbit.notification.command.application.service;
 
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.notification.command.application.dto.response.NotificationResponse;
 import com.newbit.notification.command.domain.aggregate.Notification;
 import com.newbit.notification.command.domain.aggregate.NotificationType;
@@ -23,7 +25,7 @@ public class NotificationCommandService {
     public void sendNotification(NotificationSendRequest request) {
         // 1. 알림 타입 조회
         NotificationType type = notificationTypeRepository.findById(request.getNotificationTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림 유형입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOTIFICATION_TYPE_NOT_FOUND));
 
         // 2. 알림 생성 및 저장
         Notification notification = Notification.create(
