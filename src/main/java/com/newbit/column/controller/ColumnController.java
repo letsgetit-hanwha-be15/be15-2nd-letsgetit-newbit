@@ -1,15 +1,14 @@
 package com.newbit.column.controller;
 
 import com.newbit.column.dto.response.GetColumnDetailResponseDto;
+import com.newbit.column.dto.response.GetColumnListResponseDto;
 import com.newbit.column.service.ColumnService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/columns")
@@ -27,4 +26,14 @@ public class ColumnController {
     ) {
         return columnService.getColumnDetail(userId, columnId);
     }
+
+    @GetMapping("/public-list")
+    @Operation(summary = "공개된 칼럼 목록 조회 (페이징)", description = "공개된 모든 칼럼을 페이지별로 조회합니다.")
+    public Page<GetColumnListResponseDto> getPublicColumnList(
+            @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기", example = "10") @RequestParam(defaultValue = "10") int size
+    ) {
+        return columnService.getPublicColumnList(page, size);
+    }
+
 }
