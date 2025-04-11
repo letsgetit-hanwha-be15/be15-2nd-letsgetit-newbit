@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.Optional;
 
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -85,6 +86,7 @@ class PostServiceNoticeTest {
 
         verify(postRepository, never()).save(any(Post.class));
     }
+
 
     @Test
     void 공지사항_수정_성공() {
@@ -201,4 +203,5 @@ class PostServiceNoticeTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("해당 게시글이 존재하지 않습니다.");
     }
+
 }
