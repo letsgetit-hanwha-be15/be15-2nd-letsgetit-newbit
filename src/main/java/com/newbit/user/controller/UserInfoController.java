@@ -1,5 +1,6 @@
 package com.newbit.user.controller;
 
+import com.newbit.common.dto.ApiResponse;
 import com.newbit.user.dto.request.UserInfoUpdateRequestDTO;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.service.UserInfoService;
@@ -22,16 +23,17 @@ public class UserInfoController {
 
     @Operation(summary = "회원 정보 조회", description = "내 프로필 조회")
     @GetMapping("/myprofile")
-    public ResponseEntity<UserDTO> getMyInfo(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponse<UserDTO>> getMyInfo(@AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername(); // 현재 로그인한 사용자의 이메일
         UserDTO myInfo = userInfoService.getMyInfo(email); // 서비스로 위임
-        return ResponseEntity.ok(myInfo); // 사용자 정보 반환
+        return ResponseEntity.ok(ApiResponse.success(myInfo));
     }
 
     @Operation(summary = "회원 정보 수정", description = "내 프로필 정보 수정")
     @PutMapping("/myprofile-modify")
-    public ResponseEntity<UserDTO> updateMyInfo(@RequestBody @Valid UserInfoUpdateRequestDTO request) {
-        return ResponseEntity.ok(userInfoService.updateMyInfo(request));
+    public ResponseEntity<ApiResponse<UserDTO>> updateMyInfo(@RequestBody @Valid UserInfoUpdateRequestDTO request) {
+        UserDTO updatedInfo = userInfoService.updateMyInfo(request);
+        return ResponseEntity.ok(ApiResponse.success(updatedInfo));
     }
 }
 
