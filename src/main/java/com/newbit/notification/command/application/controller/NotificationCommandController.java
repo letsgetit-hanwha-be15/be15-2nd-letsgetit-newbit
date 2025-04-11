@@ -2,11 +2,8 @@ package com.newbit.notification.command.application.controller;
 
 import com.newbit.auth.model.CustomUser;
 import com.newbit.common.dto.ApiResponse;
-import com.newbit.common.exception.BusinessException;
-import com.newbit.common.exception.ErrorCode;
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.notification.command.application.service.NotificationCommandService;
-import com.newbit.notification.command.domain.aggregate.Notification;
 import com.newbit.notification.command.domain.repository.NotificationRepository;
 import com.newbit.notification.command.infrastructure.SseEmitterRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 

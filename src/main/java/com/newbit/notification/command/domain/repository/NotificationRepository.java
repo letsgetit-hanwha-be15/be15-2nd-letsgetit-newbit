@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Collection;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    Collection<Object> findAllByUserIdOrderByCreatedAtDesc(Long userId);
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.userId = :userId AND n.isRead = false")
     void markAllAsReadByUserId(Long userId);
