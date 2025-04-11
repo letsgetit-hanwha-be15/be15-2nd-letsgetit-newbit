@@ -6,12 +6,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CoffeechatSearchRequest {
+public class CoffeechatSearchServiceRequest {
     private Integer page = 1;
     private Integer size = 10;
-    private Long userId;
     private Long mentorId;
     private Long menteeId;
+    private ProgressStatus progressStatus;
     private Boolean isProgressing;
 
     public int getOffset() {

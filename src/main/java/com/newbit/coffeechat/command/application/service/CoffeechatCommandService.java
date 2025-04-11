@@ -6,7 +6,7 @@ import com.newbit.coffeechat.command.domain.repository.CoffeechatRepository;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
 import com.newbit.coffeechat.command.domain.aggregate.Coffeechat;
 import com.newbit.coffeechat.command.domain.repository.RequestTimeRepository;
-import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
+import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,11 +33,11 @@ public class CoffeechatCommandService {
     @Transactional
     public Long createCoffeechat(Long userId, CoffeechatCreateRequest request) {
         // 1. 진행중인 커피챗이 존재
-        CoffeechatSearchRequest coffeechatSearchRequest = new CoffeechatSearchRequest();
-        coffeechatSearchRequest.setMenteeId(userId);
-        coffeechatSearchRequest.setMentorId(request.getMentorId());
-        coffeechatSearchRequest.setIsProgressing(true);
-        CoffeechatListResponse coffeechatDtos = coffeechatQueryService.getCoffeechats(coffeechatSearchRequest);
+        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
+        coffeechatSearchServiceRequest.setMenteeId(userId);
+        coffeechatSearchServiceRequest.setMentorId(request.getMentorId());
+        coffeechatSearchServiceRequest.setIsProgressing(true);
+        CoffeechatListResponse coffeechatDtos = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
         if (!coffeechatDtos.getCoffeechats().isEmpty()) throw new BusinessException(ErrorCode.COFFEECHAT_ALREADY_EXIST);
 
         // 2. 커피챗 등록

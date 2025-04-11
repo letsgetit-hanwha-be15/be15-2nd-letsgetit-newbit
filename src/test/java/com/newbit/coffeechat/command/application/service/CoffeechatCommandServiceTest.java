@@ -6,7 +6,7 @@ import com.newbit.coffeechat.command.domain.repository.CoffeechatRepository;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
 import com.newbit.coffeechat.command.domain.aggregate.Coffeechat;
 import com.newbit.coffeechat.command.domain.repository.RequestTimeRepository;
-import com.newbit.coffeechat.query.dto.request.CoffeechatSearchRequest;
+import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
@@ -73,7 +73,7 @@ class CoffeechatCommandServiceTest {
         // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
         CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
                 .coffeechats(new LinkedList<>()).build();
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchRequest.class))).thenReturn(coffeechatListResponse);
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class))).thenReturn(coffeechatListResponse);
 
         // requestTimeRepository::save 시 requestTime 반환
         RequestTime requestTime = RequestTime.of(
@@ -116,7 +116,7 @@ class CoffeechatCommandServiceTest {
         CoffeechatListResponse response = CoffeechatListResponse.builder()
                 .coffeechats(coffeechatDtos).build(); // coffeechatQueryservice에서 같은 멘토와 멘티가 현재 진행중인 커피챗이 있을 때, 한 개 이상의 list 반환
 
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchRequest.class)))
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class)))
                 .thenReturn(response);
 
         // when & then
@@ -162,7 +162,7 @@ class CoffeechatCommandServiceTest {
         // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
         CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
                 .coffeechats(new LinkedList<>()).build();
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchRequest.class))).thenReturn(coffeechatListResponse);
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class))).thenReturn(coffeechatListResponse);
 
         // when & then
         assertThrows(
@@ -200,7 +200,7 @@ class CoffeechatCommandServiceTest {
         // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
         CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
                 .coffeechats(new LinkedList<>()).build();
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchRequest.class))).thenReturn(coffeechatListResponse);
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class))).thenReturn(coffeechatListResponse);
 
 
         // when
@@ -247,7 +247,7 @@ class CoffeechatCommandServiceTest {
         // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
         CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
                 .coffeechats(new LinkedList<>()).build();
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchRequest.class))).thenReturn(coffeechatListResponse);
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class))).thenReturn(coffeechatListResponse);
 
 
         // when
