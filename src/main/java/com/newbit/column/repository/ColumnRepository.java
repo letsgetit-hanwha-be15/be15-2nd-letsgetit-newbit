@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ColumnRepository extends JpaRepository<Column, Long> {
@@ -30,5 +31,7 @@ public interface ColumnRepository extends JpaRepository<Column, Long> {
             "JOIN m.user u " +
             "WHERE c.columnId = :columnId AND c.isPublic = true")
     Optional<GetColumnDetailResponseDto> findPublicColumnDetailById(@Param("columnId") Long columnId);
+
+    List<Column> findAllByMentor_MentorIdAndIsPublicTrueOrderByCreatedAtDesc(Long mentorId);
 
 }
