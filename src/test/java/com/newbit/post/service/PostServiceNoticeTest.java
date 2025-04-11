@@ -201,4 +201,100 @@ class PostServiceNoticeTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("해당 게시글이 존재하지 않습니다.");
     }
+
+    @Test
+    void 공지사항_삭제_성공() {
+        // given
+        Long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .title("공지사항")
+                .content("내용")
+                .userId(1L)
+                .postCategoryId(1L)
+                .isNotice(true)
+                .build();
+
+        CustomUser adminUser = CustomUser.builder()
+                .userId(1L)
+                .email("admin@example.com")
+                .password("encoded")
+                .authorities(Collections.singleton(() -> "ROLE_ADMIN"))
+                .build();
+
+        when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
+
+        // when
+        postService.deleteNotice(postId, adminUser);
+
+        // then
+        assertThat(post.getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    void 공지사항_삭제_실패_권한없음() {
+        Long postId = 1L;
+        PostUpdateRequest request = PostUpdateRequest.builder()
+                .title("수정 제목")
+                .content("수정 내용")
+                .build();
+
+        CustomUser normalUser = CustomUser.builder()
+                .userId(2L)
+                .email("user@example.com")
+                .password("encoded")
+                .authorities(Collections.singleton(() -> "ROLE_USER"))
+                .build();
+
+        assertThatThrownBy(() -> postService.deleteNotice(postId, normalUser))
+                .isInstanceOf(SecurityException.class)
+                .hasMessage("공지사항은 관리자만 삭제할 수 있습니다.");
+
+        verify(postRepository, never()).findById(any());
+    }
+
+    @Test
+    void 공지사항_삭제_실패_공지사항_아님() {
+        Long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .title("일반 글")
+                .content("내용")
+                .userId(1L)
+                .postCategoryId(1L)
+                .isNotice(false)
+                .build();
+
+        CustomUser adminUser = CustomUser.builder()
+                .userId(1L)
+                .email("admin@example.com")
+                .password("encoded")
+                .authorities(Collections.singleton(() -> "ROLE_ADMIN"))
+                .build();
+
+        when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
+
+        assertThatThrownBy(() -> postService.deleteNotice(postId, adminUser))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("해당 게시글은 공지사항이 아닙니다.");
+    }
+
+    @Test
+    void 공지사항_삭제_실패_게시글_없음() {
+        Long postId = 99L;
+
+        CustomUser adminUser = CustomUser.builder()
+                .userId(1L)
+                .email("admin@example.com")
+                .password("encoded")
+                .authorities(Collections.singleton(() -> "ROLE_ADMIN"))
+                .build();
+
+        when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.deleteNotice(postId, adminUser))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("해당 게시글이 존재하지 않습니다.");
+    }
+
 }
