@@ -102,5 +102,25 @@ public class CoffeechatCommandService {
 
         // 5. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
+
+        // 6. TODO : 멘티에게 승인 알림 보내주기
+    }
+
+    @Transactional
+    public void rejectCoffeechatTime(Long coffeechatId) {
+        // 1. 커피챗 ID로 커피챗 객체 찾기
+        Coffeechat coffeechat = coffeechatRepository.findById(coffeechatId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COFFEECHAT_NOT_FOUND));
+
+        // 2. 커피챗 객체 update하기
+        coffeechat.rejectSchedule();
+
+        // 3. 해당 coffeechatId에 대한 requestTime 객체 리스트 찾기
+        List<RequestTime> requests = requestTimeRepository.findAllByCoffeechatId(coffeechatId);
+
+        // 4. 해당 객체들 삭제
+        requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
+
+        // 5. TODO : 멘토에게 거절 알림 보내주기
     }
 }
