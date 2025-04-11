@@ -25,7 +25,6 @@ public class CoffeechatCreateRequest {
     private Long menteeId;
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @Future
     @Size(max = 3)
-    private final List<LocalDateTime> requestTimes; // 요청 시간 : 시작 시간 기준, 끝 시간은 내부적으로 계산
+    private final List<@Future LocalDateTime> requestTimes; // 요청 시간 : 시작 시간 기준, 끝 시간은 내부적으로 계산
 }
