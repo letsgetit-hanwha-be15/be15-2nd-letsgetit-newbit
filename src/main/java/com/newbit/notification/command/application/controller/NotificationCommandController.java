@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/notification")
@@ -18,16 +19,17 @@ public class NotificationCommandController {
     private final SseEmitterRepository sseEmitterRepository;
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(
-            @AuthenticationPrincipal CustomUser customUser
-    ) {
+    public SseEmitter subscribe(@AuthenticationPrincipal CustomUser customUser) {
         Long userId = customUser.getUserId();
-        SseEmitter emitter = new SseEmitter(60 * 1000L);
-        sseEmitterRepository.addEmitter(userId, emitter);
 
-        emitter.onCompletion(() -> sseEmitterRepository.removeEmitter(userId));
-        emitter.onTimeout(() -> sseEmitterRepository.removeEmitter(userId));
-        emitter.onError((e) -> sseEmitterRepository.removeEmitter(userId));
+        String emitterId = userId + "_" + UUID.randomUUID();
+        SseEmitter emitter = new SseEmitter(60 * 1000L); // 60초 타임아웃
+
+        sseEmitterRepository.save(emitterId, userId, emitter);
+
+        emitter.onCompletion(() -> sseEmitterRepository.deleteById(emitterId));
+        emitter.onTimeout(() -> sseEmitterRepository.deleteById(emitterId));
+        emitter.onError((e) -> sseEmitterRepository.deleteById(emitterId));
 
         try {
             emitter.send(SseEmitter.event().name("connect").data("SSE 연결 성공"));
