@@ -123,4 +123,14 @@ public class CoffeechatCommandService {
 
         // 5. TODO : 멘토에게 거절 알림 보내주기
     }
+
+    @Transactional
+    public void closeCoffeechat(Long coffeechatId) {
+        // 1. 커피챗 ID로 커피챗 객체 찾기
+        Coffeechat coffeechat = coffeechatRepository.findById(coffeechatId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COFFEECHAT_NOT_FOUND));
+
+        // 2. 커피챗 객체 update하기
+        coffeechat.closeSchedule();
+    }
 }
