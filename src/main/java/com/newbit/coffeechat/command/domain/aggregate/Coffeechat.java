@@ -71,7 +71,10 @@ public class Coffeechat {
     public void confirmSchedule(LocalDateTime confirmedSchedule) {
         this.confirmedSchedule = confirmedSchedule;
         this.endedAt = confirmedSchedule.plusMinutes(purchaseQuantity * 30L);
-        this.setProgressStatus(ProgressStatus.PAYMENT_WAITING);
+        progressStatus = ProgressStatus.PAYMENT_WAITING;
     }
 
+    public void rejectSchedule() {
+        progressStatus = ProgressStatus.CANCEL;
+    }
 }

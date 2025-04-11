@@ -222,4 +222,46 @@ class CoffeechatCommandServiceTest {
         assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
 
     }
+
+    @DisplayName("커피챗 거절 성공")
+    @Test
+    void rejectCoffeechatTime_성공() {
+        // given
+        Long coffeechatId = 999L;
+        Long requestTimeId = 1L;
+
+        // requestTime 객체 만들어주기
+        LocalDateTime start = LocalDateTime.of(2025, 5, 1, 10, 0);
+        LocalDateTime end = LocalDateTime.of(2025, 5, 1, 11, 30);
+        RequestTime requestTime = RequestTime.of(start.toLocalDate(), start, end, coffeechatId);
+        ReflectionTestUtils.setField(requestTime, "requestTimeId", requestTimeId);
+
+
+        // 커피챗 객체 만들어주기
+        Coffeechat mockCoffeechat = Coffeechat.of(12L,
+                2L,
+                "취업 관련 꿀팁 얻고 싶어요.",
+                2);
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+        when(requestTimeRepository.findAllByCoffeechatId(coffeechatId)).thenReturn(List.of(requestTime));
+        doNothing().when(requestTimeRepository).deleteById(requestTimeId);
+
+        // when & then: 예외가 발생하지 않으면 테스트 통과
+        assertDoesNotThrow(() -> coffeechatCommandService.rejectCoffeechatTime(coffeechatId));
+    }
+
+    @DisplayName("커피챗 거절 시 객체 찾지 못함")
+    @Test
+    void rejectCoffeechatTime_실패() {
+        // given
+        Long coffeechatId = 999L;
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.empty());
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.rejectCoffeechatTime(coffeechatId));
+        assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());}
 }
