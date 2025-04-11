@@ -36,15 +36,16 @@ public class UserController {
 
     @Operation(summary = "아이디 찾기", description = "아이디 찾기 기능")
     @PostMapping("/find-id")
-    public ResponseEntity<UserIdDTO> findEmail(@RequestBody FindIdDTO findIdDTO) {
+    public ResponseEntity<ApiResponse<UserIdDTO>> findEmail(@RequestBody FindIdDTO findIdDTO) {
         UserIdDTO userIdDTO = userService.findEmailByNameAndPhone(findIdDTO);
-        return ResponseEntity.ok(userIdDTO);
+        return ResponseEntity.ok(ApiResponse.success(userIdDTO));
     }
 
     @Operation(summary = "비밀번호 찾기", description = "비밀번호 찾기 기능")
     @PostMapping("/find-password")
-    public ResponseEntity<Void> findPassword(@RequestBody FindPasswordDTO requestDto) {
-        userService.findPasswordByEmail(requestDto.getEmail()); // ✅ .email() → .getEmail()
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> findPassword(@RequestBody FindPasswordDTO requestDto) {
+        userService.findPasswordByEmail(requestDto.getEmail());
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
+
 }
