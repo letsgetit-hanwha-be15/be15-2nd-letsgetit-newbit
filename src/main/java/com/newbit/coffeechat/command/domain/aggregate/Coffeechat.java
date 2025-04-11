@@ -65,4 +65,9 @@ public class Coffeechat {
     public void markAsPurchased() {
         this.progressStatus = ProgressStatus.COFFEECHAT_WAITING;
     }
+
+    public void confirmSchedule(LocalDateTime confirmedSchedule) {
+        this.confirmedSchedule = confirmedSchedule;
+        this.endedAt = confirmedSchedule.plusMinutes(purchaseQuantity * 30L);
+    }
 }

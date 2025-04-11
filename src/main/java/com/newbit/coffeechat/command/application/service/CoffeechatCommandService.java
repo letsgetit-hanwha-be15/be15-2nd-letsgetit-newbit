@@ -7,6 +7,7 @@ import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateReq
 import com.newbit.coffeechat.command.domain.aggregate.Coffeechat;
 import com.newbit.coffeechat.command.domain.repository.RequestTimeRepository;
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
+import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
@@ -28,6 +29,11 @@ public class CoffeechatCommandService {
     private final CoffeechatRepository coffeechatRepository;
     private final CoffeechatQueryService coffeechatQueryService;
     private final RequestTimeRepository requestTimeRepository;
+
+    /**
+     * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
+     * requestTimeService 로직 대신 repository 직접 호출해서 사용
+     */
 
     /* 커피챗 등록 */
     @Transactional
@@ -88,5 +94,19 @@ public class CoffeechatCommandService {
         }
 
         coffeechat.markAsPurchased();
+    }
+
+    @Transactional
+    public void acceptCoffeechatTime(Long requestTimeId) {
+        // 1. requestTime 객체 찾기
+        RequestTime requestTime = requestTimeRepository.findById(requestTimeId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_TIME_NOT_FOUND));
+
+        // 2. 커피챗 ID로 커피챗 객체 찾기
+        Coffeechat coffeechat = coffeechatRepository.findById(requestTime.getCoffeechatId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.COFFEECHAT_NOT_FOUND));
+
+        // 3. 커피챗 객체 update하기
+        coffeechat.confirmSchedule(requestTime.getStartTime());
     }
 }

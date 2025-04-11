@@ -53,12 +53,10 @@ public class CoffeechatCommandController {
     @PostMapping("/{requestTimeId}")
     @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<Void>> acceptCoffeechatTime(
-            @PathVariable Long requestTimeId,
-            @AuthenticationPrincipal CustomUser customUser
+            @PathVariable Long requestTimeId
     ) {
 
-        Long userId = customUser.getUserId();
-        Long coffeechatId = coffeechatCommandService.acceptCoffeechatTime(userId, requestTimeId);
+        coffeechatCommandService.acceptCoffeechatTime(requestTimeId);
 
         return ResponseEntity
                 .ok(ApiResponse.success(null));
