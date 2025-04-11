@@ -3,6 +3,7 @@ package com.newbit.column.mapper;
 import com.newbit.column.dto.request.CreateColumnRequestDto;
 import com.newbit.column.domain.Column;
 import com.newbit.column.domain.ColumnRequest;
+import com.newbit.column.dto.response.GetMyColumnListResponseDto;
 import com.newbit.column.dto.response.GetMyColumnRequestResponseDto;
 import com.newbit.column.enums.RequestType;
 import com.newbit.user.entity.Mentor;
@@ -51,6 +52,16 @@ public class ColumnMapper {
                 .thumbnailUrl(isCreate ? column.getThumbnailUrl() : columnRequest.getUpdatedThumbnailUrl())
 
                 .createdAt(columnRequest.getCreatedAt())
+                .build();
+    }
+
+    public GetMyColumnListResponseDto toMyColumnListDto(Column column) {
+        return GetMyColumnListResponseDto.builder()
+                .columnId(column.getColumnId())
+                .title(column.getTitle())
+                .thumbnailUrl(column.getThumbnailUrl())
+                .price(column.getPrice())
+                .likeCount(column.getLikeCount())
                 .build();
     }
 }
