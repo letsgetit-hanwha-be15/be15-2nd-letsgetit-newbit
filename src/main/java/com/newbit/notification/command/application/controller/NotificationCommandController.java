@@ -1,9 +1,14 @@
 package com.newbit.notification.command.application.controller;
 
 import com.newbit.auth.model.CustomUser;
+import com.newbit.common.dto.ApiResponse;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.notification.command.infrastructure.SseEmitterRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -17,6 +22,7 @@ import java.util.UUID;
 public class NotificationCommandController {
 
     private final SseEmitterRepository sseEmitterRepository;
+    private final NotificationCommandService notificationCommandService;
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal CustomUser customUser) {
@@ -38,5 +44,13 @@ public class NotificationCommandController {
         }
 
         return emitter;
+    }
+
+    @PostMapping("/send")
+    public ResponseEntity<ApiResponse<Void>> sendNotification(
+            @Valid @RequestBody NotificationSendRequest request
+    ) {
+        notificationCommandService.sendNotification(request);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
