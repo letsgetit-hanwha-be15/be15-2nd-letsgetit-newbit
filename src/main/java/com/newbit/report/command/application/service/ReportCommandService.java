@@ -1,11 +1,18 @@
 package com.newbit.report.command.application.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.newbit.post.entity.Comment;
+import com.newbit.post.entity.Post;
+import com.newbit.post.repository.CommentRepository;
+import com.newbit.post.repository.PostRepository;
 import com.newbit.report.command.application.dto.request.ReportCreateRequest;
 import com.newbit.report.command.application.dto.response.ReportCommandResponse;
 import com.newbit.report.command.domain.aggregate.Report;
+import com.newbit.report.command.domain.aggregate.ReportStatus;
 import com.newbit.report.command.domain.aggregate.ReportType;
 import com.newbit.report.command.domain.repository.ReportRepository;
 import com.newbit.report.command.domain.repository.ReportTypeRepository;
@@ -19,7 +26,10 @@ public class ReportCommandService {
 
     private final ReportRepository reportRepository;
     private final ReportTypeRepository reportTypeRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
+    private static final int REPORT_THRESHOLD = 50;
 
     public ReportCommandResponse createPostReport(ReportCreateRequest request) {
         if (request.getPostId() == null) {
@@ -37,6 +47,8 @@ public class ReportCommandService {
         );
         
         Report savedReport = reportRepository.save(report);
+        
+        incrementPostReportCount(request.getPostId());
         
         return new ReportCommandResponse(savedReport);
     }
@@ -58,6 +70,73 @@ public class ReportCommandService {
         
         Report savedReport = reportRepository.save(report);
         
+        incrementCommentReportCount(request.getCommentId());
+        
         return new ReportCommandResponse(savedReport);
+    }
+    
+    private boolean incrementPostReportCount(Long postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+        
+        post.setReportCount(post.getReportCount() + 1);
+        
+        if (post.getReportCount() >= REPORT_THRESHOLD) {
+            post.softDelete();
+            
+            List<Report> reports = reportRepository.findAllByPostId(postId);
+            for (Report report : reports) {
+                report.updateStatus(ReportStatus.DELETED);
+            }
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private boolean incrementCommentReportCount(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+        
+        comment.setReportCount(comment.getReportCount() + 1);
+        
+        if (comment.getReportCount() >= REPORT_THRESHOLD) {
+            comment.softDelete();
+            
+            List<Report> reports = reportRepository.findAllByCommentId(commentId);
+            for (Report report : reports) {
+                report.updateStatus(ReportStatus.DELETED);
+            }
+            
+            return true;
+        }
+        
+        return false;
+    }
+    
+    public ReportCommandResponse processReport(Long reportId, ReportStatus newStatus) {
+        Report report = reportRepository.findById(reportId);
+        if (report == null) {
+            throw new IllegalArgumentException("존재하지 않는 신고입니다.");
+        }
+        
+        report.updateStatus(newStatus);
+        
+        if (newStatus == ReportStatus.DELETED) {
+            if (report.getPostId() != null) {
+                Post post = postRepository.findById(report.getPostId())
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+                
+                post.softDelete();
+            } else if (report.getCommentId() != null) {
+                Comment comment = commentRepository.findById(report.getCommentId())
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+                
+                comment.softDelete();
+            }
+        }
+        
+        return new ReportCommandResponse(report);
     }
 }

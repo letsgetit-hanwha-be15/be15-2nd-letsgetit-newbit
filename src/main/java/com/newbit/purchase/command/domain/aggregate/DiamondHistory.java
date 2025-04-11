@@ -72,4 +72,37 @@ public class DiamondHistory {
                 .balance(diamondBalance)  // 차감 이후 잔액
                 .build();
     }
+
+    public static DiamondHistory forCoffeechatPurchase(Long userId, Long coffeechatId, Integer totalPrice, Integer diamondBalance) {
+        return DiamondHistory.builder()
+                .userId(userId)
+                .serviceType(DiamondTransactionType.COFFEECHAT)
+                .serviceId(coffeechatId)
+                .decreaseAmount(totalPrice)
+                .increaseAmount(null)
+                .balance(diamondBalance)  // 차감 이후 잔액
+                .build();
+    }
+
+    public static DiamondHistory forMentorAuthority(Long userId, Integer diamond, int mentorAuthorityDiamondCost) {
+        return DiamondHistory.builder()
+                .userId(userId)
+                .serviceId(1L) //nullable로 변경
+                .serviceType(DiamondTransactionType.MENTOR_AUTHORITY)
+                .decreaseAmount(mentorAuthorityDiamondCost)
+                .increaseAmount(null)
+                .balance(diamond)  // 차감 이후 잔액
+                .build();
+    }
+
+    public static DiamondHistory forCoffeechatRefund(Long userId, Long coffeechatId, int totalPrice, Integer diamondBalance) {
+        return DiamondHistory.builder()
+                .userId(userId)
+                .serviceType(DiamondTransactionType.COFFEECHAT)
+                .serviceId(coffeechatId)
+                .decreaseAmount(null)
+                .increaseAmount(totalPrice)
+                .balance(diamondBalance)  // 차감 이후 잔액
+                .build();
+    }
 }
