@@ -31,7 +31,7 @@
                 AND c.mentee_id = #{ menteeId }
             </if>
             <if test="isProgressing != null">
-                AND c.progress_status NOT IN ('COMPLETE')
+                AND c.progress_status NOT IN ('COMPLETE', 'CANCEL')
             </if>
             <if test="progressStatus != null">
                 AND c.progress_status = #{ progressStatus }

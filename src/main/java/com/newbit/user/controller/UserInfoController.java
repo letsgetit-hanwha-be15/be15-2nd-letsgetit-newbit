@@ -1,6 +1,7 @@
 package com.newbit.user.controller;
 
 import com.newbit.common.dto.ApiResponse;
+import com.newbit.user.dto.request.ChangePasswordRequestDTO;
 import com.newbit.user.dto.request.UserInfoUpdateRequestDTO;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.service.UserInfoService;
@@ -34,6 +35,13 @@ public class UserInfoController {
     public ResponseEntity<ApiResponse<UserDTO>> updateMyInfo(@RequestBody @Valid UserInfoUpdateRequestDTO request) {
         UserDTO updatedInfo = userInfoService.updateMyInfo(request);
         return ResponseEntity.ok(ApiResponse.success(updatedInfo));
+    }
+
+    @Operation(summary = "비밀번호 변경", description = "비밀번호 수정")
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody ChangePasswordRequestDTO request) {
+        userInfoService.changePassword(request.getCurrentPassword(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
 
