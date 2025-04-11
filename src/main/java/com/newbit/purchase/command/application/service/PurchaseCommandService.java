@@ -82,7 +82,7 @@ public class PurchaseCommandService {
 
 
     @Transactional
-    public void purchaseCoffeeChat(CoffeeChatPurchaseRequest request) {
+    public void purchaseCoffeeChat(Long userId, CoffeeChatPurchaseRequest request) {
         Long coffeechatId = request.getCoffeechatId();
         CoffeechatDto coffeeChat = coffeechatQueryService.getCoffeechat(coffeechatId).getCoffeechat();
         Long menteeId = coffeeChat.getMenteeId();
