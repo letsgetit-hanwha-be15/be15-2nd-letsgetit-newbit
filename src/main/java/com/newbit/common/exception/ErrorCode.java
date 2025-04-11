@@ -28,6 +28,7 @@ public enum ErrorCode {
     USER_NOT_FOUND("20004", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     MENTOR_NOT_FOUND("20005", "해당 멘토를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
+    USER_INFO_NOT_FOUND("20006", "정보 조회에 실패했습니다.", HttpStatus.NOT_FOUND),
 
     /*--------------- 커피챗 오류 ------------------*/
     COFFEECHAT_NOT_FOUND("70001", "해당 커피챗을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -50,7 +51,15 @@ public enum ErrorCode {
     INVALID_PURCHASE_TYPE("60007", "알수없는 재화 타입", HttpStatus.INTERNAL_SERVER_ERROR),
     POINT_TYPE_NOT_FOUND("60008", "포인트 유형이 잘못 되었습니다.", HttpStatus.NOT_FOUND),
     INVALID_TIP_AMOUNT("60009", "잘못된 팁 제공량 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    COFFEECHAT_PURCHASE_NOT_ALLOWED("60010", "본인의 커피챗만 구매 가능합니다.", HttpStatus.FORBIDDEN);
+    COFFEECHAT_PURCHASE_NOT_ALLOWED("60010", "본인의 커피챗만 구매 가능합니다.", HttpStatus.FORBIDDEN),
+
+
+    /*--------------- JWT 토큰 오류 ------------------*/
+    JWT_INVALID("80001", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
+    JWT_EXPIRED("80002", "만료된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
+    JWT_UNSUPPORTED("80003", "지원하지 않는 JWT 토큰입니다.", HttpStatus.BAD_REQUEST),
+    JWT_CLAIMS_EMPTY("80004", "JWT 클레임이 비어 있습니다.", HttpStatus.BAD_REQUEST)
+    ;
 
     private final String code;
     private final String message;
