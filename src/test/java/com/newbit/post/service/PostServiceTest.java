@@ -252,5 +252,39 @@ class PostServiceTest {
         verify(postRepository, times(1)).findByUserIdAndDeletedAtIsNull(userId);
     }
 
+    @Test
+    void 인기_게시글_조회_성공() {
+        // given
+        Post post1 = Post.builder()
+                .id(1L)
+                .title("인기글 1")
+                .content("내용 1")
+                .likeCount(15)
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
 
+        Post post2 = Post.builder()
+                .id(2L)
+                .title("인기글 2")
+                .content("내용 2")
+                .likeCount(12)
+                .userId(2L)
+                .postCategoryId(1L)
+                .build();
+
+        List<Post> popularPosts = List.of(post1, post2);
+
+        when(postRepository.findPopularPosts(10)).thenReturn(popularPosts);
+
+        // when
+        List<PostResponse> result = postService.getPopularPosts();
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getTitle()).isEqualTo("인기글 1");
+        assertThat(result.get(1).getTitle()).isEqualTo("인기글 2");
+
+        verify(postRepository, times(1)).findPopularPosts(10);
+    }
 }

@@ -1,5 +1,6 @@
 package com.newbit.post.service;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.response.CommentResponse;
@@ -91,5 +92,38 @@ public class PostService {
         return posts.stream()
                 .map(PostResponse::new)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostResponse> getPopularPosts() {
+        List<Post> posts = postRepository.findPopularPosts(10); // 좋아요 10개 이상
+        return posts.stream()
+                .map(PostResponse::new)
+                .toList();
+    }
+
+    @Transactional
+    public PostResponse createNotice(PostCreateRequest request, CustomUser user) {
+        // 🔐 관리자 권한 체크
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+        if (!isAdmin) {
+            throw new SecurityException("공지사항은 관리자만 등록할 수 있습니다.");
+        }
+
+        // 📝 게시글 생성
+        Post post = Post.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .userId(user.getUserId())
+                .postCategoryId(request.getPostCategoryId())
+                .likeCount(0)
+                .reportCount(0)
+                .isNotice(true)
+                .build();
+
+        postRepository.save(post);
+        return new PostResponse(post);
     }
 }

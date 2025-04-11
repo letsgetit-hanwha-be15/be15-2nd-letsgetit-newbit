@@ -86,4 +86,22 @@ public class PostController {
         return ResponseEntity.ok(myPosts);
     }
 
+    @GetMapping("/popular")
+    @Operation(summary = "인기 게시글 조회", description = "좋아요 10개 이상 받은 게시글을 좋아요 순으로 조회합니다.")
+    public ResponseEntity<List<PostResponse>> getPopularPosts() {
+        List<PostResponse> responses = postService.getPopularPosts();
+        return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/notices")
+    @Operation(summary = "공지사항 등록", description = "관리자만 공지사항을 등록할 수 있습니다.")
+    public ResponseEntity<PostResponse> createNotice(
+            @RequestBody @Valid PostCreateRequest request,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        PostResponse response = postService.createNotice(request, user);
+        return ResponseEntity.ok(response);
+    }
+
 }
