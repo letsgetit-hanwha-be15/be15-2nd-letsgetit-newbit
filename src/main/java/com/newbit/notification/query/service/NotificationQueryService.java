@@ -1,6 +1,7 @@
 package com.newbit.notification.query.service;
-import com.newbit.notification.command.domain.repository.NotificationRepository;
+
 import com.newbit.notification.query.dto.NotificationResponse;
+import com.newbit.notification.query.mapper.NotificationQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,11 +11,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationQueryService {
 
-    private final NotificationRepository notificationRepository;
+    private final NotificationQueryMapper notificationQueryMapper;
 
     public List<NotificationResponse> getNotifications(Long userId) {
-        return notificationRepository.findAllByUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(NotificationResponse::from)
-                .toList();
+        return notificationQueryMapper.findAllByUserId(userId);
     }
 }
