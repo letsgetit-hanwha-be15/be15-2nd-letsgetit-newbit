@@ -9,6 +9,7 @@ import com.newbit.user.entity.User;
 import com.newbit.user.dto.request.UserRequestDTO;
 import com.newbit.user.repository.UserRepository;
 import com.newbit.user.support.MailServiceSupport;
+import com.newbit.user.support.PasswordValidator;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,9 @@ public class UserService {
         // 중복 회원 체크 로직 등 추가 가능
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException(ErrorCode.ALREADY_REGISTERED_EMAIL);
+        }
+        if (!PasswordValidator.isValid(request.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD_FORMAT);
         }
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new BusinessException(ErrorCode.ALREADY_REGISTERED_PHONENUMBER);
