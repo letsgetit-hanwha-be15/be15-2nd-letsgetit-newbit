@@ -53,6 +53,10 @@ public class NotificationCommandService {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND));
 
+        if (!notification.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
         notification.markAsRead(); // 내부에서 isRead = true 처리
     }
 
