@@ -30,10 +30,15 @@ public class PostController {
 
     private final PostService postService;
 
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{id}")
-    @Operation(summary = "게시글 수정", description = "기존 게시글의 제목과 내용을 수정합니다.")
-    public ResponseEntity<PostResponse> updatePost(@PathVariable Long id, @RequestBody @Valid PostUpdateRequest request) {
-        PostResponse response = postService.updatePost(id, request);
+    @Operation(summary = "게시글 수정", description = "본인이 작성한 게시글의 제목과 내용을 수정합니다.")
+    public ResponseEntity<PostResponse> updatePost(
+            @PathVariable Long id,
+            @RequestBody @Valid PostUpdateRequest request,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        PostResponse response = postService.updatePost(id, request, user);
         return ResponseEntity.ok(response);
     }
 
@@ -56,17 +61,22 @@ public class PostController {
         return ResponseEntity.ok(responses);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{id}")
     @Operation(
             summary = "게시글 삭제",
-            description = "게시글을 소프트 딜리트 방식으로 삭제합니다.",
+            description = "본인이 작성한 게시글을 소프트 딜리트 방식으로 삭제합니다.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "삭제 성공"),
+                    @ApiResponse(responseCode = "403", description = "작성자 외 사용자 접근 시 실패"),
                     @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
             }
     )
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        postService.deletePost(id);
+    public ResponseEntity<Void> deletePost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        postService.deletePost(id, user);
         return ResponseEntity.noContent().build();
     }
 
