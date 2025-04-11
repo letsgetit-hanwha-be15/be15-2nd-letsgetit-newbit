@@ -20,6 +20,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class PurchaseCommandService {
@@ -93,6 +95,11 @@ public class PurchaseCommandService {
         Integer price = mentorInfo.getPrice();
 
         int totalPrice = coffeeChat.getPurchaseQuantity() * price;
+
+        if(!Objects.equals(menteeId, userId)){
+            throw new BusinessException(ErrorCode.COFFEECHAT_PURCHASE_NOT_ALLOWED);
+        }
+
 
         // 1. 커피챗 상태 변경
         coffeechatCommandService.markAsPurchased(coffeechatId);

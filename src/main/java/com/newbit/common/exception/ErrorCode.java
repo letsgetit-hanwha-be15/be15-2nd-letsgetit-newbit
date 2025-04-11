@@ -49,8 +49,8 @@ public enum ErrorCode {
     INSUFFICIENT_POINT("60006", "보유한 포인트가 부족합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_PURCHASE_TYPE("60007", "알수없는 재화 타입", HttpStatus.INTERNAL_SERVER_ERROR),
     POINT_TYPE_NOT_FOUND("60008", "포인트 유형이 잘못 되었습니다.", HttpStatus.NOT_FOUND),
-    INVALID_TIP_AMOUNT("60009", "잘못된 팁 제공량 입니다.", HttpStatus.INTERNAL_SERVER_ERROR);
-
+    INVALID_TIP_AMOUNT("60009", "잘못된 팁 제공량 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    COFFEECHAT_PURCHASE_NOT_ALLOWED("60010", "본인의 커피챗만 구매 가능합니다.", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String message;
