@@ -7,62 +7,94 @@ import com.newbit.user.entity.User;
 import com.newbit.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
 
     @Mock
-    private ModelMapper modelMapper;
+    private PasswordEncoder passwordEncoder;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private ModelMapper modelMapper;
 
     @InjectMocks
     private UserService userService;
 
+    private UserRequestDTO requestDTO;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        requestDTO = new UserRequestDTO(
+                "test@example.com",
+                "password123",
+                "010-1234-5678",
+                "홍길동",
+                "길동이",
+                ""
+        );
     }
 
     @Test
     void registerUser_성공() {
         // given
-        UserRequestDTO dto = new UserRequestDTO("test@example.com", "1234", "010-1234-5678", "홍길동", "길동이", null);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByPhoneNumber(anyString())).thenReturn(false);
+        when(userRepository.existsByNickname(anyString())).thenReturn(false);
+
         User user = new User();
-        when(userRepository.existsByEmail("test@example.com")).thenReturn(false);
-        when(modelMapper.map(dto, User.class)).thenReturn(user);
-        when(passwordEncoder.encode("1234")).thenReturn("암호화된1234");
+        when(modelMapper.map(requestDTO, User.class)).thenReturn(user);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPw");
 
         // when
-        userService.registerUser(dto);
+        assertDoesNotThrow(() -> userService.registerUser(requestDTO));
 
         // then
         verify(userRepository, times(1)).save(user);
-        assertEquals("암호화된1234", user.getPassword());
+        assertEquals("encodedPw", user.getPassword());
     }
 
     @Test
-    void registerUser_중복이메일_예외발생() {
-        // given
-        UserRequestDTO dto = new UserRequestDTO("test@example.com", "1234", "010-1234-5678", "홍길동", "길동이", null);
-        when(userRepository.existsByEmail("test@example.com")).thenReturn(true);
+    void registerUser_중복_이메일() {
+        when(userRepository.existsByEmail(requestDTO.getEmail())).thenReturn(true);
 
-        // when & then
-        BusinessException exception = assertThrows(BusinessException.class, () -> {
-            userService.registerUser(dto);
-        });
+        BusinessException ex = assertThrows(BusinessException.class, () ->
+                userService.registerUser(requestDTO)
+        );
+        assertEquals(ErrorCode.ALREADY_REGISTERED_EMAIL, ex.getErrorCode());
+    }
 
-        assertEquals(ErrorCode.ALREADY_REGISTERED_EMAIL, exception.getErrorCode());
+    @Test
+    void registerUser_중복_전화번호() {
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(userRepository.existsByPhoneNumber(requestDTO.getPhoneNumber())).thenReturn(true);
+
+        BusinessException ex = assertThrows(BusinessException.class, () ->
+                userService.registerUser(requestDTO)
+        );
+        assertEquals(ErrorCode.ALREADY_REGISTERED_PHONENUMBER, ex.getErrorCode());
+    }
+
+    @Test
+    void registerUser_중복_닉네임() {
+        when(userRepository.existsByEmail(any())).thenReturn(false);
+        when(userRepository.existsByPhoneNumber(any())).thenReturn(false);
+        when(userRepository.existsByNickname(requestDTO.getNickname())).thenReturn(true);
+
+        BusinessException ex = assertThrows(BusinessException.class, () ->
+                userService.registerUser(requestDTO)
+        );
+        assertEquals(ErrorCode.ALREADY_REGISTERED_NICKNAME, ex.getErrorCode());
     }
 }

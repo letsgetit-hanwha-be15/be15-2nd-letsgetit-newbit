@@ -121,6 +121,7 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/notices/{postId}")
     @Operation(summary = "공지사항 삭제", description = "관리자가 공지사항을 삭제합니다.")
