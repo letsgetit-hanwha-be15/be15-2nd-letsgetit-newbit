@@ -29,9 +29,14 @@ public class PostService {
     private final PointTransactionCommandService pointTransactionCommandService;
 
     @Transactional
-    public PostResponse updatePost(Long postId, PostUpdateRequest request) {
+    public PostResponse updatePost(Long postId, PostUpdateRequest request, CustomUser user) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+
+        // 🔒 작성자 본인 확인
+        if (!post.getUserId().equals(user.getUserId())) {
+            throw new SecurityException("게시글은 작성자만 수정할 수 있습니다.");
+        }
 
         post.update(request.getTitle(), request.getContent());
         return new PostResponse(post);
