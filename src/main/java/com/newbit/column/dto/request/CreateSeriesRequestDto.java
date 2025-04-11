@@ -3,11 +3,13 @@ package com.newbit.column.dto.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
 
 @Getter
+@AllArgsConstructor
 public class CreateSeriesRequestDto {
 
     @Schema(description = "시리즈 제목", example = "이직 준비 A to Z")
