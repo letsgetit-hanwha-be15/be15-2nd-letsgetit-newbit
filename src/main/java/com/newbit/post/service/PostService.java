@@ -152,4 +152,23 @@ public class PostService {
         return new PostResponse(post);
     }
 
+    @Transactional
+    public void deleteNotice(Long postId, CustomUser user) {
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+        if (!isAdmin) {
+            throw new SecurityException("공지사항은 관리자만 삭제할 수 있습니다.");
+        }
+
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+
+        if (!post.isNotice()) {
+            throw new IllegalArgumentException("해당 게시글은 공지사항이 아닙니다.");
+        }
+
+        post.softDelete();
+    }
+
 }
