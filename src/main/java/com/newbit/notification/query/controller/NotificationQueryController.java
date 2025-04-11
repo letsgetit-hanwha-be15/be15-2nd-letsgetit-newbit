@@ -2,7 +2,6 @@ package com.newbit.notification.query.controller;
 
 import com.newbit.auth.model.CustomUser;
 import com.newbit.common.dto.ApiResponse;
-import com.newbit.notification.command.application.dto.response.NotificationSendResponse;
 import com.newbit.notification.query.dto.NotificationResponse;
 import com.newbit.notification.query.service.NotificationQueryService;
 import io.swagger.v3.oas.annotations.Operation;
