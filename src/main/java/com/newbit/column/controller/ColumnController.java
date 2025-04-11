@@ -1,14 +1,20 @@
 package com.newbit.column.controller;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.column.dto.response.GetColumnDetailResponseDto;
 import com.newbit.column.dto.response.GetColumnListResponseDto;
+import com.newbit.column.dto.response.GetMyColumnListResponseDto;
 import com.newbit.column.service.ColumnService;
+import com.newbit.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/columns")
@@ -36,4 +42,11 @@ public class ColumnController {
         return columnService.getPublicColumnList(page, size);
     }
 
+    @Operation(summary = "멘토 본인 칼럼 목록 조회", description = "멘토가 승인된 본인의 칼럼 목록을 조회합니다.")
+    @GetMapping("/my")
+    public ApiResponse<List<GetMyColumnListResponseDto>> getMyColumnList(
+            @AuthenticationPrincipal CustomUser customUser
+            ) {
+        return ApiResponse.success(columnService.getMyColumnList(customUser.getUserId()));
+    }
 }
