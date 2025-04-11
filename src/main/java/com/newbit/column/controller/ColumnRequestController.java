@@ -1,5 +1,6 @@
 package com.newbit.column.controller;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.column.dto.request.CreateColumnRequestDto;
 import com.newbit.column.dto.request.DeleteColumnRequestDto;
 import com.newbit.column.dto.request.UpdateColumnRequestDto;
@@ -15,7 +16,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,9 +33,9 @@ public class ColumnRequestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<CreateColumnResponseDto> createColumnRequest(
             @RequestBody @Valid CreateColumnRequestDto dto,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal CustomUser customUser
     ) {
-        return ApiResponse.success(columnRequestService.createColumnRequest(dto, userDetails.getUsername()));
+        return ApiResponse.success(columnRequestService.createColumnRequest(dto, customUser.getUserId()));
     }
 
     // 칼럼 수정 요청 API
@@ -66,8 +66,8 @@ public class ColumnRequestController {
     @GetMapping("/my")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<GetMyColumnRequestResponseDto>> getMyColumnRequests(
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        return ApiResponse.success(columnRequestService.getMyColumnRequests(userDetails.getUsername()));
+            @AuthenticationPrincipal CustomUser customUser
+            ) {
+        return ApiResponse.success(columnRequestService.getMyColumnRequests(customUser.getUserId()));
     }
 }
