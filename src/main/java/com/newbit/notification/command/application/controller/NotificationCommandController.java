@@ -75,4 +75,13 @@ public class NotificationCommandController {
         notificationCommandService.markAsRead(user.getUserId(), notificationId);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/read-all")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal CustomUser user) {
+        notificationCommandService.markAllAsRead(user.getUserId());
+        return ResponseEntity.ok().build();
+    }
+
+
 }
