@@ -25,7 +25,7 @@ public class ColumnService {
 
     private final ColumnRepository columnRepository;
     private final ColumnPurchaseHistoryQueryService columnPurchaseHistoryQueryService;
-    private MentorService mentorService;
+    private final MentorService mentorService;
     private final ColumnMapper columnMapper;
 
     public GetColumnDetailResponseDto getColumnDetail(Long userId, Long columnId) {
