@@ -38,20 +38,30 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponse createPost(PostCreateRequest request) {
+    public PostResponse createPost(PostCreateRequest request, CustomUser user) {
+        // 일반 사용자 권한 확인
+        boolean isUser = user.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_USER".equals(auth.getAuthority()));
+
+        if (!isUser) {
+            throw new SecurityException("게시글은 일반 사용자만 작성할 수 있습니다.");
+        }
+
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .userId(request.getUserId())
+                .userId(user.getUserId()) // 🔄 로그인 정보에서 userId 사용
                 .postCategoryId(request.getPostCategoryId())
                 .likeCount(0)
                 .reportCount(0)
+                .isNotice(false)
                 .build();
 
         postRepository.save(post);
         pointTransactionCommandService.givePointByType(request.getUserId(), "게시글 적립", post.getId());
         return new PostResponse(post);
     }
+
 
     @Transactional(readOnly = true)
     public List<PostResponse> searchPosts(String keyword) {
