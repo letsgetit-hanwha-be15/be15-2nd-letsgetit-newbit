@@ -25,8 +25,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity   // @PreAuthorize, @PostAuthorize 사용을 위해
+@EnableMethodSecurity(prePostEnabled = true)   // @PreAuthorize, @PostAuthorize 사용을 위해
 @RequiredArgsConstructor
+
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;

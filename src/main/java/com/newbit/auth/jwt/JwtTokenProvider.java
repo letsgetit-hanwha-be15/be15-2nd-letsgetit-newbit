@@ -1,5 +1,7 @@
 package com.newbit.auth.jwt;
 
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -66,15 +68,14 @@ public class JwtTokenProvider {
             Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
             return true;
         } catch (SecurityException | MalformedJwtException e) {
-            throw new BadCredentialsException("Invalid JWT Token", e);
+            throw new BusinessException(ErrorCode.JWT_INVALID);
         } catch (ExpiredJwtException e) {
-            throw new BadCredentialsException("Expired JWT Token", e);
+            throw new BusinessException(ErrorCode.JWT_EXPIRED);
         } catch (UnsupportedJwtException e) {
-            throw new BadCredentialsException("Unsupported JWT Token", e);
+            throw new BusinessException(ErrorCode.JWT_UNSUPPORTED);
         } catch (IllegalArgumentException e) {
-            throw new BadCredentialsException("JWT Token claims empty", e);
+            throw new BusinessException(ErrorCode.JWT_CLAIMS_EMPTY);
         }
-
     }
 
     public String getUsernameFromJWT(String token) {

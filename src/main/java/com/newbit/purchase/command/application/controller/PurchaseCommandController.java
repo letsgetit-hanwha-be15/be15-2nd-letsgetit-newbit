@@ -1,7 +1,10 @@
 package com.newbit.purchase.command.application.controller;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.common.dto.ApiResponse;
+import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
+import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
 import com.newbit.purchase.command.application.service.PurchaseCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,12 +29,45 @@ public class PurchaseCommandController {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200", description = "칼럼 구매 성공"
     )
-    @PostMapping("/column/{userId}")
+    @PostMapping("/column")
     public ResponseEntity<ApiResponse<Void>> purchaseColumn(
-            @Parameter(description = "조회할 유저 ID", required = true) @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUser customUser,
             @Valid @RequestBody ColumnPurchaseRequest request
     ) {
-        purchaseCommandService.purchaseColumn(userId, request);
+        purchaseCommandService.purchaseColumn(customUser.getUserId(), request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @Operation(
+            summary = "커피챗 구매",
+            description = "사용자가 멘토와 확정된 커피챗을 구매합니다."
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200", description = "커피챗 구매 성공"
+    )
+    @PostMapping("/coffeechat")
+    public ResponseEntity<ApiResponse<Void>> purchaseCoffeeChat(
+            @AuthenticationPrincipal CustomUser customUser,
+            @Valid @RequestBody CoffeeChatPurchaseRequest request) {
+        purchaseCommandService.purchaseCoffeeChat(customUser.getUserId(), request);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+
+    @Operation(
+            summary = "멘토 권한 구매",
+            description = "사용자가 포인트 혹은 다이아를 사용하여 멘토 권한을 구매합니다."
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200", description = "멘토 권한 구매 성공"
+    )
+    @PostMapping("/mentor-authority")
+    public ResponseEntity<ApiResponse<Void>> purchaseMentorAuthority(
+            @AuthenticationPrincipal CustomUser customUser,
+            @Valid @RequestBody MentorAuthorityPurchaseRequest request
+    ) {
+        purchaseCommandService.purchaseMentorAuthority(customUser.getUserId(), request);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }

@@ -78,7 +78,36 @@ public class User {
         this.diamond -= amount;
     }
 
+    // 보유 다이아 증가
+    public void addDiamond(int amount) {
+        this.diamond += amount;
+    }
+
+    // 보유 포인트 증가
+    public void addPoint(int amount) {
+        this.point += amount;
+    }
+
+    // 보유 포인트 차감
+    public void usePoint(int amount) {
+        if (this.point < amount) {
+            throw new BusinessException(ErrorCode.INSUFFICIENT_DIAMOND);
+        }
+        this.point -= amount;
+    }
+
+    // 권한이 멘토로 변경
+    public void grantMentorAuthority() {
+        if (this.getAuthority() == Authority.MENTOR) {
+            throw new BusinessException(ErrorCode.ALREADY_MENTOR);
+        }
+        this.authority = Authority.MENTOR;
+    }
+
+
     public void findPassword(String newPassword) {
         this.password = newPassword;
     }
+
+
 }

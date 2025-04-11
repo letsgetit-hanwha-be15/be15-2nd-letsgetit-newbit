@@ -4,6 +4,7 @@ import com.newbit.post.entity.Post;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -13,6 +14,7 @@ public class PostDetailResponse {
     private String title;
     private String content;
     private int likeCount;
+    private final LocalDateTime createdAt;
     private String writerName;
     private String categoryName;
     private List<CommentResponse> comments;
@@ -22,6 +24,7 @@ public class PostDetailResponse {
         this.title = post.getTitle();
         this.content = post.getContent();
         this.likeCount = post.getLikeCount();
+        this.createdAt = post.getCreatedAt();
         this.writerName = writerName;
         this.categoryName = categoryName;
         this.comments = comments;
