@@ -3,7 +3,7 @@ package com.newbit.notification.command.application.service;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
-import com.newbit.notification.command.application.dto.response.NotificationResponse;
+import com.newbit.notification.command.application.dto.response.NotificationSendResponse;
 import com.newbit.notification.command.domain.aggregate.Notification;
 import com.newbit.notification.command.domain.aggregate.NotificationType;
 import com.newbit.notification.command.domain.repository.NotificationRepository;
@@ -65,7 +65,7 @@ class NotificationCommandServiceTest {
         // then
         verify(notificationTypeRepository, times(1)).findById(typeId);
         verify(notificationRepository, times(1)).save(any(Notification.class));
-        verify(sseEmitterRepository, times(1)).send(eq(userId), any(NotificationResponse.class));
+        verify(sseEmitterRepository, times(1)).send(eq(userId), any(NotificationSendResponse.class));
     }
 
     @Test

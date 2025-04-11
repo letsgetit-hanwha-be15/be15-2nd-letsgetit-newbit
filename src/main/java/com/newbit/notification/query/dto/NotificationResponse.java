@@ -1,17 +1,12 @@
-package com.newbit.notification.command.application.dto.response;
+package com.newbit.notification.query.dto;
 
 import com.newbit.notification.command.domain.aggregate.Notification;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Getter
 @Builder
-@AllArgsConstructor
 public class NotificationResponse {
-
     private Long notificationId;
     private String content;
     private String typeName;

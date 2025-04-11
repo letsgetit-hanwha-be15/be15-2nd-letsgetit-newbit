@@ -2,7 +2,7 @@ package com.newbit.notification.command.application.service;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.notification.command.application.dto.response.NotificationResponse;
+import com.newbit.notification.command.application.dto.response.NotificationSendResponse;
 import com.newbit.notification.command.domain.aggregate.Notification;
 import com.newbit.notification.command.domain.aggregate.NotificationType;
 import com.newbit.notification.command.domain.repository.NotificationRepository;
@@ -36,7 +36,7 @@ public class NotificationCommandService {
         notificationRepository.save(notification);
 
         // 3. 실시간 알림 전송
-        NotificationResponse response = NotificationResponse.from(notification);
+        NotificationSendResponse response = NotificationSendResponse.from(notification);
         sseEmitterRepository.send(request.getUserId(), response);
     }
 }
