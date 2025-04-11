@@ -11,6 +11,9 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.purchase.command.application.service.PurchaseCommandService;
+import com.newbit.user.dto.response.MentorDTO;
+import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +30,8 @@ public class CoffeechatCommandService {
     private final CoffeechatRepository coffeechatRepository;
     private final CoffeechatQueryService coffeechatQueryService;
     private final RequestTimeRepository requestTimeRepository;
+    private final MentorService mentorService;
+    private final PurchaseCommandService purchaseCommandService;
 
     /**
      * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
@@ -132,5 +137,21 @@ public class CoffeechatCommandService {
 
         // 2. 커피챗 객체 update하기
         coffeechat.closeSchedule();
+    }
+
+    @Transactional
+    public void confirmPurchaseCoffeechat(Long coffeechatId) {
+        // 1. 커피챗 ID로 커피챗 객체 찾기
+        Coffeechat coffeechat = coffeechatRepository.findById(coffeechatId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COFFEECHAT_NOT_FOUND));
+
+        // 2. 커피챗 객체 update하기
+        coffeechat.confirmPurchaseSchedule();
+
+        // 3. 멘토ID로 멘토 객체 가져오기
+        MentorDTO mentorDTO = mentorService.getMentorInfo(coffeechat.getMentorId());
+
+        // 4. 정산내역에 추가하기
+        purchaseCommandService.addSaleHistory(coffeechat.getMentorId(), mentorDTO.getPrice(), coffeechatId);
     }
 }
