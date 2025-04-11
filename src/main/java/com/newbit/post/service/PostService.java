@@ -92,4 +92,12 @@ public class PostService {
                 .map(PostResponse::new)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<PostResponse> getPopularPosts() {
+        List<Post> posts = postRepository.findPopularPosts(10); // 좋아요 10개 이상
+        return posts.stream()
+                .map(PostResponse::new)
+                .toList();
+    }
 }
