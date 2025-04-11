@@ -104,4 +104,17 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/notices/{postId}")
+    @Operation(summary = "공지사항 수정", description = "관리자가 기존 공지사항을 수정합니다.")
+    public ResponseEntity<PostResponse> updateNotice(
+            @PathVariable Long postId,
+            @RequestBody @Valid PostUpdateRequest request,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        PostResponse response = postService.updateNotice(postId, request, user);
+        return ResponseEntity.ok(response);
+    }
+
 }

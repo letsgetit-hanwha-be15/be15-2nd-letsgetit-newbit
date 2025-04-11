@@ -126,4 +126,30 @@ public class PostService {
         postRepository.save(post);
         return new PostResponse(post);
     }
+
+    @Transactional
+    public PostResponse updateNotice(Long postId, PostUpdateRequest request, CustomUser user) {
+        // 관리자 권한 체크
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+        if (!isAdmin) {
+            throw new SecurityException("공지사항은 관리자만 수정할 수 있습니다.");
+        }
+
+        // 게시글 조회
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+
+        // 공지사항 여부 확인
+        if (!post.isNotice()) {
+            throw new IllegalArgumentException("해당 게시글은 공지사항이 아닙니다.");
+        }
+
+        // 수정
+        post.update(request.getTitle(), request.getContent());
+
+        return new PostResponse(post);
+    }
+
 }
