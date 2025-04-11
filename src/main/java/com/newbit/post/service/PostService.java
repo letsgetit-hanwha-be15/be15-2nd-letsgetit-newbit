@@ -75,11 +75,18 @@ public class PostService {
     }
 
     @Transactional
-    public void deletePost(Long postId) {
+    public void deletePost(Long postId, CustomUser user) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+
+        // 🔒 작성자 확인
+        if (!post.getUserId().equals(user.getUserId())) {
+            throw new SecurityException("게시글은 작성자만 삭제할 수 있습니다.");
+        }
+
         post.softDelete();
     }
+
 
     @Transactional(readOnly = true)
     public Page<PostResponse> getPostList(Pageable pageable) {
