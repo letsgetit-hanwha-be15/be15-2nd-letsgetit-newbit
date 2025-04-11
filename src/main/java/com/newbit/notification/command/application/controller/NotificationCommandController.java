@@ -5,6 +5,8 @@ import com.newbit.common.dto.ApiResponse;
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.notification.command.infrastructure.SseEmitterRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.UUID;
 
+@Tag(name = "알림 API", description = "알림 연결, 발송 API")
 @RestController
 @RequestMapping("/api/v1/notification")
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class NotificationCommandController {
 
     private final SseEmitterRepository sseEmitterRepository;
     private final NotificationCommandService notificationCommandService;
+
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal CustomUser customUser) {
@@ -46,6 +50,7 @@ public class NotificationCommandController {
         return emitter;
     }
 
+    @Operation(summary = "알림 전송", description = "특정 사용자에게 알림을 전송합니다.")
     @PostMapping("/send")
     public ResponseEntity<ApiResponse<Void>> sendNotification(
             @Valid @RequestBody NotificationSendRequest request
