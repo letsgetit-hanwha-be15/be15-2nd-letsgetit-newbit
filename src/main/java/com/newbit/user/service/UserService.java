@@ -35,6 +35,12 @@ public class UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException(ErrorCode.ALREADY_REGISTERED_EMAIL);
         }
+        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            throw new BusinessException(ErrorCode.ALREADY_REGISTERED_PHONENUMBER);
+        }
+        if (userRepository.existsByNickname(request.getNickname())) {
+            throw new BusinessException(ErrorCode.ALREADY_REGISTERED_NICKNAME);
+        }
         // 회원 가입
         User user = modelMapper.map(request, User.class);
         user.setEncodedPassword(passwordEncoder.encode(request.getPassword()));

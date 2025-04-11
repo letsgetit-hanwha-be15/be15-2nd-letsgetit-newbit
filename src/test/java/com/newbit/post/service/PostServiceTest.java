@@ -1,5 +1,6 @@
 package com.newbit.post.service;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.response.PostResponse;
@@ -8,10 +9,12 @@ import com.newbit.post.entity.Post;
 import com.newbit.post.entity.PostCategory;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 import com.newbit.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.*;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 
 import java.time.LocalDateTime;
@@ -25,6 +28,7 @@ class PostServiceTest {
 
     private PostRepository postRepository;
     private PostService postService;
+    private PointTransactionCommandService pointTransactionCommandService;
     private PostCreateRequest request;
     private CommentRepository commentRepository;
 
@@ -32,7 +36,9 @@ class PostServiceTest {
     void setUp() {
         postRepository = mock(PostRepository.class);
         commentRepository = mock(CommentRepository.class);
-        postService = new PostService(postRepository, commentRepository);
+        pointTransactionCommandService = mock(PointTransactionCommandService.class);
+
+        postService = new PostService(postRepository, commentRepository, pointTransactionCommandService);
 
         request = new PostCreateRequest();
         request.setTitle("단위 테스트 제목");
@@ -86,16 +92,52 @@ class PostServiceTest {
     }
 
     @Test
-    void 게시글_등록_성공() {
+    void 게시글_등록_성공_일반사용자() {
         // given
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .password("encoded")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        PostCreateRequest userRequest = new PostCreateRequest();
+        userRequest.setTitle("일반 글");
+        userRequest.setContent("내용");
+        userRequest.setPostCategoryId(1L);
+
         when(postRepository.save(any(Post.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0)); // 저장된 Post 그대로 반환
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        postService.createPost(request);
+        PostResponse response = postService.createPost(userRequest, user);
 
         // then
+        assertThat(response.getTitle()).isEqualTo("일반 글");
         verify(postRepository, times(1)).save(any(Post.class));
+    }
+
+    @Test
+    void 게시글_등록_실패_관리자() {
+        // given
+        CustomUser adminUser = CustomUser.builder()
+                .userId(2L)
+                .email("admin@example.com")
+                .password("encoded")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+                .build();
+
+        PostCreateRequest adminRequest = new PostCreateRequest();
+        adminRequest.setTitle("관리자 글");
+        adminRequest.setContent("관리자가 작성한 글");
+        adminRequest.setPostCategoryId(1L);
+
+        // when & then
+        assertThatThrownBy(() -> postService.createPost(adminRequest, adminUser))
+                .isInstanceOf(SecurityException.class)
+                .hasMessage("게시글은 일반 사용자만 작성할 수 있습니다.");
+
+        verify(postRepository, never()).save(any(Post.class));
     }
 
     @Test
@@ -203,7 +245,9 @@ class PostServiceTest {
         when(commentRepository.findByPostIdAndDeletedAtIsNull(postId)).thenReturn(List.of(comment));
 
         // PostService를 다시 생성해서 의존성 주입
-        PostService postServiceWithMocks = new PostService(postRepository, commentRepository);
+        PointTransactionCommandService pointTransactionCommandService = mock(PointTransactionCommandService.class);
+        PostService postServiceWithMocks = new PostService(postRepository, commentRepository, pointTransactionCommandService);
+
 
         // when
         var response = postServiceWithMocks.getPostDetail(postId);
@@ -252,5 +296,39 @@ class PostServiceTest {
         verify(postRepository, times(1)).findByUserIdAndDeletedAtIsNull(userId);
     }
 
+    @Test
+    void 인기_게시글_조회_성공() {
+        // given
+        Post post1 = Post.builder()
+                .id(1L)
+                .title("인기글 1")
+                .content("내용 1")
+                .likeCount(15)
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
 
+        Post post2 = Post.builder()
+                .id(2L)
+                .title("인기글 2")
+                .content("내용 2")
+                .likeCount(12)
+                .userId(2L)
+                .postCategoryId(1L)
+                .build();
+
+        List<Post> popularPosts = List.of(post1, post2);
+
+        when(postRepository.findPopularPosts(10)).thenReturn(popularPosts);
+
+        // when
+        List<PostResponse> result = postService.getPopularPosts();
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getTitle()).isEqualTo("인기글 1");
+        assertThat(result.get(1).getTitle()).isEqualTo("인기글 2");
+
+        verify(postRepository, times(1)).findPopularPosts(10);
+    }
 }

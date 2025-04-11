@@ -1,5 +1,6 @@
 package com.newbit.post.service;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.response.CommentResponse;
@@ -8,6 +9,7 @@ import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +26,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-
+    private final PointTransactionCommandService pointTransactionCommandService;
 
     @Transactional
     public PostResponse updatePost(Long postId, PostUpdateRequest request) {
@@ -36,19 +38,30 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponse createPost(PostCreateRequest request) {
+    public PostResponse createPost(PostCreateRequest request, CustomUser user) {
+        // 일반 사용자 권한 확인
+        boolean isUser = user.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_USER".equals(auth.getAuthority()));
+
+        if (!isUser) {
+            throw new SecurityException("게시글은 일반 사용자만 작성할 수 있습니다.");
+        }
+
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .userId(request.getUserId())
+                .userId(user.getUserId()) // 🔄 로그인 정보에서 userId 사용
                 .postCategoryId(request.getPostCategoryId())
                 .likeCount(0)
                 .reportCount(0)
+                .isNotice(false)
                 .build();
 
         postRepository.save(post);
+        pointTransactionCommandService.givePointByType(request.getUserId(), "게시글 적립", post.getId());
         return new PostResponse(post);
     }
+
 
     @Transactional(readOnly = true)
     public List<PostResponse> searchPosts(String keyword) {
@@ -92,4 +105,82 @@ public class PostService {
                 .map(PostResponse::new)
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public List<PostResponse> getPopularPosts() {
+        List<Post> posts = postRepository.findPopularPosts(10); // 좋아요 10개 이상
+        return posts.stream()
+                .map(PostResponse::new)
+                .toList();
+    }
+
+    @Transactional
+    public PostResponse createNotice(PostCreateRequest request, CustomUser user) {
+        // 🔐 관리자 권한 체크
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+        if (!isAdmin) {
+            throw new SecurityException("공지사항은 관리자만 등록할 수 있습니다.");
+        }
+
+        // 📝 게시글 생성
+        Post post = Post.builder()
+                .title(request.getTitle())
+                .content(request.getContent())
+                .userId(user.getUserId())
+                .postCategoryId(request.getPostCategoryId())
+                .likeCount(0)
+                .reportCount(0)
+                .isNotice(true)
+                .build();
+
+        postRepository.save(post);
+        return new PostResponse(post);
+    }
+
+    @Transactional
+    public PostResponse updateNotice(Long postId, PostUpdateRequest request, CustomUser user) {
+        // 관리자 권한 체크
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+        if (!isAdmin) {
+            throw new SecurityException("공지사항은 관리자만 수정할 수 있습니다.");
+        }
+
+        // 게시글 조회
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+
+        // 공지사항 여부 확인
+        if (!post.isNotice()) {
+            throw new IllegalArgumentException("해당 게시글은 공지사항이 아닙니다.");
+        }
+
+        // 수정
+        post.update(request.getTitle(), request.getContent());
+
+        return new PostResponse(post);
+    }
+
+    @Transactional
+    public void deleteNotice(Long postId, CustomUser user) {
+        boolean isAdmin = user.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+        if (!isAdmin) {
+            throw new SecurityException("공지사항은 관리자만 삭제할 수 있습니다.");
+        }
+
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+
+        if (!post.isNotice()) {
+            throw new IllegalArgumentException("해당 게시글은 공지사항이 아닙니다.");
+        }
+
+        post.softDelete();
+    }
+
 }

@@ -17,7 +17,6 @@ import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.user.entity.Mentor;
 import com.newbit.user.service.MentorService;
-import com.newbit.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +29,6 @@ public class ColumnRequestService {
     private final ColumnRepository columnRepository;
     private final ColumnRequestRepository columnRequestRepository;
     private final MentorService mentorService;
-    private final UserService  userService;
     private final ColumnMapper columnMapper;
 
     public CreateColumnResponseDto createColumnRequest(CreateColumnRequestDto dto, Long userId) {

@@ -6,6 +6,7 @@ import com.newbit.post.entity.Comment;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,13 +22,16 @@ class CommentServiceTest {
 
     private CommentRepository commentRepository;
     private PostRepository postRepository;
+    private PointTransactionCommandService pointTransactionCommandService;
     private CommentService commentService;
 
     @BeforeEach
     void setUp() {
         commentRepository = mock(CommentRepository.class);
         postRepository = mock(PostRepository.class);
-        commentService = new CommentService(commentRepository, postRepository);
+        pointTransactionCommandService = mock(PointTransactionCommandService.class);
+
+        commentService = new CommentService(commentRepository, postRepository, pointTransactionCommandService);
     }
 
     @Test

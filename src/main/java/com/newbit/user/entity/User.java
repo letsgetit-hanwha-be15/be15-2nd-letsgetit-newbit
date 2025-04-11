@@ -109,5 +109,11 @@ public class User {
         this.password = newPassword;
     }
 
+    public void updateInfo(String nickname, String phoneNumber, String profileImageUrl) {
+        this.nickname = nickname;
+        this.phoneNumber = phoneNumber;
+        this.profileImageUrl = profileImageUrl;
+    }
+
 
 }
