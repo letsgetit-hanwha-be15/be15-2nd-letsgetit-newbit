@@ -1,7 +1,6 @@
 package com.newbit.column.domain;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.*;
 import lombok.NoArgsConstructor;
@@ -39,6 +38,9 @@ public class Series {
     @OneToMany(mappedBy = "series", cascade = CascadeType.PERSIST)
     private List<Column> columns = new ArrayList<>();
 
-    public void update(@NotBlank String title, @NotBlank String description, String thumbnailUrl) {
+    public void update(String title, String description, String thumbnailUrl) {
+        this.title = title;
+        this.description = description;
+        this.thumbnailUrl = thumbnailUrl;
     }
 }
