@@ -61,8 +61,8 @@ public class ColumnRequestController {
 
     }
 
-    // 본인 칼럼 요청 목록 조회
-    @Operation(summary = "멘토 본인 칼럼 요청 목록 조회", description = "멘토가 등록, 수정, 삭제 요청한 칼럼 목록을 조회합니다.")
+    // 본인 칼럼 요청 조회
+    @Operation(summary = "멘토 본인 칼럼 요청 조회", description = "멘토가 등록, 수정, 삭제 요청한 칼럼 목록을 조회합니다.")
     @GetMapping("/my")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<GetMyColumnRequestResponseDto>> getMyColumnRequests(
