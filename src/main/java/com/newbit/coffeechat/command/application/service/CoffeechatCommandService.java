@@ -11,7 +11,7 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.purchase.command.application.service.PurchaseCommandService;
+import com.newbit.purchase.command.application.service.SaleCommandService;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class CoffeechatCommandService {
     private final CoffeechatQueryService coffeechatQueryService;
     private final RequestTimeRepository requestTimeRepository;
     private final MentorService mentorService;
-    private final PurchaseCommandService purchaseCommandService;
+    private final SaleCommandService saleCommandService;
 
     /**
      * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
@@ -152,6 +152,6 @@ public class CoffeechatCommandService {
         MentorDTO mentorDTO = mentorService.getMentorInfo(coffeechat.getMentorId());
 
         // 4. 정산내역에 추가하기
-        purchaseCommandService.addSaleHistory(coffeechat.getMentorId(), mentorDTO.getPrice(), coffeechatId);
+        saleCommandService.addSaleHistory(coffeechat.getMentorId(), mentorDTO.getPrice(), coffeechatId);
     }
 }
