@@ -25,13 +25,14 @@ class LikeQueryServiceTest {
 
     private final long postId = 1L;
     private final long userId = 2L;
+    private final long columnId = 3L;
 
     @Nested
     @DisplayName("isPostLiked Method")
     class IsPostLiked {
 
         @Test
-        @DisplayName("좋아요 여부를 정확히 반환해야 한다")
+        @DisplayName("게시글 좋아요 여부를 정확히 반환해야 한다")
         void shouldReturnCorrectLikeStatus() {
             // Given
             when(likeRepository.existsByPostIdAndUserIdAndIsDeleteFalse(postId, userId)).thenReturn(true);
@@ -59,6 +60,42 @@ class LikeQueryServiceTest {
 
             // Then
             assertEquals(10, count);
+        }
+    }
+    
+    @Nested
+    @DisplayName("isColumnLiked Method")
+    class IsColumnLiked {
+
+        @Test
+        @DisplayName("칼럼 좋아요 여부를 정확히 반환해야 한다")
+        void shouldReturnCorrectLikeStatus() {
+            // Given
+            when(likeRepository.existsByColumnIdAndUserIdAndIsDeleteFalse(columnId, userId)).thenReturn(true);
+
+            // When
+            boolean result = likeQueryService.isColumnLiked(columnId, userId);
+
+            // Then
+            assertTrue(result);
+        }
+    }
+
+    @Nested
+    @DisplayName("getColumnLikeCount Method")
+    class GetColumnLikeCount {
+
+        @Test
+        @DisplayName("칼럼의 좋아요 수를 정확히 반환해야 한다")
+        void shouldReturnCorrectLikeCount() {
+            // Given
+            when(likeRepository.countByColumnIdAndIsDeleteFalse(columnId)).thenReturn(15);
+
+            // When
+            int count = likeQueryService.getColumnLikeCount(columnId);
+
+            // Then
+            assertEquals(15, count);
         }
     }
 } 
