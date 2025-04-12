@@ -1,5 +1,6 @@
 package com.newbit.coffeechat.command.application.service;
 
+import com.newbit.coffeechat.command.application.dto.request.CoffeechatCancelRequest;
 import com.newbit.coffeechat.command.domain.aggregate.RequestTime;
 import com.newbit.coffeechat.command.domain.repository.CoffeechatRepository;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
@@ -8,15 +9,18 @@ import com.newbit.coffeechat.command.domain.repository.RequestTimeRepository;
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
+import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.purchase.command.application.service.SaleCommandService;
+import com.newbit.purchase.command.application.service.DiamondCoffeechatTransactionCommandService;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,7 +52,7 @@ class CoffeechatCommandServiceTest {
     @Mock
     private MentorService mentorService;
     @Mock
-    private SaleCommandService saleCommandService;
+    private DiamondCoffeechatTransactionCommandService transactionCommandService;
 
     @DisplayName("커피챗 요청 등록 성공")
     @Test
@@ -326,7 +330,7 @@ class CoffeechatCommandServiceTest {
                 .isActive(true)
                 .build();
         when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
-        doNothing().when(saleCommandService).addSaleHistory(mentorId, 10, coffeechatId);
+        doNothing().when(transactionCommandService).addSaleHistory(mentorId, 10, coffeechatId);
 
         // when & then: 예외가 발생하지 않으면 테스트 통과
         assertDoesNotThrow(() -> coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId));
@@ -344,5 +348,126 @@ class CoffeechatCommandServiceTest {
         // when & then
         BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId));
         assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
+    }
+
+
+    @DisplayName("IN_PROGRESS 상태일 때 커피챗 취소 성공")
+    @Test
+    void cancelCoffeechat_성공() {
+        // given
+        Long userId = 5L;
+        Long coffeechatId = 9L;
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+
+        // 커피챗 객체 만들어주기, IN_PROGRESS 상태
+        Coffeechat mockCoffeechat = Coffeechat.of(userId,
+                2L,
+                "취업 관련 꿀팁 얻고 싶어요.",
+                2);
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+
+        // when & then: 예외가 발생하지 않으면 테스트 통과
+        assertDoesNotThrow(() -> coffeechatCommandService.cancelCoffeechat(userId, request));
+    }
+
+
+    @DisplayName("COFFEECHAT_WAITING 상태일 때 커피챗 취소 성공")
+    @Test
+    void cancelCoffeechat_성공_환불포함() {
+        // given
+        Long userId = 5L;
+        Long mentorId = 2L;
+        Long coffeechatId = 9L;
+        int purchaseQuantity = 2;
+        int price = 10;
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+
+        // 커피챗 객체 만들어주기, IN_PROGRESS 상태
+        Coffeechat mockCoffeechat = Coffeechat.of(userId,
+                mentorId,
+                "취업 관련 꿀팁 얻고 싶어요.",
+                purchaseQuantity);
+
+        ReflectionTestUtils.setField(mockCoffeechat, "progressStatus", ProgressStatus.COFFEECHAT_WAITING);
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+        MentorDTO mentorDTO = MentorDTO.builder()
+                .price(price)
+                .isActive(true)
+                .build();
+        when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
+
+        // when & then: 예외가 발생하지 않으면 테스트 통과
+        // 실행
+        assertDoesNotThrow(() -> coffeechatCommandService.cancelCoffeechat(userId, request));
+        // 검증
+        verify(mentorService).getMentorInfo(mentorId);
+        verify(transactionCommandService).refundCoffeeChat(coffeechatId, userId, purchaseQuantity * price);
+    }
+
+    @DisplayName("커피챗 찾지 못해서 커피챗 취소 실패")
+    @Test
+    void cancelCoffeechat_not_found_coffeechat() {
+        // given
+        Long coffeechatId = 9L;
+        Long userId = 5L;
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.empty());
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request));
+        assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("userId가 멘티ID가 아니어서 커피챗 취소 실패")
+    @Test
+    void cancelCoffeechat_doesnt_match_mentee_id() {
+        // given
+        Long userId = 5L;
+        Long coffeechatId = 9L;
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+
+        // 커피챗 객체 만들어주기, IN_PROGRESS 상태
+        Coffeechat mockCoffeechat = Coffeechat.of(3L,
+                2L,
+                "취업 관련 꿀팁 얻고 싶어요.",
+                2);
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request));
+        assertEquals(ErrorCode.COFFEECHAT_CANCEL_NOT_ALLOWED, exception.getErrorCode());
+    }
+
+    @DisplayName("커피챗이 CANCEL/COMPLETE 상태여서 커피챗 취소 실패")
+    @ParameterizedTest
+    @EnumSource(value = ProgressStatus.class, names = {"CANCEL", "COMPLETE"})
+    void cancelCoffeechat_invalid_status_cancel(ProgressStatus progressStatus) {
+        // given
+        Long userId = 5L;
+        Long coffeechatId = 9L;
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+
+        // 커피챗 객체 만들어주기, IN_PROGRESS 상태
+        Coffeechat mockCoffeechat = Coffeechat.of(userId,
+                2L,
+                "취업 관련 꿀팁 얻고 싶어요.",
+                2);
+
+        ReflectionTestUtils.setField(mockCoffeechat, "progressStatus", progressStatus);
+
+        // repo setting
+        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request));
+        assertEquals(ErrorCode.INVALID_COFFEECHAT_STATUS, exception.getErrorCode());
     }
 }

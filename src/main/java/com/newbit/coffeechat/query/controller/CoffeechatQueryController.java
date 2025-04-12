@@ -1,4 +1,4 @@
-package com.newbit.coffeechat.query;
+package com.newbit.coffeechat.query.controller;
 
 import com.newbit.auth.model.CustomUser;
 import com.newbit.coffeechat.command.domain.aggregate.ProgressStatus;
@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 

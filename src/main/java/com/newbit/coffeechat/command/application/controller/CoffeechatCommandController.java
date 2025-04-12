@@ -1,6 +1,7 @@
 package com.newbit.coffeechat.command.application.controller;
 
 import com.newbit.auth.model.CustomUser;
+import com.newbit.coffeechat.command.application.dto.request.CoffeechatCancelRequest;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
 import com.newbit.coffeechat.command.application.dto.response.CoffeechatCommandResponse;
 import com.newbit.coffeechat.command.application.service.CoffeechatCommandService;
@@ -104,6 +105,23 @@ public class CoffeechatCommandController {
     ) {
 
         coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId);
+
+        return ResponseEntity
+                .ok(ApiResponse.success(null));
+    }
+
+    @Operation(
+            summary = "커피챗 취소",
+            description = "멘티가 커피챗을 취소합니다."
+    )
+    @PutMapping("/cancel")
+    public ResponseEntity<ApiResponse<Void>> cancelCoffeechat(
+            @Valid @RequestBody CoffeechatCancelRequest coffeechatCancelRequest,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+
+        Long userId = customUser.getUserId();
+        coffeechatCommandService.cancelCoffeechat(userId, coffeechatCancelRequest);
 
         return ResponseEntity
                 .ok(ApiResponse.success(null));

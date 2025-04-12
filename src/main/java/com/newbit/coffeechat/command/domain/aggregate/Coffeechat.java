@@ -87,4 +87,9 @@ public class Coffeechat {
     public void confirmPurchaseSchedule() {
         purchaseConfirmedAt = LocalDateTime.now();
     }
+
+    public void cancelCoffeechat(Long cancelReasonId) {
+        progressStatus = ProgressStatus.CANCEL;
+        this.cancelReasonId = cancelReasonId;
+    }
 }
