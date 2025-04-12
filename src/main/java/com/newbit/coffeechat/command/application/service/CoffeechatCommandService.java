@@ -155,6 +155,7 @@ public class CoffeechatCommandService {
         transactionCommandService.addSaleHistory(coffeechat.getMentorId(), totalQuantity, coffeechatId);
     }
 
+    @Transactional
     public void cancelCoffeechat(Long userId, CoffeechatCancelRequest coffeechatCancelRequest) {
         // 1. 커피챗 ID로 커피챗 객체 찾기
         Coffeechat coffeechat = coffeechatRepository.findById(coffeechatCancelRequest.getCoffeechatId())
@@ -170,12 +171,14 @@ public class CoffeechatCommandService {
             case CANCEL, COMPLETE -> throw new BusinessException(ErrorCode.INVALID_COFFEECHAT_STATUS);
         }
 
-        // 커피챗이 coffeechat_waiting 상태이면 환불 진행하기
+        // 4. 커피챗이 coffeechat_waiting 상태이면 환불 진행하기
         if(coffeechat.getProgressStatus().equals(ProgressStatus.COFFEECHAT_WAITING)) {
-            transactionCommandService.refundCoffeeChat(coffeechatCancelRequest.getCoffeechatId(), );
+            MentorDTO mentorDTO = mentorService.getMentorInfo(coffeechat.getMentorId());
+            int totalQuantity = mentorDTO.getPrice() * coffeechat.getPurchaseQuantity();
+            transactionCommandService.refundCoffeeChat(coffeechatCancelRequest.getCoffeechatId(), userId, totalQuantity);
         }
 
-        // 4. 커피챗 객체 업데이트하기
-        coffeechat.setProgressStatus(ProgressStatus.CANCEL);
+        // 5. 커피챗 객체 업데이트하기
+        coffeechat.cancelCoffeechat(coffeechatCancelRequest.getCancelReasonId());
     }
 }
