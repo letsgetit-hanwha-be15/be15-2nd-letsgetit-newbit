@@ -5,6 +5,7 @@ import com.newbit.post.dto.request.CommentCreateRequest;
 import com.newbit.post.dto.response.CommentResponse;
 import com.newbit.post.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "댓글 API", description = "댓글 등록, 조회, 삭제 관련 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts/{postId}/comments")
