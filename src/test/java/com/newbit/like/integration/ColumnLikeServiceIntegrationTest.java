@@ -8,17 +8,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.like.dto.response.ColumnLikeResponse;
-import com.newbit.like.repository.LikeRepository;
 import com.newbit.like.service.ColumnLikeService;
-import com.newbit.column.repository.ColumnRepository;
-import com.newbit.like.service.LikeCommandService;
 
 import java.util.UUID;
 
@@ -31,19 +26,7 @@ class ColumnLikeServiceIntegrationTest {
     private ColumnLikeService columnLikeService;
 
     @Autowired
-    private LikeRepository likeRepository;
-
-    @Autowired
-    private ColumnRepository columnRepository;
-
-    @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private LikeCommandService likeCommandService;
-
-    @Autowired
-    private ApplicationContext applicationContext;
 
     private Long testColumnId;
     private Long testUserId;

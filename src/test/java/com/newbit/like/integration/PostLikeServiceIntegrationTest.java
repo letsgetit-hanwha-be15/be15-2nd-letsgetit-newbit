@@ -8,17 +8,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.like.dto.response.PostLikeResponse;
-import com.newbit.like.repository.LikeRepository;
 import com.newbit.like.service.PostLikeService;
-import com.newbit.post.repository.PostRepository;
-import com.newbit.like.service.LikeCommandService;
 
 import java.util.UUID;
 
@@ -31,19 +27,7 @@ class PostLikeServiceIntegrationTest {
     private PostLikeService postLikeService;
 
     @Autowired
-    private LikeRepository likeRepository;
-
-    @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private LikeCommandService likeCommandService;
-
-    @Autowired
-    private ApplicationContext applicationContext;
 
     private Long testPostId;
     private Long testUserId;
@@ -127,7 +111,7 @@ class PostLikeServiceIntegrationTest {
                 "테스트 카테고리"
             );
             
-            if (count == 0) {
+            if (count != null && count == 0) {
                 jdbcTemplate.update(
                     "INSERT INTO post_category (post_category_name, created_at, updated_at) VALUES (?, NOW(), NOW())",
                     "테스트 카테고리"
@@ -154,7 +138,7 @@ class PostLikeServiceIntegrationTest {
                 "게시글 좋아요"
             );
             
-            if (count == 0) {
+            if (count != null && count == 0) {
                 jdbcTemplate.update(
                     "INSERT INTO point_type (point_type_name, increase_amount, decrease_amount) VALUES (?, ?, ?)",
                     "게시글 좋아요", 3, null
@@ -298,11 +282,12 @@ class PostLikeServiceIntegrationTest {
         
         private int getAuthorPoints() {
             try {
-                return jdbcTemplate.queryForObject(
+                Integer points = jdbcTemplate.queryForObject(
                     "SELECT point FROM user WHERE user_id = ?",
                     Integer.class,
                     authorId
                 );
+                return points != null ? points : 0;
             } catch (DataAccessException e) {
                 return 0;
             }
@@ -310,11 +295,12 @@ class PostLikeServiceIntegrationTest {
 
         private int getPointHistoryCount(Long userId, Long serviceId) {
             try {
-                return jdbcTemplate.queryForObject(
+                Integer count = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM point_history WHERE user_id = ? AND service_id = ?",
                     Integer.class,
                     userId, serviceId
                 );
+                return count != null ? count : 0;
             } catch (DataAccessException e) {
                 return 0;
             }
