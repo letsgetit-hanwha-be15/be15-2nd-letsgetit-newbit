@@ -21,6 +21,9 @@ public class NotificationSendResponse {
     @Schema(description = "알림 유형 이름", example = "COFFEECHAT_ACCEPTED")
     private String typeName;
 
+    @Schema(description = "서비스 유형", example = "3")
+    private Long serviceId;
+
     @Schema(description = "읽음 여부", example = "false")
     private Boolean isRead;
 

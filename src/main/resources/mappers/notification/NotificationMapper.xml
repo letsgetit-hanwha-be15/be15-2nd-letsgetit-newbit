@@ -6,6 +6,7 @@
         SELECT
         n.notification_id AS notificationId,
         n.content,
+        n.service_id AS serviceId,
         n.is_read AS isRead,
         n.created_at AS createdAt,
         nt.notification_type_name AS typeName

@@ -20,6 +20,9 @@ public class NotificationSendRequest {
     @Schema(description = "알림 유형 ID", example = "2")
     private Long notificationTypeId;
 
+    @Schema(description = "서비스 유형", example = "3")
+    private Long serviceId;
+
     @NotBlank
     @Schema(description = "알림 내용", example = "새로운 커피챗 신청이 도착했습니다.")
     private String content;
