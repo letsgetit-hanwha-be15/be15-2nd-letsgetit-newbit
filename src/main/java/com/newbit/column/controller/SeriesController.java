@@ -68,7 +68,7 @@ public class SeriesController {
         return ApiResponse.success(seriesService.getMySeriesList(customUser.getUserId()));
     }
 
-    @GetMapping("/{seriesId}")
+    @GetMapping("/{seriesId}/columns")
     @Operation(summary = "시리즈에 포함된 칼럼 목록 조회", description = "해당 시리즈에 포함된 칼럼 목록을 조회합니다.")
     public ApiResponse<List<GetSeriesColumnsResponseDto>> getSeriesColumns(
             @PathVariable Long seriesId
