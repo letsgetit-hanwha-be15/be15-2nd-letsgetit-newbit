@@ -120,6 +120,32 @@ public class SeriesService {
         return seriesMapper.toUpdateSeriesResponseDto(series);
     }
 
+    @Transactional
+    public void deleteSeries(Long seriesId, Long userId) {
+        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
+
+        Series series = seriesRepository.findById(seriesId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+
+        // 본인의 시리즈인지 확인
+        List<Column> columns = columnRepository.findAllBySeries_SeriesId(seriesId);
+
+        boolean isOwner = columns.stream().allMatch(
+                column -> column.getMentor().getMentorId().equals(mentor.getMentorId())
+        );
+        if (!isOwner) {
+            throw new BusinessException(ErrorCode.COLUMN_NOT_OWNED);
+        }
+
+        // 연결된 칼럼의 series 해제
+        columns.forEach(column -> column.updateSeries(null));
+        columnRepository.saveAll(columns);
+
+        // 시리즈 삭제
+        seriesRepository.delete(series);
+    }
+
+
 
 }
 
