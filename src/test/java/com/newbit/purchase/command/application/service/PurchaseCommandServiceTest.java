@@ -44,6 +44,7 @@ class PurchaseCommandServiceTest {
     private final Long userId = 1L;
     @Mock private CoffeechatQueryService coffeechatQueryService;
     @Mock private CoffeechatCommandService coffeechatCommandService;
+    @Mock private DiamondCoffeechatTransactionCommandService saleCommandService;
 
     @BeforeEach
     void setUp() {
@@ -298,7 +299,7 @@ class PurchaseCommandServiceTest {
         when(diamondHistoryRepository.save(any(DiamondHistory.class))).thenReturn(mockHistory);
 
         // when
-        purchaseCommandService.refundCoffeeChat(coffeechatId, menteeId, refundAmount);
+        saleCommandService.refundCoffeeChat(coffeechatId, menteeId, refundAmount);
 
         // then
         verify(userService).addDiamond(menteeId, refundAmount);
