@@ -19,7 +19,6 @@ import com.newbit.like.repository.LikeRepository;
 import com.newbit.like.service.ColumnLikeService;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.like.service.LikeCommandService;
-import com.newbit.user.entity.Mentor;
 
 import java.util.UUID;
 
