@@ -34,4 +34,5 @@ public interface ColumnRepository extends JpaRepository<Column, Long> {
 
     List<Column> findAllByMentor_MentorIdAndIsPublicTrueOrderByCreatedAtDesc(Long mentorId);
 
+    List<Column> findAllBySeries_SeriesId(Long seriesId);
 }

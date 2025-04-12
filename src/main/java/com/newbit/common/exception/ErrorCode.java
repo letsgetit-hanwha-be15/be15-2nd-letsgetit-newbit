@@ -60,7 +60,8 @@ public enum ErrorCode {
     COLUMN_ALREADY_IN_SERIES("60012", "해당 칼럼은 이미 다른 시리즈에 속해있습니다.", HttpStatus.BAD_REQUEST),
 
     // 시리즈 오류
-    SERIES_CREATION_REQUIRES_COLUMNS("30000", "시리즈는 최소 1개 이상의 칼럼으로 생성되어야 합니다.", HttpStatus.BAD_REQUEST),
+    SERIES_CREATION_REQUIRES_COLUMNS("300000", "시리즈는 최소 1개 이상의 칼럼으로 생성되어야 합니다.", HttpStatus.BAD_REQUEST),
+    SERIES_NOT_FOUND("300001", "해당 시리즈를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     /*--------------- JWT 토큰 오류 ------------------*/
     JWT_INVALID("80001", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
@@ -69,7 +70,9 @@ public enum ErrorCode {
     JWT_CLAIMS_EMPTY("80004", "JWT 클레임이 비어 있습니다.", HttpStatus.BAD_REQUEST),
 
     /*----------------알림-------------------------*/
-    NOTIFICATION_TYPE_NOT_FOUND("90001", "잘못된 알림 유형 입니다.", HttpStatus.NOT_FOUND);
+    NOTIFICATION_TYPE_NOT_FOUND("90001", "잘못된 알림 유형 입니다.", HttpStatus.NOT_FOUND),
+    NOTIFICATION_NOT_FOUND("90002", "알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_ACCESS("90003", "인증되지 않은 접근", HttpStatus.UNAUTHORIZED);
 
     private final String code;
     private final String message;

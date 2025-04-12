@@ -1,6 +1,9 @@
 package com.newbit.column.service;
 
 import com.newbit.column.domain.Column;
+import com.newbit.column.dto.request.UpdateSeriesRequestDto;
+import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
+import com.newbit.column.dto.response.UpdateSeriesResponseDto;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
@@ -13,6 +16,7 @@ import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,6 +29,7 @@ public class SeriesService {
     private final MentorService mentorService;
     private final SeriesMapper seriesMapper;
 
+    @Transactional
     public CreateSeriesResponseDto createSeries(CreateSeriesRequestDto dto, Long userId) {
         // 1. 유저 → 멘토 엔티티 조회
         Mentor mentor = mentorService.getMentorEntityByUserId(userId);
@@ -63,6 +68,90 @@ public class SeriesService {
 
         // 8. 응답 반환
         return seriesMapper.toCreateSeriesResponseDto(series);
+    }
+
+    @Transactional
+    public UpdateSeriesResponseDto updateSeries(Long seriesId, UpdateSeriesRequestDto dto, Long userId) {
+        // 1. 멘토 조회
+        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
+
+        // 2. 시리즈 조회
+        Series series = seriesRepository.findById(seriesId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+
+        // 칼럼 ID 검증
+        List<Column> columns = columnRepository.findAllById(dto.getColumnIds());
+
+        if (columns.size() != dto.getColumnIds().size()) {
+            throw new BusinessException(ErrorCode.COLUMN_NOT_FOUND);
+        }
+
+        boolean hasInvalidOwner = columns.stream()
+                .anyMatch(column -> !column.getMentor().getMentorId().equals(mentor.getMentorId()));
+
+        if (hasInvalidOwner) {
+            throw new BusinessException(ErrorCode.COLUMN_NOT_OWNED);
+        }
+
+        boolean hasAlreadyGrouped = columns.stream()
+                .anyMatch(column -> column.getSeries() != null && !column.getSeries().getSeriesId().equals(seriesId));
+
+        if (hasAlreadyGrouped) {
+            throw new BusinessException(ErrorCode.COLUMN_ALREADY_IN_SERIES);
+        }
+
+        // 기존 칼럼들의 시리즈 해제
+        List<Column> existing = columnRepository.findAllBySeries_SeriesId(seriesId);
+        for (Column column : existing) {
+            column.updateSeries(null);
+        }
+
+        // 새 칼럼들 시리즈 연결
+        for (Column column : columns) {
+            column.updateSeries(series);
+        }
+
+        // 시리즈 내용 업데이트
+        series.update(dto.getTitle(), dto.getDescription(), dto.getThumbnailUrl());
+
+        // 저장
+        columnRepository.saveAll(existing);
+        columnRepository.saveAll(columns);
+
+        return seriesMapper.toUpdateSeriesResponseDto(series);
+    }
+
+    @Transactional
+    public void deleteSeries(Long seriesId, Long userId) {
+        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
+
+        Series series = seriesRepository.findById(seriesId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+
+        // 본인의 시리즈인지 확인
+        List<Column> columns = columnRepository.findAllBySeries_SeriesId(seriesId);
+
+        boolean isOwner = columns.stream().allMatch(
+                column -> column.getMentor().getMentorId().equals(mentor.getMentorId())
+        );
+        if (!isOwner) {
+            throw new BusinessException(ErrorCode.COLUMN_NOT_OWNED);
+        }
+
+        // 연결된 칼럼의 series 해제
+        columns.forEach(column -> column.updateSeries(null));
+        columnRepository.saveAll(columns);
+
+        // 시리즈 삭제
+        seriesRepository.delete(series);
+    }
+
+    @Transactional(readOnly = true)
+    public GetSeriesDetailResponseDto getSeriesDetail(Long seriesId) {
+        Series series = seriesRepository.findById(seriesId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+
+        return seriesMapper.toGetSeriesDetailResponseDto(series);
     }
 }
 

@@ -42,4 +42,8 @@ public class Notification {
                 .updatedAt(LocalDateTime.now())
                 .build();
     }
+
+    public void markAsRead() {
+        this.isRead = true;
+    }
 }
