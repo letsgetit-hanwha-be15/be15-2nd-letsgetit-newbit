@@ -13,19 +13,21 @@ import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseReques
 import com.newbit.purchase.command.domain.aggregate.*;
 import com.newbit.purchase.command.domain.repository.*;
 import com.newbit.user.dto.response.MentorDTO;
-import com.newbit.user.service.MentorService;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.entity.Authority;
+import com.newbit.user.service.MentorService;
 import com.newbit.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -33,19 +35,31 @@ class PurchaseCommandServiceTest {
 
     @InjectMocks
     private PurchaseCommandService purchaseCommandService;
+    @InjectMocks
+    private DiamondCoffeechatTransactionCommandService diamondCoffeechatTransactionCommandService;
 
-    @Mock private ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
-    @Mock private DiamondHistoryRepository diamondHistoryRepository;
-    @Mock private SaleHistoryRepository saleHistoryRepository;
-    @Mock private PointHistoryRepository pointHistoryRepository;
-    @Mock private ColumnRequestService columnService;
-    @Mock private UserService userService;
-    @Mock private MentorService mentorService;
+
+    @Mock
+    private ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
+    @Mock
+    private DiamondHistoryRepository diamondHistoryRepository;
+    @Mock
+    private SaleHistoryRepository saleHistoryRepository;
+    @Mock
+    private PointHistoryRepository pointHistoryRepository;
+    @Mock
+    private ColumnRequestService columnService;
+    @Mock
+    private UserService userService;
+    @Mock
+    private MentorService mentorService;
     private final Long userId = 1L;
-    @Mock private CoffeechatQueryService coffeechatQueryService;
-    @Mock private CoffeechatCommandService coffeechatCommandService;
-    @Mock private DiamondCoffeechatTransactionCommandService saleCommandService;
-    @Mock private PointTypeRepository pointTypeRepository;
+    @Mock
+    private CoffeechatQueryService coffeechatQueryService;
+    @Mock
+    private CoffeechatCommandService coffeechatCommandService;
+    @Mock
+    private PointTypeRepository pointTypeRepository;
 
     @BeforeEach
     void setUp() {
@@ -55,9 +69,9 @@ class PurchaseCommandServiceTest {
                         .pointTypeId(1L)
                         .pointTypeName("구매 테스트용 타입")
                         .increaseAmount(null)
-                                .decreaseAmount(null)
-                                .createdAt(LocalDateTime.now())
-                                .updatedAt(LocalDateTime.now())
+                        .decreaseAmount(null)
+                        .createdAt(LocalDateTime.now())
+                        .updatedAt(LocalDateTime.now())
                         .build()));
     }
 
@@ -136,45 +150,44 @@ class PurchaseCommandServiceTest {
 
     @Test
     void purchaseCoffeeChat_success() {
-            // given
-            Long coffeechatId = 1L;
-            Long menteeId = 1L;
-            Long mentorId = 3L;
-            int purchaseQuantity = 2;
-            int price = 500;
-            int balanceAfterPurchase = 1000;
+        // given
+        Long coffeechatId = 1L;
+        Long menteeId = 1L;
+        Long mentorId = 3L;
+        int purchaseQuantity = 2;
+        int price = 500;
+        int balanceAfterPurchase = 1000;
 
-            CoffeeChatPurchaseRequest request = new CoffeeChatPurchaseRequest();
-            request.setCoffeechatId(coffeechatId);
+        CoffeeChatPurchaseRequest request = new CoffeeChatPurchaseRequest();
+        request.setCoffeechatId(coffeechatId);
 
-            CoffeechatDto coffeechatDto = mock(CoffeechatDto.class);
-            when(coffeechatDto.getMenteeId()).thenReturn(menteeId);
-            when(coffeechatDto.getMentorId()).thenReturn(mentorId);
-            when(coffeechatDto.getPurchaseQuantity()).thenReturn(purchaseQuantity);
-            CoffeechatDetailResponse response = CoffeechatDetailResponse.builder()
+        CoffeechatDto coffeechatDto = mock(CoffeechatDto.class);
+        when(coffeechatDto.getMenteeId()).thenReturn(menteeId);
+        when(coffeechatDto.getMentorId()).thenReturn(mentorId);
+        when(coffeechatDto.getPurchaseQuantity()).thenReturn(purchaseQuantity);
+        CoffeechatDetailResponse response = CoffeechatDetailResponse.builder()
                 .coffeechat(coffeechatDto)
                 .build();
 
 
+        when(coffeechatQueryService.getCoffeechat(coffeechatId)).thenReturn(response);
+        MentorDTO mentorDTO = new MentorDTO();
+        mentorDTO.setPrice(price);
+        when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
 
-            when(coffeechatQueryService.getCoffeechat(coffeechatId)).thenReturn(response);
-            MentorDTO mentorDTO = new MentorDTO();
-            mentorDTO.setPrice(price);
-            when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
+        when(userService.getDiamondBalance(menteeId)).thenReturn(balanceAfterPurchase);
 
-            when(userService.getDiamondBalance(menteeId)).thenReturn(balanceAfterPurchase);
+        // when
+        purchaseCommandService.purchaseCoffeeChat(userId, request);
 
-            // when
-            purchaseCommandService.purchaseCoffeeChat(userId, request);
+        // then
+        verify(coffeechatCommandService).markAsPurchased(coffeechatId);
+        verify(userService).useDiamond(menteeId, purchaseQuantity * price);
+        verify(userService).getDiamondBalance(menteeId);
 
-            // then
-            verify(coffeechatCommandService).markAsPurchased(coffeechatId);
-            verify(userService).useDiamond(menteeId, purchaseQuantity * price);
-            verify(userService).getDiamondBalance(menteeId);
-
-            ArgumentCaptor<DiamondHistory> diamondCaptor = ArgumentCaptor.forClass(DiamondHistory.class);
-            verify(diamondHistoryRepository).save(diamondCaptor.capture());
-            assertThat(diamondCaptor.getValue().getUserId()).isEqualTo(menteeId);
+        ArgumentCaptor<DiamondHistory> diamondCaptor = ArgumentCaptor.forClass(DiamondHistory.class);
+        verify(diamondHistoryRepository).save(diamondCaptor.capture());
+        assertThat(diamondCaptor.getValue().getUserId()).isEqualTo(menteeId);
     }
 
     @Test
@@ -304,7 +317,7 @@ class PurchaseCommandServiceTest {
         when(diamondHistoryRepository.save(any(DiamondHistory.class))).thenReturn(mockHistory);
 
         // when
-        saleCommandService.refundCoffeeChat(coffeechatId, menteeId, refundAmount);
+        diamondCoffeechatTransactionCommandService.refundCoffeeChat(coffeechatId, menteeId, refundAmount);
 
         // then
         verify(userService).addDiamond(menteeId, refundAmount);
