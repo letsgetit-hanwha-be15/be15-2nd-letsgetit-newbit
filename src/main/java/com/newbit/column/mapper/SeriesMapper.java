@@ -57,6 +57,8 @@ public class SeriesMapper {
                 .thumbnailUrl(column.getThumbnailUrl())
                 .price(column.getPrice())
                 .likeCount(column.getLikeCount())
+                .createdAt(column.getCreatedAt())
+                .updatedAt(column.getUpdatedAt())
                 .build();
     }
 }
