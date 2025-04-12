@@ -1,10 +1,9 @@
 package com.newbit.common.exception;
 
-import org.springframework.http.HttpStatus;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -39,9 +38,7 @@ public enum ErrorCode {
     REQUEST_TIME_NOT_FOUND("70002", "해당 커피챗 시간 요청내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     COFFEECHAT_ALREADY_EXIST("70003", "해당 멘토와의 커피챗이 이미 존재합니다.", HttpStatus.CONFLICT),
     REQUEST_DATE_IN_PAST("70006", "시작 날짜가 오늘보다 이전입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
-    COFFEECHAT_CANCEL_NOT_ALLOWED("70007", "본인의 커피챗만 취소 가능합니다.", HttpStatus.FORBIDDEN),
     COFFEECHAT_NOT_REFUNDABLE("70008", "커피챗이 환불 가능한 상태가 아닙니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_COFFEECHAT_STATUS("70009", "커피챗이 취소 가능한 상태가 아닙니다.", HttpStatus.BAD_REQUEST),
 
     /*--------------- 구매 오류 ------------------*/
     COLUMN_ALREADY_PURCHASED("60000", "이미 구매한 칼럼입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -49,12 +46,13 @@ public enum ErrorCode {
     COLUMN_FREE_CANNOT_PURCHASE("60002", "무료 칼럼은 구매할 수 없습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     COLUMN_NOT_PURCHASED("60004", "칼럼을 구매한 사용자만 조회할 수 있습니다.", HttpStatus.FORBIDDEN),
     COFFEECHAT_NOT_PURCHASABLE("60005", "커피챗이 구매할 수 없는 상태입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    ALREADY_MENTOR("60006", "이미 멘토인 회원입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INSUFFICIENT_POINT("60007", "보유한 포인트가 부족합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_PURCHASE_TYPE("60008", "알수없는 재화 타입", HttpStatus.INTERNAL_SERVER_ERROR),
-    POINT_TYPE_NOT_FOUND("60009", "포인트 유형이 잘못 되었습니다.", HttpStatus.NOT_FOUND),
-    INVALID_TIP_AMOUNT("600010", "잘못된 팁 제공량 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    COFFEECHAT_PURCHASE_NOT_ALLOWED("60011", "본인의 커피챗만 구매 가능합니다.", HttpStatus.FORBIDDEN),
+    ALREADY_MENTOR("60005", "이미 멘토인 회원입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    INSUFFICIENT_POINT("60006", "보유한 포인트가 부족합니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_PURCHASE_TYPE("60007", "알수없는 재화 타입", HttpStatus.INTERNAL_SERVER_ERROR),
+    POINT_TYPE_NOT_FOUND("60008", "포인트 유형이 잘못 되었습니다.", HttpStatus.NOT_FOUND),
+    INVALID_TIP_AMOUNT("60009", "잘못된 팁 제공량 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    COFFEECHAT_PURCHASE_NOT_ALLOWED("60010", "본인의 커피챗만 구매 가능합니다.", HttpStatus.FORBIDDEN),
+
     /*--------------- 칼럼/시리즈 오류 ------------------*/
     // 칼럼 오류
     COLUMN_NOT_FOUND("60003", "해당 칼럼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -76,6 +74,22 @@ public enum ErrorCode {
     NOTIFICATION_NOT_FOUND("90002", "알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED_ACCESS("90003", "인증되지 않은 접근", HttpStatus.UNAUTHORIZED),
 
+    /*---------------- 게시글 -------------------------*/
+    POST_NOT_FOUND("110000", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_UPDATE_POST("110001", "게시글은 작성자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_USER_CAN_CREATE_POST("110002", "게시글은 일반 사용자만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_DELETE_POST("110003", "게시글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_CREATE_NOTICE("110004", "공지사항은 관리자만 등록할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_UPDATE_NOTICE("110005", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_DELETE_NOTICE("10006", "공지사항은 관리자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    NOT_A_NOTICE("110007", "해당 게시글은 공지사항이 아닙니다.", HttpStatus.BAD_REQUEST),
+
+    /*---------------- 댓글 -------------------------*/
+    COMMENT_NOT_FOUND("120000", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_DELETE_COMMENT("120001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_CREATE_COMMENT("120002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
+    COMMENT_POST_MISMATCH("120003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
+
     /*----------------좋아요 관련-------------------*/
     POST_LIKE_NOT_FOUND("100001", "해당 게시글 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     COLUMN_LIKE_NOT_FOUND("100002", "해당 칼럼 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -96,6 +110,7 @@ public enum ErrorCode {
     UNAUTHORIZED_TO_DELETE_COMMENT("120001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
     UNAUTHORIZED_TO_CREATE_COMMENT("120002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
     COMMENT_POST_MISMATCH("120003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST);
+
 
     private final String code;
     private final String message;
