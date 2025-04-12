@@ -4,6 +4,7 @@ import com.newbit.auth.model.CustomUser;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
+import com.newbit.column.dto.response.GetMySeriesListResponseDto;
 import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
 import com.newbit.column.dto.response.UpdateSeriesResponseDto;
 import com.newbit.column.service.SeriesService;
@@ -14,6 +15,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,4 +63,10 @@ public class SeriesController {
         return ApiResponse.success(seriesService.getSeriesDetail(seriesId));
     }
 
+    @Operation(summary = "본인 시리즈 목록 조회", description = "멘토 본인이 생성한 시리즈 목록을 조회합니다.")
+    public ApiResponse<List<GetMySeriesListResponseDto>> getMySeriesList(
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        return ApiResponse.success(seriesService.getMySeriesList(customUser.getUserId()));
+    }
 }

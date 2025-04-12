@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.newbit.user.mapper.UserMapper">
+
+    <select id="getOhterUserProfile" resultType="com.newbit.user.dto.response.OhterUserProfileDTO">
+        SELECT
+            u.user_name,
+            u.nickname,
+            u.profile_image_url,
+            j.job_name
+        FROM user u
+                 JOIN job j ON u.job_id = j.job_id
+        WHERE u.user_id = #{userId}
+    </select>
+
+</mapper>
