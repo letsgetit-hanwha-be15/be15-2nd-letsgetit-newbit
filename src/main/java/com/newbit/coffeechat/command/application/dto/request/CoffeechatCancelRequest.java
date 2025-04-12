@@ -14,5 +14,5 @@ public class CoffeechatCancelRequest {
     private final Long coffeechatId;
     @NotNull
     @Min(value = 1)
-    private final Long cancleReasonId;
+    private final Long cancelReasonId;
 }
