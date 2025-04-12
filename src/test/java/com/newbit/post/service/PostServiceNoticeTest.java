@@ -2,6 +2,7 @@ package com.newbit.post.service;
 
 import com.newbit.auth.model.CustomUser;
 import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.response.PostResponse;
@@ -82,7 +83,7 @@ class PostServiceNoticeTest {
 
         assertThatThrownBy(() -> postService.createNotice(request, normalUser))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("공지사항은 관리자만 등록할 수 있습니다.");
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ONLY_ADMIN_CAN_CREATE_NOTICE);
 
         verify(postRepository, never()).save(any(Post.class));
     }
@@ -136,7 +137,7 @@ class PostServiceNoticeTest {
 
         assertThatThrownBy(() -> postService.updateNotice(postId, updateRequest, normalUser))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("공지사항은 관리자만 수정할 수 있습니다.");
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ONLY_ADMIN_CAN_UPDATE_NOTICE);
 
         verify(postRepository, never()).findById(any());
     }
@@ -169,7 +170,7 @@ class PostServiceNoticeTest {
 
         assertThatThrownBy(() -> postService.updateNotice(postId, updateRequest, adminUser))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("해당 게시글은 공지사항이 아닙니다.");
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_A_NOTICE);
     }
 
     @Test
@@ -191,7 +192,7 @@ class PostServiceNoticeTest {
 
         assertThatThrownBy(() -> postService.updateNotice(postId, updateRequest, adminUser))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("해당 게시글이 존재하지 않습니다.");
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
     }
 
     @Test
@@ -223,10 +224,6 @@ class PostServiceNoticeTest {
     @Test
     void 공지사항_삭제_실패_권한없음() {
         Long postId = 1L;
-        PostUpdateRequest request = PostUpdateRequest.builder()
-                .title("수정 제목")
-                .content("수정 내용")
-                .build();
 
         CustomUser normalUser = CustomUser.builder()
                 .userId(2L)
@@ -237,7 +234,7 @@ class PostServiceNoticeTest {
 
         assertThatThrownBy(() -> postService.deleteNotice(postId, normalUser))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("공지사항은 관리자만 삭제할 수 있습니다.");
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ONLY_ADMIN_CAN_DELETE_NOTICE);
 
         verify(postRepository, never()).findById(any());
     }
@@ -265,7 +262,7 @@ class PostServiceNoticeTest {
 
         assertThatThrownBy(() -> postService.deleteNotice(postId, adminUser))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("해당 게시글은 공지사항이 아닙니다.");
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.NOT_A_NOTICE);
     }
 
     @Test
@@ -283,6 +280,6 @@ class PostServiceNoticeTest {
 
         assertThatThrownBy(() -> postService.deleteNotice(postId, adminUser))
                 .isInstanceOf(BusinessException.class)
-                .hasMessage("해당 게시글이 존재하지 않습니다.");
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.POST_NOT_FOUND);
     }
 }
