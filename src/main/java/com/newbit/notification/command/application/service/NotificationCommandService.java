@@ -33,6 +33,7 @@ public class NotificationCommandService {
         Notification notification = Notification.create(
                 request.getUserId(),
                 type,
+                request.getServiceId(),
                 request.getContent()
         );
         notificationRepository.save(notification);

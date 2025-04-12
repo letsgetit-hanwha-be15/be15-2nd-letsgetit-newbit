@@ -1,9 +1,10 @@
 package com.newbit.common.exception;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -73,7 +74,12 @@ public enum ErrorCode {
     /*----------------알림-------------------------*/
     NOTIFICATION_TYPE_NOT_FOUND("90001", "잘못된 알림 유형 입니다.", HttpStatus.NOT_FOUND),
     NOTIFICATION_NOT_FOUND("90002", "알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_ACCESS("90003", "인증되지 않은 접근", HttpStatus.UNAUTHORIZED);
+    UNAUTHORIZED_ACCESS("90003", "인증되지 않은 접근", HttpStatus.UNAUTHORIZED),
+
+    /*----------------좋아요 관련-------------------*/
+    POST_LIKE_NOT_FOUND("100001", "해당 게시글 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COLUMN_LIKE_NOT_FOUND("100002", "해당 칼럼 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    LIKE_PROCESSING_ERROR("100003", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
