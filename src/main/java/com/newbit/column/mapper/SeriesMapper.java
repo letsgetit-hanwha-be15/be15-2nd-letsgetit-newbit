@@ -3,6 +3,7 @@ package com.newbit.column.mapper;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
 import com.newbit.column.domain.Series;
+import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
 import com.newbit.column.dto.response.UpdateSeriesResponseDto;
 import org.springframework.stereotype.Component;
 
@@ -31,5 +32,15 @@ public class SeriesMapper {
                 .thumbnailUrl(series.getThumbnailUrl())
                 .build();
     }
+
+    public GetSeriesDetailResponseDto toGetSeriesDetailResponseDto(Series series) {
+        return GetSeriesDetailResponseDto.builder()
+                .seriesId(series.getSeriesId())
+                .title(series.getTitle())
+                .description(series.getDescription())
+                .thumbnailUrl(series.getThumbnailUrl())
+                .build();
+    }
+
 }
 
