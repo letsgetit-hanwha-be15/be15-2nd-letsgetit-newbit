@@ -3,10 +3,7 @@ package com.newbit.column.controller;
 import com.newbit.auth.model.CustomUser;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
-import com.newbit.column.dto.response.CreateSeriesResponseDto;
-import com.newbit.column.dto.response.GetMySeriesListResponseDto;
-import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
-import com.newbit.column.dto.response.UpdateSeriesResponseDto;
+import com.newbit.column.dto.response.*;
 import com.newbit.column.service.SeriesService;
 import com.newbit.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,10 +60,20 @@ public class SeriesController {
         return ApiResponse.success(seriesService.getSeriesDetail(seriesId));
     }
 
+    @GetMapping("/my")
     @Operation(summary = "본인 시리즈 목록 조회", description = "멘토 본인이 생성한 시리즈 목록을 조회합니다.")
     public ApiResponse<List<GetMySeriesListResponseDto>> getMySeriesList(
             @AuthenticationPrincipal CustomUser customUser
     ) {
         return ApiResponse.success(seriesService.getMySeriesList(customUser.getUserId()));
     }
+
+    @GetMapping("/{seriesId}")
+    @Operation(summary = "시리즈에 포함된 칼럼 목록 조회", description = "해당 시리즈에 포함된 칼럼 목록을 조회합니다.")
+    public ApiResponse<List<GetSeriesColumnsResponseDto>> getSeriesColumns(
+            @PathVariable Long seriesId
+    ) {
+        return ApiResponse.success(seriesService.getSeriesColumns(seriesId));
+    }
+
 }
