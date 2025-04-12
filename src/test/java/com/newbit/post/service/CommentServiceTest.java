@@ -122,9 +122,15 @@ class CommentServiceTest {
                 .post(post)
                 .build();
 
+        CustomUser user = CustomUser.builder()
+                .userId(1L) // 작성자 본인
+                .email("user@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
-        commentService.deleteComment(postId, commentId);
+        commentService.deleteComment(postId, commentId, user);
 
         assertThat(comment.getDeletedAt()).isNotNull();
         verify(commentRepository).findById(commentId);
@@ -135,9 +141,15 @@ class CommentServiceTest {
         Long postId = 1L;
         Long commentId = 999L;
 
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
         when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> commentService.deleteComment(postId, commentId))
+        assertThatThrownBy(() -> commentService.deleteComment(postId, commentId, user))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("해당 댓글이 존재하지 않습니다.");
     }
@@ -157,10 +169,44 @@ class CommentServiceTest {
                 .post(post)
                 .build();
 
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
-        assertThatThrownBy(() -> commentService.deleteComment(wrongPostId, commentId))
+        assertThatThrownBy(() -> commentService.deleteComment(wrongPostId, commentId, user))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("해당 댓글이 존재하지 않거나 게시글과 매칭되지 않습니다.");
     }
+
+    @Test
+    void 댓글_삭제_실패_작성자가_아님() {
+        Long postId = 1L;
+        Long commentId = 100L;
+
+        Post post = Post.builder().id(postId).build();
+
+        Comment comment = Comment.builder()
+                .id(commentId)
+                .content("삭제 대상 댓글")
+                .userId(999L) // 작성자 아님
+                .post(post)
+                .build();
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L) // 삭제 시도자
+                .email("user@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        assertThatThrownBy(() -> commentService.deleteComment(postId, commentId, user))
+                .isInstanceOf(SecurityException.class)
+                .hasMessage("댓글은 작성자만 삭제할 수 있습니다.");
+    }
+
 }
