@@ -6,6 +6,7 @@ import com.newbit.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
 import com.newbit.column.dto.response.GetMySeriesListResponseDto;
+import com.newbit.column.dto.response.GetSeriesColumnsResponseDto;
 import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
 import com.newbit.column.mapper.SeriesMapper;
 import com.newbit.column.repository.ColumnRepository;
@@ -19,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -260,6 +262,79 @@ class SeriesServiceTest {
         verify(seriesRepository).findAllByMentor_MentorIdOrderByCreatedAtDesc(mentorId);
         verify(seriesMapper).toMySeriesListDto(series1);
         verify(seriesMapper).toMySeriesListDto(series2);
+    }
+
+    @DisplayName("시리즈 내 포함된 칼럼 목록 조회 - 성공")
+    @Test
+    void getColumnsInSeries_success() {
+        // given
+        Long seriesId = 1L;
+
+        Series series = Series.builder()
+                .seriesId(seriesId)
+                .title("이직 준비 시리즈")
+                .build();
+
+        Column column1 = Column.builder()
+                .columnId(101L)
+                .title("자기소개서 작성법")
+                .price(1000)
+                .thumbnailUrl("https://example.com/thumb1.jpg")
+                .likeCount(10)
+                .createdAt(LocalDateTime.now())
+                .series(series)
+                .build();
+
+        Column column2 = Column.builder()
+                .columnId(102L)
+                .title("면접 꿀팁")
+                .price(2000)
+                .thumbnailUrl("https://example.com/thumb2.jpg")
+                .likeCount(20)
+                .createdAt(LocalDateTime.now())
+                .series(series)
+                .build();
+
+        List<Column> columns = List.of(column1, column2);
+
+        when(seriesRepository.findById(seriesId)).thenReturn(Optional.of(series));
+        when(columnRepository.findAllBySeries_SeriesId(seriesId)).thenReturn(columns);
+
+        when(seriesMapper.toSeriesColumnDto(column1)).thenReturn(
+                GetSeriesColumnsResponseDto.builder()
+                        .columnId(101L)
+                        .title("자기소개서 작성법")
+                        .price(1000)
+                        .thumbnailUrl("https://example.com/thumb1.jpg")
+                        .likeCount(10)
+                        .createdAt(column1.getCreatedAt())
+                        .updatedAt(column1.getUpdatedAt())
+                        .build()
+        );
+
+        when(seriesMapper.toSeriesColumnDto(column2)).thenReturn(
+                GetSeriesColumnsResponseDto.builder()
+                        .columnId(102L)
+                        .title("면접 꿀팁")
+                        .price(2000)
+                        .thumbnailUrl("https://example.com/thumb2.jpg")
+                        .likeCount(20)
+                        .createdAt(column2.getCreatedAt())
+                        .updatedAt(column2.getUpdatedAt())
+                        .build()
+        );
+
+        // when
+        List<GetSeriesColumnsResponseDto> result = seriesService.getSeriesColumns(seriesId);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getColumnId()).isEqualTo(101L);
+        assertThat(result.get(1).getTitle()).isEqualTo("면접 꿀팁");
+
+        verify(columnRepository).findAllBySeries_SeriesId(seriesId);
+        verify(seriesMapper).toSeriesColumnDto(column1);
+        verify(seriesMapper).toSeriesColumnDto(column2);
     }
 
 }
