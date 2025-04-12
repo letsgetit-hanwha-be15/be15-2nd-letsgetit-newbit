@@ -42,14 +42,17 @@ public class CommentController {
     }
 
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{commentId}")
-    @Operation(summary = "댓글 삭제", description = "댓글을 삭제합니다.")
+    @Operation(summary = "댓글 삭제", description = "회원만 자신이 작성한 댓글을 삭제할 수 있습니다.")
     public ResponseEntity<Void> deleteComment(
             @PathVariable Long postId,
-            @PathVariable Long commentId
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUser user
     ) {
-        commentService.deleteComment(postId, commentId);
+        commentService.deleteComment(postId, commentId, user);
         return ResponseEntity.noContent().build();
     }
+
 
 }
