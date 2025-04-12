@@ -4,8 +4,10 @@ import com.newbit.common.dto.ApiResponse;
 import com.newbit.user.dto.request.ChangePasswordRequestDTO;
 import com.newbit.user.dto.request.DeleteUserRequestDTO;
 import com.newbit.user.dto.request.UserInfoUpdateRequestDTO;
+import com.newbit.user.dto.response.OhterUserProfileDTO;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.service.UserInfoService;
+import com.newbit.user.service.UserQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserInfoController {
 
     private final UserInfoService userInfoService;
+    private final UserQueryService userQueryService;
 
     @Operation(summary = "회원 정보 조회", description = "내 프로필 조회")
     @GetMapping("/myprofile")
@@ -50,6 +53,13 @@ public class UserInfoController {
     public ResponseEntity<ApiResponse<String>> deleteUser(@RequestBody @Valid DeleteUserRequestDTO request) {
         userInfoService.unsubscribeService(request);
         return ResponseEntity.ok(ApiResponse.success("회원 탈퇴가 완료되었습니다."));
+    }
+
+    @Operation(summary = "다른 사용자 프로필 조회", description = "다른 사용자의 userId를 기반으로 프로필 조회")
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<ApiResponse<OhterUserProfileDTO>> getOhterUserProfile(@PathVariable Long userId) {
+        OhterUserProfileDTO profile = userQueryService.getOhterUserProfile(userId);
+        return ResponseEntity.ok(ApiResponse.success(profile));
     }
 
 }

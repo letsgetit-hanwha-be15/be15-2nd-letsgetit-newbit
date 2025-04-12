@@ -2,10 +2,9 @@ package com.newbit.column.service;
 
 import com.newbit.column.domain.Column;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
-import com.newbit.column.dto.response.UpdateSeriesResponseDto;
+import com.newbit.column.dto.response.*;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
-import com.newbit.column.dto.response.CreateSeriesResponseDto;
 import com.newbit.column.domain.Series;
 import com.newbit.column.mapper.SeriesMapper;
 import com.newbit.column.repository.SeriesRepository;
@@ -120,6 +119,61 @@ public class SeriesService {
         return seriesMapper.toUpdateSeriesResponseDto(series);
     }
 
+    @Transactional
+    public void deleteSeries(Long seriesId, Long userId) {
+        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
 
+        Series series = seriesRepository.findById(seriesId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+
+        // 본인의 시리즈인지 확인
+        List<Column> columns = columnRepository.findAllBySeries_SeriesId(seriesId);
+
+        boolean isOwner = columns.stream().allMatch(
+                column -> column.getMentor().getMentorId().equals(mentor.getMentorId())
+        );
+        if (!isOwner) {
+            throw new BusinessException(ErrorCode.COLUMN_NOT_OWNED);
+        }
+
+        // 연결된 칼럼의 series 해제
+        columns.forEach(column -> column.updateSeries(null));
+        columnRepository.saveAll(columns);
+
+        // 시리즈 삭제
+        seriesRepository.delete(series);
+    }
+
+    @Transactional(readOnly = true)
+    public GetSeriesDetailResponseDto getSeriesDetail(Long seriesId) {
+        Series series = seriesRepository.findById(seriesId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+
+        return seriesMapper.toGetSeriesDetailResponseDto(series);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetMySeriesListResponseDto> getMySeriesList(Long userId) {
+        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
+        List<Series> seriesList = seriesRepository.findAllByMentor_MentorIdOrderByCreatedAtDesc(mentor.getMentorId());
+        return seriesList.stream()
+                .map(seriesMapper::toMySeriesListDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetSeriesColumnsResponseDto> getSeriesColumns(Long seriesId) {
+        /* 시리즈 존재 여부 확인 */
+        Series series = seriesRepository.findById(seriesId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+
+        /* 시리즈에 속한 칼럼 조회 */
+        List<Column> columns = columnRepository.findAllBySeries_SeriesId(seriesId);
+
+        /* DTO로 변환 후 반환 */
+        return columns.stream()
+                .map(seriesMapper::toSeriesColumnDto)
+                .toList();
+    }
 }
 

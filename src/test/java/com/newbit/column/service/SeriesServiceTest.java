@@ -5,6 +5,9 @@ import com.newbit.column.domain.Series;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
+import com.newbit.column.dto.response.GetMySeriesListResponseDto;
+import com.newbit.column.dto.response.GetSeriesColumnsResponseDto;
+import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
 import com.newbit.column.mapper.SeriesMapper;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.repository.SeriesRepository;
@@ -17,7 +20,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -131,6 +136,205 @@ class SeriesServiceTest {
         assertThat(series.getTitle()).isEqualTo("수정된 제목");
         assertThat(series.getDescription()).isEqualTo("수정된 설명");
         assertThat(series.getThumbnailUrl()).isEqualTo("https://example.com/updated.jpg");
+    }
+
+    @DisplayName("시리즈 삭제 - 성공")
+    @Test
+    void deleteSeries_success() {
+        // given
+        Long seriesId = 100L;
+        Long userId = 1L;
+        Long mentorId = 10L;
+
+        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
+        Series series = Series.builder().seriesId(seriesId).build();
+
+        Column column1 = Column.builder().columnId(1L).mentor(mentor).series(series).build();
+        Column column2 = Column.builder().columnId(2L).mentor(mentor).series(series).build();
+        List<Column> columns = List.of(column1, column2);
+
+        when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
+        when(seriesRepository.findById(seriesId)).thenReturn(java.util.Optional.of(series));
+        when(columnRepository.findAllBySeries_SeriesId(seriesId)).thenReturn(columns);
+
+        // when
+        seriesService.deleteSeries(seriesId, userId);
+
+        // then
+        verify(mentorService).getMentorEntityByUserId(userId);
+        verify(seriesRepository).findById(seriesId);
+        verify(columnRepository).findAllBySeries_SeriesId(seriesId);
+        verify(columnRepository).saveAll(anyList());
+        verify(seriesRepository).delete(series);
+    }
+
+    @DisplayName("시리즈 상세 조회 - 성공")
+    @Test
+    void getSeriesDetail_success() {
+        // given
+        Long seriesId = 1L;
+
+        Series series = Series.builder()
+                .seriesId(seriesId)
+                .title("이직 준비 A to Z")
+                .description("이직을 준비하는 멘티들을 위한 시리즈입니다.")
+                .thumbnailUrl("https://example.com/image.jpg")
+                .build();
+
+        GetSeriesDetailResponseDto expectedDto = GetSeriesDetailResponseDto.builder()
+                .seriesId(seriesId)
+                .title("이직 준비 A to Z")
+                .description("이직을 준비하는 멘티들을 위한 시리즈입니다.")
+                .thumbnailUrl("https://example.com/image.jpg")
+                .build();
+
+        when(seriesRepository.findById(seriesId)).thenReturn(Optional.of(series));
+        when(seriesMapper.toGetSeriesDetailResponseDto(series)).thenReturn(expectedDto);
+
+        // when
+        GetSeriesDetailResponseDto result = seriesService.getSeriesDetail(seriesId);
+
+        // then
+        assertThat(result.getSeriesId()).isEqualTo(seriesId);
+        assertThat(result.getTitle()).isEqualTo("이직 준비 A to Z");
+        assertThat(result.getDescription()).isEqualTo("이직을 준비하는 멘티들을 위한 시리즈입니다.");
+        assertThat(result.getThumbnailUrl()).isEqualTo("https://example.com/image.jpg");
+
+        verify(seriesRepository).findById(seriesId);
+        verify(seriesMapper).toGetSeriesDetailResponseDto(series);
+    }
+
+    @DisplayName("멘토 본인 시리즈 목록 조회 - 성공")
+    @Test
+    void getMySeriesList_success() {
+        // given
+        Long userId = 1L;
+        Long mentorId = 10L;
+
+        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
+
+        Series series1 = Series.builder()
+                .seriesId(1L)
+                .title("시리즈 A")
+                .description("설명 A")
+                .thumbnailUrl("https://example.com/a.jpg")
+                .build();
+
+        Series series2 = Series.builder()
+                .seriesId(2L)
+                .title("시리즈 B")
+                .description("설명 B")
+                .thumbnailUrl("https://example.com/b.jpg")
+                .build();
+
+        List<Series> seriesList = List.of(series1, series2);
+
+        when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
+        when(seriesRepository.findAllByMentor_MentorIdOrderByCreatedAtDesc(mentorId)).thenReturn(seriesList);
+        when(seriesMapper.toMySeriesListDto(series1)).thenReturn(
+                GetMySeriesListResponseDto.builder()
+                        .seriesId(1L)
+                        .title("시리즈 A")
+                        .description("설명 A")
+                        .thumbnailUrl("https://example.com/a.jpg")
+                        .build()
+        );
+        when(seriesMapper.toMySeriesListDto(series2)).thenReturn(
+                GetMySeriesListResponseDto.builder()
+                        .seriesId(2L)
+                        .title("시리즈 B")
+                        .description("설명 B")
+                        .thumbnailUrl("https://example.com/b.jpg")
+                        .build()
+        );
+
+        // when
+        List<GetMySeriesListResponseDto> result = seriesService.getMySeriesList(userId);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getSeriesId()).isEqualTo(1L);
+        assertThat(result.get(0).getTitle()).isEqualTo("시리즈 A");
+        assertThat(result.get(1).getSeriesId()).isEqualTo(2L);
+        assertThat(result.get(1).getTitle()).isEqualTo("시리즈 B");
+
+        verify(mentorService).getMentorEntityByUserId(userId);
+        verify(seriesRepository).findAllByMentor_MentorIdOrderByCreatedAtDesc(mentorId);
+        verify(seriesMapper).toMySeriesListDto(series1);
+        verify(seriesMapper).toMySeriesListDto(series2);
+    }
+
+    @DisplayName("시리즈 내 포함된 칼럼 목록 조회 - 성공")
+    @Test
+    void getColumnsInSeries_success() {
+        // given
+        Long seriesId = 1L;
+
+        Series series = Series.builder()
+                .seriesId(seriesId)
+                .title("이직 준비 시리즈")
+                .build();
+
+        Column column1 = Column.builder()
+                .columnId(101L)
+                .title("자기소개서 작성법")
+                .price(1000)
+                .thumbnailUrl("https://example.com/thumb1.jpg")
+                .likeCount(10)
+                .createdAt(LocalDateTime.now())
+                .series(series)
+                .build();
+
+        Column column2 = Column.builder()
+                .columnId(102L)
+                .title("면접 꿀팁")
+                .price(2000)
+                .thumbnailUrl("https://example.com/thumb2.jpg")
+                .likeCount(20)
+                .createdAt(LocalDateTime.now())
+                .series(series)
+                .build();
+
+        List<Column> columns = List.of(column1, column2);
+
+        when(seriesRepository.findById(seriesId)).thenReturn(Optional.of(series));
+        when(columnRepository.findAllBySeries_SeriesId(seriesId)).thenReturn(columns);
+
+        when(seriesMapper.toSeriesColumnDto(column1)).thenReturn(
+                GetSeriesColumnsResponseDto.builder()
+                        .columnId(101L)
+                        .title("자기소개서 작성법")
+                        .price(1000)
+                        .thumbnailUrl("https://example.com/thumb1.jpg")
+                        .likeCount(10)
+                        .createdAt(column1.getCreatedAt())
+                        .updatedAt(column1.getUpdatedAt())
+                        .build()
+        );
+
+        when(seriesMapper.toSeriesColumnDto(column2)).thenReturn(
+                GetSeriesColumnsResponseDto.builder()
+                        .columnId(102L)
+                        .title("면접 꿀팁")
+                        .price(2000)
+                        .thumbnailUrl("https://example.com/thumb2.jpg")
+                        .likeCount(20)
+                        .createdAt(column2.getCreatedAt())
+                        .updatedAt(column2.getUpdatedAt())
+                        .build()
+        );
+
+        // when
+        List<GetSeriesColumnsResponseDto> result = seriesService.getSeriesColumns(seriesId);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getColumnId()).isEqualTo(101L);
+        assertThat(result.get(1).getTitle()).isEqualTo("면접 꿀팁");
+
+        verify(columnRepository).findAllBySeries_SeriesId(seriesId);
+        verify(seriesMapper).toSeriesColumnDto(column1);
+        verify(seriesMapper).toSeriesColumnDto(column2);
     }
 
 }

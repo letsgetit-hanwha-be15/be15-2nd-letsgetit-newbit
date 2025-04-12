@@ -6,8 +6,8 @@ import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(description = "시리즈 수정 응답")
-public class UpdateSeriesResponseDto {
+@Schema(description = "시리즈 상세 정보 응답")
+public class GetSeriesDetailResponseDto {
 
     @Schema(description = "시리즈 ID", example = "1")
     private Long seriesId;
@@ -18,6 +18,7 @@ public class UpdateSeriesResponseDto {
     @Schema(description = "시리즈 설명", example = "이직을 준비하는 멘티들을 위한 시리즈입니다.")
     private String description;
 
-    @Schema(description = "대표 이미지 URL", example = "https://example.com/image.jpg")
+    @Schema(description = "시리즈 대표 이미지 URL", example = "https://example.com/image.jpg")
     private String thumbnailUrl;
 }
+

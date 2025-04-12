@@ -1,5 +1,6 @@
 package com.newbit.column.domain;
 
+import com.newbit.user.entity.Mentor;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.*;
@@ -34,6 +35,10 @@ public class Series {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "mentor_id")
+    private Mentor mentor;
 
     @OneToMany(mappedBy = "series", cascade = CascadeType.PERSIST)
     private List<Column> columns = new ArrayList<>();
