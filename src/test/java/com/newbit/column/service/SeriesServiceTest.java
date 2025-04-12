@@ -133,4 +133,34 @@ class SeriesServiceTest {
         assertThat(series.getThumbnailUrl()).isEqualTo("https://example.com/updated.jpg");
     }
 
+    @DisplayName("시리즈 삭제 - 성공")
+    @Test
+    void deleteSeries_success() {
+        // given
+        Long seriesId = 100L;
+        Long userId = 1L;
+        Long mentorId = 10L;
+
+        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
+        Series series = Series.builder().seriesId(seriesId).build();
+
+        Column column1 = Column.builder().columnId(1L).mentor(mentor).series(series).build();
+        Column column2 = Column.builder().columnId(2L).mentor(mentor).series(series).build();
+        List<Column> columns = List.of(column1, column2);
+
+        when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
+        when(seriesRepository.findById(seriesId)).thenReturn(java.util.Optional.of(series));
+        when(columnRepository.findAllBySeries_SeriesId(seriesId)).thenReturn(columns);
+
+        // when
+        seriesService.deleteSeries(seriesId, userId);
+
+        // then
+        verify(mentorService).getMentorEntityByUserId(userId);
+        verify(seriesRepository).findById(seriesId);
+        verify(columnRepository).findAllBySeries_SeriesId(seriesId);
+        verify(columnRepository).saveAll(anyList());
+        verify(seriesRepository).delete(series);
+    }
+
 }

@@ -40,4 +40,15 @@ public class SeriesController {
     ) {
         return ApiResponse.success(seriesService.updateSeries(seriesId, dto, customUser.getUserId()));
     }
+
+    @DeleteMapping("/{seriesId}")
+    @Operation(summary = "시리즈 삭제", description = "시리즈를 삭제하고, 연결된 칼럼의 시리즈 정보를 제거합니다.")
+    public ApiResponse<Void> deleteSeries(
+            @PathVariable Long seriesId,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        seriesService.deleteSeries(seriesId, customUser.getUserId());
+        return ApiResponse.success(null);
+    }
+
 }
