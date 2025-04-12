@@ -16,7 +16,7 @@
                 AND c.mentor_id = #{ mentorId }
             </if>
             <if test="menteeId != null">
-                AND c.mentee_id = #{ menteeId }
+                AND r.user_id = #{ menteeId }
             </if>
         </where>
         ORDER BY r.review_id DESC
@@ -31,7 +31,7 @@
                 AND c.mentor_id = #{ mentorId }
             </if>
             <if test="menteeId != null">
-                AND r.mentee_id = #{ menteeId }
+                AND r.user_id = #{ menteeId }
             </if>
         </where>
     </select>
