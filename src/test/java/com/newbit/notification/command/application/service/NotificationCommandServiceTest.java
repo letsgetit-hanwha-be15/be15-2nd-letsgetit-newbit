@@ -45,16 +45,17 @@ class NotificationCommandServiceTest {
         // given
         Long userId = 1L;
         Long typeId = 10L;
+        Long serviceId = 20L;
         String content = "This is a test notification.";
 
-        NotificationSendRequest request = new NotificationSendRequest(userId, typeId, content);
+        NotificationSendRequest request = new NotificationSendRequest(userId, typeId, serviceId, content);
 
         NotificationType type = NotificationType.builder()
                 .id(typeId)
                 .name("COLUMN_APPROVED")
                 .build();
 
-        Notification notification = Notification.create(userId, type, content);
+        Notification notification = Notification.create(userId, type, serviceId, content);
 
         when(notificationTypeRepository.findById(typeId)).thenReturn(Optional.of(type));
         when(notificationRepository.save(any(Notification.class))).thenReturn(notification);
@@ -73,9 +74,10 @@ class NotificationCommandServiceTest {
         // given
         Long userId = 1L;
         Long invalidTypeId = 999L;
+        Long serviceId = 20L;
         String content = "Alert";
 
-        NotificationSendRequest request = new NotificationSendRequest(userId, invalidTypeId, content);
+        NotificationSendRequest request = new NotificationSendRequest(userId, invalidTypeId, serviceId, content);
 
         when(notificationTypeRepository.findById(invalidTypeId)).thenReturn(Optional.empty());
 
@@ -92,13 +94,14 @@ class NotificationCommandServiceTest {
     void markAsRead_success() {
         // given
         Long userId = 1L;
+        Long serviceId = 10L;
         Long notificationId = 10L;
         NotificationType type = NotificationType.builder()
                 .id(1L)
                 .name("COMMENT")
                 .build();
 
-        Notification notification = Notification.create(userId, type, "댓글이 달렸습니다");
+        Notification notification = Notification.create(userId, type, serviceId,"댓글이 달렸습니다");
 
         when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
 
@@ -126,13 +129,14 @@ class NotificationCommandServiceTest {
         // given
         Long userId = 1L;
         Long otherUserId = 2L;
+        Long serviceId = 10L;
         Long notificationId = 5L;
         NotificationType type = NotificationType.builder()
                 .id(1L)
                 .name("COMMENT")
                 .build();
 
-        Notification notification = Notification.create(otherUserId, type, "다른 유저 알림");
+        Notification notification = Notification.create(otherUserId, type, serviceId, "다른 유저 알림");
         when(notificationRepository.findById(notificationId)).thenReturn(Optional.of(notification));
 
         // expect
