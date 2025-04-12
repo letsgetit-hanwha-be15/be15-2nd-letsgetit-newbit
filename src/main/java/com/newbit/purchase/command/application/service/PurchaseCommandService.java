@@ -146,15 +146,4 @@ public class PurchaseCommandService {
         // 4. 멘토 등록
         mentorService.createMentor(userId);
     }
-
-    // 커피챗 다이아 환불
-    @Transactional
-    public void refundCoffeeChat(Long coffeechatId, Long menteeId, Integer totalPrice) {
-
-        // 1. 멘티 다이아 추가 후 현재 다이아값 반환
-        Integer balance = userService.addDiamond(menteeId, totalPrice);
-
-        // 2. 다이아 내역 저장
-        diamondHistoryRepository.save(DiamondHistory.forCoffeechatRefund(menteeId, coffeechatId, totalPrice, balance));
-    }
 }
