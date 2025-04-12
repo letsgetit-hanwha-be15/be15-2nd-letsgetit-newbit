@@ -1,4 +1,4 @@
-package com.newbit.coffeechat.query;
+package com.newbit.coffeechat.query.controller;
 
 import com.newbit.auth.model.CustomUser;
 import com.newbit.coffeechat.command.domain.aggregate.ProgressStatus;
