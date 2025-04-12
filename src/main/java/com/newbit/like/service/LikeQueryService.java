@@ -23,4 +23,13 @@ public class LikeQueryService {
         return likeRepository.countByPostIdAndIsDeleteFalse(postId);
     }
     
+    @Transactional(readOnly = true)
+    public boolean isColumnLiked(Long columnId, Long userId) {
+        return likeRepository.existsByColumnIdAndUserIdAndIsDeleteFalse(columnId, userId);
+    }
+    
+    @Transactional(readOnly = true)
+    public int getColumnLikeCount(Long columnId) {
+        return likeRepository.countByColumnIdAndIsDeleteFalse(columnId);
+    }
 } 
