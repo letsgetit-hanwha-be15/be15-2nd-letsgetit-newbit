@@ -6,6 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
+@Schema(description = "시리즈 수정 응답")
 public class UpdateSeriesResponseDto {
 
     @Schema(description = "시리즈 ID", example = "1")
