@@ -2,12 +2,9 @@ package com.newbit.column.service;
 
 import com.newbit.column.domain.Column;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
-import com.newbit.column.dto.response.GetMySeriesListResponseDto;
-import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
-import com.newbit.column.dto.response.UpdateSeriesResponseDto;
+import com.newbit.column.dto.response.*;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
-import com.newbit.column.dto.response.CreateSeriesResponseDto;
 import com.newbit.column.domain.Series;
 import com.newbit.column.mapper.SeriesMapper;
 import com.newbit.column.repository.SeriesRepository;
@@ -161,6 +158,21 @@ public class SeriesService {
         List<Series> seriesList = seriesRepository.findAllByMentor_MentorIdOrderByCreatedAtDesc(mentor.getMentorId());
         return seriesList.stream()
                 .map(seriesMapper::toMySeriesListDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetSeriesColumnsResponseDto> getSeriesColumns(Long seriesId) {
+        /* 시리즈 존재 여부 확인 */
+        Series series = seriesRepository.findById(seriesId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+
+        /* 시리즈에 속한 칼럼 조회 */
+        List<Column> columns = columnRepository.findAllBySeries_SeriesId(seriesId);
+
+        /* DTO로 변환 후 반환 */
+        return columns.stream()
+                .map(seriesMapper::toSeriesColumnDto)
                 .toList();
     }
 }

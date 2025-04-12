@@ -1,11 +1,9 @@
 package com.newbit.column.mapper;
 
+import com.newbit.column.domain.Column;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
-import com.newbit.column.dto.response.CreateSeriesResponseDto;
+import com.newbit.column.dto.response.*;
 import com.newbit.column.domain.Series;
-import com.newbit.column.dto.response.GetMySeriesListResponseDto;
-import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
-import com.newbit.column.dto.response.UpdateSeriesResponseDto;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -49,6 +47,18 @@ public class SeriesMapper {
                 .title(series.getTitle())
                 .description(series.getDescription())
                 .thumbnailUrl(series.getThumbnailUrl())
+                .build();
+    }
+
+    public GetSeriesColumnsResponseDto toSeriesColumnDto(Column column) {
+        return GetSeriesColumnsResponseDto.builder()
+                .columnId(column.getColumnId())
+                .title(column.getTitle())
+                .thumbnailUrl(column.getThumbnailUrl())
+                .price(column.getPrice())
+                .likeCount(column.getLikeCount())
+                .createdAt(column.getCreatedAt())
+                .updatedAt(column.getUpdatedAt())
                 .build();
     }
 }
