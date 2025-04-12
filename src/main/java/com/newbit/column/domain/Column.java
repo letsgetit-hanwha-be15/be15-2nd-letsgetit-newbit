@@ -70,4 +70,14 @@ public class Column {
     public void updateSeries(Series series) {
         this.series = series;
     }
+    
+    // 좋아요 카운트 증가
+    public void increaseLikeCount() {
+        this.likeCount += 1;
+    }
+    
+    // 좋아요 카운트 감소
+    public void decreaseLikeCount() {
+        this.likeCount = Math.max(0, this.likeCount - 1);
+    }
 }
