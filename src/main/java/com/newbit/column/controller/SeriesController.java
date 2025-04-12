@@ -4,6 +4,7 @@ import com.newbit.auth.model.CustomUser;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
+import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
 import com.newbit.column.dto.response.UpdateSeriesResponseDto;
 import com.newbit.column.service.SeriesService;
 import com.newbit.common.dto.ApiResponse;
@@ -49,6 +50,14 @@ public class SeriesController {
     ) {
         seriesService.deleteSeries(seriesId, customUser.getUserId());
         return ApiResponse.success(null);
+    }
+
+    @GetMapping("/{seriesId}")
+    @Operation(summary = "시리즈 상세 조회", description = "시리즈의 상세 정보를 조회합니다.")
+    public ApiResponse<GetSeriesDetailResponseDto> getSeriesDetail(
+            @PathVariable Long seriesId
+    ) {
+        return ApiResponse.success(seriesService.getSeriesDetail(seriesId));
     }
 
 }
