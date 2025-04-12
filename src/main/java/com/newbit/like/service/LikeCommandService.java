@@ -37,7 +37,6 @@ public class LikeCommandService {
                 return likePost(postId, userId, post);
             }
         } catch (BusinessException e) {
-            // 이미 정의된 비즈니스 예외는 그대로 던짐
             log.error("좋아요 처리 중 비즈니스 예외 발생: postId={}, userId={}, errorCode={}, message={}",
                     postId, userId, e.getErrorCode(), e.getMessage());
             throw e;
