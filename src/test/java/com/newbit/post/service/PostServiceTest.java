@@ -1,6 +1,8 @@
 package com.newbit.post.service;
 
 import com.newbit.auth.model.CustomUser;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.response.PostResponse;
@@ -16,8 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -96,8 +96,8 @@ class PostServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> postService.updatePost(postId, updateRequest, user))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("해당 게시글이 존재하지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.POST_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -125,8 +125,8 @@ class PostServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
         assertThatThrownBy(() -> postService.updatePost(postId, updateRequest, user))
-                .isInstanceOf(SecurityException.class)
-                .hasMessage("게시글은 작성자만 수정할 수 있습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.UNAUTHORIZED_TO_UPDATE_POST.getMessage());
     }
 
     @Test
@@ -172,8 +172,8 @@ class PostServiceTest {
 
         // when & then
         assertThatThrownBy(() -> postService.createPost(adminRequest, adminUser))
-                .isInstanceOf(SecurityException.class)
-                .hasMessage("게시글은 일반 사용자만 작성할 수 있습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.ONLY_USER_CAN_CREATE_POST.getMessage());
 
         verify(postRepository, never()).save(any(Post.class));
     }
@@ -216,8 +216,8 @@ class PostServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> postService.deletePost(postId, user))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("해당 게시글이 존재하지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.POST_NOT_FOUND.getMessage());
     }
 
     @Test
@@ -240,8 +240,8 @@ class PostServiceTest {
         when(postRepository.findById(postId)).thenReturn(Optional.of(post));
 
         assertThatThrownBy(() -> postService.deletePost(postId, user))
-                .isInstanceOf(SecurityException.class)
-                .hasMessage("게시글은 작성자만 삭제할 수 있습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.UNAUTHORIZED_TO_DELETE_POST.getMessage());
     }
 
 
