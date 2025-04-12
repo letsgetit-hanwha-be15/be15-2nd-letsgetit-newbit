@@ -11,8 +11,6 @@ public class ReviewSearchServiceRequest {
     private Integer size = 10;
     private Long mentorId;
     private Long menteeId;
-    private ProgressStatus progressStatus;
-    private Boolean isProgressing;
 
     public int getOffset() {
         return (page - 1) * size;

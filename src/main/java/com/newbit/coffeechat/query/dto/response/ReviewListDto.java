@@ -22,5 +22,5 @@ public class ReviewListDto {
     @Schema(description = "작성자ID")
     private Long userId;
     @Schema(description = "작성자 닉네임")
-    private Long userNickname;
+    private Long nickname;
 }
