@@ -1,9 +1,10 @@
 package com.newbit.common.exception;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -75,22 +76,27 @@ public enum ErrorCode {
     UNAUTHORIZED_ACCESS("90003", "인증되지 않은 접근", HttpStatus.UNAUTHORIZED),
 
     /*---------------- 게시글 -------------------------*/
-    POST_NOT_FOUND("100000", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_TO_UPDATE_POST("100001", "게시글은 작성자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_USER_CAN_CREATE_POST("100002", "게시글은 일반 사용자만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
-    UNAUTHORIZED_TO_DELETE_POST("100003", "게시글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_ADMIN_CAN_CREATE_NOTICE("100004", "공지사항은 관리자만 등록할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_ADMIN_CAN_UPDATE_NOTICE("100005", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_ADMIN_CAN_DELETE_NOTICE("100006", "공지사항은 관리자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
-    NOT_A_NOTICE("100007", "해당 게시글은 공지사항이 아닙니다.", HttpStatus.BAD_REQUEST),
+    POST_NOT_FOUND("110000", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_UPDATE_POST("110001", "게시글은 작성자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_USER_CAN_CREATE_POST("110002", "게시글은 일반 사용자만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_DELETE_POST("110003", "게시글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_CREATE_NOTICE("110004", "공지사항은 관리자만 등록할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_UPDATE_NOTICE("110005", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_DELETE_NOTICE("10006", "공지사항은 관리자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    NOT_A_NOTICE("110007", "해당 게시글은 공지사항이 아닙니다.", HttpStatus.BAD_REQUEST),
 
     /*---------------- 댓글 -------------------------*/
-    COMMENT_NOT_FOUND("110000", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_TO_DELETE_COMMENT("110001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
-    UNAUTHORIZED_TO_CREATE_COMMENT("110002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
-    COMMENT_POST_MISMATCH("110003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST);
+    COMMENT_NOT_FOUND("120000", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_DELETE_COMMENT("120001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_CREATE_COMMENT("120002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
+    COMMENT_POST_MISMATCH("120003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
 
-
+    /*----------------좋아요 관련-------------------*/
+    POST_LIKE_NOT_FOUND("100001", "해당 게시글 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COLUMN_LIKE_NOT_FOUND("100002", "해당 칼럼 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    LIKE_PROCESSING_ERROR("100003", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+  
+  
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;
