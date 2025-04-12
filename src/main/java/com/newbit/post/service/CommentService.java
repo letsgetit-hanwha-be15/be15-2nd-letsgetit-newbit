@@ -1,6 +1,8 @@
 package com.newbit.post.service;
 
 import com.newbit.auth.model.CustomUser;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.post.dto.request.CommentCreateRequest;
 import com.newbit.post.dto.response.CommentResponse;
 import com.newbit.post.entity.Comment;
@@ -26,11 +28,11 @@ public class CommentService {
     @Transactional
     public CommentResponse createComment(Long postId, CommentCreateRequest request, CustomUser user) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
         Comment comment = Comment.builder()
                 .content(request.getContent())
-                .userId(user.getUserId()) // 인증 사용자 ID 사용
+                .userId(user.getUserId())
                 .reportCount(0)
                 .post(post)
                 .build();
@@ -51,16 +53,16 @@ public class CommentService {
     @Transactional
     public void deleteComment(Long postId, Long commentId, CustomUser user) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
 
         if (!comment.getPost().getId().equals(postId)) {
-            throw new IllegalArgumentException("해당 댓글이 존재하지 않거나 게시글과 매칭되지 않습니다.");
+            throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
         }
-
 
         if (!comment.getUserId().equals(user.getUserId())) {
-            throw new SecurityException("댓글은 작성자만 삭제할 수 있습니다.");
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_TO_DELETE_COMMENT);
         }
+
         comment.softDelete();
     }
 
