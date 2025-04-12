@@ -72,7 +72,24 @@ public enum ErrorCode {
     /*----------------알림-------------------------*/
     NOTIFICATION_TYPE_NOT_FOUND("90001", "잘못된 알림 유형 입니다.", HttpStatus.NOT_FOUND),
     NOTIFICATION_NOT_FOUND("90002", "알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_ACCESS("90003", "인증되지 않은 접근", HttpStatus.UNAUTHORIZED);
+    UNAUTHORIZED_ACCESS("90003", "인증되지 않은 접근", HttpStatus.UNAUTHORIZED),
+
+    /*---------------- 게시글 -------------------------*/
+    POST_NOT_FOUND("100000", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_UPDATE_POST("100001", "게시글은 작성자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_USER_CAN_CREATE_POST("100002", "게시글은 일반 사용자만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_DELETE_POST("100003", "게시글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_CREATE_NOTICE("100004", "공지사항은 관리자만 등록할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_UPDATE_NOTICE("100005", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_DELETE_NOTICE("100006", "공지사항은 관리자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    NOT_A_NOTICE("100007", "해당 게시글은 공지사항이 아닙니다.", HttpStatus.BAD_REQUEST),
+
+    /*---------------- 댓글 -------------------------*/
+    COMMENT_NOT_FOUND("110000", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_DELETE_COMMENT("110001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_CREATE_COMMENT("110002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
+    COMMENT_POST_MISMATCH("110003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST);
+
 
     private final String code;
     private final String message;
