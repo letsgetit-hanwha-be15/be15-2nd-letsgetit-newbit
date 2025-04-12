@@ -1,13 +1,13 @@
 package com.newbit.post.service;
 
 import com.newbit.auth.model.CustomUser;
+import com.newbit.common.exception.BusinessException;
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.response.PostResponse;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
-import com.newbit.post.service.PostService;
 import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,15 +28,14 @@ class PostServiceNoticeTest {
     @BeforeEach
     void setUp() {
         postRepository = mock(PostRepository.class);
-        commentRepository = mock(CommentRepository.class); // ✅
+        commentRepository = mock(CommentRepository.class);
         pointTransactionCommandService = mock(PointTransactionCommandService.class);
 
-        postService = new PostService(postRepository, commentRepository, pointTransactionCommandService); // 댓글은 필요 없음
+        postService = new PostService(postRepository, commentRepository, pointTransactionCommandService);
     }
 
     @Test
     void 공지사항_등록_성공_관리자_권한() {
-        // given
         PostCreateRequest request = new PostCreateRequest();
         request.setTitle("공지사항입니다");
         request.setContent("중요한 공지입니다.");
@@ -49,7 +48,6 @@ class PostServiceNoticeTest {
                 .authorities(Collections.singleton(() -> "ROLE_ADMIN"))
                 .build();
 
-        // Post 저장 시 반환될 객체 설정
         Post mockPost = Post.builder()
                 .id(1L)
                 .title(request.getTitle())
@@ -61,10 +59,8 @@ class PostServiceNoticeTest {
 
         when(postRepository.save(any(Post.class))).thenReturn(mockPost);
 
-        // when
         PostResponse result = postService.createNotice(request, adminUser);
 
-        // then
         assertThat(result.getTitle()).isEqualTo("공지사항입니다");
         assertThat(result.isNotice()).isTrue();
         verify(postRepository, times(1)).save(any(Post.class));
@@ -72,7 +68,6 @@ class PostServiceNoticeTest {
 
     @Test
     void 공지사항_등록_실패_권한없음() {
-        // given
         PostCreateRequest request = new PostCreateRequest();
         request.setTitle("공지사항입니다");
         request.setContent("중요한 공지입니다.");
@@ -85,9 +80,8 @@ class PostServiceNoticeTest {
                 .authorities(Collections.singleton(() -> "ROLE_USER"))
                 .build();
 
-        // when & then
         assertThatThrownBy(() -> postService.createNotice(request, normalUser))
-                .isInstanceOf(SecurityException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("공지사항은 관리자만 등록할 수 있습니다.");
 
         verify(postRepository, never()).save(any(Post.class));
@@ -95,7 +89,6 @@ class PostServiceNoticeTest {
 
     @Test
     void 공지사항_수정_성공() {
-        // given
         Long postId = 1L;
         PostUpdateRequest updateRequest = PostUpdateRequest.builder()
                 .title("수정된 공지 제목")
@@ -120,17 +113,14 @@ class PostServiceNoticeTest {
 
         when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(originalPost));
 
-        // when
         PostResponse response = postService.updateNotice(postId, updateRequest, adminUser);
 
-        // then
         assertThat(response.getTitle()).isEqualTo("수정된 공지 제목");
         assertThat(response.getContent()).isEqualTo("수정된 공지 내용");
     }
 
     @Test
     void 공지사항_수정_실패_권한없음() {
-        // given
         Long postId = 1L;
         PostUpdateRequest updateRequest = PostUpdateRequest.builder()
                 .title("수정 제목")
@@ -144,9 +134,8 @@ class PostServiceNoticeTest {
                 .authorities(Collections.singleton(() -> "ROLE_USER"))
                 .build();
 
-        // when & then
         assertThatThrownBy(() -> postService.updateNotice(postId, updateRequest, normalUser))
-                .isInstanceOf(SecurityException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("공지사항은 관리자만 수정할 수 있습니다.");
 
         verify(postRepository, never()).findById(any());
@@ -154,7 +143,6 @@ class PostServiceNoticeTest {
 
     @Test
     void 공지사항_수정_실패_공지사항_아님() {
-        // given
         Long postId = 1L;
         PostUpdateRequest updateRequest = PostUpdateRequest.builder()
                 .title("수정 제목")
@@ -179,15 +167,13 @@ class PostServiceNoticeTest {
 
         when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(nonNoticePost));
 
-        // when & then
         assertThatThrownBy(() -> postService.updateNotice(postId, updateRequest, adminUser))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("해당 게시글은 공지사항이 아닙니다.");
     }
 
     @Test
     void 공지사항_수정_실패_게시글_없음() {
-        // given
         Long postId = 99L;
         PostUpdateRequest updateRequest = PostUpdateRequest.builder()
                 .title("수정 제목")
@@ -203,15 +189,13 @@ class PostServiceNoticeTest {
 
         when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.empty());
 
-        // when & then
         assertThatThrownBy(() -> postService.updateNotice(postId, updateRequest, adminUser))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("해당 게시글이 존재하지 않습니다.");
     }
 
     @Test
     void 공지사항_삭제_성공() {
-        // given
         Long postId = 1L;
         Post post = Post.builder()
                 .id(postId)
@@ -231,10 +215,8 @@ class PostServiceNoticeTest {
 
         when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
 
-        // when
         postService.deleteNotice(postId, adminUser);
 
-        // then
         assertThat(post.getDeletedAt()).isNotNull();
     }
 
@@ -254,7 +236,7 @@ class PostServiceNoticeTest {
                 .build();
 
         assertThatThrownBy(() -> postService.deleteNotice(postId, normalUser))
-                .isInstanceOf(SecurityException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("공지사항은 관리자만 삭제할 수 있습니다.");
 
         verify(postRepository, never()).findById(any());
@@ -282,7 +264,7 @@ class PostServiceNoticeTest {
         when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
 
         assertThatThrownBy(() -> postService.deleteNotice(postId, adminUser))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("해당 게시글은 공지사항이 아닙니다.");
     }
 
@@ -300,8 +282,7 @@ class PostServiceNoticeTest {
         when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> postService.deleteNotice(postId, adminUser))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(BusinessException.class)
                 .hasMessage("해당 게시글이 존재하지 않습니다.");
     }
-
 }
