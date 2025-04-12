@@ -5,6 +5,7 @@ import com.newbit.column.domain.Series;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
+import com.newbit.column.dto.response.GetMySeriesListResponseDto;
 import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
 import com.newbit.column.mapper.SeriesMapper;
 import com.newbit.column.repository.ColumnRepository;
@@ -200,4 +201,65 @@ class SeriesServiceTest {
         verify(seriesRepository).findById(seriesId);
         verify(seriesMapper).toGetSeriesDetailResponseDto(series);
     }
+
+    @DisplayName("멘토 본인 시리즈 목록 조회 - 성공")
+    @Test
+    void getMySeriesList_success() {
+        // given
+        Long userId = 1L;
+        Long mentorId = 10L;
+
+        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
+
+        Series series1 = Series.builder()
+                .seriesId(1L)
+                .title("시리즈 A")
+                .description("설명 A")
+                .thumbnailUrl("https://example.com/a.jpg")
+                .build();
+
+        Series series2 = Series.builder()
+                .seriesId(2L)
+                .title("시리즈 B")
+                .description("설명 B")
+                .thumbnailUrl("https://example.com/b.jpg")
+                .build();
+
+        List<Series> seriesList = List.of(series1, series2);
+
+        when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
+        when(seriesRepository.findAllByMentor_MentorIdOrderByCreatedAtDesc(mentorId)).thenReturn(seriesList);
+        when(seriesMapper.toMySeriesListDto(series1)).thenReturn(
+                GetMySeriesListResponseDto.builder()
+                        .seriesId(1L)
+                        .title("시리즈 A")
+                        .description("설명 A")
+                        .thumbnailUrl("https://example.com/a.jpg")
+                        .build()
+        );
+        when(seriesMapper.toMySeriesListDto(series2)).thenReturn(
+                GetMySeriesListResponseDto.builder()
+                        .seriesId(2L)
+                        .title("시리즈 B")
+                        .description("설명 B")
+                        .thumbnailUrl("https://example.com/b.jpg")
+                        .build()
+        );
+
+        // when
+        List<GetMySeriesListResponseDto> result = seriesService.getMySeriesList(userId);
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getSeriesId()).isEqualTo(1L);
+        assertThat(result.get(0).getTitle()).isEqualTo("시리즈 A");
+        assertThat(result.get(1).getSeriesId()).isEqualTo(2L);
+        assertThat(result.get(1).getTitle()).isEqualTo("시리즈 B");
+
+        verify(mentorService).getMentorEntityByUserId(userId);
+        verify(seriesRepository).findAllByMentor_MentorIdOrderByCreatedAtDesc(mentorId);
+        verify(seriesMapper).toMySeriesListDto(series1);
+        verify(seriesMapper).toMySeriesListDto(series2);
+    }
+
 }
