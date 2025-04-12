@@ -21,6 +21,8 @@ public class Notification {
 
     private Boolean isRead;
 
+    private Long serviceId;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -32,10 +34,11 @@ public class Notification {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    public static Notification create(Long userId, NotificationType type, String content) {
+    public static Notification create(Long userId, NotificationType type, Long serviceId, String content) {
         return Notification.builder()
                 .userId(userId)
                 .notificationType(type)
+                .serviceId(serviceId)
                 .content(content)
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
