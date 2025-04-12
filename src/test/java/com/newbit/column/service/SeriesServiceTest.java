@@ -5,6 +5,7 @@ import com.newbit.column.domain.Series;
 import com.newbit.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
 import com.newbit.column.dto.response.CreateSeriesResponseDto;
+import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
 import com.newbit.column.mapper.SeriesMapper;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.repository.SeriesRepository;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -163,4 +165,39 @@ class SeriesServiceTest {
         verify(seriesRepository).delete(series);
     }
 
+    @DisplayName("시리즈 상세 조회 - 성공")
+    @Test
+    void getSeriesDetail_success() {
+        // given
+        Long seriesId = 1L;
+
+        Series series = Series.builder()
+                .seriesId(seriesId)
+                .title("이직 준비 A to Z")
+                .description("이직을 준비하는 멘티들을 위한 시리즈입니다.")
+                .thumbnailUrl("https://example.com/image.jpg")
+                .build();
+
+        GetSeriesDetailResponseDto expectedDto = GetSeriesDetailResponseDto.builder()
+                .seriesId(seriesId)
+                .title("이직 준비 A to Z")
+                .description("이직을 준비하는 멘티들을 위한 시리즈입니다.")
+                .thumbnailUrl("https://example.com/image.jpg")
+                .build();
+
+        when(seriesRepository.findById(seriesId)).thenReturn(Optional.of(series));
+        when(seriesMapper.toGetSeriesDetailResponseDto(series)).thenReturn(expectedDto);
+
+        // when
+        GetSeriesDetailResponseDto result = seriesService.getSeriesDetail(seriesId);
+
+        // then
+        assertThat(result.getSeriesId()).isEqualTo(seriesId);
+        assertThat(result.getTitle()).isEqualTo("이직 준비 A to Z");
+        assertThat(result.getDescription()).isEqualTo("이직을 준비하는 멘티들을 위한 시리즈입니다.");
+        assertThat(result.getThumbnailUrl()).isEqualTo("https://example.com/image.jpg");
+
+        verify(seriesRepository).findById(seriesId);
+        verify(seriesMapper).toGetSeriesDetailResponseDto(series);
+    }
 }
