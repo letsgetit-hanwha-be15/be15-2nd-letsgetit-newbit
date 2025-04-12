@@ -1,9 +1,10 @@
 package com.newbit.common.exception;
 
+import org.springframework.http.HttpStatus;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -88,9 +89,14 @@ public enum ErrorCode {
     COMMENT_NOT_FOUND("110000", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED_TO_DELETE_COMMENT("110001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
     UNAUTHORIZED_TO_CREATE_COMMENT("110002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
-    COMMENT_POST_MISMATCH("110003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST);
+    COMMENT_POST_MISMATCH("110003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
 
-
+    /*----------------좋아요 관련-------------------*/
+    POST_LIKE_NOT_FOUND("100001", "해당 게시글 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COLUMN_LIKE_NOT_FOUND("100002", "해당 칼럼 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    LIKE_PROCESSING_ERROR("100003", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+  
+  
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;
