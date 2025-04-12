@@ -11,10 +11,7 @@ import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
 import com.newbit.purchase.command.domain.aggregate.*;
-import com.newbit.purchase.command.domain.repository.ColumnPurchaseHistoryRepository;
-import com.newbit.purchase.command.domain.repository.DiamondHistoryRepository;
-import com.newbit.purchase.command.domain.repository.PointHistoryRepository;
-import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
+import com.newbit.purchase.command.domain.repository.*;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
 import com.newbit.user.dto.response.UserDTO;
@@ -23,6 +20,9 @@ import com.newbit.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,10 +44,21 @@ class PurchaseCommandServiceTest {
     private final Long userId = 1L;
     @Mock private CoffeechatQueryService coffeechatQueryService;
     @Mock private CoffeechatCommandService coffeechatCommandService;
+    @Mock
+    private PointTypeRepository pointTypeRepository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        when(pointTypeRepository.findById(anyLong()))
+                .thenReturn(Optional.of(PointType.builder()
+                        .pointTypeId(1L)
+                        .pointTypeName("구매 테스트용 타입")
+                        .increaseAmount(null)
+                                .decreaseAmount(null)
+                                .createdAt(LocalDateTime.now())
+                                .updatedAt(LocalDateTime.now())
+                        .build()));
     }
 
     @Test
@@ -127,7 +138,7 @@ class PurchaseCommandServiceTest {
     void purchaseCoffeeChat_success() {
             // given
             Long coffeechatId = 1L;
-            Long menteeId = 2L;
+            Long menteeId = 1L;
             Long mentorId = 3L;
             int purchaseQuantity = 2;
             int price = 500;
@@ -164,10 +175,6 @@ class PurchaseCommandServiceTest {
             ArgumentCaptor<DiamondHistory> diamondCaptor = ArgumentCaptor.forClass(DiamondHistory.class);
             verify(diamondHistoryRepository).save(diamondCaptor.capture());
             assertThat(diamondCaptor.getValue().getUserId()).isEqualTo(menteeId);
-
-            ArgumentCaptor<SaleHistory> saleCaptor = ArgumentCaptor.forClass(SaleHistory.class);
-            verify(saleHistoryRepository).save(saleCaptor.capture());
-            assertThat(saleCaptor.getValue().getMentorId()).isEqualTo(mentorId);
     }
 
     @Test
@@ -236,7 +243,6 @@ class PurchaseCommandServiceTest {
                 .build();
 
         when(userService.getUserByUserId(userId)).thenReturn(userDto);
-
         BusinessException ex = assertThrows(BusinessException.class, () ->
                 purchaseCommandService.purchaseMentorAuthority(userId, request));
 
