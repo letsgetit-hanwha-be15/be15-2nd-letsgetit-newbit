@@ -12,18 +12,14 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.post.entity.Post;
-import com.newbit.purchase.command.application.service.SaleCommandService;
+import com.newbit.purchase.command.application.service.DiamondCoffeechatTransactionCommandService;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.LinkedList;
 import java.util.List;
 
 @Service
@@ -34,7 +30,7 @@ public class CoffeechatCommandService {
     private final CoffeechatQueryService coffeechatQueryService;
     private final RequestTimeRepository requestTimeRepository;
     private final MentorService mentorService;
-    private final SaleCommandService saleCommandService;
+    private final DiamondCoffeechatTransactionCommandService transactionCommandService;
 
     /**
      * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
@@ -156,7 +152,7 @@ public class CoffeechatCommandService {
 
         // 4. 정산내역에 추가하기
         int totalQuantity = mentorDTO.getPrice() * coffeechat.getPurchaseQuantity();
-        saleCommandService.addSaleHistory(coffeechat.getMentorId(), totalQuantity, coffeechatId);
+        transactionCommandService.addSaleHistory(coffeechat.getMentorId(), totalQuantity, coffeechatId);
     }
 
     public void cancelCoffeechat(Long userId, CoffeechatCancelRequest coffeechatCancelRequest) {
@@ -169,10 +165,17 @@ public class CoffeechatCommandService {
             throw new BusinessException(ErrorCode.COFFEECHAT_CANCEL_NOT_ALLOWED);
         }
 
-        // 3. 커피챗이 coffeechat_waiting 상태이면 환불 진행하기
-        
+        // 3. 커피챗이 CANCEL 상태이거나, COMPLETE 상태이면 에러
+        switch (coffeechat.getProgressStatus()){
+            case CANCEL, COMPLETE -> throw new BusinessException(ErrorCode.INVALID_COFFEECHAT_STATUS);
+        }
+
+        // 커피챗이 coffeechat_waiting 상태이면 환불 진행하기
+        if(coffeechat.getProgressStatus().equals(ProgressStatus.COFFEECHAT_WAITING)) {
+            transactionCommandService.refundCoffeeChat(coffeechatCancelRequest.getCoffeechatId(), );
+        }
 
         // 4. 커피챗 객체 업데이트하기
-
+        coffeechat.setProgressStatus(ProgressStatus.CANCEL);
     }
 }

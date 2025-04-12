@@ -11,7 +11,7 @@ import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.purchase.command.application.service.SaleCommandService;
+import com.newbit.purchase.command.application.service.DiamondCoffeechatTransactionCommandService;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.DisplayName;
@@ -48,7 +48,7 @@ class CoffeechatCommandServiceTest {
     @Mock
     private MentorService mentorService;
     @Mock
-    private SaleCommandService saleCommandService;
+    private DiamondCoffeechatTransactionCommandService saleCommandService;
 
     @DisplayName("커피챗 요청 등록 성공")
     @Test
