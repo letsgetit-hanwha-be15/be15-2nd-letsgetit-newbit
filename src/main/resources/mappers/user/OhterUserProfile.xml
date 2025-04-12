@@ -13,4 +13,18 @@
         WHERE u.user_id = #{userId}
     </select>
 
+    <select id="findUserPosts" resultType="com.newbit.user.dto.response.PostDTO">
+        SELECT
+            p.post_id AS postId,
+            p.title,
+            u.nickname AS author,
+            p.created_at AS createdAt
+        FROM post p
+                 JOIN user u ON p.user_id = u.user_id
+        WHERE p.user_id = #{userId}
+        ORDER BY p.created_at DESC
+            LIMIT 3
+    </select>
+
+
 </mapper>
