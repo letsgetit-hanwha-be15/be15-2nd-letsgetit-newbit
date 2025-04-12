@@ -2,6 +2,7 @@ package com.newbit.column.service;
 
 import com.newbit.column.domain.Column;
 import com.newbit.column.dto.request.UpdateSeriesRequestDto;
+import com.newbit.column.dto.response.GetMySeriesListResponseDto;
 import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
 import com.newbit.column.dto.response.UpdateSeriesResponseDto;
 import com.newbit.column.repository.ColumnRepository;
@@ -152,6 +153,15 @@ public class SeriesService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
 
         return seriesMapper.toGetSeriesDetailResponseDto(series);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetMySeriesListResponseDto> getMySeriesList(Long userId) {
+        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
+        List<Series> seriesList = seriesRepository.findAllByMentor_MentorIdOrderByCreatedAtDesc(mentor.getMentorId());
+        return seriesList.stream()
+                .map(seriesMapper::toMySeriesListDto)
+                .toList();
     }
 }
 
