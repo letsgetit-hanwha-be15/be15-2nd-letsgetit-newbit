@@ -109,7 +109,10 @@ public enum ErrorCode {
     COMMENT_NOT_FOUND("160000", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED_TO_DELETE_COMMENT("160001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
     UNAUTHORIZED_TO_CREATE_COMMENT("160002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
-    COMMENT_POST_MISMATCH("160003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST);
+    COMMENT_POST_MISMATCH("160003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
+
+    /*---------------- 정산 -------------------------*/
+    SETTLEMENT_NOT_FOUND("110000", "정산 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;
