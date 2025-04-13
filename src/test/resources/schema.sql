@@ -647,6 +647,45 @@ CREATE TABLE
     -- end_date가 NULL이면 통과, 그렇지 않으면 시작일 <= 종료일
 ) COMMENT = '경력사항';
 
+CREATE TABLE IF NOT EXISTS payment (
+    payment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    amount DECIMAL(19, 2) NOT NULL,
+    total_amount DECIMAL(19, 2) NOT NULL,
+    balance_amount DECIMAL(19, 2),
+    payment_method VARCHAR(20) NOT NULL,
+    order_id VARCHAR(100) NOT NULL UNIQUE,
+    order_name VARCHAR(100),
+    payment_key VARCHAR(100) UNIQUE,
+    user_id BIGINT NOT NULL,
+    payment_status VARCHAR(20) NOT NULL,
+    approved_at TIMESTAMP,
+    requested_at TIMESTAMP,
+    is_refunded BOOLEAN DEFAULT FALSE,
+    vat DECIMAL(19, 2),
+    supplied_amount DECIMAL(19, 2),
+    tax_free_amount DECIMAL(19, 2)
+);
+
+CREATE TABLE IF NOT EXISTS refund (
+    refund_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    payment_id BIGINT NOT NULL,
+    amount DECIMAL(19, 2) NOT NULL,
+    reason VARCHAR(200),
+    refund_key VARCHAR(100),
+    refunded_at TIMESTAMP NOT NULL,
+    bank_code VARCHAR(10),
+    account_number VARCHAR(30),
+    holder_name VARCHAR(50),
+    is_partial_refund BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (payment_id) REFERENCES payment(payment_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_user_id ON payment(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_order_id ON payment(order_id);
+CREATE INDEX IF NOT EXISTS idx_payment_payment_key ON payment(payment_key);
+CREATE INDEX IF NOT EXISTS idx_refund_payment_id ON refund(payment_id);
+
 ALTER TABLE `attachment`
     ADD CONSTRAINT `attachment_FK` FOREIGN KEY (`column_id`) REFERENCES `column` (`column_id`) ON DELETE CASCADE;
 

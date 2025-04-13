@@ -10,7 +10,6 @@ import com.newbit.payment.command.application.dto.response.PaymentPrepareRespons
 import com.newbit.payment.command.domain.aggregate.Payment;
 import com.newbit.payment.command.domain.aggregate.PaymentStatus;
 import com.newbit.payment.command.domain.repository.PaymentRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +17,11 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
-public class PaymentCommandService {
+public class PaymentCommandService extends AbstractPaymentService<PaymentApproveResponse> {
 
-    private final PaymentRepository paymentRepository;
-    private final TossPaymentApiClient tossPaymentApiClient;
+    public PaymentCommandService(PaymentRepository paymentRepository, TossPaymentApiClient tossPaymentApiClient) {
+        super(paymentRepository, tossPaymentApiClient);
+    }
 
     @Transactional
     public PaymentPrepareResponse preparePayment(PaymentPrepareRequest request) {
@@ -78,33 +77,14 @@ public class PaymentCommandService {
         
         Payment updatedPayment = paymentRepository.save(payment);
         
-        return PaymentApproveResponse.builder()
-                .paymentId(updatedPayment.getPaymentId())
-                .orderId(updatedPayment.getOrderId())
-                .paymentKey(updatedPayment.getPaymentKey())
-                .amount(updatedPayment.getAmount())
-                .paymentMethod(updatedPayment.getPaymentMethod())
-                .paymentStatus(updatedPayment.getPaymentStatus())
-                .approvedAt(updatedPayment.getApprovedAt())
-                .receiptUrl(updatedPayment.getReceiptUrl())
-                .build();
+        return createPaymentApproveResponse(updatedPayment);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public PaymentApproveResponse getPayment(Long paymentId) {
-        Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
-        
-        return PaymentApproveResponse.builder()
-                .paymentId(payment.getPaymentId())
-                .orderId(payment.getOrderId())
-                .paymentKey(payment.getPaymentKey())
-                .amount(payment.getAmount())
-                .paymentMethod(payment.getPaymentMethod())
-                .paymentStatus(payment.getPaymentStatus())
-                .approvedAt(payment.getApprovedAt())
-                .receiptUrl(payment.getReceiptUrl())
-                .build();
+        Payment payment = findPaymentById(paymentId);
+        return createPaymentApproveResponse(payment);
     }
 
     @Transactional(readOnly = true)
@@ -112,6 +92,15 @@ public class PaymentCommandService {
         Payment payment = paymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
         
+        return createPaymentApproveResponse(payment);
+    }
+
+
+    private String generateOrderId() {
+        return UUID.randomUUID().toString();
+    }
+
+    private PaymentApproveResponse createPaymentApproveResponse(Payment payment) {
         return PaymentApproveResponse.builder()
                 .paymentId(payment.getPaymentId())
                 .orderId(payment.getOrderId())
@@ -122,15 +111,5 @@ public class PaymentCommandService {
                 .approvedAt(payment.getApprovedAt())
                 .receiptUrl(payment.getReceiptUrl())
                 .build();
-    }
-
-    private void validateAmount(BigDecimal savedAmount, BigDecimal requestAmount) {
-        if (savedAmount.compareTo(requestAmount) != 0) {
-            throw new BusinessException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
-        }
-    }
-
-    private String generateOrderId() {
-        return UUID.randomUUID().toString();
     }
 } 

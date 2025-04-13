@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.newbit.payment.command.application.dto.PaymentDto;
-import com.newbit.payment.command.domain.aggregate.PaymentMethod;
-import com.newbit.payment.command.domain.aggregate.PaymentStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,18 +14,19 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class PaymentApproveResponse implements PaymentDto {
+public class PaymentRefundResponse implements PaymentDto {
+    private Long refundId;
     private Long paymentId;
-    private String orderId;
-    private String paymentKey;
     private BigDecimal amount;
-    private PaymentMethod paymentMethod;
-    private PaymentStatus paymentStatus;
-    private LocalDateTime approvedAt;
-    private String receiptUrl;
+    private String reason;
+    private String refundKey;
+    private LocalDateTime refundedAt;
+    private String bankCode;
+    private String accountNumber;
+    private String holderName;
     
     @Override
     public LocalDateTime getProcessedAt() {
-        return approvedAt;
+        return refundedAt;
     }
 } 

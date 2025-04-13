@@ -81,4 +81,15 @@ public class TossPaymentApiDto {
             return LocalDateTime.parse(requestedAt.substring(0, 19));
         }
     }
+    
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PaymentCancelRequest {
+        private String cancelReason;
+        private Long cancelAmount;
+        private Boolean refundableAmount;
+        private String taxFreeAmount;
+    }
 } 

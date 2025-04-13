@@ -9,16 +9,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,10 +43,8 @@ class TossPaymentApiClientTest {
     @Test
     @DisplayName("결제 위젯 URL 생성 테스트")
     void createPaymentWidgetUrl() {
-        // when
         String url = tossPaymentApiClient.createPaymentWidgetUrl(10000L, "test-order-id", "테스트 상품");
 
-        // then
         assertTrue(url.contains("https://api.tosspayments.com/v1/payments/widget/"));
         assertTrue(url.contains("amount=10000"));
         assertTrue(url.contains("orderId=test-order-id"));
@@ -57,7 +56,6 @@ class TossPaymentApiClientTest {
     @Test
     @DisplayName("결제 승인 요청 테스트")
     void requestPaymentApproval() {
-        // given
         TossPaymentApiDto.PaymentResponse mockResponse = createMockPaymentResponse();
         
         when(restTemplate.postForObject(
@@ -66,14 +64,12 @@ class TossPaymentApiClientTest {
                 eq(TossPaymentApiDto.PaymentResponse.class)
         )).thenReturn(mockResponse);
 
-        // when
         TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.requestPaymentApproval(
                 "test-payment-key", 
                 "test-order-id", 
                 10000L
         );
 
-        // then
         assertNotNull(response);
         assertEquals("test-payment-key", response.getPaymentKey());
         assertEquals("test-order-id", response.getOrderId());
@@ -83,7 +79,6 @@ class TossPaymentApiClientTest {
     @Test
     @DisplayName("결제 조회 테스트")
     void getPaymentDetails() {
-        // given
         TossPaymentApiDto.PaymentResponse mockResponse = createMockPaymentResponse();
         
         when(restTemplate.getForObject(
@@ -92,20 +87,76 @@ class TossPaymentApiClientTest {
                 any(HttpEntity.class)
         )).thenReturn(mockResponse);
 
-        // when
         TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.getPaymentDetails("test-payment-key");
 
-        // then
         assertNotNull(response);
         assertEquals("test-payment-key", response.getPaymentKey());
         assertEquals("test-order-id", response.getOrderId());
         assertEquals("DONE", response.getStatus());
     }
 
-    private TossPaymentApiDto.PaymentResponse createMockPaymentResponse() {
-        Map<String, Object> receiptMap = new HashMap<>();
-        receiptMap.put("url", "https://receipt.url");
+    @Test
+    @DisplayName("전체 취소 요청 테스트")
+    void cancelPayment() {
+        TossPaymentApiDto.PaymentResponse mockResponse = TossPaymentApiDto.PaymentResponse.builder()
+                .paymentKey("test-payment-key")
+                .orderId("test-order-id")
+                .orderName("테스트 상품")
+                .totalAmount(10000L)
+                .status("CANCELED")
+                .approvedAt("2023-01-01T12:00:00")
+                .receipt(createReceiptMap())
+                .build();
         
+        when(restTemplate.postForObject(
+                eq("https://api.tosspayments.com/v1/payments/test-payment-key/cancel"),
+                any(HttpEntity.class),
+                eq(TossPaymentApiDto.PaymentResponse.class)
+        )).thenReturn(mockResponse);
+
+        TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.cancelPayment(
+                "test-payment-key", 
+                "환불 테스트"
+        );
+
+        assertNotNull(response);
+        assertEquals("test-payment-key", response.getPaymentKey());
+        assertEquals("test-order-id", response.getOrderId());
+        assertEquals("CANCELED", response.getStatus());
+    }
+    
+    @Test
+    @DisplayName("부분 취소 요청 테스트")
+    void cancelPaymentPartial() {
+        TossPaymentApiDto.PaymentResponse mockResponse = TossPaymentApiDto.PaymentResponse.builder()
+                .paymentKey("test-payment-key")
+                .orderId("test-order-id")
+                .orderName("테스트 상품")
+                .totalAmount(10000L)
+                .status("PARTIAL_CANCELED")
+                .approvedAt("2023-01-01T12:00:00")
+                .receipt(createReceiptMap())
+                .build();
+        
+        when(restTemplate.postForObject(
+                eq("https://api.tosspayments.com/v1/payments/test-payment-key/cancel"),
+                any(HttpEntity.class),
+                eq(TossPaymentApiDto.PaymentResponse.class)
+        )).thenReturn(mockResponse);
+
+        TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.cancelPaymentPartial(
+                "test-payment-key", 
+                "부분 환불 테스트",
+                5000L
+        );
+
+        assertNotNull(response);
+        assertEquals("test-payment-key", response.getPaymentKey());
+        assertEquals("test-order-id", response.getOrderId());
+        assertEquals("PARTIAL_CANCELED", response.getStatus());
+    }
+
+    private TossPaymentApiDto.PaymentResponse createMockPaymentResponse() {
         return TossPaymentApiDto.PaymentResponse.builder()
                 .paymentKey("test-payment-key")
                 .orderId("test-order-id")
@@ -113,7 +164,13 @@ class TossPaymentApiClientTest {
                 .totalAmount(10000L)
                 .status("DONE")
                 .approvedAt("2023-01-01T12:00:00")
-                .receipt(receiptMap)
+                .receipt(createReceiptMap())
                 .build();
+    }
+    
+    private Map<String, Object> createReceiptMap() {
+        Map<String, Object> receiptMap = new HashMap<>();
+        receiptMap.put("url", "https://receipt.url");
+        return receiptMap;
     }
 } 
