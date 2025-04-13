@@ -55,6 +55,7 @@ public enum ErrorCode {
     POINT_TYPE_NOT_FOUND("60009", "포인트 유형이 잘못 되었습니다.", HttpStatus.NOT_FOUND),
     INVALID_TIP_AMOUNT("600010", "잘못된 팁 제공량 입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     COFFEECHAT_PURCHASE_NOT_ALLOWED("60011", "본인의 커피챗만 구매 가능합니다.", HttpStatus.FORBIDDEN),
+
     /*--------------- 칼럼/시리즈 오류 ------------------*/
     // 칼럼 오류
     COLUMN_NOT_FOUND("60003", "해당 칼럼을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
@@ -80,6 +81,10 @@ public enum ErrorCode {
     POST_LIKE_NOT_FOUND("100001", "해당 게시글 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     COLUMN_LIKE_NOT_FOUND("100002", "해당 칼럼 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     LIKE_PROCESSING_ERROR("100003", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    /*----------------구독 관련-------------------*/
+    SUBSCRIPTION_NOT_FOUND("110001", "해당 구독 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    SUBSCRIPTION_PROCESSING_ERROR("110002", "구독 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     /*---------------- 게시글 -------------------------*/
     POST_NOT_FOUND("150000", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
