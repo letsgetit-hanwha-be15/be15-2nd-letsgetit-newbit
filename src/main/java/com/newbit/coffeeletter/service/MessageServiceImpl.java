@@ -4,6 +4,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.user.service.MentorService;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,16 +33,21 @@ public class MessageServiceImpl implements MessageService {
     private final CoffeeLetterRoomRepository roomRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final ModelMapper modelMapper;
+    private final NotificationCommandService notificationCommandService;
+    private final MentorService mentorService;
 
     public MessageServiceImpl(
             ChatMessageRepository messageRepository,
             CoffeeLetterRoomRepository roomRepository,
             SimpMessagingTemplate messagingTemplate,
-            ModelMapper modelMapper) {
+            ModelMapper modelMapper,
+            NotificationCommandService notificationCommandService, MentorService mentorService) {
         this.messageRepository = messageRepository;
         this.roomRepository = roomRepository;
         this.messagingTemplate = messagingTemplate;
         this.modelMapper = modelMapper;
+        this.notificationCommandService = notificationCommandService;
+        this.mentorService = mentorService;
     }
 
     @Override
@@ -74,6 +83,19 @@ public class MessageServiceImpl implements MessageService {
         roomRepository.save(room);
 
         messagingTemplate.convertAndSend("/topic/chat/room/" + message.getRoomId(), savedMessageDto);
+
+        Long receiverId = message.getSenderId().equals(room.getMentorId())
+                ? room.getMenteeId()
+                : mentorService.getUserIdByMentorId(room.getMentorId());
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        receiverId,
+                        8L,
+                        Long.parseLong(room.getId()),
+                        message.getContent()
+                )
+        );
 
         return savedMessageDto;
     }
