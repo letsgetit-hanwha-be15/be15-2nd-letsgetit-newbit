@@ -3,7 +3,9 @@ package com.newbit.user.controller;
 import com.newbit.common.dto.ApiResponse;
 import com.newbit.user.dto.request.ChangePasswordRequestDTO;
 import com.newbit.user.dto.request.DeleteUserRequestDTO;
+import com.newbit.user.dto.request.MentorListRequestDTO;
 import com.newbit.user.dto.request.UserInfoUpdateRequestDTO;
+import com.newbit.user.dto.response.MentorListResponseDTO;
 import com.newbit.user.dto.response.MentorProfileDTO;
 import com.newbit.user.dto.response.OhterUserProfileDTO;
 import com.newbit.user.dto.response.UserDTO;
@@ -17,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "User", description = "정보 조회 (나의 프로필, 다른 사용자 프로필)")
 @RestController
@@ -68,6 +72,13 @@ public class UserInfoController {
     public ResponseEntity<ApiResponse<MentorProfileDTO>> getMentorProfile(@PathVariable Long mentorId) {
         MentorProfileDTO profile = userQueryService.getMentorProfile(mentorId);
         return ResponseEntity.ok(ApiResponse.success(profile));
+    }
+
+    @Operation(summary = "멘토 목록 조회", description = "조건에 따라 멘토 목록을 조회합니다.")
+    @GetMapping("/mentor-list")
+    public ResponseEntity<ApiResponse<List<MentorListResponseDTO>>> getMentors(MentorListRequestDTO request) {
+        List<MentorListResponseDTO> mentors = userQueryService.getMentors(request);
+        return ResponseEntity.ok(ApiResponse.success(mentors));
     }
 
 }

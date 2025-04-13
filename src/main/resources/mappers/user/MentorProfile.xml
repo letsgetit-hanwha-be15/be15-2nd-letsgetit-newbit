@@ -67,4 +67,15 @@
             LIMIT 3
     </select>
 
+    <!-- 멘토 리뷰 목록 -->
+    <select id="findReviewsByMentorId" resultType="com.newbit.user.dto.response.ReviewDTO">
+        SELECT r.user_id AS userId,
+               r.rating,
+               r.comment
+        FROM review r
+                 JOIN coffeechat c ON r.coffeechat_id = c.coffeechat_id
+                 JOIN mentor m ON c.mentor_id = m.mentor_id
+        WHERE m.mentor_id = #{mentorId}
+        ORDER BY r.created_at DESC
+    </select>
 </mapper>
