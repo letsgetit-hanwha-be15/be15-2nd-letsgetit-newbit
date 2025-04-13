@@ -37,4 +37,22 @@ public class AdminColumnController {
     ) {
         return adminColumnService.rejectCreateColumnRequest(dto, customUser.getUserId());
     }
+
+    @PostMapping("/requests/approve/update")
+    @Operation(summary = "칼럼 수정 요청 승인", description = "UPDATE 타입의 칼럼 수정 요청을 승인합니다.")
+    public AdminColumnResponseDto approveUpdateColumn(
+            @RequestBody ApproveColumnRequestDto dto,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        return adminColumnService.approveUpdateColumnRequest(dto, customUser.getUserId());
+    }
+
+    @PostMapping("/requests/reject/update")
+    @Operation(summary = "칼럼 수정 요청 거절", description = "UPDATE 타입의 칼럼 수정 요청을 거절합니다.")
+    public AdminColumnResponseDto rejectUpdateColumn(
+            @RequestBody RejectColumnRequestDto dto,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        return adminColumnService.rejectUpdateColumnRequest(dto, customUser.getUserId());
+    }
 }
