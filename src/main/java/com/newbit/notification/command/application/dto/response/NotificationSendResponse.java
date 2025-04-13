@@ -34,6 +34,7 @@ public class NotificationSendResponse {
         return NotificationSendResponse.builder()
                 .notificationId(notification.getNotificationId())
                 .content(notification.getContent())
+                .serviceId(notification.getServiceId())
                 .typeName(notification.getNotificationType().getName())
                 .isRead(notification.getIsRead())
                 .createdAt(notification.getCreatedAt())

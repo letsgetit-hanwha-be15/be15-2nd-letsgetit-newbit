@@ -12,8 +12,11 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.purchase.command.application.service.DiamondCoffeechatTransactionCommandService;
 import com.newbit.user.dto.response.MentorDTO;
+import com.newbit.user.entity.Mentor;
 import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,7 @@ public class CoffeechatCommandService {
     private final RequestTimeRepository requestTimeRepository;
     private final MentorService mentorService;
     private final DiamondCoffeechatTransactionCommandService transactionCommandService;
+    private final NotificationCommandService notificationCommandService;
 
     /**
      * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
@@ -55,6 +59,16 @@ public class CoffeechatCommandService {
 
         // 3. 커피챗 요청 등록(서비스 함수 생성)
         createRequestTime(coffeechat.getCoffeechatId(), request.getRequestTimes(), request.getPurchaseQuantity());
+
+        // 4. 커피챗 요청 등록시 멘토에게 실시간 알림 발송
+        notificationCommandService.sendNotification(
+               new NotificationSendRequest(
+                       mentorService.getUserIdByMentorId(request.getMentorId())
+                       , 3L
+                       , coffeechat.getCoffeechatId()
+                       , "새로운 커피챗 신청이 도착했습니다."
+               )
+        );
 
         return coffeechat.getCoffeechatId();
     }
@@ -107,7 +121,15 @@ public class CoffeechatCommandService {
         // 5. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
 
-        // 6. TODO : 멘티에게 승인 알림 보내주기
+        // 6. 멘티에게 승인 알림 보내주기
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        coffeechat.getMenteeId()
+                        , 4L
+                        , coffeechat.getCoffeechatId()
+                        , "커피챗 요청이 승인되었습니다."
+                )
+        );
     }
 
     @Transactional
@@ -125,7 +147,15 @@ public class CoffeechatCommandService {
         // 4. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
 
-        // 5. TODO : 멘토에게 거절 알림 보내주기
+        // 5. 멘토에게 거절 알림 보내주기
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        coffeechat.getMenteeId()
+                        , 5L
+                        , coffeechat.getCoffeechatId()
+                        , "커피챗 요청이 거절되었습니다."
+                )
+        );
     }
 
     @Transactional
@@ -180,5 +210,15 @@ public class CoffeechatCommandService {
 
         // 5. 커피챗 객체 업데이트하기
         coffeechat.cancelCoffeechat(coffeechatCancelRequest.getCancelReasonId());
+
+        // 6. 멘토에게 커피챗 취소 알림
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        mentorService.getUserIdByMentorId(coffeechat.getMentorId())
+                        , 6L
+                        , coffeechat.getCoffeechatId()
+                        , "진행 예정인 커피챗이 취소되었습니다."
+                )
+        );
     }
 }

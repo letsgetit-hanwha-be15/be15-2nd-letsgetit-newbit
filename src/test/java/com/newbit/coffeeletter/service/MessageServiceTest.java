@@ -9,6 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,6 +60,12 @@ class MessageServiceTest {
 
     @Mock
     private ModelMapper modelMapper;
+
+    @Mock
+    private MentorService mentorService;
+
+    @Mock
+    private NotificationCommandService notificationCommandService;
 
     @InjectMocks
     private MessageServiceImpl messageService;
@@ -109,13 +118,24 @@ class MessageServiceTest {
     @Test
     void sendMessage_멘토가_보낸_메시지_성공() {
         // given
-        String roomId = "test-room-id";
+        String roomId = "123";
         Long mentorId = 1L;
-        
+        Long menteeId = 2L;
+
+        messageDTO.setRoomId(roomId);
         messageDTO.setSenderId(mentorId);
-        message.setSenderId(mentorId);
-        message.setReadByMentor(true);
-        message.setReadByMentee(false);
+        message.setSenderId(menteeId);
+        message.setRoomId(roomId);
+        message.setReadByMentor(false);
+        message.setReadByMentee(true);
+
+        CoffeeLetterRoom room = CoffeeLetterRoom.builder()
+                .id(roomId)
+                .mentorId(mentorId)
+                .menteeId(menteeId)
+                .unreadCountMentor(0)
+                .unreadCountMentee(0)
+                .build();
         
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
             mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
@@ -140,13 +160,25 @@ class MessageServiceTest {
     @Test
     void sendMessage_멘티가_보낸_메시지_성공() {
         // given
-        String roomId = "test-room-id";
+        String roomId = "123";
+        Long mentorId = 1L;
         Long menteeId = 2L;
-        
+
+        messageDTO.setRoomId(roomId);
         messageDTO.setSenderId(menteeId);
+
         message.setSenderId(menteeId);
+        message.setRoomId(roomId);
         message.setReadByMentor(false);
         message.setReadByMentee(true);
+
+        CoffeeLetterRoom room = CoffeeLetterRoom.builder()
+                .id(roomId)
+                .mentorId(mentorId)
+                .menteeId(menteeId)
+                .unreadCountMentor(0)
+                .unreadCountMentee(0)
+                .build();
         
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
             mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
