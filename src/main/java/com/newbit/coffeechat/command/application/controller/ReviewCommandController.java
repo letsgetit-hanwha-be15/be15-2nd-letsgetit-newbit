@@ -4,6 +4,8 @@ import com.newbit.auth.model.CustomUser;
 import com.newbit.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
 import com.newbit.coffeechat.command.application.dto.request.ReviewCreateRequest;
 import com.newbit.coffeechat.command.application.dto.response.CoffeechatCommandResponse;
+import com.newbit.coffeechat.command.application.dto.response.ReviewCommandResponse;
+import com.newbit.coffeechat.command.application.service.ReviewCommandService;
 import com.newbit.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,10 +39,10 @@ public class ReviewCommandController {
     ) {
 
         Long userId = customUser.getUserId();
-        Long coffeechatId = reviewCommandService.createCoffeechat(userId, reviewCreateRequest);
+        Long reviewId = reviewCommandService.createReview(userId, reviewCreateRequest);
 
         ReviewCommandResponse response = ReviewCommandResponse.builder()
-                .coffeechatId(coffeechatId)
+                .reviewId(reviewId)
                 .build();
 
         return ResponseEntity
