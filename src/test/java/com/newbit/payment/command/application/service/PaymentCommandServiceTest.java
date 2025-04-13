@@ -1,6 +1,7 @@
 package com.newbit.payment.command.application.service;
 
 import com.newbit.common.exception.BusinessException;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.payment.command.application.dto.TossPaymentApiDto;
 import com.newbit.payment.command.application.dto.request.PaymentApproveRequest;
 import com.newbit.payment.command.application.dto.request.PaymentPrepareRequest;
@@ -36,6 +37,9 @@ class PaymentCommandServiceTest {
 
     @Mock
     private TossPaymentApiClient tossPaymentApiClient;
+
+    @Mock
+    private NotificationCommandService notificationCommandService;
 
     @InjectMocks
     private PaymentCommandService paymentCommandService;

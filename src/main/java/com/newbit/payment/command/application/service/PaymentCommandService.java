@@ -1,7 +1,10 @@
 package com.newbit.payment.command.application.service;
 
+import com.newbit.auth.model.CustomUser;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.payment.command.application.dto.TossPaymentApiDto;
 import com.newbit.payment.command.application.dto.request.PaymentApproveRequest;
 import com.newbit.payment.command.application.dto.request.PaymentPrepareRequest;
@@ -19,8 +22,11 @@ import java.util.UUID;
 @Service
 public class PaymentCommandService extends AbstractPaymentService<PaymentApproveResponse> {
 
-    public PaymentCommandService(PaymentRepository paymentRepository, TossPaymentApiClient tossPaymentApiClient) {
+    private final NotificationCommandService notificationCommandService;
+
+    public PaymentCommandService(PaymentRepository paymentRepository, TossPaymentApiClient tossPaymentApiClient, NotificationCommandService notificationCommandService) {
         super(paymentRepository, tossPaymentApiClient);
+        this.notificationCommandService = notificationCommandService;
     }
 
     @Transactional
@@ -76,6 +82,17 @@ public class PaymentCommandService extends AbstractPaymentService<PaymentApprove
         }
         
         Payment updatedPayment = paymentRepository.save(payment);
+
+        String notificationContent = String.format("결제가 완료 되었습니다. (결제 금액: %,d)", updatedPayment.getAmount().intValue());
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        updatedPayment.getUserId(),
+                        14L,
+                        payment.getPaymentId(),
+                        notificationContent
+                )
+        );
         
         return createPaymentApproveResponse(updatedPayment);
     }
