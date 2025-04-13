@@ -57,5 +57,17 @@ public class MentorSettlementController {
         MentorSettlementDetailResponseDto response = mentorSettlementService.getSettlementDetail(settlementId);
         return ApiResponse.success(response);
     }
+
+    @GetMapping("/my/{settlementId}/email")
+    @Operation(summary = "정산 내역 이메일 발송", description = "해당 정산 ID에 대한 정산 내역을 이메일로 전송합니다.")
+    public ApiResponse<Void> sendSettlementEmail(
+            @AuthenticationPrincipal CustomUser customUser,
+            @PathVariable Long settlementId
+    ) {
+        Long userId = customUser.getUserId();
+        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
+        mentorSettlementService.sendSettlementEmail(mentorId, settlementId);
+        return ApiResponse.success(null);
+    }
 }
 
