@@ -37,10 +37,12 @@ public class UserQueryService {
         List<PostDTO> posts = userMapper.findMentorPosts(mentorId);
         List<ColumnDTO> columns = userMapper.findMentorColumns(mentorId);
         List<SeriesDTO> series = userMapper.findMentorSeries(mentorId);
+        List<ReviewDTO> reviews = userMapper.findReviewsByMentorId(mentorId);
 
         profile.setPosts(posts);
         profile.setColumns(columns);
         profile.setSeries(series);
+        profile.setReviews(reviews);
 
         return profile;
     }
