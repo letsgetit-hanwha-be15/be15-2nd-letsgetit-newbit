@@ -15,7 +15,7 @@ public class DiamondTransactionCommandService {
     private final DiamondHistoryRepository diamondHistoryRepository;
     private final UserService userService;
 
-    public void savePointHistory(
+    public void saveDiamondHistory(
             Long userId,
             DiamondTransactionType type,
             Integer increaseAmount,
@@ -35,11 +35,16 @@ public class DiamondTransactionCommandService {
     }
 
 
-
     @Transactional
     public void applyDiamondPayment(Long userId, Long paymentId, Integer amount) {
         Integer balance = userService.addDiamond(userId, amount);
-        savePointHistory(userId, DiamondTransactionType.CHARGE, amount, null, paymentId, balance);
+        saveDiamondHistory(userId, DiamondTransactionType.CHARGE, amount, null, paymentId, balance);
+    }
+
+    @Transactional
+    public void applyDiamondRefund(Long userId, Long refundId, Integer amount) {
+        Integer balance = userService.useDiamond(userId, amount);
+        saveDiamondHistory(userId, DiamondTransactionType.REFUND, null, amount, refundId, balance);
     }
 
 }
