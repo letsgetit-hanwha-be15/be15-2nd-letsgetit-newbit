@@ -55,4 +55,23 @@ public class AdminColumnController {
     ) {
         return adminColumnService.rejectUpdateColumnRequest(dto, customUser.getUserId());
     }
+
+    @PostMapping("/requests/approve/delete")
+    @Operation(summary = "칼럼 삭제 요청 승인", description = "DELETE 타입의 칼럼 삭제 요청을 승인하고, 칼럼을 삭제 처리합니다.")
+    public AdminColumnResponseDto approveDeleteColumn(
+            @RequestBody ApproveColumnRequestDto dto,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        return adminColumnService.approveDeleteColumnRequest(dto, customUser.getUserId());
+    }
+
+    @PostMapping("/requests/reject/delete")
+    @Operation(summary = "칼럼 삭제 요청 거절", description = "DELETE 타입의 칼럼 삭제 요청을 거절하고, 거절 사유를 기록합니다.")
+    public AdminColumnResponseDto rejectDeleteColumn(
+            @RequestBody RejectColumnRequestDto dto,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        return adminColumnService.rejectDeleteColumnRequest(dto, customUser.getUserId());
+    }
+
 }
