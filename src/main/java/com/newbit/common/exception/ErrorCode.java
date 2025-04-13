@@ -122,7 +122,14 @@ public enum ErrorCode {
     PAYMENT_REFUND_FAILED("81005", "결제 환불에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     PAYMENT_NOT_REFUNDABLE("81006", "환불 가능한 결제가 아닙니다.", HttpStatus.BAD_REQUEST),
     PAYMENT_DETAILS_NOT_FOUND("81007", "결제 상세 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    VIRTUAL_ACCOUNT_ISSUANCE_FAILED("81008", "가상계좌 발급에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    VIRTUAL_ACCOUNT_ISSUANCE_FAILED("81008", "가상계좌 발급에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_REFUND_NOT_FOUND("81012", "환불 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
+    /*--------------- 추가 결제 에러 코드 ------------------*/
+    PAYMENT_CANNOT_BE_CANCELLED("81013", "결제를 취소할 수 없는 상태입니다.", HttpStatus.BAD_REQUEST),
+    PAYMENT_NOT_PARTIAL_CANCELABLE("81014", "부분 취소가 불가능한 결제입니다.", HttpStatus.BAD_REQUEST),
+    REFUND_AMOUNT_EXCEEDS_BALANCE("81015", "환불 금액이 잔액을 초과합니다.", HttpStatus.BAD_REQUEST),
+    PAYMENT_CANCEL_FAILED("81016", "결제 취소 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
