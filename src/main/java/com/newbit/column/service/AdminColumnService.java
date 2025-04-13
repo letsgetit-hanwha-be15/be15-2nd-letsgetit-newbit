@@ -94,7 +94,7 @@ public class AdminColumnService {
         request.approve(adminUserId);
 
 
-        String notificationContent = String.format("'%s' 칼럼이 수정 승인되었습니다.",
+        String notificationContent = String.format("'%s' 칼럼 수정이 승인되었습니다.",
                 request.getUpdatedTitle());
 
 
@@ -122,7 +122,7 @@ public class AdminColumnService {
         request.reject(dto.getReason(), adminUserId);
 
 
-        String notificationContent = String.format("'%s' 칼럼이 수정이 거절되었습니다.",
+        String notificationContent = String.format("'%s' 칼럼 수정이 거절되었습니다.",
                 request.getColumn().getTitle());
 
 
@@ -153,6 +153,20 @@ public class AdminColumnService {
 
         // 승인 처리
         request.approve(adminUserId);
+
+        String notificationContent = String.format("'%s' 칼럼 삭제가 승인되었습니다.",
+                request.getColumn().getTitle());
+
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        request.getColumn().getMentor().getUser().getUserId()
+                        , 11L
+                        , request.getColumnRequestId(),
+                        notificationContent
+                )
+        );
+
         return adminColumnMapper.toDto(request);
     }
 
@@ -166,6 +180,20 @@ public class AdminColumnService {
         }
 
         request.reject(dto.getReason(), adminUserId);
+
+        String notificationContent = String.format("'%s' 칼럼 삭제가 거절되었습니다.",
+                request.getColumn().getTitle());
+
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        request.getColumn().getMentor().getUser().getUserId()
+                        , 12L
+                        , request.getColumnRequestId(),
+                        notificationContent
+                )
+        );
+
         return adminColumnMapper.toDto(request);
     }
 
