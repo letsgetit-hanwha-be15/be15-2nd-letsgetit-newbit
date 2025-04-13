@@ -70,8 +70,8 @@ class ReviewCommandServiceTest {
                 .build();
 
         Review review = Review.of(
-                rating, comment, tip, coffeechatId
-        );
+                rating, comment, tip, coffeechatId,
+                userId);
         ReflectionTestUtils.setField(review, "reviewId", reviewId);
 
         when(coffeechatQueryService.getCoffeechat(coffeechatId))
@@ -123,7 +123,7 @@ class ReviewCommandServiceTest {
                 .progressStatus(ProgressStatus.COMPLETE)
                 .build();
 
-        Review review = Review.of(rating, comment, tip, coffeechatId);
+        Review review = Review.of(rating, comment, tip, coffeechatId, userId);
         ReflectionTestUtils.setField(review, "reviewId", reviewId);
 
         when(coffeechatQueryService.getCoffeechat(coffeechatId))
@@ -178,7 +178,7 @@ class ReviewCommandServiceTest {
                 .progressStatus(ProgressStatus.COMPLETE)
                 .build();
 
-        Review review = Review.of(rating, comment, tip, coffeechatId);
+        Review review = Review.of(rating, comment, tip, coffeechatId, userId);
         ReflectionTestUtils.setField(review, "reviewId", reviewId);
 
         when(coffeechatQueryService.getCoffeechat(coffeechatId))
@@ -231,7 +231,7 @@ class ReviewCommandServiceTest {
                 .progressStatus(ProgressStatus.COMPLETE)
                 .build();
 
-        Review review = Review.of(rating, comment, tip, coffeechatId);
+        Review review = Review.of(rating, comment, tip, coffeechatId, userId);
         ReflectionTestUtils.setField(review, "reviewId", reviewId);
 
         when(coffeechatQueryService.getCoffeechat(coffeechatId))
@@ -350,7 +350,7 @@ class ReviewCommandServiceTest {
                         .build());
 
         // 해당 커피챗에 이미 리뷰가 존재하는 경우
-        Review existingReview = Review.of(rating, comment, tip, coffeechatId);
+        Review existingReview = Review.of(rating, comment, tip, coffeechatId, userId);
         ReflectionTestUtils.setField(existingReview, "reviewId", 99L);
         when(reviewRepository.findByCoffeechatId(coffeechatId))
                 .thenReturn(Optional.of(existingReview));
