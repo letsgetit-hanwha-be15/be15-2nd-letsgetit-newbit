@@ -7,6 +7,7 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
@@ -60,6 +61,8 @@ class PurchaseCommandServiceTest {
     private CoffeechatCommandService coffeechatCommandService;
     @Mock
     private PointTypeRepository pointTypeRepository;
+    @Mock
+    private NotificationCommandService notificationCommandService;
 
     @BeforeEach
     void setUp() {
