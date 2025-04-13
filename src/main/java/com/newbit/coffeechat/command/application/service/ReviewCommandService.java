@@ -80,7 +80,7 @@ public class ReviewCommandService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
 
         // 2. 본인이 작성한 리뷰인지 확인
-        if(!review.getCoffeechatId().equals(userId)){
+        if(!review.getUserId().equals(userId)){
             throw new BusinessException(ErrorCode.REVIEW_CANCEL_NOT_ALLOWED);
         }
 

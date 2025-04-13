@@ -369,10 +369,10 @@ class ReviewCommandServiceTest {
         Long userId = 8L;
         Long reviewId = 10L;
 
-        // 리뷰 객체 생성 시, 리뷰의 coffeechatId가 userId와 일치해야 정상 삭제가 이루어짐
+        // 리뷰 객체 생성 시, 리뷰의 작성자ID userId와 일치해야 정상 삭제가 이루어짐
         Review review = mock(Review.class);
         when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
-        when(review.getCoffeechatId()).thenReturn(userId);
+        when(review.getUserId()).thenReturn(userId);
 
         // when & then
         assertDoesNotThrow(() -> reviewCommandService.deleteReview(userId, reviewId));
@@ -405,10 +405,10 @@ class ReviewCommandServiceTest {
         Long userId = 8L;
         Long reviewId = 10L;
 
-        // 리뷰 객체 생성 시, coffeechatId가 요청한 userId와 다르게 설정하여 본인이 작성한 리뷰가 아님을 표현
+        // 리뷰 객체 생성 시, userId와 요청한 userId와 다르게 설정하여 본인이 작성한 리뷰가 아님을 표현
         Review review = mock(Review.class);
         when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
-        when(review.getCoffeechatId()).thenReturn(9L); // userId 8L와 다름
+        when(review.getUserId()).thenReturn(9L); // userId 8L와 다름
 
         // when & then
         BusinessException exception = assertThrows(BusinessException.class, () ->
