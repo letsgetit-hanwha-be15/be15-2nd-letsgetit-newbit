@@ -40,4 +40,10 @@ public class MentorService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.MENTOR_NOT_FOUND));
     }
 
+    public Long getUserIdByMentorId(Long mentorId) {
+        return mentorRepository.findById(mentorId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MENTOR_NOT_FOUND))
+                .getUser().getUserId();
+    }
+
 }
