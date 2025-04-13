@@ -210,5 +210,15 @@ public class CoffeechatCommandService {
 
         // 5. 커피챗 객체 업데이트하기
         coffeechat.cancelCoffeechat(coffeechatCancelRequest.getCancelReasonId());
+
+        // 6. 멘토에게 커피챗 취소 알림
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        mentorService.getUserIdByMentorId(coffeechat.getMentorId())
+                        , 6L
+                        , coffeechat.getCoffeechatId()
+                        , "진행 예정인 커피챗이 취소되었습니다."
+                )
+        );
     }
 }
