@@ -173,7 +173,7 @@ class MentorSettlementServiceTest {
         // then
         verify(mailServiceSupport).sendMailSupport(
                 eq("test@newbit.com"),
-                contains("2025년 4월"),
+                contains("정산 내역"),
                 contains("150000")
         );
     }
