@@ -62,4 +62,10 @@
         FROM request_time r
         WHERE r.coffeechat_id = #{ coffeechatId }
     </select>
+    <select id="selectCoffeechatIdByEndDate" resultType="java.lang.Long">
+        SELECT
+        c.coffeechat_id
+        FROM coffeechat c
+        WHERE DATE(ended_at) = #{ targetDate }
+    </select>
 </mapper>

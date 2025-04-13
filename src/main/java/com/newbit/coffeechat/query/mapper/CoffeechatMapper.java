@@ -1,10 +1,13 @@
 package com.newbit.coffeechat.query.mapper;
 
+import com.newbit.coffeechat.command.domain.aggregate.Coffeechat;
 import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
 import com.newbit.coffeechat.query.dto.response.RequestTimeDto;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Mapper
@@ -18,4 +21,6 @@ public interface CoffeechatMapper {
     long countCoffeechats(CoffeechatSearchServiceRequest coffeechatSearchServiceRequest);
 
     List<RequestTimeDto> selectRequestTimeByCoffeechatId(Long coffeechatId);
+
+    List<Long> selectCoffeechatIdByEndDate(@Param("targetDate") LocalDate targetDate);
 }
