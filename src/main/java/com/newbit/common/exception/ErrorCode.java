@@ -111,6 +111,9 @@ public enum ErrorCode {
     UNAUTHORIZED_TO_CREATE_COMMENT("160002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
     COMMENT_POST_MISMATCH("160003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
 
+    /*---------------- 정산 -------------------------*/
+    SETTLEMENT_NOT_FOUND("110000", "정산 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+  
     /*--------------- 결제 오류 ------------------*/
     PAYMENT_NOT_FOUND("81001", "결제 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     PAYMENT_AMOUNT_MISMATCH("81002", "결제 금액이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
