@@ -67,7 +67,28 @@ public class Column {
         this.deletedAt = LocalDateTime.now();
     }
 
+    public void approve() {
+        this.isPublic = true;
+    }
+
     public void updateSeries(Series series) {
         this.series = series;
+    }
+
+    public void updateContent(String title, String content, Integer price, String thumbnailUrl) {
+        if (title != null) this.title = title;
+        if (content != null) this.content = content;
+        if (price != null) this.price = price;
+        if (thumbnailUrl != null) this.thumbnailUrl = thumbnailUrl;
+    }
+
+    // 좋아요 카운트 증가
+    public void increaseLikeCount() {
+        this.likeCount += 1;
+    }
+    
+    // 좋아요 카운트 감소
+    public void decreaseLikeCount() {
+        this.likeCount = Math.max(0, this.likeCount - 1);
     }
 }

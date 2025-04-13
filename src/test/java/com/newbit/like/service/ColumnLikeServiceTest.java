@@ -20,12 +20,12 @@ import org.springframework.data.domain.Pageable;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.like.dto.response.LikedPostListResponse;
-import com.newbit.like.dto.response.PostLikeResponse;
+import com.newbit.like.dto.response.ColumnLikeResponse;
+import com.newbit.like.dto.response.LikedColumnListResponse;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("PostLikeService 테스트")
-class PostLikeServiceTest {
+@DisplayName("ColumnLikeService 테스트")
+class ColumnLikeServiceTest {
     @Mock
     private LikeQueryService likeQueryService;
     
@@ -33,9 +33,9 @@ class PostLikeServiceTest {
     private LikeCommandService likeCommandService;
 
     @InjectMocks
-    private PostLikeService postLikeService;
+    private ColumnLikeService columnLikeService;
 
-    private final long postId = 1L;
+    private final long columnId = 1L;
     private final long userId = 2L;
 
     @BeforeEach
@@ -54,24 +54,24 @@ class PostLikeServiceTest {
             @DisplayName("좋아요를 추가하고 응답을 반환해야 한다")
             void shouldAddLikeAndReturnResponse() {
                 // Given
-                PostLikeResponse expectedResponse = PostLikeResponse.builder()
-                    .postId(postId)
+                ColumnLikeResponse expectedResponse = ColumnLikeResponse.builder()
+                    .columnId(columnId)
                     .userId(userId)
                     .liked(true)
                     .totalLikes(11)
                     .build();
                 
-                when(likeCommandService.togglePostLike(postId, userId)).thenReturn(expectedResponse);
+                when(likeCommandService.toggleColumnLike(columnId, userId)).thenReturn(expectedResponse);
 
                 // When
-                PostLikeResponse response = postLikeService.toggleLike(postId, userId);
+                ColumnLikeResponse response = columnLikeService.toggleLike(columnId, userId);
 
                 // Then
                 assertNotNull(response);
                 assertTrue(response.isLiked());
                 assertEquals(11, response.getTotalLikes());
                 
-                verify(likeCommandService).togglePostLike(postId, userId);
+                verify(likeCommandService).toggleColumnLike(columnId, userId);
             }
         }
 
@@ -80,27 +80,27 @@ class PostLikeServiceTest {
         class CancelLike {
 
             @Test
-            @DisplayName("좋아요 수를 감소시키고 소프트 딜리트해야 한다")
-            void shouldDecreaseLikeCountAndSoftDelete() {
+            @DisplayName("좋아요 수를 감소시키고 응답을 반환해야 한다")
+            void shouldDecreaseLikeCountAndReturnResponse() {
                 // Given
-                PostLikeResponse expectedResponse = PostLikeResponse.builder()
-                    .postId(postId)
+                ColumnLikeResponse expectedResponse = ColumnLikeResponse.builder()
+                    .columnId(columnId)
                     .userId(userId)
                     .liked(false)
                     .totalLikes(9)
                     .build();
                 
-                when(likeCommandService.togglePostLike(postId, userId)).thenReturn(expectedResponse);
+                when(likeCommandService.toggleColumnLike(columnId, userId)).thenReturn(expectedResponse);
 
                 // When
-                PostLikeResponse response = postLikeService.toggleLike(postId, userId);
+                ColumnLikeResponse response = columnLikeService.toggleLike(columnId, userId);
 
                 // Then
                 assertNotNull(response);
                 assertFalse(response.isLiked());
                 assertEquals(9, response.getTotalLikes());
                 
-                verify(likeCommandService).togglePostLike(postId, userId);
+                verify(likeCommandService).toggleColumnLike(columnId, userId);
             }
         }
 
@@ -109,14 +109,14 @@ class PostLikeServiceTest {
         class HandleExceptions {
 
             @Test
-            @DisplayName("게시글이 없으면 예외를 발생시켜야 한다")
-            void shouldThrowExceptionWhenPostNotFound() {
+            @DisplayName("칼럼이 없으면 예외를 발생시켜야 한다")
+            void shouldThrowExceptionWhenColumnNotFound() {
                 // Given
-                when(likeCommandService.togglePostLike(postId, userId)).thenThrow(new BusinessException(ErrorCode.POST_LIKE_NOT_FOUND));
+                when(likeCommandService.toggleColumnLike(columnId, userId)).thenThrow(new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
 
                 // When & Then
-                assertThrows(BusinessException.class, () -> postLikeService.toggleLike(postId, userId));
-                verify(likeCommandService).togglePostLike(postId, userId);
+                assertThrows(BusinessException.class, () -> columnLikeService.toggleLike(columnId, userId));
+                verify(likeCommandService).toggleColumnLike(columnId, userId);
             }
         }
     }
@@ -129,14 +129,14 @@ class PostLikeServiceTest {
         @DisplayName("좋아요 여부를 정확히 반환해야 한다")
         void shouldReturnCorrectLikeStatus() {
             // Given
-            when(likeQueryService.isPostLiked(postId, userId)).thenReturn(true);
+            when(likeQueryService.isColumnLiked(columnId, userId)).thenReturn(true);
 
             // When
-            boolean result = postLikeService.isLiked(postId, userId);
+            boolean result = columnLikeService.isLiked(columnId, userId);
 
             // Then
             assertTrue(result);
-            verify(likeQueryService).isPostLiked(postId, userId);
+            verify(likeQueryService).isColumnLiked(columnId, userId);
         }
     }
 
@@ -145,40 +145,40 @@ class PostLikeServiceTest {
     class GetLikeCount {
 
         @Test
-        @DisplayName("게시글의 좋아요 수를 정확히 반환해야 한다")
+        @DisplayName("칼럼의 좋아요 수를 정확히 반환해야 한다")
         void shouldReturnCorrectLikeCount() {
             // Given
-            when(likeQueryService.getPostLikeCount(postId)).thenReturn(10);
+            when(likeQueryService.getColumnLikeCount(columnId)).thenReturn(10);
 
             // When
-            int count = postLikeService.getLikeCount(postId);
+            int count = columnLikeService.getLikeCount(columnId);
 
             // Then
             assertEquals(10, count);
-            verify(likeQueryService).getPostLikeCount(postId);
+            verify(likeQueryService).getColumnLikeCount(columnId);
         }
     }
     
     @Nested
-    @DisplayName("getLikedPostsByUser 메서드")
-    class GetLikedPostsByUser {
+    @DisplayName("getLikedColumnsByUser 메서드")
+    class GetLikedColumnsByUser {
 
         @Test
-        @DisplayName("사용자가 좋아요한 게시글 목록을 조회하고 결과를 반환해야 한다")
-        void shouldReturnLikedPostsByUser() {
+        @DisplayName("사용자가 좋아요한 칼럼 목록을 조회하고 결과를 반환해야 한다")
+        void shouldReturnLikedColumnsByUser() {
             // Given
             Pageable pageable = PageRequest.of(0, 10);
-            LikedPostListResponse expectedResponse = LikedPostListResponse.builder().build();
+            LikedColumnListResponse expectedResponse = LikedColumnListResponse.builder().build();
             
-            when(likeQueryService.getLikedPostsByUser(userId, pageable)).thenReturn(expectedResponse);
+            when(likeQueryService.getLikedColumnsByUser(userId, pageable)).thenReturn(expectedResponse);
 
             // When
-            LikedPostListResponse response = postLikeService.getLikedPostsByUser(userId, pageable);
+            LikedColumnListResponse response = columnLikeService.getLikedColumnsByUser(userId, pageable);
 
             // Then
             assertNotNull(response);
             assertEquals(expectedResponse, response);
-            verify(likeQueryService).getLikedPostsByUser(userId, pageable);
+            verify(likeQueryService).getLikedColumnsByUser(userId, pageable);
         }
     }
 } 

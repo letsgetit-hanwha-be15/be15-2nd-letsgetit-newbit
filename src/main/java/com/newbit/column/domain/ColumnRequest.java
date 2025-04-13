@@ -50,6 +50,19 @@ public class ColumnRequest {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
+    public void approve(Long adminUserId) {
+        this.isApproved = true;
+        this.adminUserId = adminUserId;
+        this.getColumn().approve();
+    }
+
+    public void reject(String reason, Long adminUserId) {
+        this.isApproved = false;
+        this.rejectedReason = reason;
+        this.adminUserId = adminUserId;
+    }
+
+
     /* 현재 사용하지 않음. 추후 테스트/기타 로직에 활용 가능 */
 //    public static ColumnRequest createdColumnRequest(CreateColumnRequestDto dto, Column column) {
 //        return ColumnRequest.builder()
