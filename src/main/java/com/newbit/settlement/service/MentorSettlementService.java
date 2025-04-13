@@ -1,12 +1,19 @@
 package com.newbit.settlement.service;
 
+import com.newbit.common.dto.Pagination;
 import com.newbit.purchase.command.domain.aggregate.SaleHistory;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
+import com.newbit.settlement.dto.response.MentorSettlementListResponseDto;
+import com.newbit.settlement.dto.response.MentorSettlementSummaryDto;
 import com.newbit.settlement.entity.MonthlySettlementHistory;
 import com.newbit.settlement.repository.MonthlySettlementHistoryRepository;
 import com.newbit.user.entity.Mentor;
 import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,5 +66,25 @@ public class MentorSettlementService {
             // 해당 판매내역 정산처리
             sales.forEach(SaleHistory::markAsSettled);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public MentorSettlementListResponseDto getMySettlements(Long mentorId, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "settledAt"));
+        Page<MonthlySettlementHistory> resultPage =
+                monthlySettlementHistoryRepository.findAllByMentor_MentorId(mentorId, pageable);
+
+        List<MentorSettlementSummaryDto> content = resultPage.getContent().stream()
+                .map(MentorSettlementSummaryDto::from)
+                .collect(Collectors.toList());
+
+        return MentorSettlementListResponseDto.builder()
+                .settlements(content)
+                .pagination(Pagination.builder()
+                        .currentPage(page)
+                        .totalPage(resultPage.getTotalPages())
+                        .totalItems(resultPage.getTotalElements())
+                        .build())
+                .build();
     }
 }

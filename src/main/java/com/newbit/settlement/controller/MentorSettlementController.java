@@ -1,22 +1,25 @@
 package com.newbit.settlement.controller;
 
+import com.newbit.auth.model.CustomUser;
+import com.newbit.common.dto.ApiResponse;
+import com.newbit.settlement.dto.response.MentorSettlementListResponseDto;
 import com.newbit.settlement.service.MentorSettlementService;
+import com.newbit.user.service.MentorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/settlements")
-@Tag(name = "멘토 정산", description = "멘토 월별 정산 관련 API")
+@Tag(name = "정산", description = "멘토 월별 정산 관련 API")
 public class MentorSettlementController {
 
-    private final MentorSettlementService settlementService;
+    private final MentorSettlementService mentorSettlementService;
+    private final MentorService mentorService;
 
     @PostMapping("/generate")
     @Operation(
@@ -27,8 +30,21 @@ public class MentorSettlementController {
             @RequestParam int year,
             @RequestParam int month
     ) {
-        settlementService.generateMonthlySettlements(year, month);
+        mentorSettlementService.generateMonthlySettlements(year, month);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/my")
+    @Operation(summary = "내 정산 내역 목록 조회", description = "로그인한 멘토의 정산 내역을 페이징 형태로 조회합니다.")
+    public ApiResponse<MentorSettlementListResponseDto> getMySettlements(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Long userId = customUser.getUserId();
+        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
+        MentorSettlementListResponseDto response = mentorSettlementService.getMySettlements(mentorId, page, size);
+        return ApiResponse.success(response);
     }
 }
 
