@@ -28,10 +28,15 @@ public class ReviewCommandService {
     @Transactional
     public Long createReview(Long userId, ReviewCreateRequest request) {
         // 1. 완료된 커피챗인지 확인
-        CoffeechatDto coffeechat = coffeechatQueryService.getCoffeechat(request.getCoffeechatId())
+        CoffeechatDto coffeechatDto = coffeechatQueryService.getCoffeechat(request.getCoffeechatId())
                 .getCoffeechat();
-        if (!coffeechat.getProgressStatus().equals(ProgressStatus.COMPLETE)){
+        if (!coffeechatDto.getProgressStatus().equals(ProgressStatus.COMPLETE)){
             throw new BusinessException(ErrorCode.INVALID_COFFEECHAT_STATUS_COMPLETE);
+        }
+
+        // 커피챗의 멘티가 맞는지 확인
+        if (!coffeechatDto.getMenteeId().equals(userId)){
+            throw new BusinessException(ErrorCode.REVIEW_CREATE_NOT_ALLOWED);
         }
 
         // 2. 해당 커피챗에 대한 리뷰가 이미 존재
@@ -48,8 +53,6 @@ public class ReviewCommandService {
                 request.getCoffeechatId()
         );
         Review review = reviewRepository.save(newReview);
-
-        CoffeechatDto coffeechatDto = coffeechatQueryService.getCoffeechat(request.getCoffeechatId()).getCoffeechat();
 
         // 4. 팁이 존재하면 팁 등록
         if(request.getTip() != null) {
