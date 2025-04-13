@@ -11,6 +11,7 @@ import com.newbit.payment.command.domain.aggregate.PaymentStatus;
 import com.newbit.payment.command.domain.aggregate.Refund;
 import com.newbit.payment.command.domain.repository.PaymentRepository;
 import com.newbit.payment.command.domain.repository.RefundRepository;
+import com.newbit.purchase.command.application.service.DiamondTransactionCommandService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,15 +22,21 @@ import java.util.stream.Collectors;
 @Service
 public class RefundCommandService extends AbstractPaymentService<PaymentRefundResponse> {
 
+    private static final int DIAMOND_UNIT_PRICE = 100;
     private final RefundRepository refundRepository;
     private final NotificationCommandService notificationCommandService;
+    private final DiamondTransactionCommandService diamondTransactionCommandService;
 
     public RefundCommandService(PaymentRepository paymentRepository,
                                 RefundRepository refundRepository,
-                                TossPaymentApiClient tossPaymentApiClient, NotificationCommandService notificationCommandService) {
+                                TossPaymentApiClient tossPaymentApiClient,
+                                NotificationCommandService notificationCommandService,
+                                DiamondTransactionCommandService diamondTransactionCommandService
+    ) {
         super(paymentRepository, tossPaymentApiClient);
         this.refundRepository = refundRepository;
         this.notificationCommandService = notificationCommandService;
+        this.diamondTransactionCommandService = diamondTransactionCommandService;
     }
 
     @Transactional
@@ -57,6 +64,13 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
         Refund savedRefund = refundRepository.save(refund);
 
         String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", savedRefund.getAmount().intValue());
+
+        int refundAmount = savedRefund.getAmount().intValue() / DIAMOND_UNIT_PRICE;
+        diamondTransactionCommandService.applyDiamondRefund(
+                payment.getUserId(),
+                savedRefund.getRefundId(),
+                refundAmount
+        );
 
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
@@ -98,6 +112,8 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
         Refund savedRefund = refundRepository.save(refund);
 
         String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", savedRefund.getAmount().intValue());
+
+
 
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
