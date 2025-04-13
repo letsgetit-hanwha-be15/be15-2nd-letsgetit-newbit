@@ -112,7 +112,7 @@ public enum ErrorCode {
     COMMENT_POST_MISMATCH("160003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
 
     /*---------------- 정산 -------------------------*/
-    SETTLEMENT_NOT_FOUND("110000", "정산 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    SETTLEMENT_NOT_FOUND("110000", "정산 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
   
     /*--------------- 결제 오류 ------------------*/
     PAYMENT_NOT_FOUND("81001", "결제 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
