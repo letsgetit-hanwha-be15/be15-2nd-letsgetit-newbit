@@ -41,7 +41,9 @@ public enum ErrorCode {
     REQUEST_DATE_IN_PAST("70006", "시작 날짜가 오늘보다 이전입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
     COFFEECHAT_CANCEL_NOT_ALLOWED("70007", "본인의 커피챗만 취소 가능합니다.", HttpStatus.FORBIDDEN),
     COFFEECHAT_NOT_REFUNDABLE("70008", "커피챗이 환불 가능한 상태가 아닙니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    INVALID_COFFEECHAT_STATUS("70009", "커피챗이 취소 가능한 상태가 아닙니다.", HttpStatus.BAD_REQUEST),
+    INVALID_COFFEECHAT_STATUS_CANCEL("70009", "커피챗이 취소 가능한 상태가 아닙니다.", HttpStatus.BAD_REQUEST),
+    INVALID_COFFEECHAT_STATUS_COMPLETE("70010", "커피챗이 리뷰를 장성할 수 있는 상태가 아닙니다.", HttpStatus.BAD_REQUEST),
+    REVIEW_ALREADY_EXIST("70011", "해당 커피챗에 대한 리뷰가 이미 존재합니다.", HttpStatus.CONFLICT),
 
     /*--------------- 구매 오류 ------------------*/
     COLUMN_ALREADY_PURCHASED("60000", "이미 구매한 칼럼입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
