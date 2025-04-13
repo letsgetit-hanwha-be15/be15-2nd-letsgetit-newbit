@@ -35,7 +35,7 @@ public class NotificationCommandController {
         Long userId = customUser.getUserId();
 
         String emitterId = userId + "_" + UUID.randomUUID();
-        SseEmitter emitter = new SseEmitter(60 * 1000L); // 60초 타임아웃
+        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 60초 타임아웃
 
         sseEmitterRepository.save(emitterId, userId, emitter);
 
