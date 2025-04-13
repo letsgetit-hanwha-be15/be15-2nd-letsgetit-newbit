@@ -1,7 +1,6 @@
 package com.newbit.subscription.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -18,5 +17,4 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Subs
     
     int countBySeriesId(Long seriesId);
     
-    void deleteByUserIdAndSeriesId(Long userId, Long seriesId);
-} 
+}
