@@ -82,20 +82,20 @@ public enum ErrorCode {
     LIKE_PROCESSING_ERROR("100003", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     /*---------------- 게시글 -------------------------*/
-    POST_NOT_FOUND("110000", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_TO_UPDATE_POST("110001", "게시글은 작성자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_USER_CAN_CREATE_POST("110002", "게시글은 일반 사용자만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
-    UNAUTHORIZED_TO_DELETE_POST("110003", "게시글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_ADMIN_CAN_CREATE_NOTICE("110004", "공지사항은 관리자만 등록할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_ADMIN_CAN_UPDATE_NOTICE("110005", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_ADMIN_CAN_DELETE_NOTICE("10006", "공지사항은 관리자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
-    NOT_A_NOTICE("110007", "해당 게시글은 공지사항이 아닙니다.", HttpStatus.BAD_REQUEST),
+    POST_NOT_FOUND("150000", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_UPDATE_POST("150001", "게시글은 작성자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_USER_CAN_CREATE_POST("150002", "게시글은 일반 사용자만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_DELETE_POST("150003", "게시글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_CREATE_NOTICE("150004", "공지사항은 관리자만 등록할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_UPDATE_NOTICE("150005", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_ADMIN_CAN_DELETE_NOTICE("150006", "공지사항은 관리자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    NOT_A_NOTICE("150007", "해당 게시글은 공지사항이 아닙니다.", HttpStatus.BAD_REQUEST),
 
     /*---------------- 댓글 -------------------------*/
-    COMMENT_NOT_FOUND("120000", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_TO_DELETE_COMMENT("120001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
-    UNAUTHORIZED_TO_CREATE_COMMENT("120002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
-    COMMENT_POST_MISMATCH("120003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST);
+    COMMENT_NOT_FOUND("160000", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_DELETE_COMMENT("160001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_CREATE_COMMENT("160002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
+    COMMENT_POST_MISMATCH("160003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;
