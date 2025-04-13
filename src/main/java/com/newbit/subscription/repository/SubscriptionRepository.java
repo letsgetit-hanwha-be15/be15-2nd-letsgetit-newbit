@@ -16,5 +16,4 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Subs
     boolean existsByUserIdAndSeriesId(Long userId, Long seriesId);
     
     int countBySeriesId(Long seriesId);
-    
 }
