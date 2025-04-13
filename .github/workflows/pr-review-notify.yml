@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Wait for all reviewers to be added
+        run: sleep 10
+
       - name: Convert GitHub usernames to Discord mentions
         id: get-mentions
         env:
