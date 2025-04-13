@@ -109,7 +109,17 @@ public enum ErrorCode {
     COMMENT_NOT_FOUND("160000", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED_TO_DELETE_COMMENT("160001", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
     UNAUTHORIZED_TO_CREATE_COMMENT("160002", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
-    COMMENT_POST_MISMATCH("160003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST);
+    COMMENT_POST_MISMATCH("160003", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
+
+    /*--------------- 결제 오류 ------------------*/
+    PAYMENT_NOT_FOUND("81001", "결제 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    PAYMENT_AMOUNT_MISMATCH("81002", "결제 금액이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
+    PAYMENT_ALREADY_PROCESSED("81003", "이미 처리된 결제입니다.", HttpStatus.BAD_REQUEST),
+    PAYMENT_APPROVAL_FAILED("81004", "결제 승인에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_REFUND_FAILED("81005", "결제 환불에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_NOT_REFUNDABLE("81006", "환불 가능한 결제가 아닙니다.", HttpStatus.BAD_REQUEST),
+    PAYMENT_DETAILS_NOT_FOUND("81007", "결제 상세 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    VIRTUAL_ACCOUNT_ISSUANCE_FAILED("81008", "가상계좌 발급에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
