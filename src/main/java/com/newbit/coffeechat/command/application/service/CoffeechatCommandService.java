@@ -12,8 +12,11 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.purchase.command.application.service.DiamondCoffeechatTransactionCommandService;
 import com.newbit.user.dto.response.MentorDTO;
+import com.newbit.user.entity.Mentor;
 import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,7 @@ public class CoffeechatCommandService {
     private final RequestTimeRepository requestTimeRepository;
     private final MentorService mentorService;
     private final DiamondCoffeechatTransactionCommandService transactionCommandService;
+    private final NotificationCommandService notificationCommandService;
 
     /**
      * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
@@ -55,6 +59,16 @@ public class CoffeechatCommandService {
 
         // 3. 커피챗 요청 등록(서비스 함수 생성)
         createRequestTime(coffeechat.getCoffeechatId(), request.getRequestTimes(), request.getPurchaseQuantity());
+
+
+        notificationCommandService.sendNotification(
+               new NotificationSendRequest(
+                       mentorService.getUserIdByMentorId(request.getMentorId())
+                       , 3L
+                       , coffeechat.getCoffeechatId()
+                       , "새로운 커피챗 신청이 도착했습니다."
+               )
+        );
 
         return coffeechat.getCoffeechatId();
     }
