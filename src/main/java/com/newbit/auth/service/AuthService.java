@@ -7,11 +7,13 @@ import com.newbit.auth.repository.RefreshTokenRepository;
 import com.newbit.auth.jwt.JwtTokenProvider;
 import com.newbit.user.entity.User;
 import com.newbit.user.repository.UserRepository;
+import com.newbit.user.service.SuspensionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Service
@@ -22,13 +24,32 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final SuspensionService suspensionService;
 
     public TokenResponseDTO login(LoginRequestDTO request) {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BadCredentialsException("올바르지 않은 아이디 혹은 비밀번호"));
 
-        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        // 정지 조건 검사 추가 (신고 수 50의 배수 여부)
+        suspensionService.checkAndSuspendUser(user.getUserId());
+
+        // 정지 상태라면 차단 또는 해제
+        if (user.getIsSuspended() != null && user.getIsSuspended()) {
+            LocalDateTime suspendedUntil = user.getUpdatedAt().plusDays(7);
+
+            if (LocalDateTime.now().isBefore(suspendedUntil)) {
+                throw new BadCredentialsException("정지 누적으로 인해 로그인할 수 없습니다. "
+                        + suspendedUntil.toLocalDate() + " 이후에 로그인해주세요.");
+            } else {
+                // 정지 해제
+                user.setIsSuspended(false);
+                user.setUpdatedAt(LocalDateTime.now());
+                userRepository.save(user);
+            }
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("올바르지 않은 아이디 혹은 비밀번호");
         }
 
@@ -61,11 +82,11 @@ public class AuthService {
         RefreshToken storedToken = refreshTokenRepository.findById(email)
                 .orElseThrow(() -> new BadCredentialsException("해당 유저로 조회되는 리프레시 토큰 없음"));
 
-        if(!storedToken.getToken().equals(providedRefreshToken)) {
+        if (!storedToken.getToken().equals(providedRefreshToken)) {
             throw new BadCredentialsException("리프레시 토큰 일치하지 않음");
         }
 
-        if(storedToken.getExpiryDate().before(new Date())) {
+        if (storedToken.getExpiryDate().before(new Date())) {
             throw new BadCredentialsException("리프레시 토큰 유효시간 만료");
         }
 
@@ -99,6 +120,4 @@ public class AuthService {
         String email = jwtTokenProvider.getUsernameFromJWT(refreshToken);
         refreshTokenRepository.deleteById(email);
     }
-
-
 }

@@ -115,5 +115,13 @@ public class User {
         this.profileImageUrl = profileImageUrl;
     }
 
+    public void setIsSuspended(boolean isSuspended) {
+        this.isSuspended = isSuspended;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
 
 }

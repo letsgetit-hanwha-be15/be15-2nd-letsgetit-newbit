@@ -254,6 +254,102 @@ class AdminColumnServiceTest {
                 .hasMessageContaining(ErrorCode.COLUMN_REQUEST_NOT_FOUND.getMessage());
     }
 
+    @Test
+    @DisplayName("칼럼 삭제 요청 승인 - 성공")
+    void approveDeleteColumnRequest_success() {
+        // given
+        Long columnRequestId = 11L;
+        Long adminUserId = 99L;
+
+        Column column = mock(Column.class);
+        ColumnRequest request = ColumnRequest.builder()
+                .columnRequestId(columnRequestId)
+                .requestType(RequestType.DELETE)
+                .column(column)
+                .build();
+
+        AdminColumnResponseDto expectedDto = AdminColumnResponseDto.builder()
+                .requestId(columnRequestId)
+                .requestType("DELETE")
+                .isApproved(true)
+                .columnId(1L)
+                .build();
+
+        when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
+        when(adminColumnMapper.toDto(request)).thenReturn(expectedDto);
+
+        // when
+        AdminColumnResponseDto result = adminColumnService.approveDeleteColumnRequest(
+                createApproveDto(columnRequestId), adminUserId);
+
+        // then
+        assertThat(result.getRequestId()).isEqualTo(columnRequestId);
+        verify(column).markAsDeleted();
+    }
+
+    @Test
+    @DisplayName("칼럼 삭제 요청 승인 - 요청 타입이 DELETE가 아닌 경우 예외 발생")
+    void approveDeleteColumnRequest_invalidType() {
+        // given
+        Long columnRequestId = 12L;
+        ColumnRequest request = ColumnRequest.builder()
+                .columnRequestId(columnRequestId)
+                .requestType(RequestType.UPDATE)
+                .build();
+
+        when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
+
+        // when & then
+        assertThatThrownBy(() -> adminColumnService.approveDeleteColumnRequest(
+                createApproveDto(columnRequestId), 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.INVALID_REQUEST_TYPE.getMessage());
+    }
+
+    @Test
+    @DisplayName("칼럼 삭제 요청 거절 - 성공")
+    void rejectDeleteColumnRequest_success() {
+        // given
+        Long columnRequestId = 13L;
+        Long adminUserId = 99L;
+
+        ColumnRequest request = ColumnRequest.builder()
+                .columnRequestId(columnRequestId)
+                .requestType(RequestType.DELETE)
+                .build();
+
+        AdminColumnResponseDto expectedDto = AdminColumnResponseDto.builder()
+                .requestId(columnRequestId)
+                .requestType("DELETE")
+                .isApproved(false)
+                .columnId(3L)
+                .build();
+
+        when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
+        when(adminColumnMapper.toDto(request)).thenReturn(expectedDto);
+
+        // when
+        AdminColumnResponseDto result = adminColumnService.rejectDeleteColumnRequest(
+                createRejectDto(columnRequestId, "삭제 거절"), adminUserId);
+
+        // then
+        assertThat(result.getRequestId()).isEqualTo(columnRequestId);
+    }
+
+    @Test
+    @DisplayName("칼럼 삭제 요청 거절 - 요청이 존재하지 않는 경우 예외 발생")
+    void rejectDeleteColumnRequest_notFound() {
+        // given
+        Long columnRequestId = 14L;
+        when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> adminColumnService.rejectDeleteColumnRequest(
+                createRejectDto(columnRequestId, "없는 요청"), 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.COLUMN_REQUEST_NOT_FOUND.getMessage());
+    }
+
     // ===== DTO 헬퍼 메서드 =====
 
     private ApproveColumnRequestDto createApproveDto(Long id) {
