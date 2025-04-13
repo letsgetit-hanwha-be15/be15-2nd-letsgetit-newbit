@@ -78,4 +78,36 @@ public class AdminColumnService {
         request.reject(dto.getReason(), adminUserId);
         return adminColumnMapper.toDto(request);
     }
+
+    @Transactional
+    public AdminColumnResponseDto approveDeleteColumnRequest(ApproveColumnRequestDto dto, Long adminUserId) {
+        ColumnRequest request = columnRequestRepository.findById(dto.getColumnRequestId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_REQUEST_NOT_FOUND));
+
+        if (request.getRequestType() != RequestType.DELETE) {
+            throw new BusinessException(ErrorCode.INVALID_REQUEST_TYPE);
+        }
+
+        // 삭제 처리
+        Column column = request.getColumn();
+        column.markAsDeleted();
+
+        // 승인 처리
+        request.approve(adminUserId);
+        return adminColumnMapper.toDto(request);
+    }
+
+    @Transactional
+    public AdminColumnResponseDto rejectDeleteColumnRequest(RejectColumnRequestDto dto, Long adminUserId) {
+        ColumnRequest request = columnRequestRepository.findById(dto.getColumnRequestId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_REQUEST_NOT_FOUND));
+
+        if (request.getRequestType() != RequestType.DELETE) {
+            throw new BusinessException(ErrorCode.INVALID_REQUEST_TYPE);
+        }
+
+        request.reject(dto.getReason(), adminUserId);
+        return adminColumnMapper.toDto(request);
+    }
+
 }
