@@ -3,7 +3,6 @@ package com.newbit.coffeechat.command.domain.aggregate;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -39,17 +38,18 @@ public class Review {
     private LocalDateTime updatedAt;
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-    @Column(name = "coffeechat_Id", nullable = false)
+    @Column(name = "coffeechat_id", nullable = false)
     private Long coffeechatId;
     @Column(name = "user_id")
     private Long userId;
 
-    public static Review of(@NotNull @Min(value = 1) @Max(value = 5) double rating, String comment, Integer tip, @Min(value = 1) Long coffeechatId) {
+    public static Review of(@NotNull @Min(value = 1) @Max(value = 5) double rating, String comment, Integer tip, @Min(value = 1) Long coffeechatId, Long userId) {
         Review review = new Review();
         review.rating = BigDecimal.valueOf(rating);
         if(comment != null) review.comment = comment;
         if(tip != null) review.tip = tip;
         review.coffeechatId = coffeechatId;
+        review.userId = userId;
         return review;
     }
 

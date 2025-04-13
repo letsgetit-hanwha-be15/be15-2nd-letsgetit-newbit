@@ -50,8 +50,8 @@ public class ReviewCommandService {
                 request.getRating(),
                 request.getComment(),
                 request.getTip(),
-                request.getCoffeechatId()
-        );
+                request.getCoffeechatId(),
+                userId);
         Review review = reviewRepository.save(newReview);
 
         // 4. 팁이 존재하면 팁 등록
