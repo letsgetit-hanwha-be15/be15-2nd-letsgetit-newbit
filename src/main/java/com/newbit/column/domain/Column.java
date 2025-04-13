@@ -67,6 +67,10 @@ public class Column {
         this.deletedAt = LocalDateTime.now();
     }
 
+    public void approve() {
+        this.isPublic = true;
+    }
+
     public void updateSeries(Series series) {
         this.series = series;
     }
