@@ -1,8 +1,10 @@
 package com.newbit.like.service;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.newbit.like.dto.response.LikedPostListResponse;
 import com.newbit.like.dto.response.PostLikeResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -29,5 +31,10 @@ public class PostLikeService {
     @Transactional(readOnly = true)
     public int getLikeCount(Long postId) {
         return likeQueryService.getPostLikeCount(postId);
+    }
+    
+    @Transactional(readOnly = true)
+    public LikedPostListResponse getLikedPostsByUser(Long userId, Pageable pageable) {
+        return likeQueryService.getLikedPostsByUser(userId, pageable);
     }
 } 
