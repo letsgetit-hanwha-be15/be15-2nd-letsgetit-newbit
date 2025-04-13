@@ -20,7 +20,7 @@ public class NotificationSendRequest {
     @Schema(description = "알림 유형 ID", example = "2")
     private Long notificationTypeId;
 
-    @Schema(description = "서비스 유형", example = "3")
+    @Schema(description = "서비스 ID", example = "3")
     private Long serviceId;
 
     @NotBlank
