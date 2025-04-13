@@ -1,7 +1,9 @@
 package com.newbit.payment.command.application.service;
 
-import com.newbit.payment.command.application.dto.TossPaymentApiDto;
-import lombok.RequiredArgsConstructor;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -10,9 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collections;
+import com.newbit.payment.command.application.dto.TossPaymentApiDto;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -62,13 +64,7 @@ public class TossPaymentApiClient {
                 .amount(amount)
                 .build();
         
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("Authorization", "Basic " + Base64.getEncoder().encodeToString(
-                (secretKey + ":").getBytes(StandardCharsets.UTF_8)));
-        
-        HttpEntity<TossPaymentApiDto.PaymentConfirmRequest> entity = new HttpEntity<>(request, headers);
+        HttpEntity<TossPaymentApiDto.PaymentConfirmRequest> entity = new HttpEntity<>(request, createAuthHeaders());
         
         return restTemplate.postForObject(
                 apiUrl + "/v1/payments/confirm",
@@ -78,18 +74,48 @@ public class TossPaymentApiClient {
     }
 
     public TossPaymentApiDto.PaymentResponse getPaymentDetails(String paymentKey) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-        headers.set("Authorization", "Basic " + Base64.getEncoder().encodeToString(
-                (secretKey + ":").getBytes(StandardCharsets.UTF_8)));
-        
-        HttpEntity<String> entity = new HttpEntity<>(headers);
+        HttpEntity<String> entity = new HttpEntity<>(createAuthHeaders());
         
         return restTemplate.getForObject(
                 apiUrl + "/v1/payments/" + paymentKey,
                 TossPaymentApiDto.PaymentResponse.class,
                 entity
         );
+    }
+
+    public TossPaymentApiDto.PaymentResponse cancelPayment(String paymentKey, String cancelReason) {
+        TossPaymentApiDto.PaymentCancelRequest request = TossPaymentApiDto.PaymentCancelRequest.builder()
+                .cancelReason(cancelReason)
+                .build();
+                
+        return requestCancelPayment(paymentKey, request);
+    }
+    
+    public TossPaymentApiDto.PaymentResponse cancelPaymentPartial(String paymentKey, String cancelReason, Long cancelAmount) {
+        TossPaymentApiDto.PaymentCancelRequest request = TossPaymentApiDto.PaymentCancelRequest.builder()
+                .cancelReason(cancelReason)
+                .cancelAmount(cancelAmount)
+                .build();
+                
+        return requestCancelPayment(paymentKey, request);
+    }
+    
+    private TossPaymentApiDto.PaymentResponse requestCancelPayment(String paymentKey, TossPaymentApiDto.PaymentCancelRequest request) {
+        HttpEntity<TossPaymentApiDto.PaymentCancelRequest> entity = new HttpEntity<>(request, createAuthHeaders());
+        
+        return restTemplate.postForObject(
+                apiUrl + "/v1/payments/" + paymentKey + "/cancel",
+                entity,
+                TossPaymentApiDto.PaymentResponse.class
+        );
+    }
+    
+    private HttpHeaders createAuthHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.set("Authorization", "Basic " + Base64.getEncoder().encodeToString(
+                (secretKey + ":").getBytes(StandardCharsets.UTF_8)));
+        return headers;
     }
 } 

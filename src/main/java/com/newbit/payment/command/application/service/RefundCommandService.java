@@ -1,0 +1,133 @@
+package com.newbit.payment.command.application.service;
+
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.payment.command.application.dto.TossPaymentApiDto;
+import com.newbit.payment.command.application.dto.response.PaymentRefundResponse;
+import com.newbit.payment.command.domain.aggregate.Payment;
+import com.newbit.payment.command.domain.aggregate.PaymentStatus;
+import com.newbit.payment.command.domain.aggregate.Refund;
+import com.newbit.payment.command.domain.repository.PaymentRepository;
+import com.newbit.payment.command.domain.repository.RefundRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class RefundCommandService extends AbstractPaymentService<PaymentRefundResponse> {
+
+    private final RefundRepository refundRepository;
+
+    public RefundCommandService(PaymentRepository paymentRepository,
+                               RefundRepository refundRepository,
+                               TossPaymentApiClient tossPaymentApiClient) {
+        super(paymentRepository, tossPaymentApiClient);
+        this.refundRepository = refundRepository;
+    }
+
+    @Transactional
+    public PaymentRefundResponse cancelPayment(Long paymentId, String cancelReason) {
+        Payment payment = findPaymentById(paymentId);
+        
+        validateCancelable(payment);
+        
+        TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.cancelPayment(
+                payment.getPaymentKey(), 
+                cancelReason
+        );
+        
+        payment.refund();
+        payment = paymentRepository.save(payment);
+        
+        Refund refund = Refund.createRefund(
+                payment, 
+                payment.getAmount(), 
+                cancelReason, 
+                response.getPaymentKey(),
+                false
+        );
+        
+        Refund savedRefund = refundRepository.save(refund);
+        
+        return createRefundResponse(savedRefund);
+    }
+    
+    @Transactional
+    public PaymentRefundResponse cancelPaymentPartial(Long paymentId, BigDecimal cancelAmount, String cancelReason) {
+        Payment payment = findPaymentById(paymentId);
+        
+        validatePartialCancelable(payment);
+        
+        validateRefundAmount(payment, cancelAmount);
+        
+        TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.cancelPaymentPartial(
+                payment.getPaymentKey(), 
+                cancelReason,
+                cancelAmount.longValue()
+        );
+        
+        payment.partialRefund(cancelAmount);
+        payment = paymentRepository.save(payment);
+        
+        Refund refund = Refund.createRefund(
+                payment, 
+                cancelAmount, 
+                cancelReason, 
+                response.getPaymentKey(),
+                true
+        );
+        
+        Refund savedRefund = refundRepository.save(refund);
+
+        return createRefundResponse(savedRefund);
+    }
+    
+    @Transactional(readOnly = true)
+    public List<PaymentRefundResponse> getRefundsByPaymentId(Long paymentId) {
+        if (!paymentRepository.existsById(paymentId)) {
+            throw new BusinessException(ErrorCode.PAYMENT_NOT_FOUND);
+        }
+        
+        List<Refund> refunds = refundRepository.findByPaymentPaymentId(paymentId);
+        
+        return refunds.stream()
+                .map(this::createRefundResponse)
+                .collect(Collectors.toList());
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public PaymentRefundResponse getPayment(Long paymentId) {
+        List<Refund> refunds = refundRepository.findByPaymentPaymentId(paymentId);
+        
+        if (refunds.isEmpty()) {
+            throw new BusinessException(ErrorCode.PAYMENT_NOT_REFUNDABLE);
+        }
+        
+        return createRefundResponse(refunds.get(refunds.size() - 1));
+    }
+   
+    @Transactional(readOnly = true)
+    public PaymentRefundResponse getRefund(Long refundId) {
+        Refund refund = refundRepository.findById(refundId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_REFUND_NOT_FOUND));
+        
+        return createRefundResponse(refund);
+    }
+    private PaymentRefundResponse createRefundResponse(Refund refund) {
+        return PaymentRefundResponse.builder()
+                .refundId(refund.getRefundId())
+                .paymentId(refund.getPayment().getPaymentId())
+                .amount(refund.getAmount())
+                .reason(refund.getReason())
+                .refundKey(refund.getRefundKey())
+                .refundedAt(refund.getRefundedAt())
+                .bankCode(refund.getBankCode())
+                .accountNumber(refund.getAccountNumber())
+                .holderName(refund.getHolderName())
+                .build();
+    }
+} 
