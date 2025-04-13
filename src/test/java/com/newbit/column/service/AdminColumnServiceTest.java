@@ -151,4 +151,132 @@ class AdminColumnServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining(ErrorCode.COLUMN_REQUEST_NOT_FOUND.getMessage());
     }
+
+    @Test
+    @DisplayName("칼럼 수정 요청 승인 - 성공")
+    void approveUpdateColumnRequest_success() {
+        // given
+        Long columnRequestId = 1L;
+        Long adminUserId = 99L;
+
+        Column column = mock(Column.class);
+        ColumnRequest request = ColumnRequest.builder()
+                .columnRequestId(columnRequestId)
+                .requestType(RequestType.UPDATE)
+                .column(column)
+                .updatedTitle("수정 제목")
+                .updatedContent("수정 내용")
+                .updatedPrice(5000)
+                .updatedThumbnailUrl("https://example.com/thumb.jpg")
+                .build();
+
+        AdminColumnResponseDto expectedDto = AdminColumnResponseDto.builder()
+                .requestId(columnRequestId)
+                .requestType("UPDATE")
+                .isApproved(true)
+                .columnId(10L)
+                .build();
+
+        when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
+        when(adminColumnMapper.toDto(request)).thenReturn(expectedDto);
+
+        // when
+        AdminColumnResponseDto result = adminColumnService.approveUpdateColumnRequest(
+                createApproveDto(columnRequestId), adminUserId);
+
+        // then
+        assertThat(result.getRequestId()).isEqualTo(columnRequestId);
+        verify(column).updateContent("수정 제목", "수정 내용", 5000, "https://example.com/thumb.jpg");
+        verify(columnRequestRepository).findById(columnRequestId);
+    }
+
+    @Test
+    @DisplayName("칼럼 수정 요청 승인 - 요청 타입이 UPDATE가 아닌 경우 예외 발생")
+    void approveUpdateColumnRequest_invalidType() {
+        // given
+        Long columnRequestId = 2L;
+        ColumnRequest request = ColumnRequest.builder()
+                .columnRequestId(columnRequestId)
+                .requestType(RequestType.CREATE)
+                .build();
+
+        when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
+
+        // when & then
+        assertThatThrownBy(() -> adminColumnService.approveUpdateColumnRequest(
+                createApproveDto(columnRequestId), 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.INVALID_REQUEST_TYPE.getMessage());
+    }
+
+    @Test
+    @DisplayName("칼럼 수정 요청 거절 - 성공")
+    void rejectUpdateColumnRequest_success() {
+        // given
+        Long columnRequestId = 3L;
+        Long adminUserId = 99L;
+
+        ColumnRequest request = ColumnRequest.builder()
+                .columnRequestId(columnRequestId)
+                .requestType(RequestType.UPDATE)
+                .build();
+
+        AdminColumnResponseDto expectedDto = AdminColumnResponseDto.builder()
+                .requestId(columnRequestId)
+                .requestType("UPDATE")
+                .isApproved(false)
+                .columnId(5L)
+                .build();
+
+        when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
+        when(adminColumnMapper.toDto(request)).thenReturn(expectedDto);
+
+        // when
+        AdminColumnResponseDto result = adminColumnService.rejectUpdateColumnRequest(
+                createRejectDto(columnRequestId, "사유입니다."), adminUserId);
+
+        // then
+        assertThat(result.getRequestId()).isEqualTo(columnRequestId);
+        verify(columnRequestRepository).findById(columnRequestId);
+    }
+
+    @Test
+    @DisplayName("칼럼 수정 요청 거절 - 요청이 존재하지 않는 경우 예외 발생")
+    void rejectUpdateColumnRequest_notFound() {
+        // given
+        Long columnRequestId = 4L;
+        when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> adminColumnService.rejectUpdateColumnRequest(
+                createRejectDto(columnRequestId, "없음"), 1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.COLUMN_REQUEST_NOT_FOUND.getMessage());
+    }
+
+    // ===== DTO 헬퍼 메서드 =====
+
+    private ApproveColumnRequestDto createApproveDto(Long id) {
+        ApproveColumnRequestDto dto = new ApproveColumnRequestDto();
+        setField(dto, "columnRequestId", id);
+        return dto;
+    }
+
+    private RejectColumnRequestDto createRejectDto(Long id, String reason) {
+        RejectColumnRequestDto dto = new RejectColumnRequestDto();
+        setField(dto, "columnRequestId", id);
+        setField(dto, "reason", reason);
+        return dto;
+    }
+
+    // 필드 값 세팅용 리플렉션 헬퍼
+    private void setField(Object target, String fieldName, Object value) {
+        try {
+            var field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
