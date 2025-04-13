@@ -2,6 +2,7 @@ package com.newbit.settlement.controller;
 
 import com.newbit.auth.model.CustomUser;
 import com.newbit.common.dto.ApiResponse;
+import com.newbit.settlement.dto.response.MentorSettlementDetailResponseDto;
 import com.newbit.settlement.dto.response.MentorSettlementListResponseDto;
 import com.newbit.settlement.service.MentorSettlementService;
 import com.newbit.user.service.MentorService;
@@ -44,6 +45,16 @@ public class MentorSettlementController {
         Long userId = customUser.getUserId();
         Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
         MentorSettlementListResponseDto response = mentorSettlementService.getMySettlements(mentorId, page, size);
+        return ApiResponse.success(response);
+    }
+
+    @GetMapping("/{settlementId}")
+    @Operation(summary = "정산 상세 내역 조회", description = "멘토의 월별 정산 상세 정보를 조회합니다.")
+    public ApiResponse<MentorSettlementDetailResponseDto> getSettlementDetail(
+            @AuthenticationPrincipal CustomUser customUser,
+            @PathVariable Long settlementId
+    ) {
+        MentorSettlementDetailResponseDto response = mentorSettlementService.getSettlementDetail(settlementId);
         return ApiResponse.success(response);
     }
 }
