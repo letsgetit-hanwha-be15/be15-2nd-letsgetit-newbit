@@ -60,7 +60,7 @@ public class CoffeechatCommandService {
         // 3. 커피챗 요청 등록(서비스 함수 생성)
         createRequestTime(coffeechat.getCoffeechatId(), request.getRequestTimes(), request.getPurchaseQuantity());
 
-
+        // 4. 커피챗 요청 등록시 멘토에게 실시간 알림 발송
         notificationCommandService.sendNotification(
                new NotificationSendRequest(
                        mentorService.getUserIdByMentorId(request.getMentorId())
@@ -121,7 +121,15 @@ public class CoffeechatCommandService {
         // 5. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
 
-        // 6. TODO : 멘티에게 승인 알림 보내주기
+        // 6. 멘티에게 승인 알림 보내주기
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        coffeechat.getMenteeId()
+                        , 4L
+                        , coffeechat.getCoffeechatId()
+                        , "커피챗 요청이 승인되었습니다."
+                )
+        );
     }
 
     @Transactional
@@ -139,7 +147,15 @@ public class CoffeechatCommandService {
         // 4. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
 
-        // 5. TODO : 멘토에게 거절 알림 보내주기
+        // 5. 멘토에게 거절 알림 보내주기
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        coffeechat.getMenteeId()
+                        , 5L
+                        , coffeechat.getCoffeechatId()
+                        , "커피챗 요청이 거절되었습니다."
+                )
+        );
     }
 
     @Transactional
