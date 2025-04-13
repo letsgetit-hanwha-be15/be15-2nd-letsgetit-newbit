@@ -27,7 +27,6 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final PointTransactionCommandService pointTransactionCommandService;
-    private final NotificationRepository notificationRepository;
     private final NotificationCommandService notificationCommandService;
 
     @Transactional

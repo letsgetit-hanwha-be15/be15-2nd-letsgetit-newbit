@@ -3,6 +3,7 @@ package com.newbit.post.service;
 import com.newbit.auth.model.CustomUser;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.post.dto.request.CommentCreateRequest;
 import com.newbit.post.dto.response.CommentResponse;
 import com.newbit.post.entity.Comment;
@@ -26,16 +27,16 @@ class CommentServiceTest {
 
     private CommentRepository commentRepository;
     private PostRepository postRepository;
-    private PointTransactionCommandService pointTransactionCommandService;
     private CommentService commentService;
 
     @BeforeEach
     void setUp() {
         commentRepository = mock(CommentRepository.class);
         postRepository = mock(PostRepository.class);
-        pointTransactionCommandService = mock(PointTransactionCommandService.class);
+        PointTransactionCommandService pointTransactionCommandService = mock(PointTransactionCommandService.class);
+        NotificationCommandService notificationCommandService = mock(NotificationCommandService.class);
 
-        commentService = new CommentService(commentRepository, postRepository, pointTransactionCommandService);
+        commentService = new CommentService(commentRepository, postRepository, pointTransactionCommandService, notificationCommandService);
     }
 
     @Test
