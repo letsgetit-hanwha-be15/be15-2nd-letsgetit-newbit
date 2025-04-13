@@ -1,6 +1,8 @@
 package com.newbit.post.service;
 
 import com.newbit.auth.model.CustomUser;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.post.dto.request.CommentCreateRequest;
 import com.newbit.post.dto.response.CommentResponse;
 import com.newbit.post.entity.Comment;
@@ -150,9 +152,10 @@ class CommentServiceTest {
         when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> commentService.deleteComment(postId, commentId, user))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("해당 댓글이 존재하지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.COMMENT_NOT_FOUND);
     }
+
 
     @Test
     void 댓글_삭제_실패_postId_불일치() {
@@ -178,8 +181,8 @@ class CommentServiceTest {
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
         assertThatThrownBy(() -> commentService.deleteComment(wrongPostId, commentId, user))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("해당 댓글이 존재하지 않거나 게시글과 매칭되지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.COMMENT_POST_MISMATCH);
     }
 
     @Test
@@ -205,8 +208,8 @@ class CommentServiceTest {
         when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
         assertThatThrownBy(() -> commentService.deleteComment(postId, commentId, user))
-                .isInstanceOf(SecurityException.class)
-                .hasMessage("댓글은 작성자만 삭제할 수 있습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("errorCode", ErrorCode.UNAUTHORIZED_TO_DELETE_COMMENT);
     }
 
 }
