@@ -1,8 +1,11 @@
 package com.newbit.settlement.service;
 
 import com.newbit.common.dto.Pagination;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.command.domain.aggregate.SaleHistory;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
+import com.newbit.settlement.dto.response.MentorSettlementDetailResponseDto;
 import com.newbit.settlement.dto.response.MentorSettlementListResponseDto;
 import com.newbit.settlement.dto.response.MentorSettlementSummaryDto;
 import com.newbit.settlement.entity.MonthlySettlementHistory;
@@ -86,5 +89,13 @@ public class MentorSettlementService {
                         .totalItems(resultPage.getTotalElements())
                         .build())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public MentorSettlementDetailResponseDto getSettlementDetail(Long settlementId) {
+        MonthlySettlementHistory history = monthlySettlementHistoryRepository.findById(settlementId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SETTLEMENT_NOT_FOUND));
+
+        return MentorSettlementDetailResponseDto.from(history);
     }
 }

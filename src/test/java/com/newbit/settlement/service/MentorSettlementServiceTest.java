@@ -2,6 +2,7 @@ package com.newbit.settlement.service;
 
 import com.newbit.purchase.command.domain.aggregate.SaleHistory;
 import com.newbit.purchase.command.domain.repository.SaleHistoryRepository;
+import com.newbit.settlement.dto.response.MentorSettlementDetailResponseDto;
 import com.newbit.settlement.dto.response.MentorSettlementListResponseDto;
 import com.newbit.settlement.entity.MonthlySettlementHistory;
 import com.newbit.settlement.repository.MonthlySettlementHistoryRepository;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
@@ -117,4 +119,35 @@ class MentorSettlementServiceTest {
         assertThat(result.getPagination().getCurrentPage()).isEqualTo(page);
         assertThat(result.getPagination().getTotalItems()).isEqualTo(2);
     }
+
+    @Test
+    @DisplayName("정산 상세 내역 조회 - 성공")
+    void getSettlementDetail_success() {
+        // given
+        Long settlementId = 1L;
+        Long mentorId = 100L;
+
+        MonthlySettlementHistory history = MonthlySettlementHistory.builder()
+                .monthlySettlementHistoryId(settlementId)
+                .settlementYear(2025)
+                .settlementMonth(4)
+                .settlementAmount(new BigDecimal("123456.78"))
+                .settledAt(LocalDateTime.of(2025, 4, 30, 23, 59))
+                .mentor(Mentor.builder().mentorId(mentorId).build())
+                .build();
+
+        when(monthlySettlementHistoryRepository.findById(settlementId))
+                .thenReturn(Optional.of(history));
+
+        // when
+        MentorSettlementDetailResponseDto result = mentorSettlementService.getSettlementDetail(settlementId);
+
+        // then
+        assertThat(result.getSettlementId()).isEqualTo(settlementId);
+        assertThat(result.getYear()).isEqualTo(2025);
+        assertThat(result.getAmount()).isEqualByComparingTo("123456.78");
+        assertThat(result.getMonth()).isEqualTo(4);
+        assertThat(result.getSettledAt()).isEqualTo(LocalDateTime.of(2025, 4, 30, 23, 59));
+    }
+
 }
