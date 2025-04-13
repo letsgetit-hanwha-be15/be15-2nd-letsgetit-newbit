@@ -468,6 +468,6 @@ class CoffeechatCommandServiceTest {
 
         // when & then
         BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request));
-        assertEquals(ErrorCode.INVALID_COFFEECHAT_STATUS, exception.getErrorCode());
+        assertEquals(ErrorCode.INVALID_COFFEECHAT_STATUS_CANCEL, exception.getErrorCode());
     }
 }
