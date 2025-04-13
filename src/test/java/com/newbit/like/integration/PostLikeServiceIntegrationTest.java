@@ -19,7 +19,7 @@ import com.newbit.like.service.PostLikeService;
 import java.util.UUID;
 
 @SpringBootTest
-//@Transactional
+@Transactional
 @DisplayName("게시글 좋아요 서비스 통합 테스트")
 class PostLikeServiceIntegrationTest {
 
