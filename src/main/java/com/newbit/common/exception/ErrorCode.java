@@ -35,6 +35,7 @@ public enum ErrorCode {
     INVALID_CURRENT_PASSWORD("20010", "비밀번호가 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
 
     /*--------------- 커피챗 오류 ------------------*/
+    // 커피챗
     COFFEECHAT_NOT_FOUND("70001", "해당 커피챗을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     REQUEST_TIME_NOT_FOUND("70002", "해당 커피챗 시간 요청내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     COFFEECHAT_ALREADY_EXIST("70003", "해당 멘토와의 커피챗이 이미 존재합니다.", HttpStatus.CONFLICT),
@@ -42,9 +43,13 @@ public enum ErrorCode {
     COFFEECHAT_CANCEL_NOT_ALLOWED("70007", "본인의 커피챗만 취소 가능합니다.", HttpStatus.FORBIDDEN),
     COFFEECHAT_NOT_REFUNDABLE("70008", "커피챗이 환불 가능한 상태가 아닙니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_COFFEECHAT_STATUS_CANCEL("70009", "커피챗이 취소 가능한 상태가 아닙니다.", HttpStatus.BAD_REQUEST),
+
+    //리뷰
     INVALID_COFFEECHAT_STATUS_COMPLETE("70010", "커피챗이 리뷰를 장성할 수 있는 상태가 아닙니다.", HttpStatus.BAD_REQUEST),
     REVIEW_ALREADY_EXIST("70011", "해당 커피챗에 대한 리뷰가 이미 존재합니다.", HttpStatus.CONFLICT),
     REVIEW_CREATE_NOT_ALLOWED("70012", "본인이 멘티인 커피챗만 리뷰 작성 가능합니다.", HttpStatus.FORBIDDEN),
+    REVIEW_CANCEL_NOT_ALLOWED("70013", "본인의 리뷰만 취소 가능합니다.", HttpStatus.FORBIDDEN),
+    REVIEW_NOT_FOUND("70014", "해당 리뷰를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     /*--------------- 구매 오류 ------------------*/
     COLUMN_ALREADY_PURCHASED("60000", "이미 구매한 칼럼입니다.", HttpStatus.INTERNAL_SERVER_ERROR),

@@ -360,4 +360,61 @@ class ReviewCommandServiceTest {
                 () -> reviewCommandService.createReview(userId, request));
         assertEquals(ErrorCode.REVIEW_ALREADY_EXIST, exception.getErrorCode());
     }
+
+
+    @DisplayName("정상적으로 리뷰 삭제 성공")
+    @Test
+    void deleteReview_success() {
+        // given
+        Long userId = 8L;
+        Long reviewId = 10L;
+
+        // 리뷰 객체 생성 시, 리뷰의 작성자ID userId와 일치해야 정상 삭제가 이루어짐
+        Review review = mock(Review.class);
+        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+        when(review.getUserId()).thenReturn(userId);
+
+        // when & then
+        assertDoesNotThrow(() -> reviewCommandService.deleteReview(userId, reviewId));
+
+        // 삭제 로직 검증 (리뷰의 delete() 메서드가 호출되었는지 확인)
+        verify(review, times(1)).delete();
+    }
+
+    @DisplayName("리뷰가 존재하지 않을 때 에러 발생 및 에러 코드 검증")
+    @Test
+    void deleteReview_reviewNotFound_throwsBusinessException() {
+        // given
+        Long userId = 8L;
+        Long reviewId = 10L;
+
+        when(reviewRepository.findById(reviewId)).thenReturn(Optional.empty());
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () ->
+                reviewCommandService.deleteReview(userId, reviewId)
+        );
+        // 에러 코드 검증 : 리뷰가 존재하지 않음
+        assertEquals(ErrorCode.REVIEW_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @DisplayName("본인이 작성한 리뷰가 아닐 때 에러 발생 및 에러 코드 검증")
+    @Test
+    void deleteReview_notOwner_throwsBusinessException() {
+        // given
+        Long userId = 8L;
+        Long reviewId = 10L;
+
+        // 리뷰 객체 생성 시, userId와 요청한 userId와 다르게 설정하여 본인이 작성한 리뷰가 아님을 표현
+        Review review = mock(Review.class);
+        when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+        when(review.getUserId()).thenReturn(9L); // userId 8L와 다름
+
+        // when & then
+        BusinessException exception = assertThrows(BusinessException.class, () ->
+                reviewCommandService.deleteReview(userId, reviewId)
+        );
+        // 에러 코드 검증 : 본인이 작성한 리뷰가 아님
+        assertEquals(ErrorCode.REVIEW_CANCEL_NOT_ALLOWED, exception.getErrorCode());
+    }
 }

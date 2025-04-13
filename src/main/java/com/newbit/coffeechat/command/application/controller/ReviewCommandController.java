@@ -14,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -50,4 +47,20 @@ public class ReviewCommandController {
                 .body(ApiResponse.success(response));
     }
 
+    @Operation(
+            summary = "리뷰 삭제",
+            description = "사용자가 본인이 작성한 리뷰를 삭제합니다."
+    )
+    @PutMapping("/delete/{reviewId}")
+    public ResponseEntity<ApiResponse<ReviewCommandResponse>> deleteCoffeechat(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+
+        Long userId = customUser.getUserId();
+        reviewCommandService.deleteReview(userId, reviewId);
+
+        return ResponseEntity
+                .ok(ApiResponse.success(null));
+    }
 }
