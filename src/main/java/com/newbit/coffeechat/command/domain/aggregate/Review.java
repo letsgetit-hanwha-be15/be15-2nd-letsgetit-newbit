@@ -39,7 +39,7 @@ public class Review {
     private LocalDateTime updatedAt;
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-    @Column(name = "review_id", nullable = false)
+    @Column(name = "coffeechat_id", nullable = false)
     private Long coffeechatId;
     @Column(name = "user_id")
     private Long userId;
