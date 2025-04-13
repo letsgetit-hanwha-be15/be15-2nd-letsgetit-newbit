@@ -17,6 +17,8 @@ public interface UserMapper {
     List<PostDTO> findMentorPosts(Long mentorId);
     List<ColumnDTO> findMentorColumns(Long mentorId);
     List<SeriesDTO> findMentorSeries(Long mentorId);
+    List<ReviewDTO> findReviewsByMentorId(Long mentorId);
+
     List<MentorListResponseDTO> findMentors(MentorListRequestDTO request);
 
 }
