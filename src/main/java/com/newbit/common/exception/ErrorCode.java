@@ -11,6 +11,12 @@ import lombok.Getter;
 public enum ErrorCode {
     // 상품 관련 오류
     PRODUCT_NOT_FOUND("10001", "해당 상품을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    PRODUCT_INACTIVE("10002", "비활성화된 상품입니다.", HttpStatus.BAD_REQUEST),
+    PRODUCT_PRICE_MISMATCH("10003", "상품 가격이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
+    PRODUCT_INVALID_DIAMOND_AMOUNT("10004", "올바르지 않은 다이아몬드 수량입니다.", HttpStatus.BAD_REQUEST),
+    PRODUCT_NAME_DUPLICATE("10005", "이미 존재하는 상품명입니다.", HttpStatus.CONFLICT),
+    PRODUCT_ORDER_INVALID("10006", "주문 정보를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
+    PRODUCT_PURCHASE_UNAUTHORIZED("10007", "상품 구매 권한이 없습니다.", HttpStatus.FORBIDDEN),
 
     // 파일 관련 오류
     FILE_SAVE_ERROR("20001", "파일 저장에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
