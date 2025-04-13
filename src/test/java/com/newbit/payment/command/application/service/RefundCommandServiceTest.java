@@ -10,6 +10,7 @@ import com.newbit.payment.command.domain.aggregate.PaymentStatus;
 import com.newbit.payment.command.domain.aggregate.Refund;
 import com.newbit.payment.command.domain.repository.PaymentRepository;
 import com.newbit.payment.command.domain.repository.RefundRepository;
+import com.newbit.purchase.command.application.service.DiamondTransactionCommandService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,9 @@ class RefundCommandServiceTest {
 
     @Mock
     private NotificationCommandService notificationCommandService;
+
+    @Mock
+    private DiamondTransactionCommandService diamondTransactionCommandService;
 
     @InjectMocks
     private RefundCommandService refundCommandService;

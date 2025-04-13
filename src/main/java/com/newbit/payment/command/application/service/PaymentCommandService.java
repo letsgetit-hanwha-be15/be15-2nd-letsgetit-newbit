@@ -13,6 +13,7 @@ import com.newbit.payment.command.application.dto.response.PaymentPrepareRespons
 import com.newbit.payment.command.domain.aggregate.Payment;
 import com.newbit.payment.command.domain.aggregate.PaymentStatus;
 import com.newbit.payment.command.domain.repository.PaymentRepository;
+import com.newbit.purchase.command.application.service.DiamondTransactionCommandService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,11 +23,17 @@ import java.util.UUID;
 @Service
 public class PaymentCommandService extends AbstractPaymentService<PaymentApproveResponse> {
 
+    private static final int DIAMOND_UNIT_PRICE = 100;
     private final NotificationCommandService notificationCommandService;
+    private final DiamondTransactionCommandService diamondTransactionCommandService;
 
-    public PaymentCommandService(PaymentRepository paymentRepository, TossPaymentApiClient tossPaymentApiClient, NotificationCommandService notificationCommandService) {
+    public PaymentCommandService(PaymentRepository paymentRepository, TossPaymentApiClient tossPaymentApiClient
+            , NotificationCommandService notificationCommandService
+            , DiamondTransactionCommandService diamondTransactionCommandService
+    ) {
         super(paymentRepository, tossPaymentApiClient);
         this.notificationCommandService = notificationCommandService;
+        this.diamondTransactionCommandService = diamondTransactionCommandService;
     }
 
     @Transactional
@@ -82,6 +89,14 @@ public class PaymentCommandService extends AbstractPaymentService<PaymentApprove
         }
         
         Payment updatedPayment = paymentRepository.save(payment);
+
+        int diamondAmount = updatedPayment.getAmount().intValue() / DIAMOND_UNIT_PRICE;
+
+        diamondTransactionCommandService.applyDiamondPayment(
+                updatedPayment.getUserId()
+                , updatedPayment.getPaymentId()
+                , diamondAmount
+        );
 
         String notificationContent = String.format("결제가 완료 되었습니다. (결제 금액: %,d)", updatedPayment.getAmount().intValue());
 
