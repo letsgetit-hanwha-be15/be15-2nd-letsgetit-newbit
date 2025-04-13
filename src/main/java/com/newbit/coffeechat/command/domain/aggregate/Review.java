@@ -31,7 +31,7 @@ public class Review {
     @Column(name = "comment")
     private String comment;
     @Column(name = "tip")
-    private int tip;
+    private Integer tip;
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     @LastModifiedDate
