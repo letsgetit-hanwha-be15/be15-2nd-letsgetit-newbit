@@ -13,6 +13,7 @@ import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.purchase.command.application.service.DiamondCoffeechatTransactionCommandService;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.service.MentorService;
@@ -53,6 +54,8 @@ class CoffeechatCommandServiceTest {
     private MentorService mentorService;
     @Mock
     private DiamondCoffeechatTransactionCommandService transactionCommandService;
+    @Mock
+    private NotificationCommandService notificationCommandService;
 
     @DisplayName("커피챗 요청 등록 성공")
     @Test
@@ -310,29 +313,35 @@ class CoffeechatCommandServiceTest {
         assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
     }
 
-    @DisplayName("멘티 구매 확정 성공")
     @Test
+    @DisplayName("멘티 구매 확정 성공")
     void confirmPurchaseCoffeechat_성공() {
         // given
         Long coffeechatId = 999L;
         Long mentorId = 2L;
+        int purchaseQuantity = 2;
+        int pricePerUnit = 10;
+        int totalPrice = pricePerUnit * purchaseQuantity;
 
-        // coffeechat repo setting
+        // mockCoffeechat 생성
         Coffeechat mockCoffeechat = Coffeechat.of(12L,
                 mentorId,
                 "취업 관련 꿀팁 얻고 싶어요.",
-                2);
+                purchaseQuantity);
         when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
 
-        // mentorService setting
+        // mentorService.getMentorInfo 설정
         MentorDTO mentorDTO = MentorDTO.builder()
-                .price(10)
+                .price(pricePerUnit)
                 .isActive(true)
                 .build();
         when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
-        doNothing().when(transactionCommandService).addSaleHistory(mentorId, 10, coffeechatId);
 
-        // when & then: 예외가 발생하지 않으면 테스트 통과
+        // transactionCommandService 호출 mock
+        doNothing().when(transactionCommandService)
+                .addSaleHistory(mentorId, totalPrice, coffeechatId);
+
+        // when & then
         assertDoesNotThrow(() -> coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId));
     }
 
