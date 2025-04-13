@@ -19,4 +19,5 @@ public class MentorProfileDTO {
     private List<PostDTO> posts;
     private List<ColumnDTO> columns;
     private List<SeriesDTO> series;
+    private List<ReviewDTO> reviews;
 }
