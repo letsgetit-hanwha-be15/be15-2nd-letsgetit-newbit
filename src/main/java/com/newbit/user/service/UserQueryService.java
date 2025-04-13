@@ -2,6 +2,7 @@ package com.newbit.user.service;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.user.dto.request.MentorListRequestDTO;
 import com.newbit.user.dto.response.*;
 import com.newbit.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +43,13 @@ public class UserQueryService {
         profile.setSeries(series);
 
         return profile;
+    }
+
+    public List<MentorListResponseDTO> getMentors(MentorListRequestDTO request) {
+        List<MentorListResponseDTO> mentors = userMapper.findMentors(request);
+        if (mentors.isEmpty()) {
+            throw new BusinessException(ErrorCode.MENTOR_NOT_FOUND);
+        }
+        return mentors;
     }
 }
