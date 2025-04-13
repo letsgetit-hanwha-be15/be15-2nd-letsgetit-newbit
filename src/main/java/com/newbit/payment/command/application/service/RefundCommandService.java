@@ -2,6 +2,8 @@ package com.newbit.payment.command.application.service;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.payment.command.application.dto.TossPaymentApiDto;
 import com.newbit.payment.command.application.dto.response.PaymentRefundResponse;
 import com.newbit.payment.command.domain.aggregate.Payment;
@@ -20,12 +22,14 @@ import java.util.stream.Collectors;
 public class RefundCommandService extends AbstractPaymentService<PaymentRefundResponse> {
 
     private final RefundRepository refundRepository;
+    private final NotificationCommandService notificationCommandService;
 
     public RefundCommandService(PaymentRepository paymentRepository,
-                               RefundRepository refundRepository,
-                               TossPaymentApiClient tossPaymentApiClient) {
+                                RefundRepository refundRepository,
+                                TossPaymentApiClient tossPaymentApiClient, NotificationCommandService notificationCommandService) {
         super(paymentRepository, tossPaymentApiClient);
         this.refundRepository = refundRepository;
+        this.notificationCommandService = notificationCommandService;
     }
 
     @Transactional
@@ -51,6 +55,17 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
         );
         
         Refund savedRefund = refundRepository.save(refund);
+
+        String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", savedRefund.getAmount().intValue());
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        payment.getUserId()
+                        , 15L
+                        , savedRefund.getRefundId()
+                        , notificationContent
+                )
+        );
         
         return createRefundResponse(savedRefund);
     }
@@ -81,6 +96,17 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
         );
         
         Refund savedRefund = refundRepository.save(refund);
+
+        String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", savedRefund.getAmount().intValue());
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        payment.getUserId()
+                        , 15L
+                        , savedRefund.getRefundId()
+                        , notificationContent
+                )
+        );
 
         return createRefundResponse(savedRefund);
     }
