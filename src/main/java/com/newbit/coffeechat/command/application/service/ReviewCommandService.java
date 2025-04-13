@@ -72,4 +72,19 @@ public class ReviewCommandService {
 
         return review.getReviewId();
     }
+
+    @Transactional
+    public void deleteReview(Long userId, Long reviewId) {
+        // 1. 리뷰가 존재하는지 확인
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.REVIEW_NOT_FOUND));
+
+        // 2. 본인이 작성한 리뷰인지 확인
+        if(!review.getCoffeechatId().equals(userId)){
+            throw new BusinessException(ErrorCode.REVIEW_CANCEL_NOT_ALLOWED);
+        }
+
+        // 3. 리뷰 삭제
+        review.delete();
+    }
 }
