@@ -1,11 +1,11 @@
 package com.newbit.subscription.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,10 +16,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.subscription.dto.response.SubscriptionResponse;
 import com.newbit.subscription.dto.response.SubscriptionStatusResponse;
 import com.newbit.subscription.service.SubscriptionService;
-import com.newbit.common.exception.ErrorCode;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -42,7 +42,6 @@ class SubscriptionIntegrationTest {
         String uniqueEmail = "test_" + uniqueId + "@example.com";
         String uniqueSeriesTitle = "통합테스트 시리즈 " + uniqueId;
         
-        // 테스트 사용자 생성
         jdbcTemplate.update(
             "INSERT INTO user (email, nickname, password, phone_number, user_name, point, diamond, authority, is_suspended, created_at, updated_at) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
@@ -56,7 +55,6 @@ class SubscriptionIntegrationTest {
             uniqueEmail
         );
         
-        // 테스트 멘토 생성
         jdbcTemplate.update(
             "INSERT INTO mentor (user_id, temperature, preferred_time, is_active, price, created_at, updated_at) " +
             "VALUES (?, ?, ?, ?, ?, NOW(), NOW())",
@@ -69,7 +67,6 @@ class SubscriptionIntegrationTest {
             testUserId
         );
         
-        // 테스트 시리즈 생성
         jdbcTemplate.update(
             "INSERT INTO series (title, description, thumbnail_url, created_at, updated_at, mentor_id) " +
             "VALUES (?, ?, ?, NOW(), NOW(), ?)",
@@ -83,15 +80,26 @@ class SubscriptionIntegrationTest {
         );
     }
     
+    @AfterEach
+    void cleanup() {
+        jdbcTemplate.update("DELETE FROM subscription_list WHERE user_id = ? OR series_id = ?", testUserId, testSeriesId);
+        jdbcTemplate.update("DELETE FROM series WHERE mentor_id IN (SELECT mentor_id FROM mentor WHERE user_id = ?)", testUserId);
+        jdbcTemplate.update("DELETE FROM mentor WHERE user_id = ?", testUserId);
+        jdbcTemplate.update("DELETE FROM user WHERE user_id = ?", testUserId);
+    }
+    
     @Test
     @DisplayName("시리즈 구독 토글 통합 테스트")
     void toggleSubscriptionTest() {
+        // Given
         SubscriptionStatusResponse initialStatus = subscriptionService.getSubscriptionStatus(testSeriesId, testUserId);
         assertThat(initialStatus.isSubscribed()).isFalse();
         assertThat(initialStatus.getTotalSubscribers()).isEqualTo(0);
         
+        // When - 구독 추가
         SubscriptionResponse addResponse = subscriptionService.toggleSubscription(testSeriesId, testUserId);
         
+        // Then - 응답 확인
         assertThat(addResponse).isNotNull();
         assertThat(addResponse.getUserId()).isEqualTo(testUserId);
         assertThat(addResponse.getSeriesId()).isEqualTo(testSeriesId);
@@ -109,8 +117,10 @@ class SubscriptionIntegrationTest {
         assertThat(afterAddStatus.isSubscribed()).isTrue();
         assertThat(afterAddStatus.getTotalSubscribers()).isEqualTo(1);
         
+        // When - 구독 취소
         SubscriptionResponse cancelResponse = subscriptionService.toggleSubscription(testSeriesId, testUserId);
         
+        // Then - 응답 확인
         assertThat(cancelResponse).isNotNull();
         assertThat(cancelResponse.getUserId()).isEqualTo(testUserId);
         assertThat(cancelResponse.getSeriesId()).isEqualTo(testSeriesId);
@@ -132,19 +142,17 @@ class SubscriptionIntegrationTest {
     @Test
     @DisplayName("사용자 구독 목록 조회 통합 테스트")
     void getUserSubscriptionsTest() {
-        // 시리즈 2개 추가 생성
+        // Given
         Long secondSeriesId = createAdditionalSeries("테스트 시리즈 2");
-        
-        // 초기 상태 확인
         List<SubscriptionResponse> initialSubscriptions = subscriptionService.getUserSubscriptions(testUserId);
         assertThat(initialSubscriptions).isEmpty();
         
-        // 구독 2개 추가
+        // When
         subscriptionService.toggleSubscription(testSeriesId, testUserId);
         subscriptionService.toggleSubscription(secondSeriesId, testUserId);
-        
-        // 구독 목록 확인
         List<SubscriptionResponse> subscriptions = subscriptionService.getUserSubscriptions(testUserId);
+        
+        // Then
         assertThat(subscriptions).hasSize(2);
         assertThat(subscriptions).extracting("seriesId")
                                  .containsExactlyInAnyOrder(testSeriesId, secondSeriesId);
@@ -155,19 +163,17 @@ class SubscriptionIntegrationTest {
     @Test
     @DisplayName("시리즈 구독자 목록 조회 통합 테스트")
     void getSeriesSubscribersTest() {
-        // 사용자 추가 생성
+        // Given
         Long secondUserId = createAdditionalUser("test2@example.com");
-        
-        // 초기 상태 확인
         List<Long> initialSubscribers = subscriptionService.getSeriesSubscribers(testSeriesId);
         assertThat(initialSubscribers).isEmpty();
         
-        // 구독 2개 추가 (서로 다른 사용자)
+        // When
         subscriptionService.toggleSubscription(testSeriesId, testUserId);
         subscriptionService.toggleSubscription(testSeriesId, secondUserId);
-        
-        // 구독자 목록 확인
         List<Long> subscribers = subscriptionService.getSeriesSubscribers(testSeriesId);
+        
+        // Then
         assertThat(subscribers).hasSize(2);
         assertThat(subscribers).containsExactlyInAnyOrder(testUserId, secondUserId);
     }
@@ -187,32 +193,34 @@ class SubscriptionIntegrationTest {
     }
     
     private Long createAdditionalSeries(String title) {
+        String uniqueTitle = title + "_" + System.currentTimeMillis();
         jdbcTemplate.update(
             "INSERT INTO series (title, description, thumbnail_url, created_at, updated_at, mentor_id) " +
             "VALUES (?, ?, ?, NOW(), NOW(), ?)",
-            title, "시리즈 설명입니다.", "thumbnail.jpg",
+            uniqueTitle, "시리즈 설명입니다.", "thumbnail.jpg",
             jdbcTemplate.queryForObject("SELECT mentor_id FROM mentor WHERE user_id = ?", Long.class, testUserId)
         );
         
         return jdbcTemplate.queryForObject(
             "SELECT series_id FROM series WHERE title = ?", 
             Long.class,
-            title
+            uniqueTitle
         );
     }
     
     private Long createAdditionalUser(String email) {
+        String uniqueEmail = email + "_" + System.currentTimeMillis();
         jdbcTemplate.update(
             "INSERT INTO user (email, nickname, password, phone_number, user_name, point, diamond, authority, is_suspended, created_at, updated_at) " +
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
-            email, "테스트유저2", "password", "01087654321", "테스트유저2", 
+            uniqueEmail, "테스트유저2", "password", "01087654321", "테스트유저2", 
             0, 0, "USER", false
         );
         
         return jdbcTemplate.queryForObject(
             "SELECT user_id FROM user WHERE email = ?", 
             Long.class, 
-            email
+            uniqueEmail
         );
     }
 } 
