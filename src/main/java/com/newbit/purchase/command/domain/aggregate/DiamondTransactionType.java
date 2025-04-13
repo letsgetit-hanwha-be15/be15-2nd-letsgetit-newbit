@@ -4,5 +4,6 @@ public enum DiamondTransactionType {
     COLUMN,
     COFFEECHAT,
     MENTOR_AUTHORITY,
-    CHARGE
+    CHARGE,
+    REFUND
 }
