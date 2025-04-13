@@ -79,4 +79,8 @@ public class SaleHistory {
                 .build();
     }
 
+    public void markAsSettled() {
+        this.settledAt = LocalDateTime.now();
+        this.isSettled = true;
+    }
 }
