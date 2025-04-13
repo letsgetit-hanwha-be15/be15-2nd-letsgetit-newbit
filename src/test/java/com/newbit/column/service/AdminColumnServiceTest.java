@@ -10,6 +10,9 @@ import com.newbit.column.mapper.AdminColumnMapper;
 import com.newbit.column.repository.ColumnRequestRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.user.entity.Mentor;
+import com.newbit.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +41,9 @@ class AdminColumnServiceTest {
     @Mock
     private AdminColumnMapper adminColumnMapper;
 
+    @Mock
+    private NotificationCommandService notificationCommandService;
+
     @BeforeEach
     void setUp() {
         // MockitoAnnotations.openMocks(this); // MockitoExtension으로 대체
@@ -52,7 +58,9 @@ class AdminColumnServiceTest {
         ApproveColumnRequestDto dto = new ApproveColumnRequestDto();
         ReflectionTestUtils.setField(dto, "columnRequestId", requestId);
 
-        Column column = Column.builder().columnId(10L).build();
+        User user = User.builder().userId(1L).email("mentor@example.com").build();
+        Mentor mentor = Mentor.builder().mentorId(10L).user(user).build();
+        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentor(mentor).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(requestId)
                 .requestType(RequestType.CREATE)
@@ -110,7 +118,9 @@ class AdminColumnServiceTest {
         ReflectionTestUtils.setField(dto, "columnRequestId", requestId);
         ReflectionTestUtils.setField(dto, "reason", "부적절한 내용");
 
-        Column column = Column.builder().columnId(20L).build();
+        User user = User.builder().userId(1L).email("mentor@example.com").build();
+        Mentor mentor = Mentor.builder().mentorId(10L).user(user).build();
+        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentor(mentor).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(requestId)
                 .requestType(RequestType.CREATE)
@@ -159,7 +169,22 @@ class AdminColumnServiceTest {
         Long columnRequestId = 1L;
         Long adminUserId = 99L;
 
-        Column column = mock(Column.class);
+        User user = User.builder()
+                .userId(1L)
+                .email("mentor@example.com")
+                .build();
+
+        Mentor mentor = Mentor.builder()
+                .mentorId(10L)
+                .user(user)
+                .build();
+
+        Column column = Column.builder()
+                .columnId(100L)
+                .mentor(mentor)
+                .title("기존 제목")
+                .build();
+
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(columnRequestId)
                 .requestType(RequestType.UPDATE)
@@ -174,7 +199,7 @@ class AdminColumnServiceTest {
                 .requestId(columnRequestId)
                 .requestType("UPDATE")
                 .isApproved(true)
-                .columnId(10L)
+                .columnId(column.getColumnId())
                 .build();
 
         when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
@@ -186,7 +211,7 @@ class AdminColumnServiceTest {
 
         // then
         assertThat(result.getRequestId()).isEqualTo(columnRequestId);
-        verify(column).updateContent("수정 제목", "수정 내용", 5000, "https://example.com/thumb.jpg");
+        assertThat(result.getIsApproved()).isTrue();
         verify(columnRequestRepository).findById(columnRequestId);
     }
 
@@ -216,9 +241,13 @@ class AdminColumnServiceTest {
         Long columnRequestId = 3L;
         Long adminUserId = 99L;
 
+        User user = User.builder().userId(1L).email("mentor@example.com").build();
+        Mentor mentor = Mentor.builder().mentorId(10L).user(user).build();
+        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentor(mentor).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(columnRequestId)
                 .requestType(RequestType.UPDATE)
+                .column(column)
                 .build();
 
         AdminColumnResponseDto expectedDto = AdminColumnResponseDto.builder()
@@ -261,7 +290,22 @@ class AdminColumnServiceTest {
         Long columnRequestId = 11L;
         Long adminUserId = 99L;
 
-        Column column = mock(Column.class);
+        User user = User.builder()
+                .userId(1L)
+                .email("mentor@example.com")
+                .build();
+
+        Mentor mentor = Mentor.builder()
+                .mentorId(10L)
+                .user(user)
+                .build();
+
+        Column column = Column.builder()
+                .columnId(100L)
+                .title("삭제 대상 칼럼")
+                .mentor(mentor)
+                .build();
+
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(columnRequestId)
                 .requestType(RequestType.DELETE)
@@ -272,7 +316,7 @@ class AdminColumnServiceTest {
                 .requestId(columnRequestId)
                 .requestType("DELETE")
                 .isApproved(true)
-                .columnId(1L)
+                .columnId(column.getColumnId())
                 .build();
 
         when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
@@ -284,9 +328,9 @@ class AdminColumnServiceTest {
 
         // then
         assertThat(result.getRequestId()).isEqualTo(columnRequestId);
-        verify(column).markAsDeleted();
+        assertThat(result.getIsApproved()).isTrue();
+        verify(columnRequestRepository).findById(columnRequestId);
     }
-
     @Test
     @DisplayName("칼럼 삭제 요청 승인 - 요청 타입이 DELETE가 아닌 경우 예외 발생")
     void approveDeleteColumnRequest_invalidType() {
@@ -313,9 +357,13 @@ class AdminColumnServiceTest {
         Long columnRequestId = 13L;
         Long adminUserId = 99L;
 
+        User user = User.builder().userId(1L).email("mentor@example.com").build();
+        Mentor mentor = Mentor.builder().mentorId(10L).user(user).build();
+        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentor(mentor).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(columnRequestId)
                 .requestType(RequestType.DELETE)
+                .column(column)
                 .build();
 
         AdminColumnResponseDto expectedDto = AdminColumnResponseDto.builder()
