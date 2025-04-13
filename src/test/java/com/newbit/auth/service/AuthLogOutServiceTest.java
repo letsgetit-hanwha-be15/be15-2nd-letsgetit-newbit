@@ -3,26 +3,36 @@ package com.newbit.auth.service;
 import com.newbit.auth.jwt.JwtTokenProvider;
 import com.newbit.auth.repository.RefreshTokenRepository;
 import com.newbit.user.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
+import com.newbit.user.service.SuspensionService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class AuthLogOutTest {
 
+    @InjectMocks
     private AuthService authService;
+
+    @Mock
     private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
     private RefreshTokenRepository refreshTokenRepository;
-    private UserRepository userRepository; // login(), refreshToken()에 필요하지만 여기선 안 씀
 
-    @BeforeEach
-    void setUp() {
-        jwtTokenProvider = mock(JwtTokenProvider.class);
-        refreshTokenRepository = mock(RefreshTokenRepository.class);
-        userRepository = mock(UserRepository.class); // 필요하지만 unused
+    @Mock
+    private UserRepository userRepository;
 
-        authService = new AuthService(userRepository, refreshTokenRepository, null, jwtTokenProvider);
-    }
+    @Mock
+    private SuspensionService suspensionService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder; // login(), refreshToken()에서 필요하므로 포함
 
     @Test
     void 로그아웃_성공_테스트() {
@@ -30,14 +40,14 @@ class AuthLogOutTest {
         String refreshToken = "validRefreshToken";
         String email = "user@example.com";
 
-        // mock 설정 (doNothing 필요 없음!)
+        // mock 설정
         when(jwtTokenProvider.getUsernameFromJWT(refreshToken)).thenReturn(email);
 
-        // 실행
+        // when
         authService.logout(refreshToken);
 
         // then
-        verify(jwtTokenProvider).validateToken(refreshToken); // 호출됐는지만 확인
+        verify(jwtTokenProvider).validateToken(refreshToken);
         verify(jwtTokenProvider).getUsernameFromJWT(refreshToken);
         verify(refreshTokenRepository).deleteById(email);
     }
