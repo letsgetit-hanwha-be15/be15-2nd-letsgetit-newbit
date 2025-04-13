@@ -11,7 +11,9 @@ import com.newbit.settlement.dto.response.MentorSettlementSummaryDto;
 import com.newbit.settlement.entity.MonthlySettlementHistory;
 import com.newbit.settlement.repository.MonthlySettlementHistoryRepository;
 import com.newbit.user.entity.Mentor;
+import com.newbit.user.entity.User;
 import com.newbit.user.service.MentorService;
+import com.newbit.user.support.MailServiceSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +38,7 @@ public class MentorSettlementService {
     private final SaleHistoryRepository saleHistoryRepository;
     private final MonthlySettlementHistoryRepository monthlySettlementHistoryRepository;
     private final MentorService mentorService;
+    private final MailServiceSupport mailServiceSupport;
 
     @Transactional
     public void generateMonthlySettlements(int year, int month) {
@@ -98,4 +101,38 @@ public class MentorSettlementService {
 
         return MentorSettlementDetailResponseDto.from(history);
     }
+
+    @Transactional(readOnly = true)
+    public void sendSettlementEmail(Long mentorId, Long settlementId) {
+        MonthlySettlementHistory history = monthlySettlementHistoryRepository.findById(settlementId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SETTLEMENT_NOT_FOUND));
+
+        if(!history.getMentor().getMentorId().equals(mentorId)) {
+            throw new BusinessException(ErrorCode.SETTLEMENT_NOT_FOUND);
+        }
+
+        User user = history.getMentor().getUser();
+        String toEmail = user.getEmail();
+        String subject = "[Newbit] 월별 정산 내역 안내";
+        String content = String.format("""
+                <h3>안녕하세요, %s님</h3>
+                <p>%d년 %d월 정산 내역을 안내드립니다.</p>
+                <ul>
+                    <li><strong>정산 금액:</strong> %s원</li>
+                    <li><strong>정산 완료일:</strong> %s</li>
+                </ul>
+                <p>감사합니다.</p>
+                """,
+                user.getNickname(),
+                history.getSettlementYear(),
+                history.getSettlementMonth(),
+                history.getSettlementAmount().toPlainString(),
+                history.getSettledAt().toString()
+        );
+
+        mailServiceSupport.sendMailSupport(toEmail, subject, content);
+
+    }
+
+
 }

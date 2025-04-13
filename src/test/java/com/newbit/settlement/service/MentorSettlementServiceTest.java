@@ -7,7 +7,9 @@ import com.newbit.settlement.dto.response.MentorSettlementListResponseDto;
 import com.newbit.settlement.entity.MonthlySettlementHistory;
 import com.newbit.settlement.repository.MonthlySettlementHistoryRepository;
 import com.newbit.user.entity.Mentor;
+import com.newbit.user.entity.User;
 import com.newbit.user.service.MentorService;
+import com.newbit.user.support.MailServiceSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -36,6 +38,9 @@ class MentorSettlementServiceTest {
 
     @Mock
     private MentorService mentorService;
+
+    @Mock
+    private MailServiceSupport mailServiceSupport;
 
     @InjectMocks
     private MentorSettlementService mentorSettlementService;
@@ -148,6 +153,29 @@ class MentorSettlementServiceTest {
         assertThat(result.getAmount()).isEqualByComparingTo("123456.78");
         assertThat(result.getMonth()).isEqualTo(4);
         assertThat(result.getSettledAt()).isEqualTo(LocalDateTime.of(2025, 4, 30, 23, 59));
+    }
+
+    @Test
+    @DisplayName("정산 이메일 전송 - 성공")
+    void sendSettlementEmail_success() {
+        // given
+        Long mentorId = 1L;
+        Long settlementId = 100L;
+        User user = User.builder().userId(10L).email("test@newbit.com").build();
+        Mentor mentor = Mentor.builder().mentorId(mentorId).user(user).build();
+        MonthlySettlementHistory history = MonthlySettlementHistory.of(mentor, 2025, 4, new BigDecimal("150000"));
+
+        when(monthlySettlementHistoryRepository.findById(settlementId)).thenReturn(Optional.of(history));
+
+        // when
+        mentorSettlementService.sendSettlementEmail(mentorId, settlementId);
+
+        // then
+        verify(mailServiceSupport).sendMailSupport(
+                eq("test@newbit.com"),
+                contains("정산 내역"),
+                contains("150000")
+        );
     }
 
 }
