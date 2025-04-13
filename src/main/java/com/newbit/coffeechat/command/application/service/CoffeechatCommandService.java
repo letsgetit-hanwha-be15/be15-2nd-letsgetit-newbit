@@ -168,7 +168,7 @@ public class CoffeechatCommandService {
 
         // 3. 커피챗이 CANCEL 상태이거나, COMPLETE 상태이면 에러
         switch (coffeechat.getProgressStatus()){
-            case CANCEL, COMPLETE -> throw new BusinessException(ErrorCode.INVALID_COFFEECHAT_STATUS);
+            case CANCEL, COMPLETE -> throw new BusinessException(ErrorCode.INVALID_COFFEECHAT_STATUS_CANCEL);
         }
 
         // 4. 커피챗이 coffeechat_waiting 상태이면 환불 진행하기
