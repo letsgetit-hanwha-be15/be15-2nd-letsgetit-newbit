@@ -1,5 +1,6 @@
 package com.newbit.user.mapper;
 
+import com.newbit.user.dto.request.MentorListRequestDTO;
 import com.newbit.user.dto.response.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -16,5 +17,6 @@ public interface UserMapper {
     List<PostDTO> findMentorPosts(Long mentorId);
     List<ColumnDTO> findMentorColumns(Long mentorId);
     List<SeriesDTO> findMentorSeries(Long mentorId);
+    List<MentorListResponseDTO> findMentors(MentorListRequestDTO request);
 
 }
