@@ -111,6 +111,21 @@ public class LikeCommandService {
             increaseLikeCount(post);
             
             pointRewardService.givePointIfFirstLike(postId, userId, post.getUserId());
+
+            if(isFibonacci(post.getLikeCount())){
+                String notificationContent = String.format("'%s' 게시글이 좋아요를 받았습니다. (총 %d개)",
+                        post.getTitle(), post.getLikeCount());
+
+                notificationCommandService.sendNotification(
+                        new NotificationSendRequest(
+                                post.getUserId()
+                                , 2L // 예: 좋아요 알림 유형 ID
+                                , postId,
+                                notificationContent
+                        )
+                );
+            }
+
             
             return PostLikeResponse.of(like, post.getLikeCount());
         } catch (Exception e) {
