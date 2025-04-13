@@ -2,6 +2,8 @@ package com.newbit.like.service;
 
 import java.util.Optional;
 
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,7 @@ public class LikeCommandService {
     private final PostRepository postRepository;
     private final ColumnRepository columnRepository;
     private final PointRewardService pointRewardService;
+    private final NotificationCommandService notificationCommandService;
 
     @Transactional
     public PostLikeResponse togglePostLike(Long postId, Long userId) {
@@ -108,6 +111,21 @@ public class LikeCommandService {
             increaseLikeCount(post);
             
             pointRewardService.givePointIfFirstLike(postId, userId, post.getUserId());
+
+            if(isFibonacci(post.getLikeCount())){
+                String notificationContent = String.format("'%s' 게시글이 좋아요를 받았습니다. (총 %d개)",
+                        post.getTitle(), post.getLikeCount());
+
+                notificationCommandService.sendNotification(
+                        new NotificationSendRequest(
+                                post.getUserId()
+                                , 2L // 예: 좋아요 알림 유형 ID
+                                , postId,
+                                notificationContent
+                        )
+                );
+            }
+
             
             return PostLikeResponse.of(like, post.getLikeCount());
         } catch (Exception e) {
@@ -170,7 +188,22 @@ public class LikeCommandService {
             
             column.increaseLikeCount();
             columnRepository.save(column);
-            
+
+            if(isFibonacci(column.getLikeCount())){
+                String notificationContent = String.format("'%s' 칼럼이 좋아요를 받았습니다. (총 %d개)",
+                        column.getTitle(), column.getLikeCount());
+
+                notificationCommandService.sendNotification(
+                        new NotificationSendRequest(
+                                column.getMentor().getUser().getUserId()
+                                , 2L // 예: 좋아요 알림 유형 ID
+                                , columnId,
+                                notificationContent
+                        )
+                );
+            }
+
+
             return ColumnLikeResponse.of(like, column.getLikeCount());
         } catch (Exception e) {
             log.error("칼럼 좋아요 추가 처리 중 오류 발생: columnId={}, userId={}, error={}", 
@@ -178,7 +211,18 @@ public class LikeCommandService {
             throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);
         }
     }
-    
+
+    private boolean isFibonacci(int n) {
+        int a = 0, b = 1;
+        while (b < n) {
+            int temp = b;
+            b = a + b;
+            a = temp;
+        }
+        return b == n;
+    }
+
+
     private Like createColumnLike(Long columnId, Long userId) {
         return Like.builder()
                 .columnId(columnId)

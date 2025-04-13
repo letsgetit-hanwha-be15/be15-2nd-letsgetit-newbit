@@ -3,6 +3,9 @@ package com.newbit.post.service;
 import com.newbit.auth.model.CustomUser;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.notification.command.domain.repository.NotificationRepository;
 import com.newbit.post.dto.request.CommentCreateRequest;
 import com.newbit.post.dto.response.CommentResponse;
 import com.newbit.post.entity.Comment;
@@ -24,6 +27,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final PointTransactionCommandService pointTransactionCommandService;
+    private final NotificationCommandService notificationCommandService;
 
     @Transactional
     public CommentResponse createComment(Long postId, CommentCreateRequest request, CustomUser user) {
@@ -39,6 +43,19 @@ public class CommentService {
 
         commentRepository.save(comment);
         pointTransactionCommandService.givePointByType(user.getUserId(), "댓글 적립", comment.getId());
+
+        String notificationContent = String.format("'%s' 게시글에 댓글이 달렸습니다. ('%s')",
+                post.getTitle(), comment.getContent());
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        post.getUserId()
+                        , 1L
+                        , postId
+                        , notificationContent
+                )
+        );
+
         return new CommentResponse(comment);
     }
 
