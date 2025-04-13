@@ -1,6 +1,9 @@
 package com.newbit.like.repository;
 
 import java.util.Optional;
+import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -42,4 +45,12 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     
     @Query("SELECT COUNT(l) FROM Like l WHERE l.columnId = :columnId AND l.isDelete = false")
     int countByColumnIdAndIsDeleteFalse(@Param("columnId") Long columnId);
+    
+    // 사용자가 좋아요한 게시글 목록 조회
+    @Query("SELECT l FROM Like l WHERE l.userId = :userId AND l.postId IS NOT NULL AND l.isDelete = false ORDER BY l.createdAt DESC")
+    Page<Like> findLikedPostsByUserId(@Param("userId") Long userId, Pageable pageable);
+    
+    // 사용자가 좋아요한 칼럼 목록 조회
+    @Query("SELECT l FROM Like l WHERE l.userId = :userId AND l.columnId IS NOT NULL AND l.isDelete = false ORDER BY l.createdAt DESC")
+    Page<Like> findLikedColumnsByUserId(@Param("userId") Long userId, Pageable pageable);
 } 

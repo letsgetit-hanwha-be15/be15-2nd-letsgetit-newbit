@@ -15,9 +15,12 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.like.dto.response.LikedPostListResponse;
 import com.newbit.like.dto.response.PostLikeResponse;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,74 +35,24 @@ class PostLikeServiceTest {
     @InjectMocks
     private PostLikeService postLikeService;
 
-    // 필요한 상수만 남기고 final로 선언
     private final long postId = 1L;
     private final long userId = 2L;
 
     @BeforeEach
     void setUp() {
-        // Post와 Like는 테스트 메서드 내부에서 필요할 때만 생성
     }
 
     @Nested
-    @DisplayName("toggleLike Method")
+    @DisplayName("toggleLike 메서드")
     class ToggleLike {
 
         @Nested
-        @DisplayName("1.좋아요 추가 시")
+        @DisplayName("좋아요 추가 시")
         class AddLike {
 
             @Test
-            @DisplayName("최초 좋아요면 작성자에게 포인트를 지급해야 한다")
-            void shouldGivePointsToAuthorOnFirstLike() {
-                // Given
-                PostLikeResponse expectedResponse = PostLikeResponse.builder()
-                    .postId(postId)
-                    .userId(userId)
-                    .liked(true)
-                    .totalLikes(11)
-                    .build();
-                
-                when(likeCommandService.togglePostLike(postId, userId)).thenReturn(expectedResponse);
-
-                // When
-                PostLikeResponse response = postLikeService.toggleLike(postId, userId);
-
-                // Then
-                assertNotNull(response);
-                assertTrue(response.isLiked());
-                assertEquals(11, response.getTotalLikes());
-                
-                verify(likeCommandService).togglePostLike(postId, userId);
-            }
-
-            @Test
-            @DisplayName("좋아요 취소 후 재추가하면 포인트를 지급하지 않아야 한다")
-            void shouldNotGivePointsOnReaddingLike() {
-                // Given
-                PostLikeResponse expectedResponse = PostLikeResponse.builder()
-                    .postId(postId)
-                    .userId(userId)
-                    .liked(true)
-                    .totalLikes(11)
-                    .build();
-                
-                when(likeCommandService.togglePostLike(postId, userId)).thenReturn(expectedResponse);
-
-                // When
-                PostLikeResponse response = postLikeService.toggleLike(postId, userId);
-
-                // Then
-                assertNotNull(response);
-                assertTrue(response.isLiked());
-                assertEquals(11, response.getTotalLikes());
-                
-                verify(likeCommandService).togglePostLike(postId, userId);
-            }
-
-            @Test
-            @DisplayName("포인트 지급 중 예외가 발생해도 좋아요 처리는 성공해야 한다")
-            void shouldSucceedEvenIfPointTransactionFails() {
+            @DisplayName("좋아요를 추가하고 응답을 반환해야 한다")
+            void shouldAddLikeAndReturnResponse() {
                 // Given
                 PostLikeResponse expectedResponse = PostLikeResponse.builder()
                     .postId(postId)
@@ -169,7 +122,7 @@ class PostLikeServiceTest {
     }
 
     @Nested
-    @DisplayName("isLiked Method")
+    @DisplayName("isLiked 메서드")
     class IsLiked {
 
         @Test
@@ -188,7 +141,7 @@ class PostLikeServiceTest {
     }
 
     @Nested
-    @DisplayName("getLikeCount Method")
+    @DisplayName("getLikeCount 메서드")
     class GetLikeCount {
 
         @Test
@@ -203,6 +156,29 @@ class PostLikeServiceTest {
             // Then
             assertEquals(10, count);
             verify(likeQueryService).getPostLikeCount(postId);
+        }
+    }
+    
+    @Nested
+    @DisplayName("getLikedPostsByUser 메서드")
+    class GetLikedPostsByUser {
+
+        @Test
+        @DisplayName("사용자가 좋아요한 게시글 목록을 조회하고 결과를 반환해야 한다")
+        void shouldReturnLikedPostsByUser() {
+            // Given
+            Pageable pageable = PageRequest.of(0, 10);
+            LikedPostListResponse expectedResponse = LikedPostListResponse.builder().build();
+            
+            when(likeQueryService.getLikedPostsByUser(userId, pageable)).thenReturn(expectedResponse);
+
+            // When
+            LikedPostListResponse response = postLikeService.getLikedPostsByUser(userId, pageable);
+
+            // Then
+            assertNotNull(response);
+            assertEquals(expectedResponse, response);
+            verify(likeQueryService).getLikedPostsByUser(userId, pageable);
         }
     }
 } 
