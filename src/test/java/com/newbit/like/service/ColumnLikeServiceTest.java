@@ -15,10 +15,13 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.like.dto.response.ColumnLikeResponse;
+import com.newbit.like.dto.response.LikedColumnListResponse;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ColumnLikeService 테스트")
@@ -32,17 +35,15 @@ class ColumnLikeServiceTest {
     @InjectMocks
     private ColumnLikeService columnLikeService;
 
-    // 필요한 상수만 남기고 final로 선언
     private final long columnId = 1L;
     private final long userId = 2L;
 
     @BeforeEach
     void setUp() {
-        // 필요한 경우 초기화 코드 추가
     }
 
     @Nested
-    @DisplayName("toggleLike Method")
+    @DisplayName("toggleLike 메서드")
     class ToggleLike {
 
         @Nested
@@ -121,7 +122,7 @@ class ColumnLikeServiceTest {
     }
 
     @Nested
-    @DisplayName("isLiked Method")
+    @DisplayName("isLiked 메서드")
     class IsLiked {
 
         @Test
@@ -140,7 +141,7 @@ class ColumnLikeServiceTest {
     }
 
     @Nested
-    @DisplayName("getLikeCount Method")
+    @DisplayName("getLikeCount 메서드")
     class GetLikeCount {
 
         @Test
@@ -155,6 +156,29 @@ class ColumnLikeServiceTest {
             // Then
             assertEquals(10, count);
             verify(likeQueryService).getColumnLikeCount(columnId);
+        }
+    }
+    
+    @Nested
+    @DisplayName("getLikedColumnsByUser 메서드")
+    class GetLikedColumnsByUser {
+
+        @Test
+        @DisplayName("사용자가 좋아요한 칼럼 목록을 조회하고 결과를 반환해야 한다")
+        void shouldReturnLikedColumnsByUser() {
+            // Given
+            Pageable pageable = PageRequest.of(0, 10);
+            LikedColumnListResponse expectedResponse = LikedColumnListResponse.builder().build();
+            
+            when(likeQueryService.getLikedColumnsByUser(userId, pageable)).thenReturn(expectedResponse);
+
+            // When
+            LikedColumnListResponse response = columnLikeService.getLikedColumnsByUser(userId, pageable);
+
+            // Then
+            assertNotNull(response);
+            assertEquals(expectedResponse, response);
+            verify(likeQueryService).getLikedColumnsByUser(userId, pageable);
         }
     }
 } 
