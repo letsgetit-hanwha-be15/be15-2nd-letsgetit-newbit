@@ -52,4 +52,8 @@ public class Review {
         review.userId = userId;
         return review;
     }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }

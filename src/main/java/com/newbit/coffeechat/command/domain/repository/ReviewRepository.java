@@ -8,4 +8,6 @@ public interface ReviewRepository {
     Review save(Review review);
 
     Optional<Review> findByCoffeechatId(Long coffeechatId);
+
+    Optional<Review> findById(Long reviewId);
 }
