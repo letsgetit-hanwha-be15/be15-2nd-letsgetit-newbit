@@ -26,7 +26,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @RestController
-@RequestMapping("/api/likes/columns")
+@RequestMapping("/api/v1/likes/columns")
 @RequiredArgsConstructor
 @Tag(name = "칼럼 좋아요 API", description = "칼럼 좋아요 관련 API")
 public class ColumnLikeController {
