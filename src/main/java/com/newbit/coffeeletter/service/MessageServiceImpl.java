@@ -92,7 +92,7 @@ public class MessageServiceImpl implements MessageService {
                 new NotificationSendRequest(
                         receiverId,
                         8L,
-                        Long.parseLong(room.getId()),
+                        room.getCoffeeChatId(),
                         message.getContent()
                 )
         );
