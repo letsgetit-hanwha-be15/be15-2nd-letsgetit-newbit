@@ -65,11 +65,11 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
 
         String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", savedRefund.getAmount().intValue());
 
-        int refundAmount = savedRefund.getAmount().intValue() / DIAMOND_UNIT_PRICE;
+        int refundDiamondAmount = savedRefund.getAmount().intValue() / DIAMOND_UNIT_PRICE;
         diamondTransactionCommandService.applyDiamondRefund(
                 payment.getUserId(),
                 savedRefund.getRefundId(),
-                refundAmount
+                refundDiamondAmount
         );
 
         notificationCommandService.sendNotification(
@@ -111,8 +111,14 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
         
         Refund savedRefund = refundRepository.save(refund);
 
-        String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", savedRefund.getAmount().intValue());
+        int refundDiamondAmount = savedRefund.getAmount().intValue() / DIAMOND_UNIT_PRICE;
+        diamondTransactionCommandService.applyDiamondRefund(
+                payment.getUserId(),
+                savedRefund.getRefundId(),
+                refundDiamondAmount
+        );
 
+        String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", savedRefund.getAmount().intValue());
 
 
         notificationCommandService.sendNotification(
