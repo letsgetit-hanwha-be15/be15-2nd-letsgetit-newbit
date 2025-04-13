@@ -6,6 +6,8 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.column.service.ColumnRequestService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
@@ -34,6 +36,7 @@ public class PurchaseCommandService {
     private final UserService userService;
     private final CoffeechatQueryService coffeechatQueryService;
     private final MentorService mentorService;
+    private final NotificationCommandService notificationCommandService;
 
 
 
@@ -78,6 +81,16 @@ public class PurchaseCommandService {
         // 8. 판매 내역 저장
         SaleHistory saleHistory = SaleHistory.forColumn(columnId, columnPrice, mentorId);
         saleHistoryRepository.save(saleHistory);
+
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        userId,
+                        13L,
+                        columnId,
+                        "칼럼 구매가 완료되었습니다."
+                )
+        );
     }
 
 
@@ -111,6 +124,15 @@ public class PurchaseCommandService {
 
         // 3. 다이아 내역 저장
         diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        userId,
+                        13L,
+                        coffeechatId,
+                        "커피챗 구매가 완료되었습니다."
+                )
+        );
     }
 
 
@@ -145,5 +167,16 @@ public class PurchaseCommandService {
 
         // 4. 멘토 등록
         mentorService.createMentor(userId);
+
+        if(assetType == PurchaseAssetType.DIAMOND){
+            notificationCommandService.sendNotification(
+                    new NotificationSendRequest(
+                            userId,
+                            13L,
+                            null,
+                            "멘토 권한 구매가 완료되었습니다."
+                    )
+            );
+        }
     }
 }
