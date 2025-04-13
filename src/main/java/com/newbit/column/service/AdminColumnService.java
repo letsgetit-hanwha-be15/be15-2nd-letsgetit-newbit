@@ -10,6 +10,8 @@ import com.newbit.column.mapper.AdminColumnMapper;
 import com.newbit.column.repository.ColumnRequestRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class AdminColumnService {
 
     private final ColumnRequestRepository columnRequestRepository;
     private final AdminColumnMapper adminColumnMapper;
+    private final NotificationCommandService notificationCommandService;
 
     @Transactional
     public AdminColumnResponseDto approveCreateColumnRequest(ApproveColumnRequestDto dto, Long adminUserId) {
@@ -32,6 +35,19 @@ public class AdminColumnService {
         }
 
         request.approve(adminUserId);
+
+        String notificationContent = String.format("'%s' 칼럼 등록이 승인되었습니다.",
+                request.getColumn().getTitle());
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        request.getColumn().getMentor().getUser().getUserId()
+                        , 11L
+                        , request.getColumnRequestId(),
+                        notificationContent
+                )
+        );
+
         return adminColumnMapper.toDto(request);
     }
 
@@ -45,6 +61,19 @@ public class AdminColumnService {
         }
 
         request.reject(dto.getReason(), adminUserId);
+
+        String notificationContent = String.format("'%s' 칼럼 등록이 거절되었습니다.",
+                request.getColumn().getTitle());
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        request.getColumn().getMentor().getUser().getUserId()
+                        , 12L
+                        , request.getColumnRequestId(),
+                        notificationContent
+                )
+        );
+
         return adminColumnMapper.toDto(request);
     }
 
@@ -63,6 +92,21 @@ public class AdminColumnService {
 
         // 승인 처리
         request.approve(adminUserId);
+
+
+        String notificationContent = String.format("'%s' 칼럼이 수정 승인되었습니다.",
+                request.getUpdatedTitle());
+
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        request.getColumn().getMentor().getUser().getUserId()
+                        , 11L
+                        , request.getColumnRequestId(),
+                        notificationContent
+                )
+        );
+
         return adminColumnMapper.toDto(request);
     }
 
@@ -76,6 +120,21 @@ public class AdminColumnService {
         }
 
         request.reject(dto.getReason(), adminUserId);
+
+
+        String notificationContent = String.format("'%s' 칼럼이 수정이 거절되었습니다.",
+                request.getColumn().getTitle());
+
+
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        request.getColumn().getMentor().getUser().getUserId()
+                        , 12L
+                        , request.getColumnRequestId(),
+                        notificationContent
+                )
+        );
+
         return adminColumnMapper.toDto(request);
     }
 }
