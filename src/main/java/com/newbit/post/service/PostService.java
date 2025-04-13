@@ -1,11 +1,14 @@
 package com.newbit.post.service;
 
 import com.newbit.auth.model.CustomUser;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.post.dto.request.PostCreateRequest;
 import com.newbit.post.dto.request.PostUpdateRequest;
 import com.newbit.post.dto.response.CommentResponse;
 import com.newbit.post.dto.response.PostDetailResponse;
 import com.newbit.post.dto.response.PostResponse;
+import com.newbit.post.entity.Comment;
 import com.newbit.post.entity.Post;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
@@ -15,8 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.newbit.post.entity.Comment;
-
 
 import java.util.List;
 
@@ -31,11 +32,10 @@ public class PostService {
     @Transactional
     public PostResponse updatePost(Long postId, PostUpdateRequest request, CustomUser user) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
-        // 🔒 작성자 본인 확인
         if (!post.getUserId().equals(user.getUserId())) {
-            throw new SecurityException("게시글은 작성자만 수정할 수 있습니다.");
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_TO_UPDATE_POST);
         }
 
         post.update(request.getTitle(), request.getContent());
@@ -44,18 +44,17 @@ public class PostService {
 
     @Transactional
     public PostResponse createPost(PostCreateRequest request, CustomUser user) {
-        // 일반 사용자 권한 확인
         boolean isUser = user.getAuthorities().stream()
                 .anyMatch(auth -> "ROLE_USER".equals(auth.getAuthority()));
 
         if (!isUser) {
-            throw new SecurityException("게시글은 일반 사용자만 작성할 수 있습니다.");
+            throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);
         }
 
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .userId(user.getUserId()) // 🔄 로그인 정보에서 userId 사용
+                .userId(user.getUserId())
                 .postCategoryId(request.getPostCategoryId())
                 .likeCount(0)
                 .reportCount(0)
@@ -63,10 +62,9 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
-        pointTransactionCommandService.givePointByType(request.getUserId(), "게시글 적립", post.getId());
+        pointTransactionCommandService.givePointByType(user.getUserId(), "게시글 적립", post.getId());
         return new PostResponse(post);
     }
-
 
     @Transactional(readOnly = true)
     public List<PostResponse> searchPosts(String keyword) {
@@ -77,16 +75,14 @@ public class PostService {
     @Transactional
     public void deletePost(Long postId, CustomUser user) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
-        // 🔒 작성자 확인
         if (!post.getUserId().equals(user.getUserId())) {
-            throw new SecurityException("게시글은 작성자만 삭제할 수 있습니다.");
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_TO_DELETE_POST);
         }
 
         post.softDelete();
     }
-
 
     @Transactional(readOnly = true)
     public Page<PostResponse> getPostList(Pageable pageable) {
@@ -97,7 +93,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostDetailResponse getPostDetail(Long postId) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
         List<Comment> comments = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
         List<CommentResponse> commentResponses = comments.stream()
@@ -120,7 +116,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<PostResponse> getPopularPosts() {
-        List<Post> posts = postRepository.findPopularPosts(10); // 좋아요 10개 이상
+        List<Post> posts = postRepository.findPopularPosts(10);
         return posts.stream()
                 .map(PostResponse::new)
                 .toList();
@@ -128,15 +124,13 @@ public class PostService {
 
     @Transactional
     public PostResponse createNotice(PostCreateRequest request, CustomUser user) {
-        // 🔐 관리자 권한 체크
         boolean isAdmin = user.getAuthorities().stream()
                 .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
 
         if (!isAdmin) {
-            throw new SecurityException("공지사항은 관리자만 등록할 수 있습니다.");
+            throw new BusinessException(ErrorCode.ONLY_ADMIN_CAN_CREATE_NOTICE);
         }
 
-        // 📝 게시글 생성
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -153,26 +147,21 @@ public class PostService {
 
     @Transactional
     public PostResponse updateNotice(Long postId, PostUpdateRequest request, CustomUser user) {
-        // 관리자 권한 체크
         boolean isAdmin = user.getAuthorities().stream()
                 .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
 
         if (!isAdmin) {
-            throw new SecurityException("공지사항은 관리자만 수정할 수 있습니다.");
+            throw new BusinessException(ErrorCode.ONLY_ADMIN_CAN_UPDATE_NOTICE);
         }
 
-        // 게시글 조회
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
-        // 공지사항 여부 확인
         if (!post.isNotice()) {
-            throw new IllegalArgumentException("해당 게시글은 공지사항이 아닙니다.");
+            throw new BusinessException(ErrorCode.NOT_A_NOTICE);
         }
 
-        // 수정
         post.update(request.getTitle(), request.getContent());
-
         return new PostResponse(post);
     }
 
@@ -182,17 +171,16 @@ public class PostService {
                 .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
 
         if (!isAdmin) {
-            throw new SecurityException("공지사항은 관리자만 삭제할 수 있습니다.");
+            throw new BusinessException(ErrorCode.ONLY_ADMIN_CAN_DELETE_NOTICE);
         }
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
         if (!post.isNotice()) {
-            throw new IllegalArgumentException("해당 게시글은 공지사항이 아닙니다.");
+            throw new BusinessException(ErrorCode.NOT_A_NOTICE);
         }
 
         post.softDelete();
     }
-
 }
