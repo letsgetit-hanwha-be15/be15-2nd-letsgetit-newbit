@@ -52,4 +52,8 @@ public class Review {
         review.coffeechatId = coffeechatId;
         return review;
     }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }
