@@ -13,6 +13,8 @@ import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
 import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
 import com.newbit.coffeeletter.repository.CoffeeLetterRoomRepository;
 import com.newbit.coffeeletter.util.RoomUtils;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,7 +39,7 @@ public class RoomServiceImpl implements RoomService {
     public CoffeeLetterRoomDTO createRoom(CoffeeLetterRoomDTO roomDto) {
         CoffeeLetterRoom existingRoom = RoomUtils.findRoomByCoffeeChatId(roomRepository, roomDto.getCoffeeChatId());
         if (existingRoom != null) {
-            throw new IllegalStateException("이미 존재하는 채팅방입니다.");
+            throw new BusinessException(ErrorCode.COFFEELETTER_ROOM_NOT_FOUND);
         }
 
         CoffeeLetterRoom room = modelMapper.map(roomDto, CoffeeLetterRoom.class);
@@ -105,5 +107,17 @@ public class RoomServiceImpl implements RoomService {
         return roomRepository.findByParticipantsContainingAndStatus(userIdStr, status).stream()
                 .map(room -> modelMapper.map(room, CoffeeLetterRoomDTO.class))
                 .collect(Collectors.toList());
+    }
+    
+    @Override
+    public String findRoomIdByCoffeeChatId(Long coffeeChatId) {
+        CoffeeLetterRoom room = RoomUtils.getRoomByCoffeeChatId(roomRepository, coffeeChatId);
+        return room.getId();
+    }
+    
+    @Override
+    public CoffeeLetterRoomDTO getRoomByCoffeeChatId(Long coffeeChatId) {
+        CoffeeLetterRoom room = RoomUtils.getRoomByCoffeeChatId(roomRepository, coffeeChatId);
+        return modelMapper.map(room, CoffeeLetterRoomDTO.class);
     }
 } 

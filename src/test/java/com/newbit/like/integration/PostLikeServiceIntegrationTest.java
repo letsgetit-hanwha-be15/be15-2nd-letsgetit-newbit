@@ -2,10 +2,8 @@ package com.newbit.like.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
@@ -18,6 +16,8 @@ import com.newbit.like.service.PostLikeService;
 
 import java.util.UUID;
 
+// 실제 db에 데이터를 삽입하므로 Disabled 처리
+@Disabled
 @SpringBootTest
 // 포인트 지급 확인을 위해 Transactional 주석 처리
 //@Transactional

@@ -131,6 +131,11 @@ public enum ErrorCode {
     VIRTUAL_ACCOUNT_ISSUANCE_FAILED("81008", "가상계좌 발급에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     PAYMENT_REFUND_NOT_FOUND("81012", "환불 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
+    /*--------------- 커피레터 오류 ------------------*/
+    COFFEELETTER_NOT_FOUND("31001", "해당 커피레터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COFFEELETTER_ROOM_NOT_FOUND("31002", "해당 룸을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COFFEELETTER_INVALID_ACCESS("31003", "커피레터에 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+
     /*--------------- 추가 결제 에러 코드 ------------------*/
     PAYMENT_CANNOT_BE_CANCELLED("81013", "결제를 취소할 수 없는 상태입니다.", HttpStatus.BAD_REQUEST),
     PAYMENT_NOT_PARTIAL_CANCELABLE("81014", "부분 취소가 불가능한 결제입니다.", HttpStatus.BAD_REQUEST),

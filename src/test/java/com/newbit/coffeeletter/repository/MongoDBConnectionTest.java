@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,6 +13,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 
 import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
 
+// 실제 db 데이터를 삭제하므로 Disabled 처리
+@Disabled
 @SpringBootTest
 public class MongoDBConnectionTest {
 

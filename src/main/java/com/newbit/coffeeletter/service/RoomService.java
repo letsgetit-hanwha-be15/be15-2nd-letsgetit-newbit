@@ -15,4 +15,7 @@ public interface RoomService {
     CoffeeLetterRoomDTO getRoomById(String roomId);
     List<CoffeeLetterRoomDTO> getRoomsByUserId(Long userId);
     List<CoffeeLetterRoomDTO> getRoomsByUserIdAndStatus(Long userId, CoffeeLetterRoom.RoomStatus status);
+    
+    String findRoomIdByCoffeeChatId(Long coffeeChatId);
+    CoffeeLetterRoomDTO getRoomByCoffeeChatId(Long coffeeChatId);
 } 
