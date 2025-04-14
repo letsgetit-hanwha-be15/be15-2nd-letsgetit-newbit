@@ -44,6 +44,10 @@ public class PostService {
 
     @Transactional
     public PostResponse createPost(PostCreateRequest request, CustomUser user) {
+        if (user == null) {
+            throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);
+        }
+
         boolean isUser = user.getAuthorities().stream()
                 .anyMatch(auth -> "ROLE_USER".equals(auth.getAuthority()));
 
