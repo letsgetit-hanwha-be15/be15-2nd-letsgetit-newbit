@@ -234,9 +234,7 @@ public class CoffeechatCommandService {
         coffeechat.cancelCoffeechat(coffeechatCancelRequest.getCancelReasonId());
 
         // 6. 채팅방 취소
-        // 커피챗 ID로 채팅방 찾기
-        Long roomId =
-        // 채팅방ID로 채팅방 취소
+        String roomId = roomService.findRoomIdByCoffeeChatId(coffeechat.getCoffeechatId());
         roomService.cancelRoom(roomId);
 
         // 7. 멘토에게 커피챗 취소 알림
