@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Wait for all reviewers to be added
+      - name: Wait for reviewers to settle
         run: sleep 10
 
-      - name: Convert GitHub usernames to Discord mentions
-        id: get-mentions
+      - name: Map GitHub usernames to Discord IDs
+        id: map-reviewers
         env:
           REVIEWERS_JSON: ${{ toJson(github.event.pull_request.requested_reviewers) }}
         run: |
-          echo "🔄 Mapping GitHub reviewers to Discord IDs..."
+          echo "🔄 Mapping GitHub reviewers to Discord mentions..."
 
           declare -A USER_MAP=(
             ["64etuor"]="637937081875824650"
@@ -42,10 +42,26 @@ jobs:
 
           echo "mentions=$mentions" >> "$GITHUB_OUTPUT"
 
+      - name: Check if notification already sent
+        id: check
+        run: |
+          mkdir -p .cache
+          SENT_FILE=".cache/sent-${{ github.event.pull_request.number }}.flag"
+
+          if [ -f "$SENT_FILE" ]; then
+            echo "🔁 Already sent notification for this PR. Skipping..."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "✅ Sending notification for the first time."
+            touch "$SENT_FILE"
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Send Discord Notification
+        if: steps.check.outputs.skip == 'false'
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          MENTIONS: ${{ steps.get-mentions.outputs.mentions }}
+          MENTIONS: ${{ steps.map-reviewers.outputs.mentions }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
           curl -X POST -H "Content-Type: application/json" \
