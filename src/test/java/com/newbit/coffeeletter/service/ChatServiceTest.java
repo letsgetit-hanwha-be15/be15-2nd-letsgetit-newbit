@@ -4,10 +4,9 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +32,7 @@ import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@DisplayName("채팅 서비스 단위 테스트")
 class ChatServiceTest {
 
     @Mock
@@ -100,162 +100,205 @@ class ChatServiceTest {
         messagePage = new PageImpl<>(messageDTOs);
     }
 
-    // === RoomService 메서드 테스트 ===
-
     @Test
-    void createRoom_새로운_채팅방_생성_성공() {
-        // given
+    @DisplayName("새로운 채팅방 생성 성공 테스트")
+    void createRoomTest() {
+        // Given
         when(roomService.createRoom(any(CoffeeLetterRoomDTO.class))).thenReturn(roomDTO);
 
-        // when
+        // When
         CoffeeLetterRoomDTO result = chatService.createRoom(roomDTO);
 
-        // then
-        assertNotNull(result);
-        assertEquals(roomDTO.getMentorId(), result.getMentorId());
-        assertEquals(roomDTO.getMenteeId(), result.getMenteeId());
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getMentorId()).isEqualTo(roomDTO.getMentorId());
+        assertThat(result.getMenteeId()).isEqualTo(roomDTO.getMenteeId());
 
         verify(roomService, times(1)).createRoom(roomDTO);
     }
     
     @Test
-    void endRoom_채팅방_비활성화_성공() {
-        // given
+    @DisplayName("채팅방 비활성화 성공 테스트")
+    void endRoomTest() {
+        // Given
         String roomId = "test-room-id";
         when(roomService.endRoom(roomId)).thenReturn(roomDTO);
         
-        // when
+        // When
         CoffeeLetterRoomDTO result = chatService.endRoom(roomId);
         
-        // then
-        assertNotNull(result);
+        // Then
+        assertThat(result).isNotNull();
         verify(roomService, times(1)).endRoom(roomId);
     }
     
     @Test
-    void cancelRoom_채팅방_취소_성공() {
-        // given
+    @DisplayName("채팅방 취소 성공 테스트")
+    void cancelRoomTest() {
+        // Given
         String roomId = "test-room-id";
         when(roomService.cancelRoom(roomId)).thenReturn(roomDTO);
         
-        // when
+        // When
         CoffeeLetterRoomDTO result = chatService.cancelRoom(roomId);
         
-        // then
-        assertNotNull(result);
+        // Then
+        assertThat(result).isNotNull();
         verify(roomService, times(1)).cancelRoom(roomId);
     }
     
     @Test
-    void getAllRooms_모든_채팅방_조회_성공() {
-        // given
+    @DisplayName("모든 채팅방 조회 성공 테스트")
+    void getAllRoomsTest() {
+        // Given
         when(roomService.getAllRooms()).thenReturn(roomDTOs);
         
-        // when
+        // When
         List<CoffeeLetterRoomDTO> result = chatService.getAllRooms();
         
-        // then
-        assertNotNull(result);
-        assertEquals(1, result.size());
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
         verify(roomService, times(1)).getAllRooms();
     }
     
     @Test
-    void getRoomById_채팅방_조회_성공() {
-        // given
+    @DisplayName("채팅방 ID로 채팅방 조회 성공 테스트")
+    void getRoomByIdTest() {
+        // Given
         String roomId = "test-room-id";
         when(roomService.getRoomById(roomId)).thenReturn(roomDTO);
         
-        // when
+        // When
         CoffeeLetterRoomDTO result = chatService.getRoomById(roomId);
         
-        // then
-        assertNotNull(result);
-        assertEquals(roomDTO.getMentorId(), result.getMentorId());
-        assertEquals(roomDTO.getMenteeId(), result.getMenteeId());
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getMentorId()).isEqualTo(roomDTO.getMentorId());
+        assertThat(result.getMenteeId()).isEqualTo(roomDTO.getMenteeId());
         verify(roomService, times(1)).getRoomById(roomId);
     }
     
     @Test
-    void getRoomsByUserId_사용자_채팅방_조회_성공() {
-        // given
+    @DisplayName("사용자 ID로 채팅방 목록 조회 성공 테스트")
+    void getRoomsByUserIdTest() {
+        // Given
         Long userId = 1L;
         when(roomService.getRoomsByUserId(userId)).thenReturn(roomDTOs);
         
-        // when
+        // When
         List<CoffeeLetterRoomDTO> result = chatService.getRoomsByUserId(userId);
         
-        // then
-        assertNotNull(result);
-        assertEquals(1, result.size());
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
         verify(roomService, times(1)).getRoomsByUserId(userId);
     }
     
     @Test
-    void getRoomsByUserIdAndStatus_사용자와_상태별_채팅방_조회_성공() {
-        // given
+    @DisplayName("사용자 ID와 상태로 채팅방 목록 조회 성공 테스트")
+    void getRoomsByUserIdAndStatusTest() {
+        // Given
         Long userId = 1L;
         CoffeeLetterRoom.RoomStatus status = CoffeeLetterRoom.RoomStatus.ACTIVE;
         when(roomService.getRoomsByUserIdAndStatus(userId, status)).thenReturn(roomDTOs);
         
-        // when
+        // When
         List<CoffeeLetterRoomDTO> result = chatService.getRoomsByUserIdAndStatus(userId, status);
         
-        // then
-        assertNotNull(result);
-        assertEquals(1, result.size());
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
         verify(roomService, times(1)).getRoomsByUserIdAndStatus(userId, status);
+    }
+    
+    @Test
+    @DisplayName("커피챗 ID로 채팅방 ID 조회 성공 테스트")
+    void findRoomIdByCoffeeChatIdTest() {
+        // Given
+        Long coffeeChatId = 100L;
+        String expectedRoomId = "test-room-id";
+        when(roomService.findRoomIdByCoffeeChatId(coffeeChatId)).thenReturn(expectedRoomId);
+        
+        // When
+        String result = chatService.findRoomIdByCoffeeChatId(coffeeChatId);
+        
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(expectedRoomId);
+        verify(roomService, times(1)).findRoomIdByCoffeeChatId(coffeeChatId);
+    }
+    
+    @Test
+    @DisplayName("커피챗 ID로 채팅방 조회 성공 테스트")
+    void getRoomByCoffeeChatIdTest() {
+        // Given
+        Long coffeeChatId = 100L;
+        when(roomService.getRoomByCoffeeChatId(coffeeChatId)).thenReturn(roomDTO);
+        
+        // When
+        CoffeeLetterRoomDTO result = chatService.getRoomByCoffeeChatId(coffeeChatId);
+        
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(roomDTO.getId());
+        assertThat(result.getCoffeeChatId()).isEqualTo(roomDTO.getCoffeeChatId());
+        verify(roomService, times(1)).getRoomByCoffeeChatId(coffeeChatId);
     }
     
     // === MessageService 메서드 테스트 ===
     
     @Test
-    void sendMessage_메시지_전송_성공() {
-        // given
+    @DisplayName("메시지 전송 성공 테스트")
+    void sendMessageTest() {
+        // Given
         when(messageService.sendMessage(any(ChatMessageDTO.class))).thenReturn(messageDTO);
         
-        // when
+        // When
         ChatMessageDTO result = chatService.sendMessage(messageDTO);
         
-        // then
-        assertNotNull(result);
+        // Then
+        assertThat(result).isNotNull();
         verify(messageService, times(1)).sendMessage(messageDTO);
     }
     
     @Test
-    void sendSystemMessage_시스템_메시지_전송_성공() {
-        // given
+    @DisplayName("시스템 메시지 전송 성공 테스트")
+    void sendSystemMessageTest() {
+        // Given
         String roomId = "test-room-id";
         String content = "시스템 메시지 테스트";
         
         when(messageService.sendSystemMessage(roomId, content)).thenReturn(messageDTO);
         
-        // when
+        // When
         ChatMessageDTO result = chatService.sendSystemMessage(roomId, content);
         
-        // then
-        assertNotNull(result);
+        // Then
+        assertThat(result).isNotNull();
         verify(messageService, times(1)).sendSystemMessage(roomId, content);
     }
     
     @Test
-    void getMessagesByRoomId_채팅방_메시지_조회_성공() {
-        // given
+    @DisplayName("채팅방 메시지 목록 조회 성공 테스트")
+    void getMessagesByRoomIdTest() {
+        // Given
         String roomId = "test-room-id";
         when(messageService.getMessagesByRoomId(roomId)).thenReturn(messageDTOs);
         
-        // when
+        // When
         List<ChatMessageDTO> result = chatService.getMessagesByRoomId(roomId);
         
-        // then
-        assertNotNull(result);
-        assertEquals(1, result.size());
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
         verify(messageService, times(1)).getMessagesByRoomId(roomId);
     }
     
     @Test
-    void getMessagesByRoomId_페이징_메시지_조회_성공() {
-        // given
+    @DisplayName("채팅방 메시지 페이징 조회 성공 테스트")
+    void getPagedMessagesByRoomIdTest() {
+        // Given
         String roomId = "test-room-id";
         int page = 0;
         int size = 10;
@@ -263,90 +306,95 @@ class ChatServiceTest {
         
         when(messageService.getMessagesByRoomId(roomId, pageable)).thenReturn(messagePage);
         
-        // when
+        // When
         Page<ChatMessageDTO> result = chatService.getMessagesByRoomId(roomId, pageable);
         
-        // then
-        assertNotNull(result);
-        assertEquals(1, result.getContent().size());
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
         verify(messageService, times(1)).getMessagesByRoomId(roomId, pageable);
     }
     
     @Test
-    void getUnreadMessages_읽지않은_메시지_조회_성공() {
-        // given
+    @DisplayName("읽지 않은 메시지 조회 성공 테스트")
+    void getUnreadMessagesTest() {
+        // Given
         String roomId = "test-room-id";
         Long userId = 1L;
         
         when(messageService.getUnreadMessages(roomId, userId)).thenReturn(messageDTOs);
         
-        // when
+        // When
         List<ChatMessageDTO> results = chatService.getUnreadMessages(roomId, userId);
         
-        // then
-        assertNotNull(results);
-        assertEquals(1, results.size());
+        // Then
+        assertThat(results).isNotNull();
+        assertThat(results).hasSize(1);
         verify(messageService, times(1)).getUnreadMessages(roomId, userId);
     }
     
     @Test
-    void markAsRead_메시지_읽음_처리_성공() {
-        // given
+    @DisplayName("메시지 읽음 처리 성공 테스트")
+    void markAsReadTest() {
+        // Given
         String roomId = "test-room-id";
         Long userId = 1L;
         
-        // when
+        // When
         chatService.markAsRead(roomId, userId);
         
-        // then
+        // Then
         verify(messageService, times(1)).markAsRead(roomId, userId);
     }
     
     @Test
-    void getUnreadMessageCount_읽지않은_메시지_카운트_조회_성공() {
-        // given
+    @DisplayName("읽지 않은 메시지 수 조회 성공 테스트")
+    void getUnreadMessageCountTest() {
+        // Given
         String roomId = "test-room-id";
         Long userId = 1L;
         int expectedCount = 3;
         
         when(messageService.getUnreadMessageCount(roomId, userId)).thenReturn(expectedCount);
         
-        // when
+        // When
         int actualCount = chatService.getUnreadMessageCount(roomId, userId);
         
-        // then
-        assertEquals(expectedCount, actualCount);
+        // Then
+        assertThat(actualCount).isEqualTo(expectedCount);
         verify(messageService, times(1)).getUnreadMessageCount(roomId, userId);
     }
     
     @Test
-    void getLastMessage_성공적인_조회() {
-        // given
+    @DisplayName("마지막 메시지 조회 성공 테스트")
+    void getLastMessageTest() {
+        // Given
         String roomId = "test-room-id";
         
         when(messageService.getLastMessage(roomId)).thenReturn(messageDTO);
         
-        // when
+        // When
         ChatMessageDTO result = chatService.getLastMessage(roomId);
         
-        // then
-        assertNotNull(result);
-        assertEquals(messageDTO.getId(), result.getId());
-        assertEquals(messageDTO.getRoomId(), result.getRoomId());
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(messageDTO.getId());
+        assertThat(result.getRoomId()).isEqualTo(messageDTO.getRoomId());
         verify(messageService, times(1)).getLastMessage(roomId);
     }
     
     @Test
-    void getLastMessage_메시지가_없는_경우() {
-        // given
+    @DisplayName("메시지가 없는 경우 마지막 메시지 조회 테스트")
+    void getLastMessageEmptyTest() {
+        // Given
         String roomId = "empty-room-id";
         when(messageService.getLastMessage(roomId)).thenReturn(null);
         
-        // when
+        // When
         ChatMessageDTO result = chatService.getLastMessage(roomId);
         
-        // then
-        assertNull(result);
+        // Then
+        assertThat(result).isNull();
         verify(messageService, times(1)).getLastMessage(roomId);
     }
 } 

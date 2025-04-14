@@ -61,6 +61,20 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getRoomsByUserIdAndStatus(userId, status));
     }
     
+    @Operation(summary = "커피챗 ID로 채팅방 ID 조회", description = "커피챗 ID로 채팅방 ID를 조회합니다.")
+    @GetMapping("/coffeechat/{coffeeChatId}/roomId")
+    public ResponseEntity<String> getRoomIdByCoffeeChatId(
+            @Parameter(description = "커피챗 ID") @PathVariable Long coffeeChatId) {
+        return ResponseEntity.ok(roomService.findRoomIdByCoffeeChatId(coffeeChatId));
+    }
+    
+    @Operation(summary = "커피챗 ID로 채팅방 조회", description = "커피챗 ID로 채팅방 정보를 조회합니다.")
+    @GetMapping("/coffeechat/{coffeeChatId}")
+    public ResponseEntity<CoffeeLetterRoomDTO> getRoomByCoffeeChatId(
+            @Parameter(description = "커피챗 ID") @PathVariable Long coffeeChatId) {
+        return ResponseEntity.ok(roomService.getRoomByCoffeeChatId(coffeeChatId));
+    }
+    
     @Operation(summary = "채팅방 생성", description = "새로운 채팅방을 생성합니다.")
     @PostMapping
     public ResponseEntity<CoffeeLetterRoomDTO> createRoom(

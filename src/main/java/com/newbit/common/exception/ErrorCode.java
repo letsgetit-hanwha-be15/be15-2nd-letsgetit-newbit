@@ -82,7 +82,9 @@ public enum ErrorCode {
     REVIEW_NOT_FOUND("30012", "해당 리뷰를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
 
     /*--------------- 커피레터 ------------------*/
-
+    COFFEELETTER_NOT_FOUND("31001", "해당 커피레터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COFFEELETTER_ROOM_NOT_FOUND("31002", "해당 룸을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COFFEELETTER_INVALID_ACCESS("31003", "커피레터에 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
 
     /*--------------- 구매 ------------------*/
     COLUMN_ALREADY_PURCHASED("60001", "이미 구매한 칼럼입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -134,6 +136,7 @@ public enum ErrorCode {
 
     /*--------------- 기타 ------------------*/
 
+    /*--------------- 추가 결제 에러 코드 ------------------*/
 
     private final String code;
     private final String message;

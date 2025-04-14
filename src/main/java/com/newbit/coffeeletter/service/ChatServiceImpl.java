@@ -64,6 +64,16 @@ public class ChatServiceImpl implements ChatService {
     public List<CoffeeLetterRoomDTO> getRoomsByUserIdAndStatus(Long userId, CoffeeLetterRoom.RoomStatus status) {
         return roomService.getRoomsByUserIdAndStatus(userId, status);
     }
+    
+    @Override
+    public String findRoomIdByCoffeeChatId(Long coffeeChatId) {
+        return roomService.findRoomIdByCoffeeChatId(coffeeChatId);
+    }
+    
+    @Override
+    public CoffeeLetterRoomDTO getRoomByCoffeeChatId(Long coffeeChatId) {
+        return roomService.getRoomByCoffeeChatId(coffeeChatId);
+    }
 
     // MessageService 메서드 위임
     @Override

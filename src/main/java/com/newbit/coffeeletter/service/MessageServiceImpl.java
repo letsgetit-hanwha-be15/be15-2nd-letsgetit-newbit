@@ -4,10 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
-import com.newbit.notification.command.application.service.NotificationCommandService;
-import com.newbit.user.service.MentorService;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +18,9 @@ import com.newbit.coffeeletter.dto.ChatMessageDTO;
 import com.newbit.coffeeletter.repository.ChatMessageRepository;
 import com.newbit.coffeeletter.repository.CoffeeLetterRoomRepository;
 import com.newbit.coffeeletter.util.RoomUtils;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.user.service.MentorService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -142,7 +141,7 @@ public class MessageServiceImpl implements MessageService {
     public List<ChatMessageDTO> getMessagesByRoomId(String roomId) {
         RoomUtils.getRoomById(roomRepository, roomId);
                 
-        return messageRepository.findByRoomId(roomId).stream()
+        return messageRepository.findByRoomIdOrderByTimestampAsc(roomId).stream()
                 .map(message -> modelMapper.map(message, ChatMessageDTO.class))
                 .collect(Collectors.toList());
     }
@@ -158,14 +157,14 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public List<ChatMessageDTO> getUnreadMessages(String roomId, Long userId) {
         CoffeeLetterRoom room = RoomUtils.getRoomById(roomRepository, roomId);
-        RoomUtils.validateParticipant(room, userId);
+        RoomUtils.isParticipant(room, userId);
 
         List<ChatMessage> unreadMessages;
 
         if (userId.equals(room.getMentorId())) {
-            unreadMessages = messageRepository.findByRoomIdAndReadByMentorFalse(roomId);
+            unreadMessages = messageRepository.findByRoomIdAndReadByMentorFalseOrderByTimestampAsc(roomId);
         } else {
-            unreadMessages = messageRepository.findByRoomIdAndReadByMenteeFalse(roomId);
+            unreadMessages = messageRepository.findByRoomIdAndReadByMenteeFalseOrderByTimestampAsc(roomId);
         }
 
         return unreadMessages.stream()
@@ -177,19 +176,15 @@ public class MessageServiceImpl implements MessageService {
     @Transactional
     public void markAsRead(String roomId, Long userId) {
         CoffeeLetterRoom room = RoomUtils.getRoomById(roomRepository, roomId);
-        RoomUtils.validateParticipant(room, userId);
-
-        List<ChatMessage> unreadMessages;
+        RoomUtils.isParticipant(room, userId);
+        
+        int updatedCount = 0;
         
         if (userId.equals(room.getMentorId())) {
-            unreadMessages = messageRepository.findByRoomIdAndReadByMentorFalse(roomId);
-            unreadMessages.forEach(message -> message.setReadByMentor(true));
-            messageRepository.saveAll(unreadMessages);
+            updatedCount = messageRepository.updateReadByMentorByRoomId(roomId);
             room.setUnreadCountMentor(0);
         } else {
-            unreadMessages = messageRepository.findByRoomIdAndReadByMenteeFalse(roomId);
-            unreadMessages.forEach(message -> message.setReadByMentee(true));
-            messageRepository.saveAll(unreadMessages);
+            updatedCount = messageRepository.updateReadByMenteeByRoomId(roomId);
             room.setUnreadCountMentee(0);
         }
 
@@ -199,18 +194,18 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public int getUnreadMessageCount(String roomId, Long userId) {
         CoffeeLetterRoom room = RoomUtils.getRoomById(roomRepository, roomId);
-        RoomUtils.validateParticipant(room, userId);
+        RoomUtils.isParticipant(room, userId);
 
         if (userId.equals(room.getMentorId())) {
-            return room.getUnreadCountMentor();
+            return messageRepository.countByRoomIdAndReadByMentorFalse(roomId);
         } else {
-            return room.getUnreadCountMentee();
+            return messageRepository.countByRoomIdAndReadByMenteeFalse(roomId);
         }
     }
 
     @Override
     public ChatMessageDTO getLastMessage(String roomId) {
-        ChatMessage lastMessage = messageRepository.findFirstByRoomIdOrderByTimestampDesc(roomId);
+        ChatMessage lastMessage = messageRepository.findTopByRoomIdOrderByTimestampDesc(roomId);
         if (lastMessage == null) {
             return null;
         }

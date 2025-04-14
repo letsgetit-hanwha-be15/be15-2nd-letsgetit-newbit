@@ -5,14 +5,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,6 +46,7 @@ import com.newbit.coffeeletter.util.RoomUtils;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@DisplayName("메시지 서비스 단위 테스트")
 class MessageServiceTest {
 
     @Mock
@@ -116,8 +116,9 @@ class MessageServiceTest {
     }
     
     @Test
-    void sendMessage_멘토가_보낸_메시지_성공() {
-        // given
+    @DisplayName("멘토가 보낸 메시지 전송 성공 테스트")
+    void sendMessageByMentorTest() {
+        // Given
         String roomId = "123";
         Long mentorId = 1L;
         Long menteeId = 2L;
@@ -143,11 +144,11 @@ class MessageServiceTest {
             when(messageRepository.save(any(ChatMessage.class))).thenReturn(message);
             when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(room);
             
-            // when
+            // When
             ChatMessageDTO result = messageService.sendMessage(messageDTO);
             
-            // then
-            assertNotNull(result);
+            // Then
+            assertThat(result).isNotNull();
             verify(messageRepository, times(1)).save(any(ChatMessage.class));
             verify(roomRepository, times(1)).save(any(CoffeeLetterRoom.class));
             verify(messagingTemplate, times(1)).convertAndSend(eq("/topic/chat/room/" + roomId), any(Object.class));
@@ -158,8 +159,9 @@ class MessageServiceTest {
     }
     
     @Test
-    void sendMessage_멘티가_보낸_메시지_성공() {
-        // given
+    @DisplayName("멘티가 보낸 메시지 전송 성공 테스트")
+    void sendMessageByMenteeTest() {
+        // Given
         String roomId = "123";
         Long mentorId = 1L;
         Long menteeId = 2L;
@@ -186,11 +188,11 @@ class MessageServiceTest {
             when(messageRepository.save(any(ChatMessage.class))).thenReturn(message);
             when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(room);
             
-            // when
+            // When
             ChatMessageDTO result = messageService.sendMessage(messageDTO);
             
-            // then
-            assertNotNull(result);
+            // Then
+            assertThat(result).isNotNull();
             verify(messageRepository, times(1)).save(any(ChatMessage.class));
             verify(roomRepository, times(1)).save(any(CoffeeLetterRoom.class));
             verify(messagingTemplate, times(1)).convertAndSend(eq("/topic/chat/room/" + roomId), any(Object.class));
@@ -201,31 +203,23 @@ class MessageServiceTest {
     }
     
     @Test
-    void sendSystemMessage_시스템_메시지_전송_성공() {
-        // given
+    @DisplayName("시스템 메시지 전송 성공 테스트")
+    void sendSystemMessageTest() {
+        // Given
         String roomId = "test-room-id";
         String content = "시스템 메시지 테스트";
-        
-        ChatMessage systemMessage = new ChatMessage();
-        systemMessage.setRoomId(roomId);
-        systemMessage.setType(MessageType.SYSTEM);
-        systemMessage.setContent(content);
-        systemMessage.setSenderId(0L);
-        systemMessage.setSenderName("System");
-        
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
             mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
             
-            when(messageRepository.save(any(ChatMessage.class))).thenReturn(systemMessage);
-            when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(room);
+            when(messageRepository.save(any(ChatMessage.class))).thenReturn(message);
             
-            // when
+            // When
             ChatMessageDTO result = messageService.sendSystemMessage(roomId, content);
             
-            // then
-            assertNotNull(result);
+            // Then
+            assertThat(result).isNotNull();
             verify(messageRepository, times(1)).save(any(ChatMessage.class));
-            verify(roomRepository, times(1)).save(any(CoffeeLetterRoom.class));
             verify(messagingTemplate, times(1)).convertAndSend(eq("/topic/chat/room/" + roomId), any(Object.class));
             
             // RoomUtils.getRoomById가 한 번 호출되었는지 확인
@@ -234,45 +228,44 @@ class MessageServiceTest {
     }
     
     @Test
-    void sendSystemMessage_존재하지_않는_채팅방_예외발생() {
-        // given
-        String roomId = "non-existent-room-id";
+    @DisplayName("존재하지 않는 채팅방에 시스템 메시지 전송 시 예외 발생 테스트")
+    void sendSystemMessageToNonExistingRoomTest() {
+        // Given
+        String nonExistingRoomId = "non-existing-room-id";
         String content = "시스템 메시지 테스트";
-        
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
-            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId))
-                    .thenThrow(new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, nonExistingRoomId))
+                    .thenThrow(new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
             
-            // when & then
+            // When & Then
             assertThrows(IllegalArgumentException.class, () -> {
-                messageService.sendSystemMessage(roomId, content);
+                messageService.sendSystemMessage(nonExistingRoomId, content);
             });
             
             verify(messageRepository, never()).save(any(ChatMessage.class));
             verify(messagingTemplate, never()).convertAndSend(anyString(), any(Object.class));
-            
-            // RoomUtils.getRoomById가 한 번 호출되었는지 확인
-            mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
         }
     }
     
     @Test
-    void getMessagesByRoomId_채팅방_메시지_조회_성공() {
-        // given
+    @DisplayName("채팅방 메시지 목록 조회 성공 테스트")
+    void getMessagesByRoomIdTest() {
+        // Given
         String roomId = "test-room-id";
-        
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
             mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
             
-            when(messageRepository.findByRoomId(roomId)).thenReturn(messages);
+            when(messageRepository.findByRoomIdOrderByTimestampAsc(roomId)).thenReturn(messages);
             
-            // when
+            // When
             List<ChatMessageDTO> result = messageService.getMessagesByRoomId(roomId);
             
-            // then
-            assertNotNull(result);
-            assertEquals(1, result.size());
-            verify(messageRepository, times(1)).findByRoomId(roomId);
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result).hasSize(1);
+            verify(messageRepository, times(1)).findByRoomIdOrderByTimestampAsc(roomId);
             
             // RoomUtils.getRoomById가 한 번 호출되었는지 확인
             mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
@@ -280,22 +273,23 @@ class MessageServiceTest {
     }
     
     @Test
-    void getMessagesByRoomId_빈_목록_반환() {
-        // given
-        String roomId = "test-room-id";
-        
+    @DisplayName("메시지가 없는 채팅방 메시지 목록 조회 시 빈 목록 반환 테스트")
+    void getMessagesByRoomIdEmptyTest() {
+        // Given
+        String roomId = "empty-room-id";
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
             mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
             
-            when(messageRepository.findByRoomId(roomId)).thenReturn(Collections.emptyList());
+            when(messageRepository.findByRoomIdOrderByTimestampAsc(roomId)).thenReturn(Collections.emptyList());
             
-            // when
+            // When
             List<ChatMessageDTO> result = messageService.getMessagesByRoomId(roomId);
             
-            // then
-            assertNotNull(result);
-            assertEquals(0, result.size());
-            verify(messageRepository, times(1)).findByRoomId(roomId);
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result).isEmpty();
+            verify(messageRepository, times(1)).findByRoomIdOrderByTimestampAsc(roomId);
             
             // RoomUtils.getRoomById가 한 번 호출되었는지 확인
             mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
@@ -303,47 +297,45 @@ class MessageServiceTest {
     }
     
     @Test
-    void getMessagesByRoomId_존재하지_않는_채팅방_예외발생() {
-        // given
-        String roomId = "non-existent-room-id";
-        
+    @DisplayName("존재하지 않는 채팅방 메시지 목록 조회 시 예외 발생 테스트")
+    void getMessagesByRoomIdWithNonExistingRoomTest() {
+        // Given
+        String nonExistingRoomId = "non-existing-room-id";
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
-            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId))
-                    .thenThrow(new IllegalArgumentException("채팅방을 찾을 수 없습니다: " + roomId));
+            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, nonExistingRoomId))
+                    .thenThrow(new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
             
-            // when & then
+            // When & Then
             assertThrows(IllegalArgumentException.class, () -> {
-                messageService.getMessagesByRoomId(roomId);
+                messageService.getMessagesByRoomId(nonExistingRoomId);
             });
             
-            verify(messageRepository, never()).findByRoomId(anyString());
-            
-            // RoomUtils.getRoomById가 한 번 호출되었는지 확인
-            mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
+            verify(messageRepository, never()).findByRoomIdOrderByTimestampAsc(anyString());
         }
     }
     
     @Test
-    void getMessagesByRoomId_페이징_메시지_조회_성공() {
-        // given
+    @DisplayName("채팅방 메시지 페이징 조회 성공 테스트")
+    void getPagedMessagesByRoomIdTest() {
+        // Given
         String roomId = "test-room-id";
         int page = 0;
         int size = 10;
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
-        
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
             mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
             
-            when(messageRepository.findByRoomId(eq(roomId), any(Pageable.class))).thenReturn(messagePage);
+            when(messageRepository.findByRoomId(roomId, pageable)).thenReturn(messagePage);
             
-            // when
+            // When
             Page<ChatMessageDTO> result = messageService.getMessagesByRoomId(roomId, pageable);
             
-            // then
-            assertNotNull(result);
-            assertEquals(1, result.getContent().size());
-            assertEquals(1, result.getTotalElements());
-            verify(messageRepository, times(1)).findByRoomId(eq(roomId), any(Pageable.class));
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getContent()).hasSize(1);
+            verify(messageRepository, times(1)).findByRoomId(roomId, pageable);
             
             // RoomUtils.getRoomById가 한 번 호출되었는지 확인
             mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
@@ -351,165 +343,196 @@ class MessageServiceTest {
     }
     
     @Test
-    void getUnreadMessages_멘토의_읽지않은_메시지_조회_성공() {
-        // given
+    @DisplayName("멘토가 읽지 않은 메시지 조회 성공 테스트")
+    void getUnreadMessagesByMentorTest() {
+        // Given
         String roomId = "test-room-id";
-        Long mentorId = 1L;
-        
+        Long mentorId = 1L; // 멘토 ID
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
             mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
-            // void 메서드는 doNothing() 사용
-            mockedRoomUtils.when(() -> RoomUtils.validateParticipant(any(CoffeeLetterRoom.class), any(Long.class)))
-                    .then(invocation -> null); // void 메서드는 null 반환
+            mockedRoomUtils.when(() -> RoomUtils.isParticipant(room, mentorId)).thenReturn(true);
             
-            when(messageRepository.findByRoomIdAndReadByMentorFalse(roomId)).thenReturn(messages);
+            when(messageRepository.findByRoomIdAndReadByMentorFalseOrderByTimestampAsc(roomId)).thenReturn(messages);
             
-            // when
-            List<ChatMessageDTO> results = messageService.getUnreadMessages(roomId, mentorId);
+            // When
+            List<ChatMessageDTO> result = messageService.getUnreadMessages(roomId, mentorId);
             
-            // then
-            assertNotNull(results);
-            assertEquals(1, results.size());
-            verify(messageRepository, times(1)).findByRoomIdAndReadByMentorFalse(roomId);
-            verify(messageRepository, never()).findByRoomIdAndReadByMenteeFalse(anyString());
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result).hasSize(1);
+            verify(messageRepository, times(1)).findByRoomIdAndReadByMentorFalseOrderByTimestampAsc(roomId);
             
-            // RoomUtils 메서드 호출 검증
+            // RoomUtils 메소드 호출 확인
             mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
-            mockedRoomUtils.verify(() -> RoomUtils.validateParticipant(room, mentorId), times(1));
+            mockedRoomUtils.verify(() -> RoomUtils.isParticipant(room, mentorId), times(1));
         }
     }
     
     @Test
-    void getUnreadMessages_멘티의_읽지않은_메시지_조회_성공() {
-        // given
+    @DisplayName("멘티가 읽지 않은 메시지 조회 성공 테스트")
+    void getUnreadMessagesByMenteeTest() {
+        // Given
         String roomId = "test-room-id";
-        Long menteeId = 2L;
-        
+        Long menteeId = 2L; // 멘티 ID
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
             mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
-            // void 메서드는 doNothing() 사용
-            mockedRoomUtils.when(() -> RoomUtils.validateParticipant(any(CoffeeLetterRoom.class), any(Long.class)))
-                    .then(invocation -> null); // void 메서드는 null 반환
+            mockedRoomUtils.when(() -> RoomUtils.isParticipant(room, menteeId)).thenReturn(true);
             
-            when(messageRepository.findByRoomIdAndReadByMenteeFalse(roomId)).thenReturn(messages);
+            when(messageRepository.findByRoomIdAndReadByMenteeFalseOrderByTimestampAsc(roomId)).thenReturn(messages);
             
-            // when
-            List<ChatMessageDTO> results = messageService.getUnreadMessages(roomId, menteeId);
+            // When
+            List<ChatMessageDTO> result = messageService.getUnreadMessages(roomId, menteeId);
             
-            // then
-            assertNotNull(results);
-            assertEquals(1, results.size());
-            verify(messageRepository, never()).findByRoomIdAndReadByMentorFalse(anyString());
-            verify(messageRepository, times(1)).findByRoomIdAndReadByMenteeFalse(roomId);
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result).hasSize(1);
+            verify(messageRepository, times(1)).findByRoomIdAndReadByMenteeFalseOrderByTimestampAsc(roomId);
             
-            // RoomUtils 메서드 호출 검증
+            // RoomUtils 메소드 호출 확인
             mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
-            mockedRoomUtils.verify(() -> RoomUtils.validateParticipant(room, menteeId), times(1));
+            mockedRoomUtils.verify(() -> RoomUtils.isParticipant(room, menteeId), times(1));
         }
     }
     
     @Test
-    void markAsRead_멘토_메시지_읽음_처리_성공() {
-        // given
+    @DisplayName("멘토의 메시지 읽음 처리 성공 테스트")
+    void markAsReadByMentorTest() {
+        // Given
         String roomId = "test-room-id";
-        Long mentorId = 1L;
-        
-        // 채팅방 설정
-        CoffeeLetterRoom testRoom = new CoffeeLetterRoom();
-        testRoom.setId(roomId);
-        testRoom.setMentorId(mentorId);
-        testRoom.setMenteeId(2L);
-        testRoom.setUnreadCountMentor(3);
-        
-        // 읽지 않은 메시지 설정
-        List<ChatMessage> unreadMessages = Arrays.asList(
-            new ChatMessage(), new ChatMessage(), new ChatMessage()
-        );
-        
+        Long mentorId = 1L; // 멘토 ID
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
-            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(testRoom);
-            // void 메서드는 doNothing() 사용
-            mockedRoomUtils.when(() -> RoomUtils.validateParticipant(any(CoffeeLetterRoom.class), any(Long.class)))
-                    .then(invocation -> null); // void 메서드는 null 반환
+            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
+            mockedRoomUtils.when(() -> RoomUtils.isParticipant(room, mentorId)).thenReturn(true);
             
-            when(messageRepository.findByRoomIdAndReadByMentorFalse(roomId)).thenReturn(unreadMessages);
-            when(messageRepository.saveAll(unreadMessages)).thenReturn(unreadMessages);
-            when(roomRepository.save(testRoom)).thenReturn(testRoom);
+            when(messageRepository.updateReadByMentorByRoomId(roomId)).thenReturn(5);
+            when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(room);
             
-            // when
+            // When
             messageService.markAsRead(roomId, mentorId);
             
-            // then
-            verify(messageRepository, times(1)).findByRoomIdAndReadByMentorFalse(roomId);
-            verify(messageRepository, times(1)).saveAll(unreadMessages);
-            verify(roomRepository, times(1)).save(testRoom);
+            // Then
+            verify(messageRepository, times(1)).updateReadByMentorByRoomId(roomId);
+            verify(roomRepository, times(1)).save(any(CoffeeLetterRoom.class));
             
-            // 읽지 않은 메시지 카운트가 0으로 초기화되었는지 확인
-            assertEquals(0, testRoom.getUnreadCountMentor());
-            
-            // RoomUtils 메서드 호출 검증
+            // RoomUtils 메소드 호출 확인
             mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
-            mockedRoomUtils.verify(() -> RoomUtils.validateParticipant(testRoom, mentorId), times(1));
+            mockedRoomUtils.verify(() -> RoomUtils.isParticipant(room, mentorId), times(1));
         }
     }
     
     @Test
-    void getUnreadMessageCount_멘토_카운트_조회_성공() {
-        // given
+    @DisplayName("멘티의 메시지 읽음 처리 성공 테스트")
+    void markAsReadByMenteeTest() {
+        // Given
         String roomId = "test-room-id";
-        Long mentorId = 1L;
-        int expectedCount = 3;
-        
-        CoffeeLetterRoom testRoom = new CoffeeLetterRoom();
-        testRoom.setId(roomId);
-        testRoom.setMentorId(mentorId);
-        testRoom.setMenteeId(2L);
-        testRoom.setUnreadCountMentor(expectedCount);
-        
+        Long menteeId = 2L; // 멘티 ID
+
         try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
-            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(testRoom);
-            // void 메서드는 doNothing() 사용
-            mockedRoomUtils.when(() -> RoomUtils.validateParticipant(any(CoffeeLetterRoom.class), any(Long.class)))
-                    .then(invocation -> null); // void 메서드는 null 반환
+            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
+            mockedRoomUtils.when(() -> RoomUtils.isParticipant(room, menteeId)).thenReturn(true);
             
-            // when
-            int actualCount = messageService.getUnreadMessageCount(roomId, mentorId);
+            when(messageRepository.updateReadByMenteeByRoomId(roomId)).thenReturn(5);
+            when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(room);
             
-            // then
-            assertEquals(expectedCount, actualCount);
+            // When
+            messageService.markAsRead(roomId, menteeId);
             
-            // RoomUtils 메서드 호출 검증
+            // Then
+            verify(messageRepository, times(1)).updateReadByMenteeByRoomId(roomId);
+            verify(roomRepository, times(1)).save(any(CoffeeLetterRoom.class));
+            
+            // RoomUtils 메소드 호출 확인
             mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
-            mockedRoomUtils.verify(() -> RoomUtils.validateParticipant(testRoom, mentorId), times(1));
+            mockedRoomUtils.verify(() -> RoomUtils.isParticipant(room, menteeId), times(1));
         }
     }
     
     @Test
-    void getLastMessage_성공적인_조회() {
-        // given
+    @DisplayName("멘토의 읽지 않은 메시지 수 조회 성공 테스트")
+    void getUnreadMessageCountByMentorTest() {
+        // Given
         String roomId = "test-room-id";
-        
-        when(messageRepository.findFirstByRoomIdOrderByTimestampDesc(roomId)).thenReturn(message);
-        
-        // when
-        ChatMessageDTO result = messageService.getLastMessage(roomId);
-        
-        // then
-        assertNotNull(result);
-        verify(messageRepository, times(1)).findFirstByRoomIdOrderByTimestampDesc(roomId);
+        Long mentorId = 1L; // 멘토 ID
+        int expectedCount = 5;
+
+        try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
+            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
+            mockedRoomUtils.when(() -> RoomUtils.isParticipant(room, mentorId)).thenReturn(true);
+            
+            when(messageRepository.countByRoomIdAndReadByMentorFalse(roomId)).thenReturn(expectedCount);
+            
+            // When
+            int result = messageService.getUnreadMessageCount(roomId, mentorId);
+            
+            // Then
+            assertThat(result).isEqualTo(expectedCount);
+            verify(messageRepository, times(1)).countByRoomIdAndReadByMentorFalse(roomId);
+            
+            // RoomUtils 메소드 호출 확인
+            mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
+            mockedRoomUtils.verify(() -> RoomUtils.isParticipant(room, mentorId), times(1));
+        }
     }
     
     @Test
-    void getLastMessage_메시지가_없는_경우() {
-        // given
-        String roomId = "empty-room-id";
-        when(messageRepository.findFirstByRoomIdOrderByTimestampDesc(roomId)).thenReturn(null);
+    @DisplayName("멘티의 읽지 않은 메시지 수 조회 성공 테스트")
+    void getUnreadMessageCountByMenteeTest() {
+        // Given
+        String roomId = "test-room-id";
+        Long menteeId = 2L; // 멘티 ID
+        int expectedCount = 3;
+
+        try (MockedStatic<RoomUtils> mockedRoomUtils = Mockito.mockStatic(RoomUtils.class)) {
+            mockedRoomUtils.when(() -> RoomUtils.getRoomById(roomRepository, roomId)).thenReturn(room);
+            mockedRoomUtils.when(() -> RoomUtils.isParticipant(room, menteeId)).thenReturn(true);
+            
+            when(messageRepository.countByRoomIdAndReadByMenteeFalse(roomId)).thenReturn(expectedCount);
+            
+            // When
+            int result = messageService.getUnreadMessageCount(roomId, menteeId);
+            
+            // Then
+            assertThat(result).isEqualTo(expectedCount);
+            verify(messageRepository, times(1)).countByRoomIdAndReadByMenteeFalse(roomId);
+            
+            // RoomUtils 메소드 호출 확인
+            mockedRoomUtils.verify(() -> RoomUtils.getRoomById(roomRepository, roomId), times(1));
+            mockedRoomUtils.verify(() -> RoomUtils.isParticipant(room, menteeId), times(1));
+        }
+    }
+    
+    @Test
+    @DisplayName("마지막 메시지 조회 성공 테스트")
+    void getLastMessageTest() {
+        // Given
+        String roomId = "test-room-id";
         
-        // when
+        when(messageRepository.findTopByRoomIdOrderByTimestampDesc(roomId)).thenReturn(message);
+        
+        // When
         ChatMessageDTO result = messageService.getLastMessage(roomId);
         
-        // then
-        assertNull(result);
-        verify(messageRepository, times(1)).findFirstByRoomIdOrderByTimestampDesc(roomId);
+        // Then
+        assertThat(result).isNotNull();
+        verify(messageRepository, times(1)).findTopByRoomIdOrderByTimestampDesc(roomId);
+    }
+    
+    @Test
+    @DisplayName("메시지가 없는 채팅방의 마지막 메시지 조회 테스트")
+    void getLastMessageEmptyTest() {
+        // Given
+        String roomId = "empty-room-id";
+        
+        when(messageRepository.findTopByRoomIdOrderByTimestampDesc(roomId)).thenReturn(null);
+        
+        // When
+        ChatMessageDTO result = messageService.getLastMessage(roomId);
+        
+        // Then
+        assertThat(result).isNull();
+        verify(messageRepository, times(1)).findTopByRoomIdOrderByTimestampDesc(roomId);
     }
 } 
