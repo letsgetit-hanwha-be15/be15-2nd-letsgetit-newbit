@@ -14,6 +14,9 @@ public class CreateColumnRequestDto {
     @NotBlank(message = "제목은 필수입니다.")
     private String title;
 
+    @Schema(description = "시리즈 ID", example = "1")
+    private Long seriesId;
+
     @Schema(description = "칼럼 본문 내용", example = "저는 이렇게 성장했습니다...")
     @NotBlank(message = "내용은 필수입니다.")
     private String content;

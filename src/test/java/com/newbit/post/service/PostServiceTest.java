@@ -129,7 +129,7 @@ class PostServiceTest {
     }
 
     @Test
-    void 게시글_등록_성공_일반사용자() {
+    void 게시글_등록_성공_회원() {
         // given
         CustomUser user = CustomUser.builder()
                 .userId(1L)
@@ -155,27 +155,23 @@ class PostServiceTest {
     }
 
     @Test
-    void 게시글_등록_실패_관리자() {
+    void 게시글_등록_실패_비회원() {
         // given
-        CustomUser adminUser = CustomUser.builder()
-                .userId(2L)
-                .email("admin@example.com")
-                .password("encoded")
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
-                .build();
+        PostCreateRequest request = new PostCreateRequest();
+        request.setTitle("비회원 테스트");
+        request.setContent("비회원은 작성 못함");
+        request.setPostCategoryId(1L);
 
-        PostCreateRequest adminRequest = new PostCreateRequest();
-        adminRequest.setTitle("관리자 글");
-        adminRequest.setContent("관리자가 작성한 글");
-        adminRequest.setPostCategoryId(1L);
+        CustomUser unauthenticatedUser = null;
 
         // when & then
-        assertThatThrownBy(() -> postService.createPost(adminRequest, adminUser))
+        assertThatThrownBy(() -> postService.createPost(request, unauthenticatedUser))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.ONLY_USER_CAN_CREATE_POST.getMessage());
 
         verify(postRepository, never()).save(any(Post.class));
     }
+
 
     @Test
     void 게시글_삭제_성공() {

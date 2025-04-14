@@ -79,7 +79,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReports(eq(status), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports")
+        mockMvc.perform(get("/api/v1/reports")
                         .param("status", status.name())
                         .param("page", "0")
                         .param("size", "10")
@@ -103,7 +103,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReports(eq(null), any(Pageable.class))).willReturn(multipleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports")
+        mockMvc.perform(get("/api/v1/reports")
                         .param("page", "0")
                         .param("size", "10")
                         .accept(MediaType.APPLICATION_JSON))
@@ -124,7 +124,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findAllReportsWithoutPaging()).willReturn(reportList);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/all")
+        mockMvc.perform(get("/api/v1/reports/all")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
@@ -143,7 +143,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByPostId(eq(postId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/post/{postId}", postId)
+        mockMvc.perform(get("/api/v1/reports/post/{postId}", postId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -161,7 +161,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByCommentId(eq(commentId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/comment/{commentId}", commentId)
+        mockMvc.perform(get("/api/v1/reports/comment/{commentId}", commentId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -177,7 +177,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByReporterId(eq(userId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/reporter/{userId}", userId)
+        mockMvc.perform(get("/api/v1/reports/reporter/{userId}", userId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -194,7 +194,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByReportTypeId(eq(reportTypeId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/type/{reportTypeId}", reportTypeId)
+        mockMvc.perform(get("/api/v1/reports/type/{reportTypeId}", reportTypeId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -211,7 +211,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByPostUserId(eq(userId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/post-user/{userId}", userId)
+        mockMvc.perform(get("/api/v1/reports/post-user/{userId}", userId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -227,7 +227,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByCommentUserId(eq(userId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/comment-user/{userId}", userId)
+        mockMvc.perform(get("/api/v1/reports/comment-user/{userId}", userId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -243,7 +243,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByContentUserId(eq(userId), any(Pageable.class))).willReturn(multipleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/content-user/{userId}", userId)
+        mockMvc.perform(get("/api/v1/reports/content-user/{userId}", userId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -261,7 +261,7 @@ class ReportQueryControllerTest {
             .willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/filter")
+        mockMvc.perform(get("/api/v1/reports/filter")
                         .param("status", status.name())
                         .param("reportTypeId", reportTypeId.toString())
                         .accept(MediaType.APPLICATION_JSON))
@@ -281,7 +281,7 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReports(eq(status), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/filter")
+        mockMvc.perform(get("/api/v1/reports/filter")
                         .param("status", status.name())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -300,7 +300,7 @@ class ReportQueryControllerTest {
             .willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/report/reports/filter")
+        mockMvc.perform(get("/api/v1/reports/filter")
                         .param("reportTypeId", reportTypeId.toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

@@ -1,5 +1,6 @@
 package com.newbit.column.service;
 
+import com.newbit.column.domain.Series;
 import com.newbit.column.dto.request.CreateColumnRequestDto;
 import com.newbit.column.dto.request.DeleteColumnRequestDto;
 import com.newbit.column.dto.request.UpdateColumnRequestDto;
@@ -11,6 +12,7 @@ import com.newbit.column.domain.Column;
 import com.newbit.column.enums.RequestType;
 import com.newbit.column.repository.ColumnRepository;
 import com.newbit.column.repository.ColumnRequestRepository;
+import com.newbit.column.repository.SeriesRepository;
 import com.newbit.user.entity.Mentor;
 import com.newbit.user.service.MentorService;
 import com.newbit.user.service.UserService;
@@ -40,6 +42,9 @@ class ColumnRequestServiceTest {
     private ColumnRequestRepository columnRequestRepository;
 
     @Mock
+    private SeriesRepository seriesRepository;
+
+    @Mock
     private ColumnMapper columnMapper;
 
     @Mock
@@ -62,15 +67,18 @@ class ColumnRequestServiceTest {
                 .title("테스트 제목")
                 .content("테스트 내용")
                 .price(1000)
+                .seriesId(1L)
                 .thumbnailUrl("https://test.com/thumb.jpg")
                 .build();
 
         Mentor mentor = Mentor.builder().mentorId(mentorId).build();
         Column column = Column.builder().columnId(1L).mentor(mentor).build();
+        Series series = Series.builder().seriesId(1L).build();
         ColumnRequest columnRequest = ColumnRequest.builder().columnRequestId(100L).build();
 
+        when(seriesRepository.findById(1L)).thenReturn(Optional.of(series));
         when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
-        when(columnMapper.toColumn(dto, mentor)).thenReturn(column);
+        when(columnMapper.toColumn(dto, mentor, series)).thenReturn(column);
         when(columnRepository.save(column)).thenReturn(column);
         when(columnMapper.toColumnRequest(dto, column)).thenReturn(columnRequest);
         when(columnRequestRepository.save(columnRequest)).thenReturn(columnRequest);

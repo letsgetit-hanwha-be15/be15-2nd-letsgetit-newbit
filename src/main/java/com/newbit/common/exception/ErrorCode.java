@@ -35,7 +35,7 @@ public enum ErrorCode {
     //게시글
     POST_NOT_FOUND("20001", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED_TO_UPDATE_POST("20002", "게시글은 작성자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_USER_CAN_CREATE_POST("20003", "게시글은 일반 사용자만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_USER_CAN_CREATE_POST("20003", "게시글은 회원만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
     UNAUTHORIZED_TO_DELETE_POST("20004", "게시글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
     ONLY_ADMIN_CAN_CREATE_NOTICE("20005", "공지사항은 관리자만 등록할 수 있습니다.", HttpStatus.FORBIDDEN),
     ONLY_ADMIN_CAN_UPDATE_NOTICE("20006", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
@@ -127,7 +127,16 @@ public enum ErrorCode {
     PRODUCT_PURCHASE_UNAUTHORIZED("70007", "상품 구매 권한이 없습니다.", HttpStatus.FORBIDDEN),
 
     /*--------------- 신고 ------------------*/
-
+    REPORT_NOT_FOUND("80001", "해당 신고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    REPORT_TYPE_NOT_FOUND("80002", "해당 신고 유형을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    REPORT_ALREADY_PROCESSED("80003", "이미 처리된 신고입니다.", HttpStatus.BAD_REQUEST),
+    REPORT_CONTENT_NOT_FOUND("80004", "신고된 컨텐츠를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    SELF_REPORT_NOT_ALLOWED("80005", "자신의 컨텐츠는 신고할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    DUPLICATE_REPORT("80006", "이미 신고한 컨텐츠입니다.", HttpStatus.CONFLICT),
+    UNAUTHORIZED_REPORT_ACCESS("80007", "신고 정보에 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+    INVALID_REPORT_STATUS_CHANGE("80008", "유효하지 않은 신고 상태 변경입니다.", HttpStatus.BAD_REQUEST),
+    MAXIMUM_REPORTS_REACHED("80009", "최대 신고 횟수를 초과했습니다.", HttpStatus.TOO_MANY_REQUESTS),
+    REPORT_PROCESS_ERROR("80010", "신고 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     /*--------------- 알림 ------------------*/
     NOTIFICATION_TYPE_NOT_FOUND("90001", "잘못된 알림 유형 입니다.", HttpStatus.NOT_FOUND),
