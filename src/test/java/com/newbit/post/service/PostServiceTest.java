@@ -43,7 +43,6 @@ class PostServiceTest {
         request = new PostCreateRequest();
         request.setTitle("단위 테스트 제목");
         request.setContent("단위 테스트 내용");
-        request.setUserId(1L);
         request.setPostCategoryId(2L);
     }
 
