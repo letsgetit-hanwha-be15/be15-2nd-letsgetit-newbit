@@ -129,7 +129,7 @@ class PostServiceTest {
     }
 
     @Test
-    void 게시글_등록_성공_일반사용자() {
+    void 게시글_등록_성공_회원() {
         // given
         CustomUser user = CustomUser.builder()
                 .userId(1L)

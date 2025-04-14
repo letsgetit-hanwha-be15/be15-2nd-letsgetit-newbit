@@ -35,7 +35,7 @@ public enum ErrorCode {
     //게시글
     POST_NOT_FOUND("20001", "해당 게시글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
     UNAUTHORIZED_TO_UPDATE_POST("20002", "게시글은 작성자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
-    ONLY_USER_CAN_CREATE_POST("20003", "게시글은 일반 사용자만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
+    ONLY_USER_CAN_CREATE_POST("20003", "게시글은 회원만 작성할 수 있습니다.", HttpStatus.FORBIDDEN),
     UNAUTHORIZED_TO_DELETE_POST("20004", "게시글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
     ONLY_ADMIN_CAN_CREATE_NOTICE("20005", "공지사항은 관리자만 등록할 수 있습니다.", HttpStatus.FORBIDDEN),
     ONLY_ADMIN_CAN_UPDATE_NOTICE("20006", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
