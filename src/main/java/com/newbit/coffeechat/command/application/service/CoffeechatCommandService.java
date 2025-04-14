@@ -20,8 +20,6 @@ import com.newbit.notification.command.application.service.NotificationCommandSe
 import com.newbit.purchase.command.application.service.DiamondCoffeechatTransactionCommandService;
 import com.newbit.user.dto.response.MentorDTO;
 import com.newbit.user.dto.response.UserDTO;
-import com.newbit.user.entity.Mentor;
-import com.newbit.user.entity.User;
 import com.newbit.user.service.MentorService;
 import com.newbit.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -235,8 +233,9 @@ public class CoffeechatCommandService {
         // 5. 커피챗 객체 업데이트하기
         coffeechat.cancelCoffeechat(coffeechatCancelRequest.getCancelReasonId());
 
-        // 6. TODO : 채팅방 취소 진행
-
+        // 6. 채팅방 취소
+        String roomId = roomService.findRoomIdByCoffeeChatId(coffeechat.getCoffeechatId());
+        roomService.cancelRoom(roomId);
 
         // 7. 멘토에게 커피챗 취소 알림
         notificationCommandService.sendNotification(
