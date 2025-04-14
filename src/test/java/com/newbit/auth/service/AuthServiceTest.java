@@ -8,6 +8,7 @@ import com.newbit.auth.repository.RefreshTokenRepository;
 import com.newbit.user.entity.User;
 import com.newbit.user.entity.Authority;
 import com.newbit.user.repository.UserRepository;
+import com.newbit.user.service.SuspensionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -28,12 +29,12 @@ public class AuthServiceTest {
     @Mock private RefreshTokenRepository refreshTokenRepository;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private JwtTokenProvider jwtTokenProvider;
-
+    @Mock private SuspensionService suspensionService;
     @InjectMocks
     private AuthService authService;
 
     private final String email = "test@example.com";
-    private final String password = "1234";
+    private final String password = "a12345567!";
     private final String encodedPassword = "encoded1234";
     private final String accessToken = "access-token";
     private final String refreshToken = "refresh-token";
