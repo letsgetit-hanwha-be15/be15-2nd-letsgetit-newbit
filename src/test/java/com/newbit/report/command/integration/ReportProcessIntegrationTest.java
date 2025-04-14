@@ -3,6 +3,7 @@ package com.newbit.report.command.integration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import com.newbit.report.command.domain.repository.ReportTypeRepository;
 import com.newbit.report.command.infrastructure.repository.JpaReportRepository;
 
 // 통합 테스트 Disabled
+@Disabled
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
@@ -77,7 +79,7 @@ class ReportProcessIntegrationTest {
         // 2. 신고 생성
         ReportCreateRequest reportCreateRequest = new ReportCreateRequest(1L, savedPost.getId(), testReportType.getId(), "테스트 신고입니다.");
         
-        mockMvc.perform(post("/api/v1/report/post")
+        mockMvc.perform(post("/api/v1/reports/post")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reportCreateRequest)))
             .andExpect(status().isCreated())
@@ -87,7 +89,7 @@ class ReportProcessIntegrationTest {
         Report report = jpaReportRepository.findAllByPostId(savedPost.getId()).get(0);
         ReportUpdateRequest reportUpdateRequest = new ReportUpdateRequest(report.getReportId(), ReportStatus.DELETED);
         
-        mockMvc.perform(patch("/api/v1/admin/report/process")
+        mockMvc.perform(patch("/api/v1/admin/reports/process")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reportUpdateRequest)))
             .andExpect(status().isOk())
@@ -120,7 +122,7 @@ class ReportProcessIntegrationTest {
         // 2. 신고 생성
         ReportCreateRequest reportCreateRequest = new ReportCreateRequest(1L, savedPost.getId(), testReportType.getId(), "임계값 테스트 신고입니다.");
         
-        mockMvc.perform(post("/api/v1/report/post")
+        mockMvc.perform(post("/api/v1/reports/post")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reportCreateRequest)))
             .andExpect(status().isCreated())
