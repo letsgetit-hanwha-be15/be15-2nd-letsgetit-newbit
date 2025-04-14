@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/columns/requests")
 @RequiredArgsConstructor
-@Tag(name = "ColumnRequest", description = "멘토 칼럼 요청 관련 API")
+@Tag(name = "칼럼 요청 API", description = "멘토 칼럼 요청 관련 API")
 public class ColumnRequestController {
     private final ColumnRequestService columnRequestService;
 

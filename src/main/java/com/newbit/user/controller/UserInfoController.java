@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "User", description = "정보 조회 (나의 프로필, 다른 사용자 프로필)")
+@Tag(name = "유저 정보 API", description = "정보 조회 (나의 프로필, 다른 사용자 프로필)")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user")

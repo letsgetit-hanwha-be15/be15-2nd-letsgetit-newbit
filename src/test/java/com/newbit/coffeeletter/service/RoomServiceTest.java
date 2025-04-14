@@ -111,7 +111,7 @@ class RoomServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> {
             roomService.createRoom(roomDTO);
         });
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.COFFEELETTER_ROOM_NOT_FOUND);
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.COFFEELETTER_ALREADY_EXIST);
         verify(roomRepository, never()).save(any(CoffeeLetterRoom.class));
     }
     

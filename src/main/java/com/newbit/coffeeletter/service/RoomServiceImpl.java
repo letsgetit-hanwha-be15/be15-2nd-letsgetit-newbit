@@ -39,7 +39,7 @@ public class RoomServiceImpl implements RoomService {
     public CoffeeLetterRoomDTO createRoom(CoffeeLetterRoomDTO roomDto) {
         CoffeeLetterRoom existingRoom = RoomUtils.findRoomByCoffeeChatId(roomRepository, roomDto.getCoffeeChatId());
         if (existingRoom != null) {
-            throw new BusinessException(ErrorCode.COFFEELETTER_ROOM_NOT_FOUND);
+            throw new BusinessException(ErrorCode.COFFEELETTER_ALREADY_EXIST);
         }
 
         CoffeeLetterRoom room = modelMapper.map(roomDto, CoffeeLetterRoom.class);

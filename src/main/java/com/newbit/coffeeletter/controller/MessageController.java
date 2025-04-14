@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/coffeeletter/messages")
-@Tag(name = "채팅 메시지 API", description = "커피레터 채팅 메시지 관련 API")
+@Tag(name = "커피레터(채팅 기능) API", description = "커피레터 채팅 메시지 관련 API")
 public class MessageController {
 
     private final MessageService messageService;

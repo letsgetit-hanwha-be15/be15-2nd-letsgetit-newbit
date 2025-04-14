@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
-@Tag(name = "Payment", description = "결제 관련 API")
+@Tag(name = "결제 API", description = "결제 관련 API")
 public class PaymentController extends AbstractApiController {
 
     private final PaymentCommandService paymentCommandService;

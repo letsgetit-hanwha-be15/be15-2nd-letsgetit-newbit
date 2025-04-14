@@ -85,6 +85,7 @@ public enum ErrorCode {
     COFFEELETTER_NOT_FOUND("31001", "해당 커피레터를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     COFFEELETTER_ROOM_NOT_FOUND("31002", "해당 룸을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     COFFEELETTER_INVALID_ACCESS("31003", "커피레터에 접근 권한이 없습니다.", HttpStatus.FORBIDDEN),
+    COFFEELETTER_ALREADY_EXIST("31004", "커피레터가 이미 존재합니다.", HttpStatus.CONFLICT),
 
     /*--------------- 구매 ------------------*/
     COLUMN_ALREADY_PURCHASED("60001", "이미 구매한 칼럼입니다.", HttpStatus.INTERNAL_SERVER_ERROR),

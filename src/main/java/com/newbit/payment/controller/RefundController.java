@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/v1/refunds")
 @RequiredArgsConstructor
-@Tag(name = "Refund", description = "결제 취소/환불 관련 API")
+@Tag(name = "결제 취소/환불 API", description = "결제 취소/환불 관련 API")
 public class RefundController extends AbstractApiController {
 
     private final RefundCommandService refundCommandService;
