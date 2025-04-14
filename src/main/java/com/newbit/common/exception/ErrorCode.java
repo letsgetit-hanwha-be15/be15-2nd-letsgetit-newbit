@@ -65,6 +65,21 @@ public enum ErrorCode {
     SUBSCRIPTION_NOT_FOUND("21009", "해당 구독 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     SUBSCRIPTION_PROCESSING_ERROR("21010", "구독 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
+    /*--------------- 좋아요 ------------------*/
+    LIKE_NOT_FOUND("25001", "해당 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    LIKE_ALREADY_EXISTS("25002", "이미 좋아요가 존재합니다.", HttpStatus.CONFLICT),
+    LIKE_USER_MISMATCH("25003", "해당 좋아요는 사용자와 매칭되지 않습니다.", HttpStatus.FORBIDDEN),
+    LIKE_ERROR("25004", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    LIKE_SELF_NOT_ALLOWED("25007", "자신의 콘텐츠에는 좋아요할 수 없습니다.", HttpStatus.BAD_REQUEST),
+
+    /*--------------- 구독 ------------------*/
+    SUBSCRIPTION_ALREADY_EXISTS("26002", "이미 구독 중인 시리즈입니다.", HttpStatus.CONFLICT),
+    SUBSCRIPTION_USER_MISMATCH("26003", "해당 구독은 사용자와 매칭되지 않습니다.", HttpStatus.FORBIDDEN),
+    SUBSCRIPTION_ERROR("26004", "구독 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    SERIES_FOR_SUBSCRIPTION_NOT_FOUND("26005", "구독할 시리즈를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    SUBSCRIPTION_SELF_NOT_ALLOWED("26006", "자신의 시리즈는 구독할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    SUBSCRIPTION_CANCEL_ERROR("26007", "구독 취소 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
     /*--------------- 커피챗 ------------------*/
     // 커피챗
     COFFEECHAT_NOT_FOUND("30001", "해당 커피챗을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

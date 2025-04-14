@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.mock;
@@ -30,7 +29,6 @@ import com.newbit.subscription.dto.response.SubscriptionStatusResponse;
 import com.newbit.subscription.entity.Subscription;
 import com.newbit.subscription.entity.SubscriptionId;
 import com.newbit.subscription.repository.SubscriptionRepository;
-import com.newbit.subscription.util.SubscriptionValidator;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("구독 서비스 단위 테스트")
@@ -43,44 +41,26 @@ class SubscriptionServiceTest {
     private SeriesRepository seriesRepository;
     
     @Mock
-    private SubscriptionValidator validator;
-    
-    @Mock
-    private SubscriptionManager manager;
+    private SubscriptionCommandService manager;
 
     @InjectMocks
     private SubscriptionService subscriptionService;
 
-    private Series mockSeries(Long seriesId) {
-        Series series = mock(Series.class);
-        return series;
+    private Series mockSeries() {
+        return mock(Series.class);
     }
     
-    private Series setupSeriesValidation(Long seriesId) {
-        Series series = mockSeries(seriesId);
-        when(validator.validateSeriesExists(eq(seriesId), any())).thenReturn(series);
-        return series;
-    }
-    
-    private BusinessException setupBusinessException(ErrorCode errorCode) {
-        BusinessException exception = new BusinessException(errorCode);
-        return exception;
-    }
-    
-    private void setupErrorHandling(Exception e, Long seriesId, Long userId, ErrorCode errorCode) {
-        BusinessException businessException = setupBusinessException(errorCode);
-        when(validator.handleSubscriptionError(eq(e), any(), eq(seriesId), eq(userId)))
-            .thenReturn(businessException);
+    private void setupSeriesValidation(Long seriesId) {
+        when(seriesRepository.findById(seriesId)).thenReturn(Optional.of(mockSeries()));
     }
     
     private Subscription createSubscription(Long userId, Long seriesId) {
-        Subscription subscription = Subscription.builder()
+        return Subscription.builder()
                 .userId(userId)
                 .seriesId(seriesId)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        return subscription;
     }
 
     @Test
@@ -90,10 +70,9 @@ class SubscriptionServiceTest {
         Long userId = 1L;
         Long seriesId = 1L;
         
-        Series series = setupSeriesValidation(seriesId);
-        Subscription subscription = createSubscription(userId, seriesId);
+        setupSeriesValidation(seriesId);
         SubscriptionId id = new SubscriptionId(userId, seriesId);
-        SubscriptionResponse expectedResponse = SubscriptionResponse.from(subscription);
+        SubscriptionResponse expectedResponse = SubscriptionResponse.from(createSubscription(userId, seriesId));
         
         when(subscriptionRepository.findById(id)).thenReturn(Optional.empty());
         when(manager.createNewSubscription(userId, seriesId)).thenReturn(expectedResponse);
@@ -118,7 +97,7 @@ class SubscriptionServiceTest {
         Long userId = 1L;
         Long seriesId = 1L;
         
-        Series series = setupSeriesValidation(seriesId);
+        setupSeriesValidation(seriesId);
         Subscription subscription = createSubscription(userId, seriesId);
         SubscriptionId id = new SubscriptionId(userId, seriesId);
         SubscriptionResponse expectedResponse = SubscriptionResponse.canceledSubscription(seriesId, userId);
@@ -146,16 +125,14 @@ class SubscriptionServiceTest {
         Long userId = 1L;
         Long nonExistingSeriesId = 999L;
         
-        BusinessException expectedException = setupBusinessException(ErrorCode.SERIES_NOT_FOUND);
-        when(validator.validateSeriesExists(eq(nonExistingSeriesId), any())).thenThrow(expectedException);
-        setupErrorHandling(expectedException, nonExistingSeriesId, userId, ErrorCode.SERIES_NOT_FOUND);
+        when(seriesRepository.findById(nonExistingSeriesId)).thenReturn(Optional.empty());
         
         // When & Then
         BusinessException exception = assertThrows(BusinessException.class, () -> 
             subscriptionService.toggleSubscription(nonExistingSeriesId, userId)
         );
         
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_NOT_FOUND);
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_FOR_SUBSCRIPTION_NOT_FOUND);
         
         verify(manager, never()).createNewSubscription(anyLong(), anyLong());
         verify(manager, never()).cancelSubscription(any());
@@ -169,7 +146,7 @@ class SubscriptionServiceTest {
         Long seriesId = 1L;
         int subscriberCount = 42;
         
-        Series series = setupSeriesValidation(seriesId);
+        setupSeriesValidation(seriesId);
         
         when(subscriptionRepository.existsByUserIdAndSeriesId(userId, seriesId)).thenReturn(true);
         when(subscriptionRepository.countBySeriesId(seriesId)).thenReturn(subscriberCount);
@@ -219,7 +196,7 @@ class SubscriptionServiceTest {
         Long userId2 = 2L;
         Long seriesId = 1L;
         
-        Series series = setupSeriesValidation(seriesId);
+        setupSeriesValidation(seriesId);
         
         Subscription sub1 = createSubscription(userId1, seriesId);
         Subscription sub2 = createSubscription(userId2, seriesId);
@@ -242,16 +219,14 @@ class SubscriptionServiceTest {
         // Given
         Long nonExistingSeriesId = 999L;
         
-        BusinessException expectedException = setupBusinessException(ErrorCode.SERIES_NOT_FOUND);
-        when(validator.validateSeriesExists(eq(nonExistingSeriesId), any())).thenThrow(expectedException);
-        setupErrorHandling(expectedException, nonExistingSeriesId, null, ErrorCode.SERIES_NOT_FOUND);
+        when(seriesRepository.findById(nonExistingSeriesId)).thenReturn(Optional.empty());
         
         // When & Then
         BusinessException exception = assertThrows(BusinessException.class, () -> 
             subscriptionService.getSeriesSubscribers(nonExistingSeriesId)
         );
         
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_NOT_FOUND);
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_FOR_SUBSCRIPTION_NOT_FOUND);
         
         verify(subscriptionRepository, never()).findBySeriesId(anyLong());
     }
@@ -260,21 +235,22 @@ class SubscriptionServiceTest {
     @DisplayName("구독 처리 중 예외 발생 테스트")
     void subscriptionProcessingErrorTest() {
         // Given
-        Long seriesId = 1L;
         Long userId = 1L;
+        Long seriesId = 1L;
         
-        Series series = setupSeriesValidation(seriesId);
-        RuntimeException runtimeException = new RuntimeException("데이터베이스 오류");
+        setupSeriesValidation(seriesId);
+        RuntimeException runtimeException = new RuntimeException("Unexpected error");
         
-        when(subscriptionRepository.findById(any(SubscriptionId.class))).thenReturn(Optional.empty());
-        when(manager.createNewSubscription(userId, seriesId)).thenThrow(runtimeException);
-        setupErrorHandling(runtimeException, seriesId, userId, ErrorCode.SUBSCRIPTION_PROCESSING_ERROR);
+        when(subscriptionRepository.findById(any())).thenThrow(runtimeException);
         
         // When & Then
         BusinessException exception = assertThrows(BusinessException.class, () -> 
             subscriptionService.toggleSubscription(seriesId, userId)
         );
         
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SUBSCRIPTION_PROCESSING_ERROR);
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SUBSCRIPTION_ERROR);
+        
+        verify(manager, never()).createNewSubscription(anyLong(), anyLong());
+        verify(manager, never()).cancelSubscription(any());
     }
 } 
