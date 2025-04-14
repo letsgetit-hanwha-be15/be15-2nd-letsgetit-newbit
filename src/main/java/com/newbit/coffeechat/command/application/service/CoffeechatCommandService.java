@@ -10,6 +10,7 @@ import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
+import com.newbit.coffeeletter.service.RoomService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
@@ -35,6 +36,7 @@ public class CoffeechatCommandService {
     private final MentorService mentorService;
     private final DiamondCoffeechatTransactionCommandService transactionCommandService;
     private final NotificationCommandService notificationCommandService;
+    private final RoomService roomService;
 
     /**
      * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
@@ -211,7 +213,14 @@ public class CoffeechatCommandService {
         // 5. 커피챗 객체 업데이트하기
         coffeechat.cancelCoffeechat(coffeechatCancelRequest.getCancelReasonId());
 
-        // 6. 멘토에게 커피챗 취소 알림
+        // 6. 채팅방 취소
+        // 커피챗 ID로 채팅방 찾기
+        Long roomId =
+        // 채팅방ID로 채팅방 취소
+        roomService.cancelRoom(roomId);
+
+
+        // 7. 멘토에게 커피챗 취소 알림
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
                         mentorService.getUserIdByMentorId(coffeechat.getMentorId())
