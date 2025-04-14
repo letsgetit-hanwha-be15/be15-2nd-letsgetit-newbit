@@ -28,6 +28,8 @@ public enum ErrorCode {
     JWT_UNSUPPORTED("10013", "지원하지 않는 JWT 토큰입니다.", HttpStatus.BAD_REQUEST),
     JWT_CLAIMS_EMPTY("10014", "JWT 클레임이 비어 있습니다.", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR("10015", "내부 서버 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    // 입력 값 검증 오류
+    VALIDATION_ERROR("11001", "입력 값 검증 오류입니다.", HttpStatus.BAD_REQUEST),
 
     /*--------------- 게시판 ------------------*/
     //게시글
@@ -41,11 +43,13 @@ public enum ErrorCode {
     NOT_A_NOTICE("20008", "해당 게시글은 공지사항이 아닙니다.", HttpStatus.BAD_REQUEST),
     POST_LIKE_NOT_FOUND("20009", "해당 게시글 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     LIKE_PROCESSING_ERROR("20010", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_SAVE_ERROR("20011", "파일 저장에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_DELETE_ERROR("20012", "파일 삭제에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     //댓글
-    COMMENT_NOT_FOUND("20011", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_TO_DELETE_COMMENT("20012", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
-    UNAUTHORIZED_TO_CREATE_COMMENT("20013", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
-    COMMENT_POST_MISMATCH("20014", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
+    COMMENT_NOT_FOUND("20013", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_DELETE_COMMENT("20014", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_CREATE_COMMENT("20015", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
+    COMMENT_POST_MISMATCH("20016", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
 
     /*--------------- 칼럼 ------------------*/
     // 칼럼
@@ -126,15 +130,10 @@ public enum ErrorCode {
     /*--------------- 알림 ------------------*/
     NOTIFICATION_TYPE_NOT_FOUND("90001", "잘못된 알림 유형 입니다.", HttpStatus.NOT_FOUND),
     NOTIFICATION_NOT_FOUND("90002", "알림을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_ACCESS("90003", "인증되지 않은 접근", HttpStatus.UNAUTHORIZED),
-
+    UNAUTHORIZED_ACCESS("90003", "인증되지 않은 접근", HttpStatus.UNAUTHORIZED);
 
     /*--------------- 기타 ------------------*/
-    // 파일 관련 오류
-    FILE_SAVE_ERROR("100001", "파일 저장에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    FILE_DELETE_ERROR("100002", "파일 삭제에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    // 입력 값 검증 오류
-    VALIDATION_ERROR("100003", "입력 값 검증 오류입니다.", HttpStatus.BAD_REQUEST);
+
 
     private final String code;
     private final String message;
