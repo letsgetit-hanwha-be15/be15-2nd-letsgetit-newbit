@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RequestTime.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.coffeechat.command.domain.aggregate</a> &gt; <span class="el_source">RequestTime.java</span></div><h1>RequestTime.java</h1><pre class="source lang-java linenums">package com.newbit.coffeechat.command.domain.aggregate;
+
+import com.newbit.coffeechat.query.dto.response.RequestTimeDto;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = &quot;request_time&quot;)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@EntityListeners(AuditingEntityListener.class)
+@ToString
+public class RequestTime {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;request_time_id&quot;)
+    private Long requestTimeId;
+    @Column(name = &quot;event_date&quot;)
+    private LocalDate eventDate;
+    @Column(name = &quot;start_time&quot;)
+    private LocalDateTime startTime;
+    @Column(name = &quot;end_time&quot;)
+    private LocalDateTime endTime;
+    @Column(name = &quot;coffeechat_id&quot;)
+    private Long coffeechatId;
+    @CreatedDate
+    @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    @LastModifiedDate
+    @Column(name = &quot;updated_at&quot;, nullable = false)
+    private LocalDateTime updatedAt;
+
+    public static RequestTime of(@NotNull LocalDate eventDate, LocalDateTime startTime, LocalDateTime endTime, Long coffeechatId) {
+<span class="fc" id="L44">        RequestTime requestTime = new RequestTime();</span>
+<span class="fc" id="L45">        requestTime.endTime = endTime;</span>
+<span class="fc" id="L46">        requestTime.startTime = startTime;</span>
+<span class="fc" id="L47">        requestTime.eventDate = eventDate;</span>
+<span class="fc" id="L48">        requestTime.coffeechatId = coffeechatId;</span>
+
+<span class="fc" id="L50">        return requestTime;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

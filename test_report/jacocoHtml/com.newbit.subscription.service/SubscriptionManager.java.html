@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SubscriptionManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.subscription.service</a> &gt; <span class="el_source">SubscriptionManager.java</span></div><h1>SubscriptionManager.java</h1><pre class="source lang-java linenums">package com.newbit.subscription.service;
+
+import org.springframework.stereotype.Component;
+
+import com.newbit.subscription.dto.response.SubscriptionResponse;
+import com.newbit.subscription.entity.Subscription;
+import com.newbit.subscription.entity.SubscriptionId;
+import com.newbit.subscription.repository.SubscriptionRepository;
+
+import jakarta.persistence.EntityManager;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+<span class="fc" id="L14">@Slf4j</span>
+@Component
+@RequiredArgsConstructor
+public class SubscriptionManager {
+
+    private final SubscriptionRepository subscriptionRepository;
+    private final EntityManager entityManager;
+    
+    public SubscriptionResponse cancelSubscription(Subscription subscription) {
+<span class="nc" id="L23">        SubscriptionId subscriptionId = new SubscriptionId(subscription.getUserId(), subscription.getSeriesId());</span>
+<span class="nc" id="L24">        SubscriptionResponse response = SubscriptionResponse.canceledSubscription(</span>
+<span class="nc" id="L25">                subscription.getSeriesId(), subscription.getUserId());</span>
+        
+<span class="nc" id="L27">        subscriptionRepository.deleteById(subscriptionId);</span>
+<span class="nc" id="L28">        entityManager.flush();</span>
+<span class="nc" id="L29">        log.info(&quot;시리즈 구독 취소 (삭제): seriesId={}, userId={}&quot;, </span>
+<span class="nc" id="L30">                subscription.getSeriesId(), subscription.getUserId());</span>
+        
+<span class="nc" id="L32">        verifySubscriptionState(subscription.getUserId(), subscription.getSeriesId(), false, &quot;구독 삭제 후에도 여전히 존재함&quot;);</span>
+        
+<span class="nc" id="L34">        return response;</span>
+    }
+    
+    public SubscriptionResponse createNewSubscription(Long userId, Long seriesId) {
+<span class="nc" id="L38">        Subscription newSubscription = Subscription.builder()</span>
+<span class="nc" id="L39">                .seriesId(seriesId)</span>
+<span class="nc" id="L40">                .userId(userId)</span>
+<span class="nc" id="L41">                .build();</span>
+        
+<span class="nc" id="L43">        Subscription savedSubscription = subscriptionRepository.save(newSubscription);</span>
+<span class="nc" id="L44">        entityManager.flush();</span>
+<span class="nc" id="L45">        log.info(&quot;시리즈 새 구독: seriesId={}, userId={}&quot;, seriesId, userId);</span>
+        
+<span class="nc" id="L47">        verifySubscriptionState(userId, seriesId, true, &quot;구독 저장 후에도 조회되지 않음&quot;);</span>
+        
+<span class="nc" id="L49">        return SubscriptionResponse.from(savedSubscription);</span>
+    }
+   
+    private void verifySubscriptionState(Long userId, Long seriesId, boolean expectedState, String errorMessage) {
+<span class="nc" id="L53">        boolean currentState = subscriptionRepository.existsByUserIdAndSeriesId(userId, seriesId);</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (currentState != expectedState) {</span>
+<span class="nc" id="L55">            log.warn(&quot;{}: seriesId={}, userId={}&quot;, errorMessage, seriesId, userId);</span>
+        }
+<span class="nc" id="L57">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

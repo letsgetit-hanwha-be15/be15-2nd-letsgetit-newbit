@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MentorSettlementController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.settlement.controller</a> &gt; <span class="el_source">MentorSettlementController.java</span></div><h1>MentorSettlementController.java</h1><pre class="source lang-java linenums">package com.newbit.settlement.controller;
+
+import com.newbit.auth.model.CustomUser;
+import com.newbit.common.dto.ApiResponse;
+import com.newbit.settlement.dto.response.MentorSettlementDetailResponseDto;
+import com.newbit.settlement.dto.response.MentorSettlementListResponseDto;
+import com.newbit.settlement.service.MentorSettlementService;
+import com.newbit.user.service.MentorService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping(&quot;/api/v1/settlements&quot;)
+@Tag(name = &quot;정산 API&quot;, description = &quot;멘토 월별 정산 관련 API&quot;)
+public class MentorSettlementController {
+
+    private final MentorSettlementService mentorSettlementService;
+    private final MentorService mentorService;
+
+    @PostMapping(&quot;/generate&quot;)
+    @Operation(
+            summary = &quot;멘토 월별 정산 생성&quot;,
+            description = &quot;특정 연도와 월을 기준으로 멘토 정산 내역을 생성하고, 관련된 판매내역을 정산 완료 상태로 변경합니다.&quot;
+    )
+    public ResponseEntity&lt;Void&gt; generateMonthlySettlement(
+            @RequestParam int year,
+            @RequestParam int month
+    ) {
+<span class="nc" id="L34">        mentorSettlementService.generateMonthlySettlements(year, month);</span>
+<span class="nc" id="L35">        return ResponseEntity.ok().build();</span>
+    }
+
+    @GetMapping(&quot;/my&quot;)
+    @Operation(summary = &quot;내 정산 내역 목록 조회&quot;, description = &quot;로그인한 멘토의 정산 내역을 페이징 형태로 조회합니다.&quot;)
+    public ApiResponse&lt;MentorSettlementListResponseDto&gt; getMySettlements(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(defaultValue = &quot;1&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size
+    ) {
+<span class="nc" id="L45">        Long userId = customUser.getUserId();</span>
+<span class="nc" id="L46">        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();</span>
+<span class="nc" id="L47">        MentorSettlementListResponseDto response = mentorSettlementService.getMySettlements(mentorId, page, size);</span>
+<span class="nc" id="L48">        return ApiResponse.success(response);</span>
+    }
+
+    @GetMapping(&quot;/{settlementId}&quot;)
+    @Operation(summary = &quot;정산 상세 내역 조회&quot;, description = &quot;멘토의 월별 정산 상세 정보를 조회합니다.&quot;)
+    public ApiResponse&lt;MentorSettlementDetailResponseDto&gt; getSettlementDetail(
+            @AuthenticationPrincipal CustomUser customUser,
+            @PathVariable Long settlementId
+    ) {
+<span class="nc" id="L57">        MentorSettlementDetailResponseDto response = mentorSettlementService.getSettlementDetail(settlementId);</span>
+<span class="nc" id="L58">        return ApiResponse.success(response);</span>
+    }
+
+    @GetMapping(&quot;/my/{settlementId}/email&quot;)
+    @Operation(summary = &quot;정산 내역 이메일 발송&quot;, description = &quot;해당 정산 ID에 대한 정산 내역을 이메일로 전송합니다.&quot;)
+    public ApiResponse&lt;Void&gt; sendSettlementEmail(
+            @AuthenticationPrincipal CustomUser customUser,
+            @PathVariable Long settlementId
+    ) {
+<span class="nc" id="L67">        Long userId = customUser.getUserId();</span>
+<span class="nc" id="L68">        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();</span>
+<span class="nc" id="L69">        mentorSettlementService.sendSettlementEmail(mentorId, settlementId);</span>
+<span class="nc" id="L70">        return ApiResponse.success(null);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

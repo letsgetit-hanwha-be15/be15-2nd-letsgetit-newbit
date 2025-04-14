@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JpaReportRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.report.command.infrastructure.repository</a> &gt; <span class="el_source">JpaReportRepository.java</span></div><h1>JpaReportRepository.java</h1><pre class="source lang-java linenums">package com.newbit.report.command.infrastructure.repository;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.newbit.report.command.domain.aggregate.Report;
+import com.newbit.report.command.domain.repository.ReportRepository;
+
+import lombok.RequiredArgsConstructor;
+
+interface JpaReportJpaRepository extends JpaRepository&lt;Report, Long&gt; {
+    List&lt;Report&gt; findAllByPostId(Long postId);
+    List&lt;Report&gt; findAllByCommentId(Long commentId);
+}
+
+@Repository
+@RequiredArgsConstructor
+public class JpaReportRepository implements ReportRepository {
+    
+    private final JpaReportJpaRepository jpaRepository;
+    
+    @Override
+    public Report save(Report report) {
+<span class="nc" id="L26">        return jpaRepository.save(report);</span>
+    }
+    
+    @Override
+    public Report findById(Long id) {
+<span class="nc" id="L31">        return jpaRepository.findById(id).orElse(null);</span>
+    }
+    
+    public List&lt;Report&gt; findAllByPostId(Long postId) {
+<span class="nc" id="L35">        return jpaRepository.findAllByPostId(postId);</span>
+    }
+    
+    public List&lt;Report&gt; findAllByCommentId(Long commentId) {
+<span class="nc" id="L39">        return jpaRepository.findAllByCommentId(commentId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GetColumnDetailResponseDto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.column.dto.response</a> &gt; <span class="el_source">GetColumnDetailResponseDto.java</span></div><h1>GetColumnDetailResponseDto.java</h1><pre class="source lang-java linenums">package com.newbit.column.dto.response;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+@Schema(description = &quot;공개 칼럼 상세 조회 응답&quot;)
+public class GetColumnDetailResponseDto {
+
+    @Schema(description = &quot;칼럼 ID&quot;, example = &quot;1&quot;)
+    private Long columnId;
+
+    @Schema(description = &quot;칼럼 제목&quot;, example = &quot;나의 성장 이야기&quot;)
+    private String title;
+
+    @Schema(description = &quot;칼럼 내용&quot;, example = &quot;이렇게 성장해왔습니다...&quot;)
+    private String content;
+
+    @Schema(description = &quot;가격&quot;, example = &quot;1000&quot;)
+    private Integer price;
+
+    @Schema(description = &quot;썸네일 이미지 URL&quot;, example = &quot;https://example.com/thumbnail.png&quot;)
+    private String thumbnailUrl;
+
+    @Schema(description = &quot;좋아요 수&quot;, example = &quot;23&quot;)
+    private int likeCount;
+
+    @Schema(description = &quot;멘토 ID&quot;, example = &quot;3&quot;)
+    private Long mentorId;
+
+    @Schema(description = &quot;멘토 닉네임&quot;, example = &quot;개발자도토리&quot;)
+    private String mentorNickname;
+
+    public GetColumnDetailResponseDto(Long columnId, String title, String content, Integer price,
+<span class="fc" id="L37">                                      String thumbnailUrl, int likeCount, Long mentorId, String mentorNickname) {</span>
+<span class="fc" id="L38">        this.columnId = columnId;</span>
+<span class="fc" id="L39">        this.title = title;</span>
+<span class="fc" id="L40">        this.content = content;</span>
+<span class="fc" id="L41">        this.price = price;</span>
+<span class="fc" id="L42">        this.thumbnailUrl = thumbnailUrl;</span>
+<span class="fc" id="L43">        this.likeCount = likeCount;</span>
+<span class="fc" id="L44">        this.mentorId = mentorId;</span>
+<span class="fc" id="L45">        this.mentorNickname = mentorNickname;</span>
+<span class="fc" id="L46">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

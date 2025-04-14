@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LikeCommandService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.like.service</a> &gt; <span class="el_source">LikeCommandService.java</span></div><h1>LikeCommandService.java</h1><pre class="source lang-java linenums">package com.newbit.like.service;
+
+import java.util.Optional;
+
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.column.domain.Column;
+import com.newbit.column.repository.ColumnRepository;
+import com.newbit.like.dto.response.ColumnLikeResponse;
+import com.newbit.like.dto.response.PostLikeResponse;
+import com.newbit.like.entity.Like;
+import com.newbit.like.repository.LikeRepository;
+import com.newbit.post.entity.Post;
+import com.newbit.post.repository.PostRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+<span class="fc" id="L24">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class LikeCommandService {
+
+    private final LikeRepository likeRepository;
+    private final PostRepository postRepository;
+    private final ColumnRepository columnRepository;
+    private final PointRewardService pointRewardService;
+    private final NotificationCommandService notificationCommandService;
+
+    @Transactional
+    public PostLikeResponse togglePostLike(Long postId, Long userId) {
+        try {
+<span class="fc" id="L38">            Post post = findPostById(postId);</span>
+<span class="fc" id="L39">            Optional&lt;Like&gt; existingLike = findExistingPostLike(postId, userId);</span>
+            
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            if (existingLike.isPresent()) {</span>
+<span class="fc" id="L42">                return unlikePost(existingLike.get(), post);</span>
+            } else {
+<span class="fc" id="L44">                return likePost(postId, userId, post);</span>
+            }
+<span class="fc" id="L46">        } catch (BusinessException e) {</span>
+<span class="fc" id="L47">            log.error(&quot;좋아요 처리 중 비즈니스 예외 발생: postId={}, userId={}, errorCode={}, message={}&quot;,</span>
+<span class="fc" id="L48">                    postId, userId, e.getErrorCode(), e.getMessage());</span>
+<span class="fc" id="L49">            throw e;</span>
+<span class="nc" id="L50">        } catch (Exception e) {</span>
+<span class="nc" id="L51">            log.error(&quot;좋아요 처리 중 예기치 않은 오류 발생: postId={}, userId={}, error={}&quot;, </span>
+<span class="nc" id="L52">                    postId, userId, e.getMessage(), e);</span>
+<span class="nc" id="L53">            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);</span>
+        }
+    }
+    
+    @Transactional
+    public ColumnLikeResponse toggleColumnLike(Long columnId, Long userId) {
+        try {
+<span class="fc" id="L60">            Column column = findColumnById(columnId);</span>
+<span class="fc" id="L61">            Optional&lt;Like&gt; existingLike = findExistingColumnLike(columnId, userId);</span>
+            
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            if (existingLike.isPresent()) {</span>
+<span class="fc" id="L64">                return unlikeColumn(existingLike.get(), column);</span>
+            } else {
+<span class="fc" id="L66">                return likeColumn(columnId, userId, column);</span>
+            }
+<span class="fc" id="L68">        } catch (BusinessException e) {</span>
+<span class="fc" id="L69">            log.error(&quot;칼럼 좋아요 처리 중 비즈니스 예외 발생: columnId={}, userId={}, errorCode={}, message={}&quot;,</span>
+<span class="fc" id="L70">                    columnId, userId, e.getErrorCode(), e.getMessage());</span>
+<span class="fc" id="L71">            throw e;</span>
+<span class="nc" id="L72">        } catch (Exception e) {</span>
+<span class="nc" id="L73">            log.error(&quot;칼럼 좋아요 처리 중 예기치 않은 오류 발생: columnId={}, userId={}, error={}&quot;, </span>
+<span class="nc" id="L74">                    columnId, userId, e.getMessage(), e);</span>
+<span class="nc" id="L75">            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);</span>
+        }
+    }
+
+    private Post findPostById(Long postId) {
+<span class="fc" id="L80">        return postRepository.findByIdAndDeletedAtIsNull(postId)</span>
+<span class="fc" id="L81">                .orElseThrow(() -&gt; {</span>
+<span class="fc" id="L82">                    log.warn(&quot;좋아요 처리를 위한 게시글을 찾을 수 없음: postId={}&quot;, postId);</span>
+<span class="fc" id="L83">                    return new BusinessException(ErrorCode.POST_LIKE_NOT_FOUND);</span>
+                });
+    }
+
+    private Optional&lt;Like&gt; findExistingPostLike(Long postId, Long userId) {
+<span class="fc" id="L88">        return likeRepository.findByPostIdAndUserIdAndIsDeleteFalse(postId, userId);</span>
+    }
+
+    private PostLikeResponse unlikePost(Like like, Post post) {
+        try {
+<span class="fc" id="L93">            like.setDelete(true);</span>
+<span class="fc" id="L94">            likeRepository.save(like);</span>
+            
+<span class="fc" id="L96">            decreaseLikeCount(post);</span>
+            
+<span class="fc" id="L98">            return PostLikeResponse.unliked(post.getId(), like.getUserId(), post.getLikeCount());</span>
+<span class="nc" id="L99">        } catch (Exception e) {</span>
+<span class="nc" id="L100">            log.error(&quot;좋아요 취소 처리 중 오류 발생: postId={}, userId={}, error={}&quot;, </span>
+<span class="nc" id="L101">                    post.getId(), like.getUserId(), e.getMessage(), e);</span>
+<span class="nc" id="L102">            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);</span>
+        }
+    }
+
+    private PostLikeResponse likePost(Long postId, Long userId, Post post) {
+        try {
+<span class="fc" id="L108">            Like like = createPostLike(postId, userId);</span>
+<span class="fc" id="L109">            likeRepository.save(like);</span>
+            
+<span class="fc" id="L111">            increaseLikeCount(post);</span>
+            
+<span class="fc" id="L113">            pointRewardService.givePointIfFirstLike(postId, userId, post.getUserId());</span>
+
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">            if(isFibonacci(post.getLikeCount())){</span>
+<span class="nc" id="L116">                String notificationContent = String.format(&quot;'%s' 게시글이 좋아요를 받았습니다. (총 %d개)&quot;,</span>
+<span class="nc" id="L117">                        post.getTitle(), post.getLikeCount());</span>
+
+<span class="nc" id="L119">                notificationCommandService.sendNotification(</span>
+                        new NotificationSendRequest(
+<span class="nc" id="L121">                                post.getUserId()</span>
+<span class="nc" id="L122">                                , 2L // 예: 좋아요 알림 유형 ID</span>
+                                , postId,
+                                notificationContent
+                        )
+                );
+            }
+
+            
+<span class="fc" id="L130">            return PostLikeResponse.of(like, post.getLikeCount());</span>
+<span class="nc" id="L131">        } catch (Exception e) {</span>
+<span class="nc" id="L132">            log.error(&quot;좋아요 추가 처리 중 오류 발생: postId={}, userId={}, error={}&quot;, </span>
+<span class="nc" id="L133">                    postId, userId, e.getMessage(), e);</span>
+<span class="nc" id="L134">            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);</span>
+        }
+    }
+
+    private Like createPostLike(Long postId, Long userId) {
+<span class="fc" id="L139">        return Like.builder()</span>
+<span class="fc" id="L140">                .postId(postId)</span>
+<span class="fc" id="L141">                .userId(userId)</span>
+<span class="fc" id="L142">                .isDelete(false)</span>
+<span class="fc" id="L143">                .build();</span>
+    }
+
+    private void decreaseLikeCount(Post post) {
+<span class="fc" id="L147">        post.setLikeCount(Math.max(0, post.getLikeCount() - 1));</span>
+<span class="fc" id="L148">        postRepository.save(post);</span>
+<span class="fc" id="L149">    }</span>
+
+    private void increaseLikeCount(Post post) {
+<span class="fc" id="L152">        post.setLikeCount(post.getLikeCount() + 1);</span>
+<span class="fc" id="L153">        postRepository.save(post);</span>
+<span class="fc" id="L154">    }</span>
+    
+    private Column findColumnById(Long columnId) {
+<span class="fc" id="L157">        return columnRepository.findById(columnId)</span>
+<span class="fc" id="L158">                .orElseThrow(() -&gt; {</span>
+<span class="fc" id="L159">                    log.warn(&quot;좋아요 처리를 위한 칼럼을 찾을 수 없음: columnId={}&quot;, columnId);</span>
+<span class="fc" id="L160">                    return new BusinessException(ErrorCode.COLUMN_NOT_FOUND);</span>
+                });
+    }
+    
+    private Optional&lt;Like&gt; findExistingColumnLike(Long columnId, Long userId) {
+<span class="fc" id="L165">        return likeRepository.findByColumnIdAndUserIdAndIsDeleteFalse(columnId, userId);</span>
+    }
+    
+    private ColumnLikeResponse unlikeColumn(Like like, Column column) {
+        try {
+<span class="fc" id="L170">            like.setDelete(true);</span>
+<span class="fc" id="L171">            likeRepository.save(like);</span>
+            
+<span class="fc" id="L173">            column.decreaseLikeCount();</span>
+<span class="fc" id="L174">            columnRepository.save(column);</span>
+            
+<span class="fc" id="L176">            return ColumnLikeResponse.unliked(column.getColumnId(), like.getUserId(), column.getLikeCount());</span>
+<span class="nc" id="L177">        } catch (Exception e) {</span>
+<span class="nc" id="L178">            log.error(&quot;칼럼 좋아요 취소 처리 중 오류 발생: columnId={}, userId={}, error={}&quot;, </span>
+<span class="nc" id="L179">                    column.getColumnId(), like.getUserId(), e.getMessage(), e);</span>
+<span class="nc" id="L180">            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);</span>
+        }
+    }
+    
+    private ColumnLikeResponse likeColumn(Long columnId, Long userId, Column column) {
+        try {
+<span class="fc" id="L186">            Like like = createColumnLike(columnId, userId);</span>
+<span class="fc" id="L187">            likeRepository.save(like);</span>
+            
+<span class="fc" id="L189">            column.increaseLikeCount();</span>
+<span class="fc" id="L190">            columnRepository.save(column);</span>
+
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">            if(isFibonacci(column.getLikeCount())){</span>
+<span class="nc" id="L193">                String notificationContent = String.format(&quot;'%s' 칼럼이 좋아요를 받았습니다. (총 %d개)&quot;,</span>
+<span class="nc" id="L194">                        column.getTitle(), column.getLikeCount());</span>
+
+<span class="nc" id="L196">                notificationCommandService.sendNotification(</span>
+                        new NotificationSendRequest(
+<span class="nc" id="L198">                                column.getMentor().getUser().getUserId()</span>
+<span class="nc" id="L199">                                , 2L // 예: 좋아요 알림 유형 ID</span>
+                                , columnId,
+                                notificationContent
+                        )
+                );
+            }
+
+
+<span class="fc" id="L207">            return ColumnLikeResponse.of(like, column.getLikeCount());</span>
+<span class="nc" id="L208">        } catch (Exception e) {</span>
+<span class="nc" id="L209">            log.error(&quot;칼럼 좋아요 추가 처리 중 오류 발생: columnId={}, userId={}, error={}&quot;, </span>
+<span class="nc" id="L210">                    columnId, userId, e.getMessage(), e);</span>
+<span class="nc" id="L211">            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);</span>
+        }
+    }
+
+    private boolean isFibonacci(int n) {
+<span class="fc" id="L216">        int a = 0, b = 1;</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        while (b &lt; n) {</span>
+<span class="fc" id="L218">            int temp = b;</span>
+<span class="fc" id="L219">            b = a + b;</span>
+<span class="fc" id="L220">            a = temp;</span>
+<span class="fc" id="L221">        }</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">        return b == n;</span>
+    }
+
+
+    private Like createColumnLike(Long columnId, Long userId) {
+<span class="fc" id="L227">        return Like.builder()</span>
+<span class="fc" id="L228">                .columnId(columnId)</span>
+<span class="fc" id="L229">                .userId(userId)</span>
+<span class="fc" id="L230">                .isDelete(false)</span>
+<span class="fc" id="L231">                .build();</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

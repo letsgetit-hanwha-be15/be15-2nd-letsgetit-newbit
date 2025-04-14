@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReportQueryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.report.query.service</a> &gt; <span class="el_source">ReportQueryService.java</span></div><h1>ReportQueryService.java</h1><pre class="source lang-java linenums">package com.newbit.report.query.service;
+
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.newbit.report.command.domain.aggregate.ReportStatus;
+import com.newbit.report.query.domain.repository.ReportQueryRepository;
+import com.newbit.report.query.dto.response.ReportDTO;
+
+@Service
+public class ReportQueryService {
+
+    private final ReportQueryRepository reportQueryRepository;
+
+<span class="fc" id="L18">    public ReportQueryService(ReportQueryRepository reportQueryRepository) {</span>
+<span class="fc" id="L19">        this.reportQueryRepository = reportQueryRepository;</span>
+<span class="fc" id="L20">    }</span>
+
+    public Page&lt;ReportDTO&gt; findReports(ReportStatus status, Pageable pageable) {
+<span class="fc" id="L23">        return reportQueryRepository.findReports(status, pageable);</span>
+    }
+
+    public List&lt;ReportDTO&gt; findAllReportsWithoutPaging() {
+<span class="fc" id="L27">        return reportQueryRepository.findAllWithoutPaging();</span>
+    }
+
+    public Page&lt;ReportDTO&gt; findReportsByPostId(Long postId, Pageable pageable) {
+<span class="fc" id="L31">        return reportQueryRepository.findReportsByPostId(postId, pageable);</span>
+    }
+
+    public Page&lt;ReportDTO&gt; findReportsByCommentId(Long commentId, Pageable pageable) {
+<span class="fc" id="L35">        return reportQueryRepository.findReportsByCommentId(commentId, pageable);</span>
+    }
+
+    public Page&lt;ReportDTO&gt; findReportsByReporterId(Long userId, Pageable pageable) {
+<span class="fc" id="L39">        return reportQueryRepository.findReportsByReporterId(userId, pageable);</span>
+    }
+
+    public Page&lt;ReportDTO&gt; findReportsByReportTypeId(Long reportTypeId, Pageable pageable) {
+<span class="fc" id="L43">        return reportQueryRepository.findReportsByReportTypeId(reportTypeId, pageable);</span>
+    }
+
+    public Page&lt;ReportDTO&gt; findReportsByStatusAndReportTypeId(ReportStatus status, Long reportTypeId, Pageable pageable) {
+<span class="fc" id="L47">        return reportQueryRepository.findReportsByStatusAndReportTypeId(status, reportTypeId, pageable);</span>
+    }
+
+    public Page&lt;ReportDTO&gt; findReportsByPostUserId(Long userId, Pageable pageable) {
+<span class="fc" id="L51">        return reportQueryRepository.findReportsByPostUserId(userId, pageable);</span>
+    }
+
+    public Page&lt;ReportDTO&gt; findReportsByCommentUserId(Long userId, Pageable pageable) {
+<span class="fc" id="L55">        return reportQueryRepository.findReportsByCommentUserId(userId, pageable);</span>
+    }
+
+    public Page&lt;ReportDTO&gt; findReportsByContentUserId(Long userId, Pageable pageable) {
+<span class="fc" id="L59">        return reportQueryRepository.findReportsByContentUserId(userId, pageable);</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

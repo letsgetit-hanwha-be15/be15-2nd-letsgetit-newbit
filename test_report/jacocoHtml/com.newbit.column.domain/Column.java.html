@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Column.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.column.domain</a> &gt; <span class="el_source">Column.java</span></div><h1>Column.java</h1><pre class="source lang-java linenums">package com.newbit.column.domain;
+
+import com.newbit.user.entity.Mentor;
+import jakarta.persistence.*;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+
+@Entity
+@Table(name = &quot;`column`&quot;)
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class Column {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long columnId;
+
+    private String title;
+
+    @Lob
+    private String content;
+
+    @jakarta.persistence.Column(nullable = false)
+    @Builder.Default
+    private boolean isPublic = false;
+
+    @jakarta.persistence.Column(nullable = false)
+    private int price;
+
+    private int likeCount;
+
+    private String thumbnailUrl;
+
+    @CreatedDate
+    @jakarta.persistence.Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @jakarta.persistence.Column(name = &quot;updated_at&quot;, nullable = false)
+    private LocalDateTime updatedAt;
+
+    @jakarta.persistence.Column(name = &quot;deleted_at&quot;)
+    private LocalDateTime deletedAt;
+
+    @OneToMany(mappedBy = &quot;column&quot;, cascade = CascadeType.ALL)
+    @Builder.Default
+    private List&lt;ColumnRequest&gt; requests = new ArrayList&lt;&gt;();
+
+    @ManyToOne
+    @JoinColumn(name = &quot;mentor_id&quot;)
+    private Mentor mentor;
+
+    @ManyToOne
+    @JoinColumn(name = &quot;series_id&quot;)
+    private Series series;
+
+
+    public void markAsDeleted() {
+<span class="fc" id="L67">        this.deletedAt = LocalDateTime.now();</span>
+<span class="fc" id="L68">    }</span>
+
+    public void approve() {
+<span class="fc" id="L71">        this.isPublic = true;</span>
+<span class="fc" id="L72">    }</span>
+
+    public void updateSeries(Series series) {
+<span class="fc" id="L75">        this.series = series;</span>
+<span class="fc" id="L76">    }</span>
+
+    public void updateContent(String title, String content, Integer price, String thumbnailUrl) {
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if (title != null) this.title = title;</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (content != null) this.content = content;</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (price != null) this.price = price;</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (thumbnailUrl != null) this.thumbnailUrl = thumbnailUrl;</span>
+<span class="fc" id="L83">    }</span>
+
+    // 좋아요 카운트 증가
+    public void increaseLikeCount() {
+<span class="nc" id="L87">        this.likeCount += 1;</span>
+<span class="nc" id="L88">    }</span>
+    
+    // 좋아요 카운트 감소
+    public void decreaseLikeCount() {
+<span class="nc" id="L92">        this.likeCount = Math.max(0, this.likeCount - 1);</span>
+<span class="nc" id="L93">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

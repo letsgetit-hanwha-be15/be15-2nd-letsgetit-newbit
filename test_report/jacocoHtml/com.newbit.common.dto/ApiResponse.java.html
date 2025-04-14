@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.common.dto</a> &gt; <span class="el_source">ApiResponse.java</span></div><h1>ApiResponse.java</h1><pre class="source lang-java linenums">package com.newbit.common.dto;
+
+import lombok.Builder;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Builder
+public class ApiResponse&lt;T&gt; {
+
+    private boolean success;            // 요청 성공 여부
+    private T data;                     // 실제 데이터 (성공 시만 사용)
+    private String errorCode;           // 실패 시 에러 코드
+    private String message;             // 실패 시 메세지
+    private LocalDateTime timestamp;    // 응답 생성 시간
+
+    // 성공 응답 생성 정적 메소드
+    public static&lt;T&gt; ApiResponse&lt;T&gt; success(T data) {
+<span class="fc" id="L20">        return ApiResponse.&lt;T&gt;builder()</span>
+<span class="fc" id="L21">                .success(true)</span>
+<span class="fc" id="L22">                .data(data)</span>
+<span class="fc" id="L23">                .timestamp(LocalDateTime.now())</span>
+<span class="fc" id="L24">                .build();</span>
+    }
+
+    // 실패 응답 생성 정적 메소드
+    public static&lt;T&gt; ApiResponse&lt;T&gt; failure(String errorCode, String message) {
+<span class="nc" id="L29">        return ApiResponse.&lt;T&gt;builder()</span>
+<span class="nc" id="L30">                .success(false)</span>
+<span class="nc" id="L31">                .errorCode(errorCode)</span>
+<span class="nc" id="L32">                .message(message)</span>
+<span class="nc" id="L33">                .timestamp(LocalDateTime.now())</span>
+<span class="nc" id="L34">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Coffeechat.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.coffeechat.command.domain.aggregate</a> &gt; <span class="el_source">Coffeechat.java</span></div><h1>Coffeechat.java</h1><pre class="source lang-java linenums">package com.newbit.coffeechat.command.domain.aggregate;
+
+import com.newbit.coffeechat.query.dto.response.ProgressStatus;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = &quot;coffeechat&quot;)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@EntityListeners(AuditingEntityListener.class)
+public class Coffeechat {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;coffeechat_id&quot;)
+    private Long coffeechatId;
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;progress_status&quot;, nullable = false)
+    private ProgressStatus progressStatus = ProgressStatus.IN_PROGRESS;
+    @Column(name = &quot;request_message&quot;, nullable = false)
+    private String requestMessage;
+    @Column(name = &quot;confirmed_schedule&quot;)
+    private LocalDateTime confirmedSchedule;
+    @Column(name = &quot;ended_at&quot;)
+    private LocalDateTime endedAt;
+    @CreatedDate
+    @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    @LastModifiedDate
+    @Column(name = &quot;updated_at&quot;, nullable = false)
+    private LocalDateTime updatedAt;
+    @Column(name = &quot;purchase_confirmed_at&quot;)
+    private LocalDateTime purchaseConfirmedAt;
+    @Column(name = &quot;sale_confirmed_at&quot;)
+    private LocalDateTime saleConfirmedAt;
+    @Column(name = &quot;purchase_quantity&quot;, nullable = false)
+    private int purchaseQuantity;
+    @Column(name = &quot;mentee_id&quot;)
+    private Long menteeId;
+    @Column(name = &quot;mentor_id&quot;)
+    private Long mentorId;
+    @Column(name = &quot;cancel_reason_id&quot;)
+    private Long cancelReasonId;
+
+    public static Coffeechat of(Long userId, @NotNull @Min(value = 1) Long mentorId, @NotNull @NotBlank String requestMessage, int purchaseQuantity) {
+<span class="fc" id="L58">        Coffeechat coffeechat = new Coffeechat();</span>
+<span class="fc" id="L59">        coffeechat.menteeId = userId;</span>
+<span class="fc" id="L60">        coffeechat.mentorId = mentorId;</span>
+<span class="fc" id="L61">        coffeechat.requestMessage = requestMessage;</span>
+<span class="fc" id="L62">        coffeechat.purchaseQuantity = purchaseQuantity;</span>
+
+<span class="fc" id="L64">        return coffeechat;</span>
+    }
+
+    public void markAsPurchased() {
+<span class="nc" id="L68">        this.progressStatus = ProgressStatus.COFFEECHAT_WAITING;</span>
+<span class="nc" id="L69">    }</span>
+
+    public void confirmSchedule(LocalDateTime confirmedSchedule) {
+<span class="fc" id="L72">        this.confirmedSchedule = confirmedSchedule;</span>
+<span class="fc" id="L73">        this.endedAt = confirmedSchedule.plusMinutes(purchaseQuantity * 30L);</span>
+<span class="fc" id="L74">        progressStatus = ProgressStatus.PAYMENT_WAITING;</span>
+<span class="fc" id="L75">    }</span>
+
+    public void rejectSchedule() {
+<span class="fc" id="L78">        progressStatus = ProgressStatus.CANCEL;</span>
+<span class="fc" id="L79">        cancelReasonId = 3L;</span>
+<span class="fc" id="L80">    }</span>
+
+    public void closeSchedule() {
+<span class="fc" id="L83">        progressStatus = ProgressStatus.COMPLETE;</span>
+<span class="fc" id="L84">        saleConfirmedAt = LocalDateTime.now();</span>
+<span class="fc" id="L85">    }</span>
+
+    public void confirmPurchaseSchedule() {
+<span class="fc" id="L88">        purchaseConfirmedAt = LocalDateTime.now();</span>
+<span class="fc" id="L89">    }</span>
+
+    public void cancelCoffeechat(Long cancelReasonId) {
+<span class="fc" id="L92">        progressStatus = ProgressStatus.CANCEL;</span>
+<span class="fc" id="L93">        this.cancelReasonId = cancelReasonId;</span>
+<span class="fc" id="L94">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

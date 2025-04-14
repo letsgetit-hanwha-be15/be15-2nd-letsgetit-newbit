@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.coffeeletter.controller</a> &gt; <span class="el_source">MessageController.java</span></div><h1>MessageController.java</h1><pre class="source lang-java linenums">package com.newbit.coffeeletter.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.newbit.coffeeletter.dto.ChatMessageDTO;
+import com.newbit.coffeeletter.service.MessageService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+
+<span class="nc" id="L24">@Slf4j</span>
+@RestController
+@RequestMapping(&quot;/api/v1/coffeeletter/messages&quot;)
+@Tag(name = &quot;커피레터(채팅 기능) API&quot;, description = &quot;커피레터 채팅 메시지 관련 API&quot;)
+public class MessageController {
+
+    private final MessageService messageService;
+    
+<span class="nc" id="L32">    public MessageController(@Qualifier(&quot;messageServiceImpl&quot;) MessageService messageService) {</span>
+<span class="nc" id="L33">        this.messageService = messageService;</span>
+<span class="nc" id="L34">    }</span>
+    
+    @Operation(summary = &quot;채팅방 메시지 조회&quot;, description = &quot;특정 채팅방의 모든 메시지를 조회합니다.&quot;)
+    @GetMapping(&quot;/{roomId}&quot;)
+    public ResponseEntity&lt;List&lt;ChatMessageDTO&gt;&gt; getMessagesByRoomId(
+            @Parameter(description = &quot;채팅방 ID&quot;) @PathVariable String roomId) {
+<span class="nc" id="L40">        return ResponseEntity.ok(messageService.getMessagesByRoomId(roomId));</span>
+    }
+    
+    @Operation(summary = &quot;채팅방 메시지 페이징 조회&quot;, description = &quot;특정 채팅방의 메시지를 페이징하여 조회합니다.&quot;)
+    @GetMapping(&quot;/{roomId}/paging&quot;)
+    public ResponseEntity&lt;Page&lt;ChatMessageDTO&gt;&gt; getMessagesByRoomIdPaging(
+            @Parameter(description = &quot;채팅방 ID&quot;) @PathVariable String roomId,
+            @Parameter(description = &quot;페이징 정보&quot;) @PageableDefault(size = 20) Pageable pageable) {
+<span class="nc" id="L48">        return ResponseEntity.ok(messageService.getMessagesByRoomId(roomId, pageable));</span>
+    }
+
+    @Operation(summary = &quot;읽지 않은 메시지 조회&quot;, description = &quot;특정 채팅방에서 사용자가 읽지 않은 메시지를 조회합니다.&quot;)
+    @GetMapping(&quot;/{roomId}/unread/{userId}&quot;)
+    public ResponseEntity&lt;List&lt;ChatMessageDTO&gt;&gt; getUnreadMessages(
+            @Parameter(description = &quot;채팅방 ID&quot;) @PathVariable String roomId,
+            @Parameter(description = &quot;사용자 ID&quot;) @PathVariable Long userId) {
+<span class="nc" id="L56">        return ResponseEntity.ok(messageService.getUnreadMessages(roomId, userId));</span>
+    }
+
+    @Operation(summary = &quot;읽지 않은 메시지 수 조회&quot;, description = &quot;특정 채팅방에서 사용자가 읽지 않은 메시지 수를 조회합니다.&quot;)
+    @GetMapping(&quot;/{roomId}/unread-count/{userId}&quot;)
+    public ResponseEntity&lt;Integer&gt; getUnreadMessageCount(
+            @Parameter(description = &quot;채팅방 ID&quot;) @PathVariable String roomId,
+            @Parameter(description = &quot;사용자 ID&quot;) @PathVariable Long userId) {
+<span class="nc" id="L64">        return ResponseEntity.ok(messageService.getUnreadMessageCount(roomId, userId));</span>
+    }
+
+    @Operation(summary = &quot;메시지 읽음 처리&quot;, description = &quot;특정 채팅방의 메시지를 읽음 상태로 변경합니다.&quot;)
+    @PostMapping(&quot;/{roomId}/mark-as-read/{userId}&quot;)
+    public ResponseEntity&lt;Void&gt; markAsRead(
+            @Parameter(description = &quot;채팅방 ID&quot;) @PathVariable String roomId,
+            @Parameter(description = &quot;사용자 ID&quot;) @PathVariable Long userId) {
+<span class="nc" id="L72">        messageService.markAsRead(roomId, userId);</span>
+<span class="nc" id="L73">        return ResponseEntity.ok().build();</span>
+    }
+
+    @Operation(summary = &quot;마지막 메시지 조회&quot;, description = &quot;특정 채팅방의 가장 최근 메시지를 조회합니다.&quot;)
+    @GetMapping(&quot;/{roomId}/last&quot;)
+    public ResponseEntity&lt;ChatMessageDTO&gt; getLastMessage(
+            @Parameter(description = &quot;채팅방 ID&quot;) @PathVariable String roomId) {
+<span class="nc" id="L80">        return ResponseEntity.ok(messageService.getLastMessage(roomId));</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PointTransactionCommandService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.purchase.command.application.service</a> &gt; <span class="el_source">PointTransactionCommandService.java</span></div><h1>PointTransactionCommandService.java</h1><pre class="source lang-java linenums">package com.newbit.purchase.command.application.service;
+
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.purchase.command.domain.aggregate.PointHistory;
+import com.newbit.purchase.command.domain.aggregate.PointType;
+import com.newbit.purchase.command.domain.repository.PointHistoryRepository;
+import com.newbit.purchase.command.domain.repository.PointTypeRepository;
+import com.newbit.user.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
+@Service
+@RequiredArgsConstructor
+public class PointTransactionCommandService {
+    private final UserService userService;
+    private final PointTypeRepository pointTypeRepository;
+    private final PointHistoryRepository pointHistoryRepository;
+
+<span class="fc" id="L22">    private static final Set&lt;Integer&gt; ALLOWED_TIP_AMOUNTS = Set.of(20, 40, 60, 80, 100);</span>
+
+    @Transactional
+    public void givePointByType(Long userId, String pointTypeName, Long serviceId) {
+<span class="fc" id="L26">        PointType pointType = findPointType(pointTypeName);</span>
+<span class="fc" id="L27">        Integer updatedBalance = applyPoint(userId, pointType);</span>
+
+<span class="fc" id="L29">        savePointHistory(userId, pointType, serviceId, updatedBalance);</span>
+<span class="fc" id="L30">    }</span>
+
+    @Transactional
+    public void giveTipPoint(Long coffeechatId, Long menteeId, Long mentorId, Integer amount) {
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (!ALLOWED_TIP_AMOUNTS.contains(amount)) {</span>
+<span class="fc" id="L35">            throw new BusinessException(ErrorCode.INVALID_TIP_AMOUNT);</span>
+        }
+
+<span class="fc" id="L38">        Integer menteeBalance = userService.addPoint(menteeId, amount);</span>
+<span class="fc" id="L39">        Integer mentorBalance = userService.addPoint(mentorId, amount);</span>
+
+<span class="fc" id="L41">        savePointHistory(menteeId, findPointType(&quot;팁 &quot; + amount + &quot;제공&quot;), coffeechatId, menteeBalance);</span>
+<span class="fc" id="L42">        savePointHistory(mentorId, findPointType(&quot;팁 &quot; + amount + &quot;수령&quot;), coffeechatId, mentorBalance);</span>
+<span class="fc" id="L43">    }</span>
+
+    private PointType findPointType(String pointTypeName) {
+<span class="fc" id="L46">        return pointTypeRepository.findByPointTypeName(pointTypeName)</span>
+<span class="fc" id="L47">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));</span>
+    }
+
+    private Integer applyPoint(Long userId, PointType pointType) {
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">        if (pointType.getIncreaseAmount() != null) {</span>
+<span class="fc" id="L52">            return userService.addPoint(userId, pointType.getIncreaseAmount());</span>
+        } else {
+<span class="nc" id="L54">            return userService.usePoint(userId, pointType.getDecreaseAmount());</span>
+        }
+    }
+
+    private void savePointHistory(Long userId, PointType pointType, Long serviceId, Integer balance) {
+<span class="fc" id="L59">        PointHistory history = PointHistory.builder()</span>
+<span class="fc" id="L60">                .userId(userId)</span>
+<span class="fc" id="L61">                .pointType(pointType)</span>
+<span class="fc" id="L62">                .serviceId(serviceId)</span>
+<span class="fc" id="L63">                .balance(balance)</span>
+<span class="fc" id="L64">                .build();</span>
+<span class="fc" id="L65">        pointHistoryRepository.save(history);</span>
+<span class="fc" id="L66">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

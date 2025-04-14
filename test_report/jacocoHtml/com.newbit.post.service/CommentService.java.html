@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CommentService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.post.service</a> &gt; <span class="el_source">CommentService.java</span></div><h1>CommentService.java</h1><pre class="source lang-java linenums">package com.newbit.post.service;
+
+import com.newbit.auth.model.CustomUser;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.notification.command.domain.repository.NotificationRepository;
+import com.newbit.post.dto.request.CommentCreateRequest;
+import com.newbit.post.dto.response.CommentResponse;
+import com.newbit.post.entity.Comment;
+import com.newbit.post.entity.Post;
+import com.newbit.post.repository.CommentRepository;
+import com.newbit.post.repository.PostRepository;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class CommentService {
+
+    private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
+    private final PointTransactionCommandService pointTransactionCommandService;
+    private final NotificationCommandService notificationCommandService;
+
+    @Transactional
+    public CommentResponse createComment(Long postId, CommentCreateRequest request, CustomUser user) {
+<span class="fc" id="L34">        Post post = postRepository.findById(postId)</span>
+<span class="pc" id="L35">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.POST_NOT_FOUND));</span>
+
+<span class="fc" id="L37">        Comment comment = Comment.builder()</span>
+<span class="fc" id="L38">                .content(request.getContent())</span>
+<span class="fc" id="L39">                .userId(user.getUserId())</span>
+<span class="fc" id="L40">                .reportCount(0)</span>
+<span class="fc" id="L41">                .post(post)</span>
+<span class="fc" id="L42">                .build();</span>
+
+<span class="fc" id="L44">        commentRepository.save(comment);</span>
+<span class="fc" id="L45">        pointTransactionCommandService.givePointByType(user.getUserId(), &quot;댓글 적립&quot;, comment.getId());</span>
+
+<span class="fc" id="L47">        String notificationContent = String.format(&quot;'%s' 게시글에 댓글이 달렸습니다. ('%s')&quot;,</span>
+<span class="fc" id="L48">                post.getTitle(), comment.getContent());</span>
+
+<span class="fc" id="L50">        notificationCommandService.sendNotification(</span>
+                new NotificationSendRequest(
+<span class="fc" id="L52">                        post.getUserId()</span>
+<span class="fc" id="L53">                        , 1L</span>
+                        , postId
+                        , notificationContent
+                )
+        );
+
+<span class="fc" id="L59">        return new CommentResponse(comment);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;CommentResponse&gt; getCommentsByPostId(Long postId) {
+<span class="fc" id="L64">        List&lt;Comment&gt; comments = commentRepository.findByPostIdAndDeletedAtIsNull(postId);</span>
+<span class="fc" id="L65">        return comments.stream()</span>
+<span class="fc" id="L66">                .map(CommentResponse::new)</span>
+<span class="fc" id="L67">                .collect(Collectors.toList());</span>
+    }
+
+    @Transactional
+    public void deleteComment(Long postId, Long commentId, CustomUser user) {
+<span class="fc" id="L72">        Comment comment = commentRepository.findById(commentId)</span>
+<span class="fc" id="L73">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.COMMENT_NOT_FOUND));</span>
+
+<span class="fc bfc" id="L75" title="All 2 branches covered.">        if (!comment.getPost().getId().equals(postId)) {</span>
+<span class="fc" id="L76">            throw new BusinessException(ErrorCode.COMMENT_POST_MISMATCH);</span>
+        }
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (!comment.getUserId().equals(user.getUserId())) {</span>
+<span class="fc" id="L80">            throw new BusinessException(ErrorCode.UNAUTHORIZED_TO_DELETE_COMMENT);</span>
+        }
+
+<span class="fc" id="L83">        comment.softDelete();</span>
+<span class="fc" id="L84">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

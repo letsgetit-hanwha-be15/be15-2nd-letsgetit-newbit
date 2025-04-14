@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.auth.service</a> &gt; <span class="el_source">AuthService.java</span></div><h1>AuthService.java</h1><pre class="source lang-java linenums">package com.newbit.auth.service;
+
+import com.newbit.auth.dto.request.LoginRequestDTO;
+import com.newbit.auth.dto.response.TokenResponseDTO;
+import com.newbit.auth.entity.RefreshToken;
+import com.newbit.auth.repository.RefreshTokenRepository;
+import com.newbit.auth.jwt.JwtTokenProvider;
+import com.newbit.user.entity.User;
+import com.newbit.user.repository.UserRepository;
+import com.newbit.user.service.SuspensionService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final SuspensionService suspensionService;
+
+    public TokenResponseDTO login(LoginRequestDTO request) {
+
+<span class="fc" id="L31">        User user = userRepository.findByEmail(request.getEmail())</span>
+<span class="fc" id="L32">                .orElseThrow(() -&gt; new BadCredentialsException(&quot;올바르지 않은 아이디 혹은 비밀번호&quot;));</span>
+
+        // 정지 조건 검사 추가 (신고 수 50의 배수 여부)
+<span class="fc" id="L35">        suspensionService.checkAndSuspendUser(user.getUserId());</span>
+
+        // 정지 상태라면 차단 또는 해제
+<span class="pc bpc" id="L38" title="1 of 4 branches missed.">        if (user.getIsSuspended() != null &amp;&amp; user.getIsSuspended()) {</span>
+<span class="fc" id="L39">            LocalDateTime suspendedUntil = user.getUpdatedAt().plusDays(7);</span>
+
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            if (LocalDateTime.now().isBefore(suspendedUntil)) {</span>
+<span class="fc" id="L42">                throw new BadCredentialsException(&quot;정지 누적으로 인해 로그인할 수 없습니다. &quot;</span>
+<span class="fc" id="L43">                        + suspendedUntil.toLocalDate() + &quot; 이후에 로그인해주세요.&quot;);</span>
+            } else {
+                // 정지 해제
+<span class="fc" id="L46">                user.setIsSuspended(false);</span>
+<span class="fc" id="L47">                user.setUpdatedAt(LocalDateTime.now());</span>
+<span class="fc" id="L48">                userRepository.save(user);</span>
+            }
+        }
+
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {</span>
+<span class="fc" id="L53">            throw new BadCredentialsException(&quot;올바르지 않은 아이디 혹은 비밀번호&quot;);</span>
+        }
+
+<span class="fc" id="L56">        String accessToken = jwtTokenProvider.createToken(user.getEmail(), user.getAuthority().name());</span>
+<span class="fc" id="L57">        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getAuthority().name());</span>
+
+<span class="fc" id="L59">        RefreshToken tokenEntity = RefreshToken.builder()</span>
+<span class="fc" id="L60">                .email(user.getEmail())</span>
+<span class="fc" id="L61">                .token(refreshToken)</span>
+<span class="fc" id="L62">                .expiryDate(new Date(System.currentTimeMillis() + jwtTokenProvider.getRefreshExpiration()))</span>
+<span class="fc" id="L63">                .build();</span>
+
+<span class="fc" id="L65">        refreshTokenRepository.save(tokenEntity);</span>
+
+<span class="fc" id="L67">        return TokenResponseDTO.builder()</span>
+<span class="fc" id="L68">                .userId(Long.valueOf(user.getUserId()))</span>
+<span class="fc" id="L69">                .email(user.getEmail())</span>
+<span class="fc" id="L70">                .nickname(user.getNickname())</span>
+<span class="fc" id="L71">                .authority(user.getAuthority().name())</span>
+<span class="fc" id="L72">                .profileImageUrl(user.getProfileImageUrl())</span>
+<span class="fc" id="L73">                .accessToken(accessToken)</span>
+<span class="fc" id="L74">                .refreshToken(refreshToken)</span>
+<span class="fc" id="L75">                .build();</span>
+    }
+
+    public TokenResponseDTO refreshToken(String providedRefreshToken) {
+<span class="fc" id="L79">        jwtTokenProvider.validateToken(providedRefreshToken);</span>
+<span class="fc" id="L80">        String email = jwtTokenProvider.getUsernameFromJWT(providedRefreshToken);</span>
+
+<span class="fc" id="L82">        RefreshToken storedToken = refreshTokenRepository.findById(email)</span>
+<span class="fc" id="L83">                .orElseThrow(() -&gt; new BadCredentialsException(&quot;해당 유저로 조회되는 리프레시 토큰 없음&quot;));</span>
+
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        if (!storedToken.getToken().equals(providedRefreshToken)) {</span>
+<span class="fc" id="L86">            throw new BadCredentialsException(&quot;리프레시 토큰 일치하지 않음&quot;);</span>
+        }
+
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        if (storedToken.getExpiryDate().before(new Date())) {</span>
+<span class="fc" id="L90">            throw new BadCredentialsException(&quot;리프레시 토큰 유효시간 만료&quot;);</span>
+        }
+
+<span class="fc" id="L93">        User user = userRepository.findByEmail(email)</span>
+<span class="pc" id="L94">                .orElseThrow(() -&gt; new BadCredentialsException(&quot;해당 리프레시 토큰을 위한 유저 없음&quot;));</span>
+
+<span class="fc" id="L96">        String accessToken = jwtTokenProvider.createToken(user.getEmail(), user.getAuthority().name());</span>
+<span class="fc" id="L97">        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getAuthority().name());</span>
+
+<span class="fc" id="L99">        RefreshToken tokenEntity = RefreshToken.builder()</span>
+<span class="fc" id="L100">                .email(user.getEmail())</span>
+<span class="fc" id="L101">                .token(refreshToken)</span>
+<span class="fc" id="L102">                .expiryDate(new Date(System.currentTimeMillis() + jwtTokenProvider.getRefreshExpiration()))</span>
+<span class="fc" id="L103">                .build();</span>
+
+<span class="fc" id="L105">        refreshTokenRepository.save(tokenEntity);</span>
+
+<span class="fc" id="L107">        return TokenResponseDTO.builder()</span>
+<span class="fc" id="L108">                .userId(Long.valueOf(user.getUserId()))</span>
+<span class="fc" id="L109">                .email(user.getEmail())</span>
+<span class="fc" id="L110">                .nickname(user.getNickname())</span>
+<span class="fc" id="L111">                .authority(user.getAuthority().name())</span>
+<span class="fc" id="L112">                .profileImageUrl(user.getProfileImageUrl())</span>
+<span class="fc" id="L113">                .accessToken(accessToken)</span>
+<span class="fc" id="L114">                .refreshToken(refreshToken)</span>
+<span class="fc" id="L115">                .build();</span>
+    }
+
+    public void logout(String refreshToken) {
+<span class="fc" id="L119">        jwtTokenProvider.validateToken(refreshToken);</span>
+<span class="fc" id="L120">        String email = jwtTokenProvider.getUsernameFromJWT(refreshToken);</span>
+<span class="fc" id="L121">        refreshTokenRepository.deleteById(email);</span>
+<span class="fc" id="L122">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

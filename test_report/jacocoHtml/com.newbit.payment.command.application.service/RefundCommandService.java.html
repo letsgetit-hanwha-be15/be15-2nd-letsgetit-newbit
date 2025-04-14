@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RefundCommandService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.payment.command.application.service</a> &gt; <span class="el_source">RefundCommandService.java</span></div><h1>RefundCommandService.java</h1><pre class="source lang-java linenums">package com.newbit.payment.command.application.service;
+
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.payment.command.application.dto.TossPaymentApiDto;
+import com.newbit.payment.command.application.dto.response.PaymentRefundResponse;
+import com.newbit.payment.command.domain.aggregate.Payment;
+import com.newbit.payment.command.domain.aggregate.PaymentStatus;
+import com.newbit.payment.command.domain.aggregate.Refund;
+import com.newbit.payment.command.domain.repository.PaymentRepository;
+import com.newbit.payment.command.domain.repository.RefundRepository;
+import com.newbit.purchase.command.application.service.DiamondTransactionCommandService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class RefundCommandService extends AbstractPaymentService&lt;PaymentRefundResponse&gt; {
+
+    private static final int DIAMOND_UNIT_PRICE = 100;
+    private final RefundRepository refundRepository;
+    private final NotificationCommandService notificationCommandService;
+    private final DiamondTransactionCommandService diamondTransactionCommandService;
+
+    public RefundCommandService(PaymentRepository paymentRepository,
+                                RefundRepository refundRepository,
+                                TossPaymentApiClient tossPaymentApiClient,
+                                NotificationCommandService notificationCommandService,
+                                DiamondTransactionCommandService diamondTransactionCommandService
+    ) {
+<span class="fc" id="L36">        super(paymentRepository, tossPaymentApiClient);</span>
+<span class="fc" id="L37">        this.refundRepository = refundRepository;</span>
+<span class="fc" id="L38">        this.notificationCommandService = notificationCommandService;</span>
+<span class="fc" id="L39">        this.diamondTransactionCommandService = diamondTransactionCommandService;</span>
+<span class="fc" id="L40">    }</span>
+
+    @Transactional
+    public PaymentRefundResponse cancelPayment(Long paymentId, String cancelReason) {
+<span class="fc" id="L44">        Payment payment = findPaymentById(paymentId);</span>
+        
+<span class="fc" id="L46">        validateCancelable(payment);</span>
+        
+<span class="fc" id="L48">        TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.cancelPayment(</span>
+<span class="fc" id="L49">                payment.getPaymentKey(), </span>
+                cancelReason
+        );
+        
+<span class="fc" id="L53">        payment.refund();</span>
+<span class="fc" id="L54">        payment = paymentRepository.save(payment);</span>
+        
+<span class="fc" id="L56">        Refund refund = Refund.createRefund(</span>
+                payment, 
+<span class="fc" id="L58">                payment.getAmount(), </span>
+                cancelReason, 
+<span class="fc" id="L60">                response.getPaymentKey(),</span>
+                false
+        );
+        
+<span class="fc" id="L64">        Refund savedRefund = refundRepository.save(refund);</span>
+
+<span class="fc" id="L66">        String notificationContent = String.format(&quot;환불이 완료되었습니다. (환불금액 : %,d)&quot;, savedRefund.getAmount().intValue());</span>
+
+<span class="fc" id="L68">        int refundDiamondAmount = savedRefund.getAmount().intValue() / DIAMOND_UNIT_PRICE;</span>
+<span class="fc" id="L69">        diamondTransactionCommandService.applyDiamondRefund(</span>
+<span class="fc" id="L70">                payment.getUserId(),</span>
+<span class="fc" id="L71">                savedRefund.getRefundId(),</span>
+<span class="fc" id="L72">                refundDiamondAmount</span>
+        );
+
+<span class="fc" id="L75">        notificationCommandService.sendNotification(</span>
+                new NotificationSendRequest(
+<span class="fc" id="L77">                        payment.getUserId()</span>
+<span class="fc" id="L78">                        , 15L</span>
+<span class="fc" id="L79">                        , savedRefund.getRefundId()</span>
+                        , notificationContent
+                )
+        );
+        
+<span class="fc" id="L84">        return createRefundResponse(savedRefund);</span>
+    }
+    
+    @Transactional
+    public PaymentRefundResponse cancelPaymentPartial(Long paymentId, BigDecimal cancelAmount, String cancelReason) {
+<span class="fc" id="L89">        Payment payment = findPaymentById(paymentId);</span>
+        
+<span class="fc" id="L91">        validatePartialCancelable(payment);</span>
+        
+<span class="fc" id="L93">        validateRefundAmount(payment, cancelAmount);</span>
+        
+<span class="fc" id="L95">        TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.cancelPaymentPartial(</span>
+<span class="fc" id="L96">                payment.getPaymentKey(), </span>
+                cancelReason,
+<span class="fc" id="L98">                cancelAmount.longValue()</span>
+        );
+        
+<span class="fc" id="L101">        payment.partialRefund(cancelAmount);</span>
+<span class="fc" id="L102">        payment = paymentRepository.save(payment);</span>
+        
+<span class="fc" id="L104">        Refund refund = Refund.createRefund(</span>
+                payment, 
+                cancelAmount, 
+                cancelReason, 
+<span class="fc" id="L108">                response.getPaymentKey(),</span>
+                true
+        );
+        
+<span class="fc" id="L112">        Refund savedRefund = refundRepository.save(refund);</span>
+
+<span class="fc" id="L114">        int refundDiamondAmount = savedRefund.getAmount().intValue() / DIAMOND_UNIT_PRICE;</span>
+<span class="fc" id="L115">        diamondTransactionCommandService.applyDiamondRefund(</span>
+<span class="fc" id="L116">                payment.getUserId(),</span>
+<span class="fc" id="L117">                savedRefund.getRefundId(),</span>
+<span class="fc" id="L118">                refundDiamondAmount</span>
+        );
+
+<span class="fc" id="L121">        String notificationContent = String.format(&quot;환불이 완료되었습니다. (환불금액 : %,d)&quot;, savedRefund.getAmount().intValue());</span>
+
+
+<span class="fc" id="L124">        notificationCommandService.sendNotification(</span>
+                new NotificationSendRequest(
+<span class="fc" id="L126">                        payment.getUserId()</span>
+<span class="fc" id="L127">                        , 15L</span>
+<span class="fc" id="L128">                        , savedRefund.getRefundId()</span>
+                        , notificationContent
+                )
+        );
+
+<span class="fc" id="L133">        return createRefundResponse(savedRefund);</span>
+    }
+    
+    @Transactional(readOnly = true)
+    public List&lt;PaymentRefundResponse&gt; getRefundsByPaymentId(Long paymentId) {
+<span class="fc bfc" id="L138" title="All 2 branches covered.">        if (!paymentRepository.existsById(paymentId)) {</span>
+<span class="fc" id="L139">            throw new BusinessException(ErrorCode.PAYMENT_NOT_FOUND);</span>
+        }
+        
+<span class="fc" id="L142">        List&lt;Refund&gt; refunds = refundRepository.findByPaymentPaymentId(paymentId);</span>
+        
+<span class="fc" id="L144">        return refunds.stream()</span>
+<span class="fc" id="L145">                .map(this::createRefundResponse)</span>
+<span class="fc" id="L146">                .collect(Collectors.toList());</span>
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public PaymentRefundResponse getPayment(Long paymentId) {
+<span class="fc" id="L152">        List&lt;Refund&gt; refunds = refundRepository.findByPaymentPaymentId(paymentId);</span>
+        
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (refunds.isEmpty()) {</span>
+<span class="fc" id="L155">            throw new BusinessException(ErrorCode.PAYMENT_NOT_REFUNDABLE);</span>
+        }
+        
+<span class="fc" id="L158">        return createRefundResponse(refunds.get(refunds.size() - 1));</span>
+    }
+   
+    @Transactional(readOnly = true)
+    public PaymentRefundResponse getRefund(Long refundId) {
+<span class="fc" id="L163">        Refund refund = refundRepository.findById(refundId)</span>
+<span class="fc" id="L164">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.PAYMENT_REFUND_NOT_FOUND));</span>
+        
+<span class="fc" id="L166">        return createRefundResponse(refund);</span>
+    }
+    private PaymentRefundResponse createRefundResponse(Refund refund) {
+<span class="fc" id="L169">        return PaymentRefundResponse.builder()</span>
+<span class="fc" id="L170">                .refundId(refund.getRefundId())</span>
+<span class="fc" id="L171">                .paymentId(refund.getPayment().getPaymentId())</span>
+<span class="fc" id="L172">                .amount(refund.getAmount())</span>
+<span class="fc" id="L173">                .reason(refund.getReason())</span>
+<span class="fc" id="L174">                .refundKey(refund.getRefundKey())</span>
+<span class="fc" id="L175">                .refundedAt(refund.getRefundedAt())</span>
+<span class="fc" id="L176">                .bankCode(refund.getBankCode())</span>
+<span class="fc" id="L177">                .accountNumber(refund.getAccountNumber())</span>
+<span class="fc" id="L178">                .holderName(refund.getHolderName())</span>
+<span class="fc" id="L179">                .build();</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationCommandService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.notification.command.application.service</a> &gt; <span class="el_source">NotificationCommandService.java</span></div><h1>NotificationCommandService.java</h1><pre class="source lang-java linenums">package com.newbit.notification.command.application.service;
+
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.notification.command.application.dto.response.NotificationSendResponse;
+import com.newbit.notification.command.domain.aggregate.Notification;
+import com.newbit.notification.command.domain.aggregate.NotificationType;
+import com.newbit.notification.command.domain.repository.NotificationRepository;
+import com.newbit.notification.command.domain.repository.NotificationTypeRepository;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.infrastructure.SseEmitterRepository;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+
+@Service
+@RequiredArgsConstructor
+public class NotificationCommandService {
+
+    private final NotificationRepository notificationRepository;
+    private final NotificationTypeRepository notificationTypeRepository;
+    private final SseEmitterRepository sseEmitterRepository;
+
+    @Transactional
+    public void sendNotification(NotificationSendRequest request) {
+        // 1. 알림 타입 조회
+<span class="fc" id="L29">        NotificationType type = notificationTypeRepository.findById(request.getNotificationTypeId())</span>
+<span class="fc" id="L30">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.NOTIFICATION_TYPE_NOT_FOUND));</span>
+
+        // 2. 알림 생성 및 저장
+<span class="fc" id="L33">        Notification notification = Notification.create(</span>
+<span class="fc" id="L34">                request.getUserId(),</span>
+                type,
+<span class="fc" id="L36">                request.getServiceId(),</span>
+<span class="fc" id="L37">                request.getContent()</span>
+        );
+<span class="fc" id="L39">        notificationRepository.save(notification);</span>
+
+        // 3. 실시간 알림 전송
+<span class="fc" id="L42">        NotificationSendResponse response = NotificationSendResponse.from(notification);</span>
+<span class="fc" id="L43">        sseEmitterRepository.send(request.getUserId(), response);</span>
+<span class="fc" id="L44">    }</span>
+
+
+
+    @Transactional
+    public void markAsRead(Long userId, Long notificationId) {
+<span class="fc" id="L50">        Notification notification = notificationRepository.findById(notificationId)</span>
+<span class="fc" id="L51">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.NOTIFICATION_NOT_FOUND));</span>
+
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (!notification.getUserId().equals(userId)) {</span>
+<span class="fc" id="L54">            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS);</span>
+        }
+
+<span class="fc" id="L57">        notification.markAsRead(); // 내부에서 isRead = true 처리</span>
+<span class="fc" id="L58">    }</span>
+
+    @Transactional
+    public void markAllAsRead(Long userId) {
+<span class="fc" id="L62">        notificationRepository.markAllAsReadByUserId(userId);</span>
+<span class="fc" id="L63">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
