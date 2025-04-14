@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,102 +14,125 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.newbit.report.command.domain.aggregate.ReportStatus;
-import com.newbit.report.query.service.ReportQueryService;
 import com.newbit.report.query.dto.response.ReportDTO;
+import com.newbit.report.query.service.ReportQueryService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/report")
+@RequestMapping("/api/v1/reports")
+@Tag(name = "신고 조회 API", description = "신고 관련 조회 기능 API")
+@RequiredArgsConstructor
 public class ReportQueryController {
 
     private final ReportQueryService reportQueryService;
 
-    public ReportQueryController(ReportQueryService reportQueryService) {
-        this.reportQueryService = reportQueryService;
-    }
 
-
-    @GetMapping("/reports")
+    @Operation(summary = "신고 목록 조회", description = "신고 상태별 목록을 페이지 단위로 조회합니다.")
+    @GetMapping("")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReportDTO>> getReports(
-            @RequestParam(required = false) ReportStatus status,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @Parameter(description = "신고 상태") @RequestParam(required = false) ReportStatus status,
+            @Parameter(description = "페이지 정보") @PageableDefault(size = 10) Pageable pageable) {
         
         return ResponseEntity.ok(reportQueryService.findReports(status, pageable));
     }
 
-    @GetMapping("/reports/all")
+    @Operation(summary = "전체 신고 목록 조회", description = "모든 신고 목록을 페이징 없이 조회합니다.")
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ReportDTO>> getAllReports() {
         return ResponseEntity.ok(reportQueryService.findAllReportsWithoutPaging());
     }
     
 
-    @GetMapping("/reports/post/{postId}")
+    @Operation(summary = "게시글 신고 목록 조회", description = "특정 게시글에 대한 신고 목록을 조회합니다.")
+    @GetMapping("/post/{postId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReportDTO>> getReportsByPostId(
-            @PathVariable Long postId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @Parameter(description = "게시글 ID") @PathVariable Long postId,
+            @Parameter(description = "페이지 정보") @PageableDefault(size = 10) Pageable pageable) {
         
         return ResponseEntity.ok(reportQueryService.findReportsByPostId(postId, pageable));
     }
     
 
-    @GetMapping("/reports/comment/{commentId}")
+    @Operation(summary = "댓글 신고 목록 조회", description = "특정 댓글에 대한 신고 목록을 조회합니다.")
+    @GetMapping("/comment/{commentId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReportDTO>> getReportsByCommentId(
-            @PathVariable Long commentId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @Parameter(description = "댓글 ID") @PathVariable Long commentId,
+            @Parameter(description = "페이지 정보") @PageableDefault(size = 10) Pageable pageable) {
         
         return ResponseEntity.ok(reportQueryService.findReportsByCommentId(commentId, pageable));
     }
     
 
-    @GetMapping("/reports/reporter/{userId}")
+    @Operation(summary = "사용자별 신고 목록 조회", description = "특정 사용자가 신고한 목록을 조회합니다.")
+    @GetMapping("/reporter/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.userId")
     public ResponseEntity<Page<ReportDTO>> getReportsByReporterId(
-            @PathVariable Long userId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @Parameter(description = "신고자 ID") @PathVariable Long userId,
+            @Parameter(description = "페이지 정보") @PageableDefault(size = 10) Pageable pageable) {
         
         return ResponseEntity.ok(reportQueryService.findReportsByReporterId(userId, pageable));
     }
     
 
-    @GetMapping("/reports/type/{reportTypeId}")
+    @Operation(summary = "신고 유형별 목록 조회", description = "신고 유형별 목록을 조회합니다.")
+    @GetMapping("/type/{reportTypeId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReportDTO>> getReportsByReportTypeId(
-            @PathVariable Long reportTypeId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @Parameter(description = "신고 유형 ID") @PathVariable Long reportTypeId,
+            @Parameter(description = "페이지 정보") @PageableDefault(size = 10) Pageable pageable) {
         
         return ResponseEntity.ok(reportQueryService.findReportsByReportTypeId(reportTypeId, pageable));
     }
     
 
-    @GetMapping("/reports/post-user/{userId}")
+    @Operation(summary = "게시글 작성자별 신고 목록 조회", description = "특정 사용자가 작성한 게시글에 대한 신고 목록을 조회합니다.")
+    @GetMapping("/post-user/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReportDTO>> getReportsByPostUserId(
-            @PathVariable Long userId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @Parameter(description = "게시글 작성자 ID") @PathVariable Long userId,
+            @Parameter(description = "페이지 정보") @PageableDefault(size = 10) Pageable pageable) {
         
         return ResponseEntity.ok(reportQueryService.findReportsByPostUserId(userId, pageable));
     }
     
 
-    @GetMapping("/reports/comment-user/{userId}")
+    @Operation(summary = "댓글 작성자별 신고 목록 조회", description = "특정 사용자가 작성한 댓글에 대한 신고 목록을 조회합니다.")
+    @GetMapping("/comment-user/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReportDTO>> getReportsByCommentUserId(
-            @PathVariable Long userId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @Parameter(description = "댓글 작성자 ID") @PathVariable Long userId,
+            @Parameter(description = "페이지 정보") @PageableDefault(size = 10) Pageable pageable) {
         
         return ResponseEntity.ok(reportQueryService.findReportsByCommentUserId(userId, pageable));
     }
     
 
-    @GetMapping("/reports/content-user/{userId}")
+    @Operation(summary = "컨텐츠 작성자별 신고 목록 조회", description = "특정 사용자가 작성한 모든 컨텐츠(게시글, 댓글)에 대한 신고 목록을 조회합니다.")
+    @GetMapping("/content-user/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReportDTO>> getReportsByContentUserId(
-            @PathVariable Long userId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @Parameter(description = "컨텐츠 작성자 ID") @PathVariable Long userId,
+            @Parameter(description = "페이지 정보") @PageableDefault(size = 10) Pageable pageable) {
         
         return ResponseEntity.ok(reportQueryService.findReportsByContentUserId(userId, pageable));
     }
     
 
-    @GetMapping("/reports/filter")
+    @Operation(summary = "상태 및 유형별 신고 목록 필터링", description = "신고 상태와 유형으로 필터링된 신고 목록을 조회합니다.")
+    @GetMapping("/filter")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<ReportDTO>> getReportsByStatusAndType(
-            @RequestParam(required = false) ReportStatus status,
-            @RequestParam(required = false) Long reportTypeId,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @Parameter(description = "신고 상태") @RequestParam(required = false) ReportStatus status,
+            @Parameter(description = "신고 유형 ID") @RequestParam(required = false) Long reportTypeId,
+            @Parameter(description = "페이지 정보") @PageableDefault(size = 10) Pageable pageable) {
         
         if (status != null && reportTypeId != null) {
             return ResponseEntity.ok(reportQueryService.findReportsByStatusAndReportTypeId(status, reportTypeId, pageable));
