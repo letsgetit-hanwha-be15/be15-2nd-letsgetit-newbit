@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PurchaseCommandController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.purchase.command.application.controller</a> &gt; <span class="el_source">PurchaseCommandController.java</span></div><h1>PurchaseCommandController.java</h1><pre class="source lang-java linenums">package com.newbit.purchase.command.application.controller;
+
+import com.newbit.auth.model.CustomUser;
+import com.newbit.common.dto.ApiResponse;
+import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
+import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
+import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
+import com.newbit.purchase.command.application.service.PurchaseCommandService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping(&quot;/api/v1/purchase&quot;)
+@Tag(name = &quot;구매관련 API&quot;, description = &quot;칼럼 구매 API&quot;)
+public class PurchaseCommandController {
+    private final PurchaseCommandService purchaseCommandService;
+
+    @Operation(
+            summary = &quot;칼럼 구매&quot;,
+            description = &quot;사용자가 유료 칼럼을 구매합니다.&quot;
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = &quot;200&quot;, description = &quot;칼럼 구매 성공&quot;
+    )
+    @PostMapping(&quot;/column&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt; purchaseColumn(
+            @AuthenticationPrincipal CustomUser customUser,
+            @Valid @RequestBody ColumnPurchaseRequest request
+    ) {
+<span class="nc" id="L37">        purchaseCommandService.purchaseColumn(customUser.getUserId(), request);</span>
+<span class="nc" id="L38">        return ResponseEntity.ok(ApiResponse.success(null));</span>
+    }
+
+    @Operation(
+            summary = &quot;커피챗 구매&quot;,
+            description = &quot;사용자가 멘토와 확정된 커피챗을 구매합니다.&quot;
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = &quot;200&quot;, description = &quot;커피챗 구매 성공&quot;
+    )
+    @PostMapping(&quot;/coffeechat&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt; purchaseCoffeeChat(
+            @AuthenticationPrincipal CustomUser customUser,
+            @Valid @RequestBody CoffeeChatPurchaseRequest request) {
+<span class="nc" id="L52">        purchaseCommandService.purchaseCoffeeChat(customUser.getUserId(), request);</span>
+<span class="nc" id="L53">        return ResponseEntity.ok(ApiResponse.success(null));</span>
+    }
+
+
+    @Operation(
+            summary = &quot;멘토 권한 구매&quot;,
+            description = &quot;사용자가 포인트 혹은 다이아를 사용하여 멘토 권한을 구매합니다.&quot;
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = &quot;200&quot;, description = &quot;멘토 권한 구매 성공&quot;
+    )
+    @PostMapping(&quot;/mentor-authority&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt; purchaseMentorAuthority(
+            @AuthenticationPrincipal CustomUser customUser,
+            @Valid @RequestBody MentorAuthorityPurchaseRequest request
+    ) {
+<span class="nc" id="L69">        purchaseCommandService.purchaseMentorAuthority(customUser.getUserId(), request);</span>
+<span class="nc" id="L70">        return ResponseEntity.ok(ApiResponse.success(null));</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

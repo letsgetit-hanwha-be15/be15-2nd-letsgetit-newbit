@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SaleHistory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.purchase.command.domain.aggregate</a> &gt; <span class="el_source">SaleHistory.java</span></div><h1>SaleHistory.java</h1><pre class="source lang-java linenums">
+package com.newbit.purchase.command.domain.aggregate;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = &quot;sale_history&quot;)
+public class SaleHistory {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;sale_history_id&quot;)
+    private Long id;
+
+<span class="fc" id="L28">    @Column(name = &quot;is_settled&quot;, nullable = false)</span>
+    private boolean isSettled = false;
+
+    @Column(name = &quot;settled_at&quot;)
+    private LocalDateTime settledAt;
+
+    @Column(name = &quot;sale_amount&quot;, nullable = false, precision = 12, scale = 2)
+    private BigDecimal saleAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;service_type&quot;, nullable = false)
+    private ServiceType serviceType;
+
+    @Column(name = &quot;service_id&quot;, nullable = false)
+    private Long serviceId;
+
+    @CreatedDate
+    @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = &quot;updated_at&quot;, nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = &quot;mentor_id&quot;, nullable = false)
+    private Long mentorId;
+
+    @Builder
+<span class="fc" id="L56">    private SaleHistory(BigDecimal saleAmount, ServiceType serviceType, Long serviceId, Long mentorId) {</span>
+<span class="fc" id="L57">        this.saleAmount = saleAmount;</span>
+<span class="fc" id="L58">        this.serviceType = serviceType;</span>
+<span class="fc" id="L59">        this.serviceId = serviceId;</span>
+<span class="fc" id="L60">        this.mentorId = mentorId;</span>
+<span class="fc" id="L61">        this.isSettled = false;</span>
+<span class="fc" id="L62">    }</span>
+
+    public static SaleHistory forColumn(Long columnId, Integer columnPrice, Long mentorId) {
+<span class="fc" id="L65">        return SaleHistory.builder()</span>
+<span class="fc" id="L66">                .saleAmount(BigDecimal.valueOf(columnPrice * 100))</span>
+<span class="fc" id="L67">                .serviceType(ServiceType.COLUMN)</span>
+<span class="fc" id="L68">                .serviceId(columnId)</span>
+<span class="fc" id="L69">                .mentorId(mentorId)</span>
+<span class="fc" id="L70">                .build();</span>
+    }
+
+    public static SaleHistory forCoffeechat(long mentorId, int totalPrice, long coffeechatId) {
+<span class="nc" id="L74">        return SaleHistory.builder()</span>
+<span class="nc" id="L75">                .saleAmount(BigDecimal.valueOf(totalPrice * 100L))</span>
+<span class="nc" id="L76">                .serviceType(ServiceType.COFFEECHAT)</span>
+<span class="nc" id="L77">                .serviceId(coffeechatId)</span>
+<span class="nc" id="L78">                .mentorId(mentorId)</span>
+<span class="nc" id="L79">                .build();</span>
+    }
+
+    public void markAsSettled() {
+<span class="nc" id="L83">        this.settledAt = LocalDateTime.now();</span>
+<span class="nc" id="L84">        this.isSettled = true;</span>
+<span class="nc" id="L85">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

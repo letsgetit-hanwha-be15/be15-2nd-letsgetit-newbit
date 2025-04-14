@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ColumnRequestService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.column.service</a> &gt; <span class="el_source">ColumnRequestService.java</span></div><h1>ColumnRequestService.java</h1><pre class="source lang-java linenums">package com.newbit.column.service;
+
+import com.newbit.column.domain.Series;
+import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.dto.request.DeleteColumnRequestDto;
+import com.newbit.column.dto.request.UpdateColumnRequestDto;
+import com.newbit.column.dto.response.CreateColumnResponseDto;
+import com.newbit.column.dto.response.DeleteColumnResponseDto;
+import com.newbit.column.dto.response.GetMyColumnRequestResponseDto;
+import com.newbit.column.dto.response.UpdateColumnResponseDto;
+import com.newbit.column.domain.Column;
+import com.newbit.column.domain.ColumnRequest;
+import com.newbit.column.enums.RequestType;
+import com.newbit.column.mapper.ColumnMapper;
+import com.newbit.column.repository.ColumnRepository;
+import com.newbit.column.repository.ColumnRequestRepository;
+import com.newbit.column.repository.SeriesRepository;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.user.entity.Mentor;
+import com.newbit.user.service.MentorService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class ColumnRequestService {
+
+    private final ColumnRepository columnRepository;
+    private final ColumnRequestRepository columnRequestRepository;
+    private final SeriesRepository seriesRepository;
+    private final MentorService mentorService;
+    private final ColumnMapper columnMapper;
+
+    public CreateColumnResponseDto createColumnRequest(CreateColumnRequestDto dto, Long userId) {
+        // 1. Mentor 조회
+<span class="fc" id="L39">        Mentor mentor = mentorService.getMentorEntityByUserId(userId);</span>
+
+        // 2. 시리즈 조회
+<span class="fc" id="L42">        Series series = seriesRepository.findById(dto.getSeriesId())</span>
+<span class="pc" id="L43">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.SERIES_NOT_FOUND));</span>
+
+        // 3. Column 저장
+<span class="fc" id="L46">        Column column = columnMapper.toColumn(dto, mentor, series);</span>
+<span class="fc" id="L47">        Column savedColumn = columnRepository.save(column);</span>
+
+        // 4. ColumnRequest 저장
+<span class="fc" id="L50">        ColumnRequest request = columnMapper.toColumnRequest(dto, savedColumn);</span>
+<span class="fc" id="L51">        ColumnRequest savedRequest = columnRequestRepository.save(request);</span>
+
+<span class="fc" id="L53">        return CreateColumnResponseDto.builder()</span>
+<span class="fc" id="L54">                .columnRequestId(savedRequest.getColumnRequestId())</span>
+<span class="fc" id="L55">                .build();</span>
+    }
+
+    public UpdateColumnResponseDto updateColumnRequest(UpdateColumnRequestDto dto, Long columnId) {
+        // 1. columnId로 Column 조회
+<span class="fc" id="L60">        Column column = columnRepository.findById(columnId)</span>
+<span class="pc" id="L61">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.COLUMN_NOT_FOUND));</span>
+
+        // 2. ColumnRequest 생성
+<span class="fc" id="L64">        ColumnRequest request = ColumnRequest.builder()</span>
+<span class="fc" id="L65">                .requestType(RequestType.UPDATE)</span>
+<span class="fc" id="L66">                .isApproved(false)</span>
+<span class="fc" id="L67">                .updatedTitle(dto.getTitle())</span>
+<span class="fc" id="L68">                .updatedContent(dto.getContent())</span>
+<span class="fc" id="L69">                .updatedPrice(dto.getPrice())</span>
+<span class="fc" id="L70">                .updatedThumbnailUrl(dto.getThumbnailUrl())</span>
+<span class="fc" id="L71">                .column(column)</span>
+<span class="fc" id="L72">                .build();</span>
+
+        // 3. 저장
+<span class="fc" id="L75">        ColumnRequest saved = columnRequestRepository.save(request);</span>
+
+        // 4. 응답
+<span class="fc" id="L78">        return UpdateColumnResponseDto.builder()</span>
+<span class="fc" id="L79">                .columnRequestId(saved.getColumnRequestId())</span>
+<span class="fc" id="L80">                .build();</span>
+    }
+
+    public DeleteColumnResponseDto deleteColumnRequest(DeleteColumnRequestDto dto, Long columnId) {
+<span class="fc" id="L84">        Column column = columnRepository.findById(columnId)</span>
+<span class="pc" id="L85">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.COLUMN_NOT_FOUND));</span>
+
+<span class="fc" id="L87">        ColumnRequest request = ColumnRequest.builder()</span>
+<span class="fc" id="L88">                .requestType(RequestType.DELETE)</span>
+<span class="fc" id="L89">                .isApproved(false)</span>
+<span class="fc" id="L90">                .column(column)</span>
+<span class="fc" id="L91">                .build();</span>
+
+<span class="fc" id="L93">        ColumnRequest saved = columnRequestRepository.save(request);</span>
+
+<span class="fc" id="L95">        return DeleteColumnResponseDto.builder()</span>
+<span class="fc" id="L96">                .columnRequestId(saved.getColumnRequestId())</span>
+<span class="fc" id="L97">                .build();</span>
+    }
+
+    public List&lt;GetMyColumnRequestResponseDto&gt; getMyColumnRequests(Long userId) {
+<span class="fc" id="L101">        Mentor mentor = mentorService.getMentorEntityByUserId(userId);</span>
+
+<span class="fc" id="L103">        List&lt;ColumnRequest&gt; requests = columnRequestRepository.findAllByColumn_Mentor_MentorIdOrderByCreatedAtDesc(mentor.getMentorId());</span>
+
+<span class="fc" id="L105">        return requests.stream()</span>
+<span class="fc" id="L106">                .map(columnMapper::toMyColumnRequestResponseDto)</span>
+<span class="fc" id="L107">                .toList();</span>
+    }
+
+    public Integer getColumnPriceById(Long columnId) {
+<span class="nc" id="L111">        return columnRepository.findById(columnId)</span>
+<span class="nc" id="L112">                .map(Column::getPrice)</span>
+<span class="nc" id="L113">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.COLUMN_NOT_FOUND));</span>
+    }
+
+    public Long getMentorId(Long columnId) {
+<span class="nc" id="L117">        return columnRepository.findById(columnId)</span>
+<span class="nc" id="L118">                .map(column -&gt; column.getMentor().getMentorId())</span>
+<span class="nc" id="L119">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.COLUMN_NOT_FOUND));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

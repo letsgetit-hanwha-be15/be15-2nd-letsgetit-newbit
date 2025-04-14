@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RefundController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.payment.controller</a> &gt; <span class="el_source">RefundController.java</span></div><h1>RefundController.java</h1><pre class="source lang-java linenums">package com.newbit.payment.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.newbit.common.dto.ApiResponse;
+import com.newbit.payment.command.application.dto.request.PaymentCancelRequest;
+import com.newbit.payment.command.application.dto.response.PaymentRefundResponse;
+import com.newbit.payment.command.application.service.RefundCommandService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+<span class="nc" id="L24">@Slf4j</span>
+@RestController
+@RequestMapping(&quot;/api/v1/refunds&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;결제 취소/환불 API&quot;, description = &quot;결제 취소/환불 관련 API&quot;)
+public class RefundController extends AbstractApiController {
+
+    private final RefundCommandService refundCommandService;
+    
+    @Operation(summary = &quot;결제 전체 취소&quot;, description = &quot;결제를 전액 취소/환불합니다.&quot;)
+    @PostMapping(&quot;/payments/{paymentId}&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;PaymentRefundResponse&gt;&gt; cancelPayment(
+            @Parameter(description = &quot;결제 ID&quot;) @PathVariable Long paymentId,
+            @RequestBody PaymentCancelRequest request) {
+        
+<span class="nc" id="L39">        log.info(&quot;결제 전체 취소 요청: paymentId={}, reason={}&quot;, paymentId, request.getReason());</span>
+<span class="nc" id="L40">        PaymentRefundResponse response = refundCommandService.cancelPayment(paymentId, request.getReason());</span>
+<span class="nc" id="L41">        return successResponse(response);</span>
+    }
+    
+    @Operation(summary = &quot;결제 부분 취소&quot;, description = &quot;결제를 부분 취소/환불합니다.&quot;)
+    @PostMapping(&quot;/payments/{paymentId}/partial&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;PaymentRefundResponse&gt;&gt; cancelPaymentPartial(
+            @Parameter(description = &quot;결제 ID&quot;) @PathVariable Long paymentId,
+            @RequestBody PaymentCancelRequest request) {
+        
+<span class="nc" id="L50">        log.info(&quot;결제 부분 취소 요청: paymentId={}, amount={}, reason={}&quot;, </span>
+<span class="nc" id="L51">                paymentId, request.getCancelAmount(), request.getReason());</span>
+        
+<span class="nc" id="L53">        PaymentRefundResponse response = refundCommandService.cancelPaymentPartial(</span>
+                paymentId, 
+<span class="nc" id="L55">                request.getCancelAmount(), </span>
+<span class="nc" id="L56">                request.getReason()</span>
+        );
+<span class="nc" id="L58">        return successResponse(response);</span>
+    }
+    
+    @Operation(summary = &quot;결제 환불 내역 조회&quot;, description = &quot;결제의 환불 내역을 조회합니다.&quot;)
+    @GetMapping(&quot;/payments/{paymentId}&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;List&lt;PaymentRefundResponse&gt;&gt;&gt; getRefundsByPaymentId(
+            @Parameter(description = &quot;결제 ID&quot;) @PathVariable Long paymentId) {
+        
+<span class="nc" id="L66">        log.info(&quot;환불 내역 조회 요청: paymentId={}&quot;, paymentId);</span>
+<span class="nc" id="L67">        List&lt;PaymentRefundResponse&gt; response = refundCommandService.getRefundsByPaymentId(paymentId);</span>
+<span class="nc" id="L68">        return successResponse(response);</span>
+    }
+    
+    @Operation(summary = &quot;환불 내역 상세 조회&quot;, description = &quot;특정 환불 내역을 상세 조회합니다.&quot;)
+    @GetMapping(&quot;/{refundId}&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;PaymentRefundResponse&gt;&gt; getRefund(
+            @Parameter(description = &quot;환불 ID&quot;) @PathVariable Long refundId) {
+        
+<span class="nc" id="L76">        log.info(&quot;환불 상세 조회 요청: refundId={}&quot;, refundId);</span>
+<span class="nc" id="L77">        PaymentRefundResponse response = refundCommandService.getRefund(refundId);</span>
+<span class="nc" id="L78">        return successResponse(response);</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

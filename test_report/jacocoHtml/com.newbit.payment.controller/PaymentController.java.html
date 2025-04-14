@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PaymentController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.payment.controller</a> &gt; <span class="el_source">PaymentController.java</span></div><h1>PaymentController.java</h1><pre class="source lang-java linenums">package com.newbit.payment.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.newbit.common.dto.ApiResponse;
+import com.newbit.payment.command.application.dto.request.PaymentApproveRequest;
+import com.newbit.payment.command.application.dto.request.PaymentPrepareRequest;
+import com.newbit.payment.command.application.dto.response.PaymentApproveResponse;
+import com.newbit.payment.command.application.dto.response.PaymentPrepareResponse;
+import com.newbit.payment.command.application.service.PaymentCommandService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+<span class="nc" id="L25">@Slf4j</span>
+@RestController
+@RequestMapping(&quot;/api/v1/payments&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;결제 API&quot;, description = &quot;결제 관련 API&quot;)
+public class PaymentController extends AbstractApiController {
+
+    private final PaymentCommandService paymentCommandService;
+
+    @Operation(summary = &quot;결제 준비&quot;, description = &quot;결제에 필요한 정보를 준비하고 결제 위젯 URL을 반환합니다.&quot;)
+    @PostMapping(&quot;/prepare&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;PaymentPrepareResponse&gt;&gt; preparePayment(
+            @RequestBody PaymentPrepareRequest request) {
+<span class="nc" id="L38">        PaymentPrepareResponse response = paymentCommandService.preparePayment(request);</span>
+<span class="nc" id="L39">        return successResponse(response);</span>
+    }
+
+    @Operation(summary = &quot;결제 승인&quot;, description = &quot;결제 승인을 요청합니다.&quot;)
+    @PostMapping(&quot;/approve&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;PaymentApproveResponse&gt;&gt; approvePayment(
+            @RequestBody PaymentApproveRequest request) {
+<span class="nc" id="L46">        PaymentApproveResponse response = paymentCommandService.approvePayment(request);</span>
+<span class="nc" id="L47">        return successResponse(response);</span>
+    }
+
+    @Operation(summary = &quot;결제 정보 조회&quot;, description = &quot;결제 ID로 결제 정보를 조회합니다.&quot;)
+    @GetMapping(&quot;/{paymentId}&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;PaymentApproveResponse&gt;&gt; getPayment(
+            @Parameter(description = &quot;결제 ID&quot;) @PathVariable Long paymentId) {
+<span class="nc" id="L54">        PaymentApproveResponse response = paymentCommandService.getPayment(paymentId);</span>
+<span class="nc" id="L55">        return successResponse(response);</span>
+    }
+
+    @Operation(summary = &quot;주문 ID로 결제 정보 조회&quot;, description = &quot;주문 ID로 결제 정보를 조회합니다.&quot;)
+    @GetMapping(&quot;/order/{orderId}&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;PaymentApproveResponse&gt;&gt; getPaymentByOrderId(
+            @Parameter(description = &quot;주문 ID&quot;) @PathVariable String orderId) {
+<span class="nc" id="L62">        PaymentApproveResponse response = paymentCommandService.getPaymentByOrderId(orderId);</span>
+<span class="nc" id="L63">        return successResponse(response);</span>
+    }
+    
+    @Operation(summary = &quot;결제 성공 콜백&quot;, description = &quot;토스페이먼츠에서 결제 성공 시 호출되는 콜백 엔드포인트입니다.&quot;)
+    @GetMapping(&quot;/success&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;PaymentApproveResponse&gt;&gt; paymentSuccess(
+            @Parameter(description = &quot;결제 키&quot;) @RequestParam String paymentKey,
+            @Parameter(description = &quot;주문 ID&quot;) @RequestParam String orderId,
+            @Parameter(description = &quot;결제 금액&quot;) @RequestParam Long amount) {
+        
+<span class="nc" id="L73">        log.info(&quot;결제 성공 콜백: paymentKey={}, orderId={}, amount={}&quot;, paymentKey, orderId, amount);</span>
+        
+<span class="nc" id="L75">        PaymentApproveRequest approveRequest = PaymentApproveRequest.builder()</span>
+<span class="nc" id="L76">                .paymentKey(paymentKey)</span>
+<span class="nc" id="L77">                .orderId(orderId)</span>
+<span class="nc" id="L78">                .amount(amount)</span>
+<span class="nc" id="L79">                .build();</span>
+        
+<span class="nc" id="L81">        PaymentApproveResponse response = paymentCommandService.approvePayment(approveRequest);</span>
+        
+<span class="nc" id="L83">        return successResponse(response);</span>
+    }
+    
+    @Operation(summary = &quot;결제 실패 콜백&quot;, description = &quot;토스페이먼츠에서 결제 실패 시 호출되는 콜백 엔드포인트입니다.&quot;)
+    @GetMapping(&quot;/fail&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;String&gt;&gt; paymentFail(
+            @Parameter(description = &quot;에러 코드&quot;) @RequestParam String code,
+            @Parameter(description = &quot;에러 메시지&quot;) @RequestParam String message,
+            @Parameter(description = &quot;주문 ID&quot;) @RequestParam String orderId) {
+        
+<span class="nc" id="L93">        log.error(&quot;결제 실패 콜백: code={}, message={}, orderId={}&quot;, code, message, orderId);</span>
+        
+<span class="nc" id="L95">        return successMessage(&quot;결제에 실패했습니다. 사유: &quot; + message);</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

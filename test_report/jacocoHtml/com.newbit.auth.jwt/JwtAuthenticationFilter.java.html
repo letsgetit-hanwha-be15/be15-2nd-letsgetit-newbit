@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.auth.jwt</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.newbit.auth.jwt;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.newbit.common.dto.ApiResponse;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.util.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserDetailsService userDetailsService;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        try {
+<span class="nc" id="L32">            String token = getJwtFromRequest(request);</span>
+
+<span class="nc bnc" id="L34" title="All 4 branches missed.">            if (StringUtils.hasText(token) &amp;&amp; jwtTokenProvider.validateToken(token)) {</span>
+<span class="nc" id="L35">                String username = jwtTokenProvider.getUsernameFromJWT(token);</span>
+<span class="nc" id="L36">                UserDetails userDetails = userDetailsService.loadUserByUsername(username);</span>
+<span class="nc" id="L37">                UsernamePasswordAuthenticationToken authentication =</span>
+<span class="nc" id="L38">                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());</span>
+<span class="nc" id="L39">                SecurityContextHolder.getContext().setAuthentication(authentication);</span>
+            }
+
+<span class="nc" id="L42">            filterChain.doFilter(request, response);</span>
+
+<span class="nc" id="L44">        } catch (BusinessException ex) {</span>
+<span class="nc" id="L45">            setErrorResponse(response, ex.getErrorCode());</span>
+<span class="nc" id="L46">        } catch (Exception ex) {</span>
+            // 예상치 못한 오류 대응
+<span class="nc" id="L48">            setErrorResponse(response, ErrorCode.INTERNAL_SERVER_ERROR);</span>
+<span class="nc" id="L49">        }</span>
+<span class="nc" id="L50">    }</span>
+
+    private String getJwtFromRequest(HttpServletRequest request) {
+<span class="nc" id="L53">        String bearerToken = request.getHeader(&quot;Authorization&quot;);</span>
+<span class="nc bnc" id="L54" title="All 4 branches missed.">        if (StringUtils.hasText(bearerToken) &amp;&amp; bearerToken.startsWith(&quot;Bearer &quot;)) {</span>
+<span class="nc" id="L55">            return bearerToken.substring(7);</span>
+        }
+<span class="nc" id="L57">        return null;</span>
+    }
+
+    private void setErrorResponse(HttpServletResponse response, ErrorCode errorCode) throws IOException {
+<span class="nc" id="L61">        response.setStatus(errorCode.getHttpStatus().value());</span>
+<span class="nc" id="L62">        response.setContentType(&quot;application/json;charset=UTF-8&quot;);</span>
+
+<span class="nc" id="L64">        ApiResponse&lt;Void&gt; apiResponse = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());</span>
+<span class="nc" id="L65">        String json = new ObjectMapper().writeValueAsString(apiResponse);</span>
+
+<span class="nc" id="L67">        response.getWriter().write(json);</span>
+<span class="nc" id="L68">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

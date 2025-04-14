@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DiamondHistory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.purchase.command.domain.aggregate</a> &gt; <span class="el_source">DiamondHistory.java</span></div><h1>DiamondHistory.java</h1><pre class="source lang-java linenums">package com.newbit.purchase.command.domain.aggregate;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
+@Table(name = &quot;diamond_history&quot;)
+public class DiamondHistory {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;diamond_history_id&quot;)
+    private Long id;
+
+    @Column(name = &quot;user_id&quot;, nullable = false)
+    private Long userId;
+
+    @Column(name = &quot;service_type&quot;, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private DiamondTransactionType serviceType;
+
+    @Column(name = &quot;service_id&quot;, nullable = false)
+    private Long serviceId;
+
+    @Column(name = &quot;decrease_amount&quot;)
+    private Integer decreaseAmount;
+
+    @Column(name = &quot;increase_amount&quot;)
+    private Integer increaseAmount;
+
+    @Column(name = &quot;balance&quot;, nullable = false)
+    private Integer balance;
+
+    @Transient
+    private String description;
+
+    @CreatedDate
+    @Column(name = &quot;created_at&quot;, nullable = false)
+    private LocalDateTime createdAt;
+
+    @Builder
+    private DiamondHistory(Long userId, DiamondTransactionType serviceType, Long serviceId,
+<span class="fc" id="L53">                           Integer decreaseAmount, Integer increaseAmount, Integer balance, String description) {</span>
+<span class="fc" id="L54">        this.userId = userId;</span>
+<span class="fc" id="L55">        this.serviceType = serviceType;</span>
+<span class="fc" id="L56">        this.serviceId = serviceId;</span>
+<span class="fc" id="L57">        this.decreaseAmount = decreaseAmount;</span>
+<span class="fc" id="L58">        this.increaseAmount = increaseAmount;</span>
+<span class="fc" id="L59">        this.balance = balance;</span>
+<span class="fc" id="L60">        this.description = description;</span>
+<span class="fc" id="L61">        this.createdAt = LocalDateTime.now();</span>
+<span class="fc" id="L62">    }</span>
+
+    // 칼럼 구매용 팩토리 메서드
+    public static DiamondHistory forColumnPurchase(Long userId, Long columnId, Integer price, Integer diamondBalance) {
+<span class="fc" id="L66">        return DiamondHistory.builder()</span>
+<span class="fc" id="L67">                .userId(userId)</span>
+<span class="fc" id="L68">                .serviceType(DiamondTransactionType.COLUMN)</span>
+<span class="fc" id="L69">                .serviceId(columnId)</span>
+<span class="fc" id="L70">                .decreaseAmount(price)</span>
+<span class="fc" id="L71">                .increaseAmount(null)</span>
+<span class="fc" id="L72">                .balance(diamondBalance)  // 차감 이후 잔액</span>
+<span class="fc" id="L73">                .build();</span>
+    }
+
+    public static DiamondHistory forCoffeechatPurchase(Long userId, Long coffeechatId, Integer totalPrice, Integer diamondBalance) {
+<span class="fc" id="L77">        return DiamondHistory.builder()</span>
+<span class="fc" id="L78">                .userId(userId)</span>
+<span class="fc" id="L79">                .serviceType(DiamondTransactionType.COFFEECHAT)</span>
+<span class="fc" id="L80">                .serviceId(coffeechatId)</span>
+<span class="fc" id="L81">                .decreaseAmount(totalPrice)</span>
+<span class="fc" id="L82">                .increaseAmount(null)</span>
+<span class="fc" id="L83">                .balance(diamondBalance)  // 차감 이후 잔액</span>
+<span class="fc" id="L84">                .build();</span>
+    }
+
+    public static DiamondHistory forMentorAuthority(Long userId, Integer diamond, int mentorAuthorityDiamondCost) {
+<span class="fc" id="L88">        return DiamondHistory.builder()</span>
+<span class="fc" id="L89">                .userId(userId)</span>
+<span class="fc" id="L90">                .serviceId(1L) //nullable로 변경</span>
+<span class="fc" id="L91">                .serviceType(DiamondTransactionType.MENTOR_AUTHORITY)</span>
+<span class="fc" id="L92">                .decreaseAmount(mentorAuthorityDiamondCost)</span>
+<span class="fc" id="L93">                .increaseAmount(null)</span>
+<span class="fc" id="L94">                .balance(diamond)  // 차감 이후 잔액</span>
+<span class="fc" id="L95">                .build();</span>
+    }
+
+    public static DiamondHistory forCoffeechatRefund(Long userId, Long coffeechatId, int totalPrice, Integer diamondBalance) {
+<span class="fc" id="L99">        return DiamondHistory.builder()</span>
+<span class="fc" id="L100">                .userId(userId)</span>
+<span class="fc" id="L101">                .serviceType(DiamondTransactionType.COFFEECHAT)</span>
+<span class="fc" id="L102">                .serviceId(coffeechatId)</span>
+<span class="fc" id="L103">                .decreaseAmount(null)</span>
+<span class="fc" id="L104">                .increaseAmount(totalPrice)</span>
+<span class="fc" id="L105">                .balance(diamondBalance)  // 차감 이후 잔액</span>
+<span class="fc" id="L106">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

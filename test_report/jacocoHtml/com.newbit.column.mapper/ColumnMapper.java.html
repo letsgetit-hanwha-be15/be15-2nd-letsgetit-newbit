@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ColumnMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.column.mapper</a> &gt; <span class="el_source">ColumnMapper.java</span></div><h1>ColumnMapper.java</h1><pre class="source lang-java linenums">package com.newbit.column.mapper;
+
+import com.newbit.column.domain.Series;
+import com.newbit.column.dto.request.CreateColumnRequestDto;
+import com.newbit.column.domain.Column;
+import com.newbit.column.domain.ColumnRequest;
+import com.newbit.column.dto.response.GetMyColumnListResponseDto;
+import com.newbit.column.dto.response.GetMyColumnRequestResponseDto;
+import com.newbit.column.enums.RequestType;
+import com.newbit.user.entity.Mentor;
+import org.springframework.stereotype.Component;
+
+@Component
+<span class="nc" id="L14">public class ColumnMapper {</span>
+
+    public Column toColumn(CreateColumnRequestDto dto, Mentor mentor, Series series) {
+<span class="nc" id="L17">        return Column.builder()</span>
+<span class="nc" id="L18">                .title(dto.getTitle())</span>
+<span class="nc" id="L19">                .content(dto.getContent())</span>
+<span class="nc" id="L20">                .price(dto.getPrice())</span>
+<span class="nc" id="L21">                .series(series)</span>
+<span class="nc" id="L22">                .thumbnailUrl(dto.getThumbnailUrl())</span>
+<span class="nc" id="L23">                .mentor(mentor)</span>
+<span class="nc" id="L24">                .isPublic(false)</span>
+<span class="nc" id="L25">                .likeCount(0)</span>
+<span class="nc" id="L26">                .build();</span>
+    }
+
+    public ColumnRequest toColumnRequest(CreateColumnRequestDto dto, Column column) {
+<span class="nc" id="L30">        return ColumnRequest.builder()</span>
+<span class="nc" id="L31">                .requestType(RequestType.CREATE)</span>
+<span class="nc" id="L32">                .isApproved(false)</span>
+<span class="nc" id="L33">                .updatedTitle(dto.getTitle())</span>
+<span class="nc" id="L34">                .updatedContent(dto.getContent())</span>
+<span class="nc" id="L35">                .updatedPrice(dto.getPrice())</span>
+<span class="nc" id="L36">                .updatedThumbnailUrl(dto.getThumbnailUrl())</span>
+<span class="nc" id="L37">                .column(column)</span>
+<span class="nc" id="L38">                .build();</span>
+    }
+
+    public GetMyColumnRequestResponseDto toMyColumnRequestResponseDto(ColumnRequest columnRequest) {
+<span class="nc" id="L42">        Column column = columnRequest.getColumn();</span>
+
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        boolean isCreate = columnRequest.getRequestType() == RequestType.CREATE;</span>
+
+<span class="nc" id="L46">        return GetMyColumnRequestResponseDto.builder()</span>
+<span class="nc" id="L47">                .columnRequestId(columnRequest.getColumnRequestId())</span>
+<span class="nc" id="L48">                .requestType(columnRequest.getRequestType())</span>
+<span class="nc" id="L49">                .isApproved(columnRequest.getIsApproved())</span>
+
+                // CREATE 요청이면 Column 테이블의 값 사용, 아니면 updated 값 사용
+<span class="nc bnc" id="L52" title="All 2 branches missed.">                .title(isCreate ? column.getTitle() : columnRequest.getUpdatedTitle())</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">                .price(isCreate ? column.getPrice() : columnRequest.getUpdatedPrice())</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">                .thumbnailUrl(isCreate ? column.getThumbnailUrl() : columnRequest.getUpdatedThumbnailUrl())</span>
+
+<span class="nc" id="L56">                .createdAt(columnRequest.getCreatedAt())</span>
+<span class="nc" id="L57">                .build();</span>
+    }
+
+    public GetMyColumnListResponseDto toMyColumnListDto(Column column) {
+<span class="nc" id="L61">        return GetMyColumnListResponseDto.builder()</span>
+<span class="nc" id="L62">                .columnId(column.getColumnId())</span>
+<span class="nc" id="L63">                .title(column.getTitle())</span>
+<span class="nc" id="L64">                .thumbnailUrl(column.getThumbnailUrl())</span>
+<span class="nc" id="L65">                .price(column.getPrice())</span>
+<span class="nc" id="L66">                .likeCount(column.getLikeCount())</span>
+<span class="nc" id="L67">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

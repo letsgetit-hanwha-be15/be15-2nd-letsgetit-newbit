@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReviewCommandService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.coffeechat.command.application.service</a> &gt; <span class="el_source">ReviewCommandService.java</span></div><h1>ReviewCommandService.java</h1><pre class="source lang-java linenums">package com.newbit.coffeechat.command.application.service;
+
+import com.newbit.coffeechat.command.application.dto.request.ReviewCreateRequest;
+import com.newbit.coffeechat.command.domain.aggregate.Review;
+import com.newbit.coffeechat.command.domain.repository.ReviewRepository;
+import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
+import com.newbit.coffeechat.query.dto.response.ProgressStatus;
+import com.newbit.coffeechat.query.service.CoffeechatQueryService;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
+import com.newbit.user.service.MentorService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class ReviewCommandService {
+
+    private final ReviewRepository reviewRepository;
+    private final CoffeechatQueryService coffeechatQueryService;
+    private final PointTransactionCommandService pointTransactionCommandService;
+    private final MentorService mentorService;
+
+    @Transactional
+    public Long createReview(Long userId, ReviewCreateRequest request) {
+        // 1. 완료된 커피챗인지 확인
+<span class="fc" id="L31">        CoffeechatDto coffeechatDto = coffeechatQueryService.getCoffeechat(request.getCoffeechatId())</span>
+<span class="fc" id="L32">                .getCoffeechat();</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        if (!coffeechatDto.getProgressStatus().equals(ProgressStatus.COMPLETE)){</span>
+<span class="fc" id="L34">            throw new BusinessException(ErrorCode.INVALID_COFFEECHAT_STATUS_COMPLETE);</span>
+        }
+
+        // 커피챗의 멘티가 맞는지 확인
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (!coffeechatDto.getMenteeId().equals(userId)){</span>
+<span class="fc" id="L39">            throw new BusinessException(ErrorCode.REVIEW_CREATE_NOT_ALLOWED);</span>
+        }
+
+        // 2. 해당 커피챗에 대한 리뷰가 이미 존재
+<span class="fc" id="L43">        Optional&lt;Review&gt; existingReview = reviewRepository.findByCoffeechatId(request.getCoffeechatId());</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (existingReview.isPresent()) {</span>
+<span class="fc" id="L45">            throw new BusinessException(ErrorCode.REVIEW_ALREADY_EXIST);</span>
+        }
+
+        // 3. 리뷰 등록
+<span class="fc" id="L49">        Review newReview = Review.of(</span>
+<span class="fc" id="L50">                request.getRating(),</span>
+<span class="fc" id="L51">                request.getComment(),</span>
+<span class="fc" id="L52">                request.getTip(),</span>
+<span class="fc" id="L53">                request.getCoffeechatId(),</span>
+                userId);
+<span class="fc" id="L55">        Review review = reviewRepository.save(newReview);</span>
+
+        // 4. 팁이 존재하면 팁 등록
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if(request.getTip() != null) {</span>
+            // 멘토 아이디로 멘토의 유저 아이디를 찾아오기
+<span class="fc" id="L60">            Long mentorId = mentorService.getUserIdByMentorId(coffeechatDto.getMentorId());</span>
+<span class="fc" id="L61">            pointTransactionCommandService.giveTipPoint(</span>
+<span class="fc" id="L62">                    request.getCoffeechatId(), coffeechatDto.getMenteeId(), mentorId, request.getTip()</span>
+            );
+        }
+
+        // 5. 코멘트까지 등록 시 멘티에게 50포인트 지급
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if(request.getComment() != null) {</span>
+<span class="fc" id="L68">            pointTransactionCommandService.givePointByType(</span>
+<span class="fc" id="L69">                    coffeechatDto.getMenteeId(), &quot;커피챗 리뷰 적립&quot;, review.getReviewId()</span>
+            );
+        }
+
+<span class="fc" id="L73">        return review.getReviewId();</span>
+    }
+
+    @Transactional
+    public void deleteReview(Long userId, Long reviewId) {
+        // 1. 리뷰가 존재하는지 확인
+<span class="fc" id="L79">        Review review = reviewRepository.findById(reviewId)</span>
+<span class="fc" id="L80">                .orElseThrow(() -&gt; new BusinessException(ErrorCode.REVIEW_NOT_FOUND));</span>
+
+        // 2. 본인이 작성한 리뷰인지 확인
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if(!review.getUserId().equals(userId)){</span>
+<span class="fc" id="L84">            throw new BusinessException(ErrorCode.REVIEW_CANCEL_NOT_ALLOWED);</span>
+        }
+
+        // 3. 리뷰 삭제
+<span class="fc" id="L88">        review.delete();</span>
+<span class="fc" id="L89">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

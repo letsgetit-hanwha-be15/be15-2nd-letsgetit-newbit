@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChatServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.coffeeletter.service</a> &gt; <span class="el_source">ChatServiceImpl.java</span></div><h1>ChatServiceImpl.java</h1><pre class="source lang-java linenums">package com.newbit.coffeeletter.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
+import com.newbit.coffeeletter.dto.ChatMessageDTO;
+import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
+
+import lombok.extern.slf4j.Slf4j;
+
+<span class="fc" id="L17">@Slf4j</span>
+@Service
+@Primary
+public class ChatServiceImpl implements ChatService {
+
+    private final RoomService roomService;
+    private final MessageService messageService;
+    
+    public ChatServiceImpl(
+            @Qualifier(&quot;roomServiceImpl&quot;) RoomService roomService,
+<span class="fc" id="L27">            @Qualifier(&quot;messageServiceImpl&quot;) MessageService messageService) {</span>
+<span class="fc" id="L28">        this.roomService = roomService;</span>
+<span class="fc" id="L29">        this.messageService = messageService;</span>
+<span class="fc" id="L30">    }</span>
+
+    // RoomService 메서드 위임
+    @Override
+    public CoffeeLetterRoomDTO createRoom(CoffeeLetterRoomDTO roomDto) {
+<span class="fc" id="L35">        return roomService.createRoom(roomDto);</span>
+    }
+
+    @Override
+    public CoffeeLetterRoomDTO endRoom(String roomId) {
+<span class="fc" id="L40">        return roomService.endRoom(roomId);</span>
+    }
+
+    @Override
+    public CoffeeLetterRoomDTO cancelRoom(String roomId) {
+<span class="fc" id="L45">        return roomService.cancelRoom(roomId);</span>
+    }
+
+    @Override
+    public List&lt;CoffeeLetterRoomDTO&gt; getAllRooms() {
+<span class="fc" id="L50">        return roomService.getAllRooms();</span>
+    }
+
+    @Override
+    public CoffeeLetterRoomDTO getRoomById(String roomId) {
+<span class="fc" id="L55">        return roomService.getRoomById(roomId);</span>
+    }
+
+    @Override
+    public List&lt;CoffeeLetterRoomDTO&gt; getRoomsByUserId(Long userId) {
+<span class="fc" id="L60">        return roomService.getRoomsByUserId(userId);</span>
+    }
+
+    @Override
+    public List&lt;CoffeeLetterRoomDTO&gt; getRoomsByUserIdAndStatus(Long userId, CoffeeLetterRoom.RoomStatus status) {
+<span class="fc" id="L65">        return roomService.getRoomsByUserIdAndStatus(userId, status);</span>
+    }
+    
+    @Override
+    public String findRoomIdByCoffeeChatId(Long coffeeChatId) {
+<span class="fc" id="L70">        return roomService.findRoomIdByCoffeeChatId(coffeeChatId);</span>
+    }
+    
+    @Override
+    public CoffeeLetterRoomDTO getRoomByCoffeeChatId(Long coffeeChatId) {
+<span class="fc" id="L75">        return roomService.getRoomByCoffeeChatId(coffeeChatId);</span>
+    }
+
+    // MessageService 메서드 위임
+    @Override
+    public ChatMessageDTO sendMessage(ChatMessageDTO messageDto) {
+<span class="fc" id="L81">        return messageService.sendMessage(messageDto);</span>
+    }
+
+    @Override
+    public ChatMessageDTO sendSystemMessage(String roomId, String content) {
+<span class="fc" id="L86">        return messageService.sendSystemMessage(roomId, content);</span>
+    }
+
+    @Override
+    public List&lt;ChatMessageDTO&gt; getMessagesByRoomId(String roomId) {
+<span class="fc" id="L91">        return messageService.getMessagesByRoomId(roomId);</span>
+    }
+
+    @Override
+    public Page&lt;ChatMessageDTO&gt; getMessagesByRoomId(String roomId, Pageable pageable) {
+<span class="fc" id="L96">        return messageService.getMessagesByRoomId(roomId, pageable);</span>
+    }
+
+    @Override
+    public List&lt;ChatMessageDTO&gt; getUnreadMessages(String roomId, Long userId) {
+<span class="fc" id="L101">        return messageService.getUnreadMessages(roomId, userId);</span>
+    }
+
+    @Override
+    public ChatMessageDTO getLastMessage(String roomId) {
+<span class="fc" id="L106">        return messageService.getLastMessage(roomId);</span>
+    }
+
+    @Override
+    public void markAsRead(String roomId, Long userId) {
+<span class="fc" id="L111">        messageService.markAsRead(roomId, userId);</span>
+<span class="fc" id="L112">    }</span>
+
+    @Override
+    public int getUnreadMessageCount(String roomId, Long userId) {
+<span class="fc" id="L116">        return messageService.getUnreadMessageCount(roomId, userId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

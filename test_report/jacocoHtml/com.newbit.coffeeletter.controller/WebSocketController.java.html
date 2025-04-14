@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WebSocketController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.coffeeletter.controller</a> &gt; <span class="el_source">WebSocketController.java</span></div><h1>WebSocketController.java</h1><pre class="source lang-java linenums">package com.newbit.coffeeletter.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.stereotype.Controller;
+
+import com.newbit.coffeeletter.domain.chat.MessageType;
+import com.newbit.coffeeletter.dto.ChatMessageDTO;
+import com.newbit.coffeeletter.service.ChatService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
+
+
+<span class="nc" id="L20">@Slf4j</span>
+@Controller
+@Tag(name = &quot;WebSocket 채팅 API&quot;, description = &quot;WebSocket을 통한 커피레터 실시간 채팅 API&quot;)
+public class WebSocketController {
+
+    private final ChatService chatService;
+    
+    @Autowired
+<span class="nc" id="L28">    public WebSocketController(@Qualifier(&quot;chatServiceImpl&quot;) ChatService chatService) {</span>
+<span class="nc" id="L29">        this.chatService = chatService;</span>
+<span class="nc" id="L30">    }</span>
+    
+    @Operation(summary = &quot;메시지 전송&quot;, description = &quot;WebSocket을 통해 메시지를 전송합니다.&quot;)
+    @MessageMapping(&quot;/chat.sendMessage&quot;)
+    public ChatMessageDTO sendMessage(@Payload ChatMessageDTO chatMessage) {
+<span class="nc" id="L35">        return chatService.sendMessage(chatMessage);</span>
+    }
+    
+    @Operation(summary = &quot;사용자 입장&quot;, description = &quot;WebSocket을 통해 채팅방에 사용자를 추가합니다.&quot;)
+    @MessageMapping(&quot;/chat.addUser/{roomId}&quot;)
+    public void addUser(
+            @Parameter(description = &quot;채팅방 ID&quot;) @DestinationVariable String roomId, 
+            @Payload ChatMessageDTO chatMessage) {
+<span class="nc" id="L43">        chatMessage.setType(MessageType.ENTER);</span>
+<span class="nc" id="L44">        chatService.sendSystemMessage(roomId, chatMessage.getSenderName() + &quot;님이 입장하셨습니다.&quot;);</span>
+<span class="nc" id="L45">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

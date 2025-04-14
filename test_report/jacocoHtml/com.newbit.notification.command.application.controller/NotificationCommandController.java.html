@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NotificationCommandController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.notification.command.application.controller</a> &gt; <span class="el_source">NotificationCommandController.java</span></div><h1>NotificationCommandController.java</h1><pre class="source lang-java linenums">package com.newbit.notification.command.application.controller;
+
+import com.newbit.auth.model.CustomUser;
+import com.newbit.common.dto.ApiResponse;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.notification.command.domain.repository.NotificationRepository;
+import com.newbit.notification.command.infrastructure.SseEmitterRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.UUID;
+
+@Tag(name = &quot;알림 API&quot;, description = &quot;알림 연결, 발송 API&quot;)
+@RestController
+@RequestMapping(&quot;/api/v1/notification&quot;)
+@RequiredArgsConstructor
+public class NotificationCommandController {
+
+    private final SseEmitterRepository sseEmitterRepository;
+    private final NotificationCommandService notificationCommandService;
+
+
+    @GetMapping(value = &quot;/subscribe&quot;, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(@AuthenticationPrincipal CustomUser customUser) {
+<span class="nc" id="L35">        Long userId = customUser.getUserId();</span>
+
+<span class="nc" id="L37">        String emitterId = userId + &quot;_&quot; + UUID.randomUUID();</span>
+<span class="nc" id="L38">        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 60초 타임아웃</span>
+
+<span class="nc" id="L40">        sseEmitterRepository.save(emitterId, userId, emitter);</span>
+
+<span class="nc" id="L42">        emitter.onCompletion(() -&gt; sseEmitterRepository.deleteById(emitterId));</span>
+<span class="nc" id="L43">        emitter.onTimeout(() -&gt; sseEmitterRepository.deleteById(emitterId));</span>
+<span class="nc" id="L44">        emitter.onError((e) -&gt; sseEmitterRepository.deleteById(emitterId));</span>
+
+        try {
+<span class="nc" id="L47">            emitter.send(SseEmitter.event().name(&quot;connect&quot;).data(&quot;SSE 연결 성공&quot;));</span>
+<span class="nc" id="L48">        } catch (IOException e) {</span>
+<span class="nc" id="L49">            emitter.completeWithError(e);</span>
+<span class="nc" id="L50">        }</span>
+
+<span class="nc" id="L52">        return emitter;</span>
+    }
+
+    @Operation(summary = &quot;알림 전송&quot;, description = &quot;특정 사용자에게 알림을 전송합니다.&quot;)
+    @PostMapping(&quot;/send&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt; sendNotification(
+            @Valid @RequestBody NotificationSendRequest request
+    ) {
+<span class="nc" id="L60">        notificationCommandService.sendNotification(request);</span>
+<span class="nc" id="L61">        return ResponseEntity.ok(ApiResponse.success(null));</span>
+    }
+
+    @PatchMapping(&quot;/{notificationId}/read&quot;)
+    @PreAuthorize(&quot;isAuthenticated()&quot;)
+    public ResponseEntity&lt;ApiResponse&lt;Void&gt;&gt; markAsRead(
+            @AuthenticationPrincipal CustomUser user,
+            @PathVariable Long notificationId
+    ) {
+<span class="nc" id="L70">        notificationCommandService.markAsRead(user.getUserId(), notificationId);</span>
+<span class="nc" id="L71">        return ResponseEntity.ok().build();</span>
+    }
+
+    @PatchMapping(&quot;/read-all&quot;)
+    @PreAuthorize(&quot;isAuthenticated()&quot;)
+    public ResponseEntity&lt;Void&gt; markAllAsRead(@AuthenticationPrincipal CustomUser user) {
+<span class="nc" id="L77">        notificationCommandService.markAllAsRead(user.getUserId());</span>
+<span class="nc" id="L78">        return ResponseEntity.ok().build();</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

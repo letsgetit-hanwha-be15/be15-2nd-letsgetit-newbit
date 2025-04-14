@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PointRewardService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.like.service</a> &gt; <span class="el_source">PointRewardService.java</span></div><h1>PointRewardService.java</h1><pre class="source lang-java linenums">package com.newbit.like.service;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.newbit.common.exception.BusinessException;
+import com.newbit.like.repository.LikeRepository;
+import com.newbit.purchase.command.application.service.PointTransactionCommandService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+<span class="fc" id="L13">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class PointRewardService {
+    
+    private final LikeRepository likeRepository;
+    private final PointTransactionCommandService pointTransactionCommandService;
+    private static final String POST_LIKE_POINT_TYPE = &quot;게시글 좋아요&quot;;
+    
+    @Transactional
+    public void givePointIfFirstLike(Long postId, Long userId, Long authorId) {
+<span class="nc bnc" id="L24" title="All 2 branches missed.">        if (isFirstLike(postId, userId)) {</span>
+<span class="nc" id="L25">            givePointToAuthor(authorId, postId);</span>
+        }
+<span class="nc" id="L27">    }</span>
+    
+    private boolean isFirstLike(Long postId, Long userId) {
+<span class="nc bnc" id="L30" title="All 2 branches missed.">        return likeRepository.countByPostIdAndUserId(postId, userId) == 1;</span>
+    }
+    
+    private void givePointToAuthor(Long authorId, Long postId) {
+        try {
+<span class="nc" id="L35">            pointTransactionCommandService.givePointByType(authorId, POST_LIKE_POINT_TYPE, postId);</span>
+<span class="nc" id="L36">            log.info(&quot;게시글 좋아요 포인트 지급 성공: authorId={}, postId={}&quot;, authorId, postId);</span>
+<span class="nc" id="L37">        } catch (BusinessException e) {</span>
+<span class="nc" id="L38">            log.error(&quot;포인트 지급 중 비즈니스 예외 발생: authorId={}, postId={}, errorCode={}, message={}&quot;, </span>
+<span class="nc" id="L39">                    authorId, postId, e.getErrorCode(), e.getMessage());</span>
+<span class="nc" id="L40">        } catch (Exception e) {</span>
+<span class="nc" id="L41">            log.error(&quot;포인트 지급 중 예기치 않은 오류 발생: authorId={}, postId={}, error={}&quot;, </span>
+<span class="nc" id="L42">                    authorId, postId, e.getMessage(), e);</span>
+<span class="nc" id="L43">        }</span>
+<span class="nc" id="L44">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

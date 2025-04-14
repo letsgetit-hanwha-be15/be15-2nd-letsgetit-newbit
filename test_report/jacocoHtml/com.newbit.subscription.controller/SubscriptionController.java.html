@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SubscriptionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.subscription.controller</a> &gt; <span class="el_source">SubscriptionController.java</span></div><h1>SubscriptionController.java</h1><pre class="source lang-java linenums">package com.newbit.subscription.controller;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.newbit.auth.model.CustomUser;
+import com.newbit.subscription.dto.request.SubscriptionRequest;
+import com.newbit.subscription.dto.response.SubscriptionResponse;
+import com.newbit.subscription.dto.response.SubscriptionStatusResponse;
+import com.newbit.subscription.service.SubscriptionService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@RestController
+@RequestMapping(&quot;/api/v1/subscriptions&quot;)
+@RequiredArgsConstructor
+@Tag(name = &quot;시리즈 구독 API&quot;, description = &quot;시리즈 구독 관련 API&quot;)
+public class SubscriptionController {
+
+    private final SubscriptionService subscriptionService;
+
+    @PostMapping
+    @PreAuthorize(&quot;isAuthenticated()&quot;)
+    @Operation(
+            summary = &quot;시리즈 구독 토글&quot;,
+            description = &quot;시리즈 구독을 추가하거나 취소합니다. 이미 구독 중이면 취소, 구독 중이 아니면 구독 추가됩니다.&quot;,
+            responses = {
+                    @ApiResponse(
+                            responseCode = &quot;200&quot;, 
+                            description = &quot;구독 토글 성공&quot;,
+                            content = @Content(
+                                    mediaType = &quot;application/json&quot;,
+                                    schema = @Schema(implementation = SubscriptionResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = &quot;400&quot;, description = &quot;존재하지 않는 시리즈&quot;),
+                    @ApiResponse(responseCode = &quot;401&quot;, description = &quot;인증되지 않은 사용자&quot;)
+            }
+    )
+    public ResponseEntity&lt;SubscriptionResponse&gt; toggleSubscription(
+            @Parameter(description = &quot;시리즈 구독 요청 정보&quot;, required = true)
+            @Valid @RequestBody SubscriptionRequest request,
+            @Parameter(description = &quot;인증된 사용자 정보&quot;, required = true)
+            @AuthenticationPrincipal CustomUser user
+    ) {
+<span class="nc" id="L65">        SubscriptionResponse response = subscriptionService.toggleSubscription(request.getSeriesId(), user.getUserId());</span>
+<span class="nc" id="L66">        return ResponseEntity.ok(response);</span>
+    }
+
+    @GetMapping(&quot;/series/{seriesId}/status&quot;)
+    @PreAuthorize(&quot;isAuthenticated()&quot;)
+    @Operation(
+            summary = &quot;시리즈 구독 상태 확인&quot;,
+            description = &quot;로그인한 사용자가 특정 시리즈를 구독했는지 여부와 구독자 수를 확인합니다.&quot;,
+            responses = {
+                    @ApiResponse(
+                            responseCode = &quot;200&quot;, 
+                            description = &quot;구독 상태 확인 성공&quot;,
+                            content = @Content(
+                                    mediaType = &quot;application/json&quot;,
+                                    schema = @Schema(implementation = SubscriptionStatusResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = &quot;400&quot;, description = &quot;존재하지 않는 시리즈&quot;),
+                    @ApiResponse(responseCode = &quot;401&quot;, description = &quot;인증되지 않은 사용자&quot;)
+            }
+    )
+    public ResponseEntity&lt;SubscriptionStatusResponse&gt; checkSubscriptionStatus(
+            @Parameter(description = &quot;시리즈 ID&quot;, required = true, example = &quot;1&quot;)
+            @PathVariable Long seriesId,
+            @Parameter(description = &quot;인증된 사용자 정보&quot;, required = true)
+            @AuthenticationPrincipal CustomUser user
+    ) {
+<span class="nc" id="L93">        return ResponseEntity.ok(subscriptionService.getSubscriptionStatus(seriesId, user.getUserId()));</span>
+    }
+
+    @GetMapping(&quot;/series/{seriesId}/count&quot;)
+    @Operation(
+            summary = &quot;시리즈 구독자 수 조회&quot;,
+            description = &quot;특정 시리즈의 구독자 수를 조회합니다.&quot;,
+            responses = {
+                    @ApiResponse(
+                            responseCode = &quot;200&quot;, 
+                            description = &quot;구독자 수 조회 성공&quot;,
+                            content = @Content(
+                                    mediaType = &quot;application/json&quot;,
+                                    schema = @Schema(implementation = SubscriberCountResponse.class)
+                            )
+                    ),
+                    @ApiResponse(responseCode = &quot;400&quot;, description = &quot;존재하지 않는 시리즈&quot;)
+            }
+    )
+    public ResponseEntity&lt;SubscriberCountResponse&gt; getSubscriberCount(
+            @Parameter(description = &quot;시리즈 ID&quot;, required = true, example = &quot;1&quot;)
+            @PathVariable Long seriesId
+    ) {
+<span class="nc" id="L116">        int count = subscriptionService.getSubscriberCount(seriesId);</span>
+<span class="nc" id="L117">        return ResponseEntity.ok(new SubscriberCountResponse(seriesId, count));</span>
+    }
+    
+    @GetMapping(&quot;/user/list&quot;)
+    @PreAuthorize(&quot;isAuthenticated()&quot;)
+    @Operation(
+            summary = &quot;내 구독 목록 조회&quot;,
+            description = &quot;로그인한 사용자가 구독 중인 시리즈 목록을 조회합니다.&quot;,
+            responses = {
+                    @ApiResponse(
+                            responseCode = &quot;200&quot;, 
+                            description = &quot;구독 목록 조회 성공&quot;,
+                            content = @Content(
+                                    mediaType = &quot;application/json&quot;,
+                                    array = @ArraySchema(schema = @Schema(implementation = SubscriptionResponse.class))
+                            )
+                    ),
+                    @ApiResponse(responseCode = &quot;401&quot;, description = &quot;인증되지 않은 사용자&quot;)
+            }
+    )
+    public ResponseEntity&lt;List&lt;SubscriptionResponse&gt;&gt; getMySubscriptions(
+            @Parameter(description = &quot;인증된 사용자 정보&quot;, required = true)
+            @AuthenticationPrincipal CustomUser user
+    ) {
+<span class="nc" id="L141">        return ResponseEntity.ok(subscriptionService.getUserSubscriptions(user.getUserId()));</span>
+    }
+    
+    @Getter
+    @AllArgsConstructor
+    @Schema(description = &quot;구독자 수 응답&quot;)
+    public static class SubscriberCountResponse {
+        @Schema(description = &quot;시리즈 ID&quot;, example = &quot;1&quot;)
+        private Long seriesId;
+        
+        @Schema(description = &quot;구독자 수&quot;, example = &quot;325&quot;)
+        private int subscriberCount;
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

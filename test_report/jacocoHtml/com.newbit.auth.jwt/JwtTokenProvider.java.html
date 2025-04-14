@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtTokenProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.auth.jwt</a> &gt; <span class="el_source">JwtTokenProvider.java</span></div><h1>JwtTokenProvider.java</h1><pre class="source lang-java linenums">package com.newbit.auth.jwt;
+
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
+
+@Component
+<span class="nc" id="L17">public class JwtTokenProvider {</span>
+
+    @Value(&quot;${jwt.secret}&quot;)
+    private String jwtSecret;
+
+    @Value(&quot;${jwt.expiration}&quot;)
+    private long jwtExpiration;
+
+    @Value(&quot;${jwt.refresh-expiration}&quot;)
+    private long jwtRefreshExpiration;
+
+    private SecretKey secretKey;
+
+    @PostConstruct
+    public void init() {
+<span class="nc" id="L32">        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);</span>
+<span class="nc" id="L33">        secretKey = Keys.hmacShaKeyFor(keyBytes);</span>
+<span class="nc" id="L34">    }</span>
+
+    // access token 생성 메소드
+    public String createToken(String username, String authority) {
+<span class="nc" id="L38">        Date now = new Date();</span>
+<span class="nc" id="L39">        Date expiryDate = new Date(now.getTime() + jwtExpiration);</span>
+<span class="nc" id="L40">        return Jwts.builder()</span>
+<span class="nc" id="L41">                .subject(username)</span>
+<span class="nc" id="L42">                .claim(&quot;authority&quot;, authority)</span>
+<span class="nc" id="L43">                .issuedAt(now)</span>
+<span class="nc" id="L44">                .expiration(expiryDate)</span>
+<span class="nc" id="L45">                .signWith(secretKey)</span>
+<span class="nc" id="L46">                .compact();</span>
+    }
+
+    // refresh token 생성 메소드
+    public String createRefreshToken(String username, String authority) {
+<span class="nc" id="L51">        Date now = new Date();</span>
+<span class="nc" id="L52">        Date expiryDate = new Date(now.getTime() + jwtRefreshExpiration);</span>
+<span class="nc" id="L53">        return Jwts.builder()</span>
+<span class="nc" id="L54">                .subject(username)</span>
+<span class="nc" id="L55">                .claim(&quot;authority&quot;, authority)</span>
+<span class="nc" id="L56">                .issuedAt(now)</span>
+<span class="nc" id="L57">                .expiration(expiryDate)</span>
+<span class="nc" id="L58">                .signWith(secretKey)</span>
+<span class="nc" id="L59">                .compact();</span>
+    }
+
+    public long getRefreshExpiration() {
+<span class="nc" id="L63">        return jwtRefreshExpiration;</span>
+    }
+
+    public boolean validateToken(String token) {
+        try {
+<span class="nc" id="L68">            Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);</span>
+<span class="nc" id="L69">            return true;</span>
+<span class="nc" id="L70">        } catch (SecurityException | MalformedJwtException e) {</span>
+<span class="nc" id="L71">            throw new BusinessException(ErrorCode.JWT_INVALID);</span>
+<span class="nc" id="L72">        } catch (ExpiredJwtException e) {</span>
+<span class="nc" id="L73">            throw new BusinessException(ErrorCode.JWT_EXPIRED);</span>
+<span class="nc" id="L74">        } catch (UnsupportedJwtException e) {</span>
+<span class="nc" id="L75">            throw new BusinessException(ErrorCode.JWT_UNSUPPORTED);</span>
+<span class="nc" id="L76">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L77">            throw new BusinessException(ErrorCode.JWT_CLAIMS_EMPTY);</span>
+        }
+    }
+
+    public String getUsernameFromJWT(String token) {
+<span class="nc" id="L82">        Claims claims = Jwts.parser()</span>
+<span class="nc" id="L83">                .verifyWith(secretKey)</span>
+<span class="nc" id="L84">                .build()</span>
+<span class="nc" id="L85">                .parseSignedClaims(token)</span>
+<span class="nc" id="L86">                .getPayload();</span>
+<span class="nc" id="L87">        return claims.getSubject();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

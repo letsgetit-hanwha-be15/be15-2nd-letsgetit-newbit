@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PostLikeService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.like.service</a> &gt; <span class="el_source">PostLikeService.java</span></div><h1>PostLikeService.java</h1><pre class="source lang-java linenums">package com.newbit.like.service;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.newbit.like.dto.response.LikedPostListResponse;
+import com.newbit.like.dto.response.PostLikeResponse;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+<span class="fc" id="L13">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class PostLikeService {
+
+    private final LikeCommandService likeCommandService;
+    private final LikeQueryService likeQueryService;
+
+    @Transactional
+    public PostLikeResponse toggleLike(Long postId, Long userId) {
+<span class="fc" id="L23">        return likeCommandService.togglePostLike(postId, userId);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isLiked(Long postId, Long userId) {
+<span class="fc" id="L28">        return likeQueryService.isPostLiked(postId, userId);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public int getLikeCount(Long postId) {
+<span class="fc" id="L33">        return likeQueryService.getPostLikeCount(postId);</span>
+    }
+    
+    @Transactional(readOnly = true)
+    public LikedPostListResponse getLikedPostsByUser(Long userId, Pageable pageable) {
+<span class="fc" id="L38">        return likeQueryService.getLikedPostsByUser(userId, pageable);</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ko"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TossPaymentApiClient.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">NEWBIT</a> &gt; <a href="index.source.html" class="el_package">com.newbit.payment.command.application.service</a> &gt; <span class="el_source">TossPaymentApiClient.java</span></div><h1>TossPaymentApiClient.java</h1><pre class="source lang-java linenums">package com.newbit.payment.command.application.service;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Collections;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.newbit.payment.command.application.dto.TossPaymentApiDto;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class TossPaymentApiClient {
+
+    private final RestTemplate restTemplate;
+    
+    @Value(&quot;${payment.toss.api-key}&quot;)
+    private String apiKey;
+    
+    @Value(&quot;${payment.toss.secret-key}&quot;)
+    private String secretKey;
+    
+    @Value(&quot;${payment.toss.api-url}&quot;)
+    private String apiUrl;
+    
+    @Value(&quot;${payment.toss.success-url}&quot;)
+    private String successUrl;
+    
+    @Value(&quot;${payment.toss.fail-url}&quot;)
+    private String failUrl;
+
+    public String createPaymentWidgetUrl(Long amount, String orderId, String orderName) {
+<span class="nc" id="L41">        TossPaymentApiDto.WidgetUrlRequest request = TossPaymentApiDto.WidgetUrlRequest.builder()</span>
+<span class="nc" id="L42">                .amount(amount)</span>
+<span class="nc" id="L43">                .orderId(orderId)</span>
+<span class="nc" id="L44">                .orderName(orderName)</span>
+<span class="nc" id="L45">                .successUrl(successUrl)</span>
+<span class="nc" id="L46">                .failUrl(failUrl)</span>
+<span class="nc" id="L47">                .build();</span>
+                
+<span class="nc" id="L49">        return UriComponentsBuilder.fromUriString(apiUrl)</span>
+<span class="nc" id="L50">                .path(&quot;/v1/payments/widget/&quot;)</span>
+<span class="nc" id="L51">                .queryParam(&quot;amount&quot;, request.getAmount())</span>
+<span class="nc" id="L52">                .queryParam(&quot;orderId&quot;, request.getOrderId())</span>
+<span class="nc" id="L53">                .queryParam(&quot;orderName&quot;, request.getOrderName())</span>
+<span class="nc" id="L54">                .queryParam(&quot;successUrl&quot;, request.getSuccessUrl())</span>
+<span class="nc" id="L55">                .queryParam(&quot;failUrl&quot;, request.getFailUrl())</span>
+<span class="nc" id="L56">                .build()</span>
+<span class="nc" id="L57">                .toUriString();</span>
+    }
+
+    public TossPaymentApiDto.PaymentResponse requestPaymentApproval(String paymentKey, String orderId, Long amount) {
+<span class="nc" id="L61">        TossPaymentApiDto.PaymentConfirmRequest request = TossPaymentApiDto.PaymentConfirmRequest.builder()</span>
+<span class="nc" id="L62">                .paymentKey(paymentKey)</span>
+<span class="nc" id="L63">                .orderId(orderId)</span>
+<span class="nc" id="L64">                .amount(amount)</span>
+<span class="nc" id="L65">                .build();</span>
+        
+<span class="nc" id="L67">        HttpEntity&lt;TossPaymentApiDto.PaymentConfirmRequest&gt; entity = new HttpEntity&lt;&gt;(request, createAuthHeaders());</span>
+        
+<span class="nc" id="L69">        return restTemplate.postForObject(</span>
+                apiUrl + &quot;/v1/payments/confirm&quot;,
+                entity,
+                TossPaymentApiDto.PaymentResponse.class
+        );
+    }
+
+    public TossPaymentApiDto.PaymentResponse getPaymentDetails(String paymentKey) {
+<span class="nc" id="L77">        HttpEntity&lt;String&gt; entity = new HttpEntity&lt;&gt;(createAuthHeaders());</span>
+        
+<span class="nc" id="L79">        return restTemplate.getForObject(</span>
+                apiUrl + &quot;/v1/payments/&quot; + paymentKey,
+                TossPaymentApiDto.PaymentResponse.class,
+                entity
+        );
+    }
+
+    public TossPaymentApiDto.PaymentResponse cancelPayment(String paymentKey, String cancelReason) {
+<span class="nc" id="L87">        TossPaymentApiDto.PaymentCancelRequest request = TossPaymentApiDto.PaymentCancelRequest.builder()</span>
+<span class="nc" id="L88">                .cancelReason(cancelReason)</span>
+<span class="nc" id="L89">                .build();</span>
+                
+<span class="nc" id="L91">        return requestCancelPayment(paymentKey, request);</span>
+    }
+    
+    public TossPaymentApiDto.PaymentResponse cancelPaymentPartial(String paymentKey, String cancelReason, Long cancelAmount) {
+<span class="nc" id="L95">        TossPaymentApiDto.PaymentCancelRequest request = TossPaymentApiDto.PaymentCancelRequest.builder()</span>
+<span class="nc" id="L96">                .cancelReason(cancelReason)</span>
+<span class="nc" id="L97">                .cancelAmount(cancelAmount)</span>
+<span class="nc" id="L98">                .build();</span>
+                
+<span class="nc" id="L100">        return requestCancelPayment(paymentKey, request);</span>
+    }
+    
+    private TossPaymentApiDto.PaymentResponse requestCancelPayment(String paymentKey, TossPaymentApiDto.PaymentCancelRequest request) {
+<span class="nc" id="L104">        HttpEntity&lt;TossPaymentApiDto.PaymentCancelRequest&gt; entity = new HttpEntity&lt;&gt;(request, createAuthHeaders());</span>
+        
+<span class="nc" id="L106">        return restTemplate.postForObject(</span>
+                apiUrl + &quot;/v1/payments/&quot; + paymentKey + &quot;/cancel&quot;,
+                entity,
+                TossPaymentApiDto.PaymentResponse.class
+        );
+    }
+    
+    private HttpHeaders createAuthHeaders() {
+<span class="nc" id="L114">        HttpHeaders headers = new HttpHeaders();</span>
+<span class="nc" id="L115">        headers.setContentType(MediaType.APPLICATION_JSON);</span>
+<span class="nc" id="L116">        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));</span>
+<span class="nc" id="L117">        headers.set(&quot;Authorization&quot;, &quot;Basic &quot; + Base64.getEncoder().encodeToString(</span>
+<span class="nc" id="L118">                (secretKey + &quot;:&quot;).getBytes(StandardCharsets.UTF_8)));</span>
+<span class="nc" id="L119">        return headers;</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
