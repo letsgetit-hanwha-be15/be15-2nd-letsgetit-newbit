@@ -2,6 +2,7 @@ package com.newbit.column.service;
 
 import com.newbit.column.domain.Column;
 import com.newbit.column.domain.ColumnRequest;
+import com.newbit.column.domain.Series;
 import com.newbit.column.dto.request.ApproveColumnRequestDto;
 import com.newbit.column.dto.request.RejectColumnRequestDto;
 import com.newbit.column.dto.response.AdminColumnResponseDto;
@@ -11,6 +12,7 @@ import com.newbit.column.repository.ColumnRequestRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.subscription.service.SubscriptionService;
 import com.newbit.user.entity.Mentor;
 import com.newbit.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +46,9 @@ class AdminColumnServiceTest {
     @Mock
     private NotificationCommandService notificationCommandService;
 
+    @Mock
+    private SubscriptionService subscriptionService;
+
     @BeforeEach
     void setUp() {
         // MockitoAnnotations.openMocks(this); // MockitoExtension으로 대체
@@ -60,7 +65,8 @@ class AdminColumnServiceTest {
 
         User user = User.builder().userId(1L).email("mentor@example.com").build();
         Mentor mentor = Mentor.builder().mentorId(10L).user(user).build();
-        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentor(mentor).build();
+        Series series = Series.builder().seriesId(1L).build();
+        Column column = Column.builder().columnId(10L).title("테스트 칼럼").series(series).mentor(mentor).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(requestId)
                 .requestType(RequestType.CREATE)

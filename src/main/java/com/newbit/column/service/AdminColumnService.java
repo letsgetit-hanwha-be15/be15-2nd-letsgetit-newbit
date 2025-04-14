@@ -12,10 +12,12 @@ import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.notification.command.application.service.NotificationCommandService;
-import io.swagger.v3.oas.annotations.Operation;
+import com.newbit.subscription.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class AdminColumnService {
     private final ColumnRequestRepository columnRequestRepository;
     private final AdminColumnMapper adminColumnMapper;
     private final NotificationCommandService notificationCommandService;
+    private final SubscriptionService subscriptionService;
 
     @Transactional
     public AdminColumnResponseDto approveCreateColumnRequest(ApproveColumnRequestDto dto, Long adminUserId) {
@@ -47,6 +50,21 @@ public class AdminColumnService {
                         notificationContent
                 )
         );
+
+        List<Long> subscriberIds = subscriptionService.getSeriesSubscribers(request.getColumn().getSeries().getSeriesId());
+
+        for (Long subscriberId : subscriberIds) {
+            notificationCommandService.sendNotification(
+                    new NotificationSendRequest(
+                            subscriberId,
+                            9L, // 시리즈 새 칼럼 등록 알림 타입 ID
+                            request.getColumn().getColumnId(),
+                            String.format("'%s' 시리즈에 새로운 칼럼 '%s'이(가) 등록되었습니다.",
+                                    request.getColumn().getSeries().getTitle(), request.getColumn().getTitle())
+                        )
+                );
+        }
+
 
         return adminColumnMapper.toDto(request);
     }
