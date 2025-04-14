@@ -73,7 +73,7 @@ public class CommentService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
 
         if (!comment.getPost().getId().equals(postId)) {
-            throw new BusinessException(ErrorCode.COMMENT_NOT_FOUND);
+            throw new BusinessException(ErrorCode.COMMENT_POST_MISMATCH);
         }
 
         if (!comment.getUserId().equals(user.getUserId())) {

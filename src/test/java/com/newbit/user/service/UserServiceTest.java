@@ -38,7 +38,7 @@ class UserServiceTest {
     void setUp() {
         requestDTO = new UserRequestDTO(
                 "test@example.com",
-                "password123",
+                "password123!",
                 "010-1234-5678",
                 "홍길동",
                 "길동이",
