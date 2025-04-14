@@ -35,6 +35,7 @@ public class ColumnRequestService {
         // 1. Mentor 조회
         Mentor mentor = mentorService.getMentorEntityByUserId(userId);
 
+
         // 2. Column 저장
         Column column = columnMapper.toColumn(dto, mentor);
         Column savedColumn = columnRepository.save(column);

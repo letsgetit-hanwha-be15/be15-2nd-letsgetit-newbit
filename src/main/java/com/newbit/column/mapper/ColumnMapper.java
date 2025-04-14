@@ -1,5 +1,6 @@
 package com.newbit.column.mapper;
 
+import com.newbit.column.domain.Series;
 import com.newbit.column.dto.request.CreateColumnRequestDto;
 import com.newbit.column.domain.Column;
 import com.newbit.column.domain.ColumnRequest;
@@ -12,11 +13,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class ColumnMapper {
 
-    public Column toColumn(CreateColumnRequestDto dto, Mentor mentor) {
+    public Column toColumn(CreateColumnRequestDto dto, Mentor mentor, Series series) {
         return Column.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .price(dto.getPrice())
+                .series(series)
                 .thumbnailUrl(dto.getThumbnailUrl())
                 .mentor(mentor)
                 .isPublic(false)
