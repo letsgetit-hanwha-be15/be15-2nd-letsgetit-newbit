@@ -29,6 +29,7 @@ import com.newbit.report.command.domain.repository.ReportRepository;
 import com.newbit.report.command.domain.repository.ReportTypeRepository;
 import com.newbit.report.command.infrastructure.repository.JpaReportRepository;
 
+// 통합 테스트 Disabled
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
