@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "User", description = "회원 관련 API (회원가입, 아이디/비밀번호 찾기 등)")
+@Tag(name = "유저 계정 API", description = "회원 관련 API (회원가입, 아이디/비밀번호 찾기 등)")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user")
