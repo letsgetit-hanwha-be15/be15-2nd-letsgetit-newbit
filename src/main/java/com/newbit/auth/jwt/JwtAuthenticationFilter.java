@@ -62,6 +62,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setContentType("application/json;charset=UTF-8");
 
         ApiResponse<Void> apiResponse = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
         String json = new ObjectMapper().writeValueAsString(apiResponse);
 
         response.getWriter().write(json);
