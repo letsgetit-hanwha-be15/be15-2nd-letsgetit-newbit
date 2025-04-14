@@ -10,14 +10,20 @@ import com.newbit.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
+import com.newbit.coffeeletter.domain.chat.CoffeeLetterRoom;
+import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
+import com.newbit.coffeeletter.service.RoomService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.purchase.command.application.service.DiamondCoffeechatTransactionCommandService;
 import com.newbit.user.dto.response.MentorDTO;
+import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.entity.Mentor;
+import com.newbit.user.entity.User;
 import com.newbit.user.service.MentorService;
+import com.newbit.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +41,8 @@ public class CoffeechatCommandService {
     private final MentorService mentorService;
     private final DiamondCoffeechatTransactionCommandService transactionCommandService;
     private final NotificationCommandService notificationCommandService;
+    private final RoomService roomService;
+    private final UserService userService;
 
     /**
      * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
@@ -115,13 +123,29 @@ public class CoffeechatCommandService {
         // 3. 커피챗 객체 update하기
         coffeechat.confirmSchedule(requestTime.getStartTime());
 
-        // 4. 해당 coffeechatId에 대한 requestTime 객체 리스트 찾기
+        // 4. 채팅방 열기
+        Long mentorUserId = mentorService.getUserIdByMentorId(coffeechat.getMentorId());
+        UserDTO mentor = userService.getUserByUserId(mentorUserId);
+        UserDTO mentee = userService.getUserByUserId(coffeechat.getMenteeId());
+        CoffeeLetterRoomDTO roomDto = CoffeeLetterRoomDTO.builder()
+                .coffeeChatId(coffeechat.getCoffeechatId())
+                .mentorId(coffeechat.getMentorId())
+                .mentorName(mentor.getNickname())
+                .menteeId(coffeechat.getMenteeId())
+                .menteeName(mentee.getNickname())
+                .createdAt(requestTime.getStartTime())
+                .endTime(requestTime.getEndTime())
+                .status(CoffeeLetterRoom.RoomStatus.ACTIVE)
+                .build();
+        roomService.createRoom(roomDto);
+
+        // 5. 해당 coffeechatId에 대한 requestTime 객체 리스트 찾기
         List<RequestTime> requests = requestTimeRepository.findAllByCoffeechatId(coffeechat.getCoffeechatId());
 
-        // 5. 해당 객체들 삭제
+        // 6. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
 
-        // 6. 멘티에게 승인 알림 보내주기
+        // 7. 멘티에게 승인 알림 보내주기
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
                         coffeechat.getMenteeId()
@@ -211,7 +235,10 @@ public class CoffeechatCommandService {
         // 5. 커피챗 객체 업데이트하기
         coffeechat.cancelCoffeechat(coffeechatCancelRequest.getCancelReasonId());
 
-        // 6. 멘토에게 커피챗 취소 알림
+        // 6. TODO : 채팅방 취소 진행
+
+
+        // 7. 멘토에게 커피챗 취소 알림
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
                         mentorService.getUserIdByMentorId(coffeechat.getMentorId())
