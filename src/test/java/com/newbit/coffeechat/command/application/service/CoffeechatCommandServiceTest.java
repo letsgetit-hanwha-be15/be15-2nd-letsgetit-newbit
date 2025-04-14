@@ -11,12 +11,16 @@ import com.newbit.coffeechat.query.dto.response.CoffeechatDto;
 import com.newbit.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.coffeechat.query.service.CoffeechatQueryService;
+import com.newbit.coffeeletter.dto.CoffeeLetterRoomDTO;
+import com.newbit.coffeeletter.service.RoomService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.purchase.command.application.service.DiamondCoffeechatTransactionCommandService;
 import com.newbit.user.dto.response.MentorDTO;
+import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.service.MentorService;
+import com.newbit.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,6 +60,10 @@ class CoffeechatCommandServiceTest {
     private DiamondCoffeechatTransactionCommandService transactionCommandService;
     @Mock
     private NotificationCommandService notificationCommandService;
+    @Mock
+    private UserService userService;
+    @Mock
+    private RoomService roomService;
 
     @DisplayName("커피챗 요청 등록 성공")
     @Test
@@ -178,6 +186,9 @@ class CoffeechatCommandServiceTest {
         // given
         Long requestTimeId = 1L;
         Long coffeechatId = 999L;
+        Long userId = 12L;
+        Long mentorId = 2L;
+        Long mentorUserId = 3L;
 
         // requestTime 객체 만들어주기
         LocalDateTime start = LocalDateTime.of(2025, 5, 1, 10, 0);
@@ -185,15 +196,18 @@ class CoffeechatCommandServiceTest {
         RequestTime requestTime = RequestTime.of(start.toLocalDate(), start, end, coffeechatId);
 
         // 커피챗 객체 만들어주기
-        Coffeechat mockCoffeechat = Coffeechat.of(12L,
-                2L,
+        Coffeechat mockCoffeechat = Coffeechat.of(userId,
+                mentorId,
                 "취업 관련 꿀팁 얻고 싶어요.",
                 2);
 
         // repo setting
         when(requestTimeRepository.findById(requestTimeId)).thenReturn(Optional.of(requestTime));
         when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
-
+        when(mentorService.getUserIdByMentorId(mentorId)).thenReturn(mentorUserId);
+        when(userService.getUserByUserId(mentorUserId)).thenReturn(UserDTO.builder().userId(mentorUserId).userName("멘토닉네임").build());
+        when(userService.getUserByUserId(userId)).thenReturn(UserDTO.builder().userId(userId).userName("멘티닉네임").build());
+        when(roomService.createRoom(any(CoffeeLetterRoomDTO.class))).thenReturn(CoffeeLetterRoomDTO.builder().build());
         // when & then: 예외가 발생하지 않으면 테스트 통과
         assertDoesNotThrow(() -> coffeechatCommandService.acceptCoffeechatTime(requestTimeId));
     }
