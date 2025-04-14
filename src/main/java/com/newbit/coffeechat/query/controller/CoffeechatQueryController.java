@@ -96,7 +96,7 @@ public class CoffeechatQueryController {
         // 서비스 레이어에 보낼 request 생성
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
         Long menteeId = customUser.getUserId();
-        coffeechatSearchServiceRequest.setMentorId(menteeId);
+        coffeechatSearchServiceRequest.setMenteeId(menteeId);
 
         CoffeechatListResponse response = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
 
