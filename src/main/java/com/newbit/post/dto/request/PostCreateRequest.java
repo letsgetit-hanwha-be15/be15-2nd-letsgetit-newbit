@@ -8,6 +8,5 @@ import lombok.Setter;
 public class PostCreateRequest {
     private String title;
     private String content;
-    private Long userId;
     private Long postCategoryId;
 }
