@@ -75,7 +75,7 @@ public class LikeQueryService {
         } catch (Exception e) {
             log.error("좋아요한 게시글 조회 중 예기치 않은 오류 발생: userId={}, error={}", 
                     userId, e.getMessage(), e);
-            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);
+            throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
     
@@ -97,7 +97,7 @@ public class LikeQueryService {
         } catch (Exception e) {
             log.error("좋아요한 칼럼 조회 중 예기치 않은 오류 발생: userId={}, error={}", 
                     userId, e.getMessage(), e);
-            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);
+            throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
     
@@ -105,7 +105,7 @@ public class LikeQueryService {
         return likes.stream()
             .map(like -> {
                 Post post = postRepository.findByIdAndDeletedAtIsNull(like.getPostId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.POST_LIKE_NOT_FOUND));
+                    .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
                     
                 String authorNickname = userRepository.findById(post.getUserId())
                     .map(User::getNickname)

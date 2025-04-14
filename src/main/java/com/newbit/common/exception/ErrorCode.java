@@ -41,7 +41,6 @@ public enum ErrorCode {
     ONLY_ADMIN_CAN_UPDATE_NOTICE("20006", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
     ONLY_ADMIN_CAN_DELETE_NOTICE("20007", "공지사항은 관리자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
     NOT_A_NOTICE("20008", "해당 게시글은 공지사항이 아닙니다.", HttpStatus.BAD_REQUEST),
-    POST_LIKE_NOT_FOUND("20009", "해당 게시글 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     LIKE_PROCESSING_ERROR("20010", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_SAVE_ERROR("20011", "파일 저장에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_DELETE_ERROR("20012", "파일 삭제에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
@@ -58,12 +57,25 @@ public enum ErrorCode {
     COLUMN_ALREADY_IN_SERIES("21003", "해당 칼럼은 이미 다른 시리즈에 속해있습니다.", HttpStatus.BAD_REQUEST),
     COLUMN_REQUEST_NOT_FOUND("21004", "해당 칼럼 요청을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     INVALID_REQUEST_TYPE("21005", "잘못된 요청 타입 입니다.", HttpStatus.BAD_REQUEST),
-    COLUMN_LIKE_NOT_FOUND("21006", "해당 칼럼 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     // 시리즈
     SERIES_CREATION_REQUIRES_COLUMNS("21007", "시리즈는 최소 1개 이상의 칼럼으로 생성되어야 합니다.", HttpStatus.BAD_REQUEST),
     SERIES_NOT_FOUND("21008", "해당 시리즈를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     SUBSCRIPTION_NOT_FOUND("21009", "해당 구독 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     SUBSCRIPTION_PROCESSING_ERROR("21010", "구독 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    /*--------------- 좋아요 ------------------*/
+    LIKE_NOT_FOUND("25001", "해당 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    LIKE_ALREADY_EXISTS("25002", "이미 좋아요가 존재합니다.", HttpStatus.CONFLICT),
+    LIKE_USER_MISMATCH("25003", "해당 좋아요는 사용자와 매칭되지 않습니다.", HttpStatus.FORBIDDEN),
+    LIKE_ERROR("25004", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    LIKE_SELF_NOT_ALLOWED("25007", "자신의 콘텐츠에는 좋아요할 수 없습니다.", HttpStatus.BAD_REQUEST),
+
+    /*--------------- 구독 ------------------*/
+    SUBSCRIPTION_ALREADY_EXISTS("26002", "이미 구독 중인 시리즈입니다.", HttpStatus.CONFLICT),
+    SUBSCRIPTION_USER_MISMATCH("26003", "해당 구독은 사용자와 매칭되지 않습니다.", HttpStatus.FORBIDDEN),
+    SUBSCRIPTION_ERROR("26004", "구독 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    SUBSCRIPTION_SELF_NOT_ALLOWED("26006", "자신의 시리즈는 구독할 수 없습니다.", HttpStatus.BAD_REQUEST),
+    SUBSCRIPTION_CANCEL_ERROR("26007", "구독 취소 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     /*--------------- 커피챗 ------------------*/
     // 커피챗

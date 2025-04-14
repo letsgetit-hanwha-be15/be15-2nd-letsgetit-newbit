@@ -36,6 +36,11 @@ public class LikeCommandService {
     public PostLikeResponse togglePostLike(Long postId, Long userId) {
         try {
             Post post = findPostById(postId);
+            
+            if (post.getUserId() != null && post.getUserId().equals(userId)) {
+                throw new BusinessException(ErrorCode.LIKE_SELF_NOT_ALLOWED);
+            }
+            
             Optional<Like> existingLike = findExistingPostLike(postId, userId);
             
             if (existingLike.isPresent()) {
@@ -50,7 +55,7 @@ public class LikeCommandService {
         } catch (Exception e) {
             log.error("좋아요 처리 중 예기치 않은 오류 발생: postId={}, userId={}, error={}", 
                     postId, userId, e.getMessage(), e);
-            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);
+            throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
     
@@ -58,6 +63,14 @@ public class LikeCommandService {
     public ColumnLikeResponse toggleColumnLike(Long columnId, Long userId) {
         try {
             Column column = findColumnById(columnId);
+            
+            if (column.getMentor() != null && 
+                column.getMentor().getUser() != null && 
+                column.getMentor().getUser().getUserId() != null && 
+                column.getMentor().getUser().getUserId().equals(userId)) {
+                throw new BusinessException(ErrorCode.LIKE_SELF_NOT_ALLOWED);
+            }
+            
             Optional<Like> existingLike = findExistingColumnLike(columnId, userId);
             
             if (existingLike.isPresent()) {
@@ -72,7 +85,7 @@ public class LikeCommandService {
         } catch (Exception e) {
             log.error("칼럼 좋아요 처리 중 예기치 않은 오류 발생: columnId={}, userId={}, error={}", 
                     columnId, userId, e.getMessage(), e);
-            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);
+            throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
 
@@ -80,7 +93,7 @@ public class LikeCommandService {
         return postRepository.findByIdAndDeletedAtIsNull(postId)
                 .orElseThrow(() -> {
                     log.warn("좋아요 처리를 위한 게시글을 찾을 수 없음: postId={}", postId);
-                    return new BusinessException(ErrorCode.POST_LIKE_NOT_FOUND);
+                    return new BusinessException(ErrorCode.POST_NOT_FOUND);
                 });
     }
 
@@ -99,7 +112,7 @@ public class LikeCommandService {
         } catch (Exception e) {
             log.error("좋아요 취소 처리 중 오류 발생: postId={}, userId={}, error={}", 
                     post.getId(), like.getUserId(), e.getMessage(), e);
-            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);
+            throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
 
@@ -131,7 +144,7 @@ public class LikeCommandService {
         } catch (Exception e) {
             log.error("좋아요 추가 처리 중 오류 발생: postId={}, userId={}, error={}", 
                     postId, userId, e.getMessage(), e);
-            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);
+            throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
 
@@ -177,7 +190,7 @@ public class LikeCommandService {
         } catch (Exception e) {
             log.error("칼럼 좋아요 취소 처리 중 오류 발생: columnId={}, userId={}, error={}", 
                     column.getColumnId(), like.getUserId(), e.getMessage(), e);
-            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);
+            throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
     
@@ -189,7 +202,10 @@ public class LikeCommandService {
             column.increaseLikeCount();
             columnRepository.save(column);
 
-            if(isFibonacci(column.getLikeCount())){
+            if(isFibonacci(column.getLikeCount()) && column.getMentor() != null && 
+               column.getMentor().getUser() != null && 
+               column.getMentor().getUser().getUserId() != null) {
+                
                 String notificationContent = String.format("'%s' 칼럼이 좋아요를 받았습니다. (총 %d개)",
                         column.getTitle(), column.getLikeCount());
 
@@ -203,12 +219,11 @@ public class LikeCommandService {
                 );
             }
 
-
             return ColumnLikeResponse.of(like, column.getLikeCount());
         } catch (Exception e) {
             log.error("칼럼 좋아요 추가 처리 중 오류 발생: columnId={}, userId={}, error={}", 
                     columnId, userId, e.getMessage(), e);
-            throw new BusinessException(ErrorCode.LIKE_PROCESSING_ERROR);
+            throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
 

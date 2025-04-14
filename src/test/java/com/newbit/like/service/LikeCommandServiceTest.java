@@ -1,31 +1,31 @@
 package com.newbit.like.service;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.BeforeEach;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.newbit.common.exception.BusinessException;
-import com.newbit.common.exception.ErrorCode;
 import com.newbit.column.domain.Column;
 import com.newbit.column.repository.ColumnRepository;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.like.dto.response.ColumnLikeResponse;
 import com.newbit.like.dto.response.PostLikeResponse;
 import com.newbit.like.entity.Like;
@@ -45,42 +45,17 @@ class LikeCommandServiceTest {
     
     @Mock
     private ColumnRepository columnRepository;
-
+    
     @Mock
     private PointRewardService pointRewardService;
 
     @InjectMocks
     private LikeCommandService likeCommandService;
 
-    private Post post;
-    private Like postLike;
-    private Column column;
-    private Like columnLike;
     private final long postId = 1L;
     private final long userId = 2L;
     private final long authorId = 3L;
     private final long columnId = 4L;
-
-    @BeforeEach
-    void setUp() {
-        post = mock(Post.class);
-        
-        postLike = Like.builder()
-                .id(1L)
-                .postId(postId)
-                .userId(userId)
-                .isDelete(false)
-                .build();
-                
-        column = mock(Column.class);
-        
-        columnLike = Like.builder()
-                .id(2L)
-                .columnId(columnId)
-                .userId(userId)
-                .isDelete(false)
-                .build();
-    }
 
     @Nested
     @DisplayName("togglePostLike Method")
@@ -94,6 +69,14 @@ class LikeCommandServiceTest {
             @DisplayName("좋아요를 추가하고 포인트 지급 처리를 호출해야 한다")
             void shouldAddLikeAndCallPointReward() {
                 // Given
+                Post post = mock(Post.class);
+                Like postLike = Like.builder()
+                        .id(1L)
+                        .postId(postId)
+                        .userId(userId)
+                        .isDelete(false)
+                        .build();
+
                 when(post.getUserId()).thenReturn(authorId);
                 when(post.getLikeCount()).thenReturn(10).thenReturn(11);
                 when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
@@ -122,6 +105,14 @@ class LikeCommandServiceTest {
             @DisplayName("좋아요 수를 감소시키고 소프트 딜리트해야 한다")
             void shouldDecreaseLikeCountAndSoftDelete() {
                 // Given
+                Post post = mock(Post.class);
+                Like postLike = Like.builder()
+                        .id(1L)
+                        .postId(postId)
+                        .userId(userId)
+                        .isDelete(false)
+                        .build();
+
                 when(post.getLikeCount()).thenReturn(10).thenReturn(9);
                 when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
                 when(likeRepository.findByPostIdAndUserIdAndIsDeleteFalse(postId, userId)).thenReturn(Optional.of(postLike));
@@ -155,7 +146,7 @@ class LikeCommandServiceTest {
                 BusinessException exception = assertThrows(BusinessException.class, () -> 
                     likeCommandService.togglePostLike(postId, userId));
                 
-                assertEquals(ErrorCode.POST_LIKE_NOT_FOUND, exception.getErrorCode());
+                assertEquals(ErrorCode.POST_NOT_FOUND, exception.getErrorCode());
                 verify(likeRepository, never()).save(any(Like.class));
                 verify(pointRewardService, never()).givePointIfFirstLike(anyLong(), anyLong(), anyLong());
             }
@@ -174,6 +165,14 @@ class LikeCommandServiceTest {
             @DisplayName("좋아요를 추가하고 칼럼 좋아요 수를 증가시켜야 한다")
             void shouldAddLikeAndIncreaseColumnLikeCount() {
                 // Given
+                Column column = mock(Column.class);
+                Like columnLike = Like.builder()
+                        .id(2L)
+                        .columnId(columnId)
+                        .userId(userId)
+                        .isDelete(false)
+                        .build();
+
                 when(column.getLikeCount()).thenReturn(10);
                 when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
                 when(likeRepository.findByColumnIdAndUserIdAndIsDeleteFalse(columnId, userId)).thenReturn(Optional.empty());
@@ -201,6 +200,14 @@ class LikeCommandServiceTest {
             @DisplayName("좋아요 수를 감소시키고 소프트 딜리트해야 한다")
             void shouldDecreaseLikeCountAndSoftDelete() {
                 // Given
+                Column column = mock(Column.class);
+                Like columnLike = Like.builder()
+                        .id(2L)
+                        .columnId(columnId)
+                        .userId(userId)
+                        .isDelete(false)
+                        .build();
+
                 when(column.getLikeCount()).thenReturn(9);
                 when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
                 when(likeRepository.findByColumnIdAndUserIdAndIsDeleteFalse(columnId, userId)).thenReturn(Optional.of(columnLike));
