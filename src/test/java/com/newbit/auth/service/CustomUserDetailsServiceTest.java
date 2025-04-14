@@ -3,8 +3,10 @@ package com.newbit.auth.service;
 import com.newbit.user.entity.User;
 import com.newbit.user.entity.Authority;
 import com.newbit.user.repository.UserRepository;
+import com.newbit.user.service.SuspensionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -47,7 +49,7 @@ class CustomUserDetailsServiceTest {
         assertEquals(email, userDetails.getUsername());
         assertEquals("encodedPassword", userDetails.getPassword());
         assertTrue(userDetails.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("USER")));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_USER")));;
     }
 
     @Test
