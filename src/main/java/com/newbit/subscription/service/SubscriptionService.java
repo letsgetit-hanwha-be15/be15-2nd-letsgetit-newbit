@@ -32,7 +32,7 @@ public class SubscriptionService {
         seriesRepository.findById(seriesId)
                 .orElseThrow(() -> {
                     log.error("시리즈를 찾을 수 없음: seriesId={}", seriesId);
-                    return new BusinessException(ErrorCode.SERIES_FOR_SUBSCRIPTION_NOT_FOUND);
+                    return new BusinessException(ErrorCode.SERIES_NOT_FOUND);
                 });
     }
 

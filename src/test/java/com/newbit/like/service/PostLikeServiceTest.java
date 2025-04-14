@@ -112,7 +112,7 @@ class PostLikeServiceTest {
             @DisplayName("게시글이 없으면 예외를 발생시켜야 한다")
             void shouldThrowExceptionWhenPostNotFound() {
                 // Given
-                when(likeCommandService.togglePostLike(postId, userId)).thenThrow(new BusinessException(ErrorCode.POST_LIKE_NOT_FOUND));
+                when(likeCommandService.togglePostLike(postId, userId)).thenThrow(new BusinessException(ErrorCode.POST_NOT_FOUND));
 
                 // When & Then
                 assertThrows(BusinessException.class, () -> postLikeService.toggleLike(postId, userId));

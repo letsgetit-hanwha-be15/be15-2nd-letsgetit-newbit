@@ -197,7 +197,7 @@ class SubscriptionIntegrationTest {
             subscriptionService.toggleSubscription(nonExistingSeriesId, otherUserId)
         );
         
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_FOR_SUBSCRIPTION_NOT_FOUND);
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_NOT_FOUND);
     }
     
     @Test

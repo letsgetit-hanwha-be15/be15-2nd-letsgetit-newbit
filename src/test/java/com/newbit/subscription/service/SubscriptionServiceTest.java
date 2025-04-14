@@ -132,7 +132,7 @@ class SubscriptionServiceTest {
             subscriptionService.toggleSubscription(nonExistingSeriesId, userId)
         );
         
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_FOR_SUBSCRIPTION_NOT_FOUND);
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_NOT_FOUND);
         
         verify(manager, never()).createNewSubscription(anyLong(), anyLong());
         verify(manager, never()).cancelSubscription(any());
@@ -226,7 +226,7 @@ class SubscriptionServiceTest {
             subscriptionService.getSeriesSubscribers(nonExistingSeriesId)
         );
         
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_FOR_SUBSCRIPTION_NOT_FOUND);
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_NOT_FOUND);
         
         verify(subscriptionRepository, never()).findBySeriesId(anyLong());
     }

@@ -48,7 +48,7 @@ public class SubscriptionCommandService {
     public SubscriptionResponse createNewSubscription(Long userId, Long seriesId) {
         try {
             Series series = seriesRepository.findById(seriesId)
-                    .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_FOR_SUBSCRIPTION_NOT_FOUND));
+                    .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
             
             if (series.getMentor() != null && 
                 series.getMentor().getUser() != null && 
