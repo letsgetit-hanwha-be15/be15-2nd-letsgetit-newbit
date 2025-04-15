@@ -2,6 +2,7 @@ package com.newbit.purchase.command.application.service;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import com.newbit.purchase.command.domain.aggregate.PointHistory;
 import com.newbit.purchase.command.domain.aggregate.PointType;
 import com.newbit.purchase.command.domain.repository.PointHistoryRepository;
@@ -40,7 +41,7 @@ class PointTransactionCommandServiceTest {
     void applyPointType_shouldIncreasePointAndSaveHistory() {
         // given
         Long userId = 1L;
-        String pointTypeName = "댓글 적립";
+        String pointTypeName = PointTypeConstants.COMMENTS;
         Long serviceId = 100L;
 
         PointType pointType = PointType.builder()
@@ -88,13 +89,15 @@ class PointTransactionCommandServiceTest {
         Integer menteeBalance = 140;
         Integer mentorBalance = 230;
 
-        PointType menteeType = PointType.builder().pointTypeName("팁 40제공").increaseAmount(40).build();
-        PointType mentorType = PointType.builder().pointTypeName("팁 40수령").increaseAmount(40).build();
+        PointType menteeType = PointType.builder()
+                .pointTypeName(String.format(PointTypeConstants.TIPS_PROVIDED, amount)).increaseAmount(40).build();
+        PointType mentorType = PointType.builder()
+                .pointTypeName(String.format(PointTypeConstants.RECEIVE_TIPS, amount)).increaseAmount(40).build();
 
         when(userService.addPoint(menteeId, amount)).thenReturn(menteeBalance);
         when(userService.addPoint(mentorId, amount)).thenReturn(mentorBalance);
-        when(pointTypeRepository.findByPointTypeName("팁 40제공")).thenReturn(Optional.of(menteeType));
-        when(pointTypeRepository.findByPointTypeName("팁 40수령")).thenReturn(Optional.of(mentorType));
+        when(pointTypeRepository.findByPointTypeName(String.format(PointTypeConstants.TIPS_PROVIDED, amount))).thenReturn(Optional.of(menteeType));
+        when(pointTypeRepository.findByPointTypeName(String.format(PointTypeConstants.RECEIVE_TIPS, amount))).thenReturn(Optional.of(mentorType));
 
         // when
         pointTransactionCommandService.giveTipPoint(reviewId, menteeId, mentorId, amount);

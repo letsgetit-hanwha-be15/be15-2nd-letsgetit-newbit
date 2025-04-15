@@ -13,6 +13,7 @@ import com.newbit.post.entity.Post;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
 import com.newbit.purchase.command.application.service.PointTransactionCommandService;
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -66,7 +67,7 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
-        pointTransactionCommandService.givePointByType(user.getUserId(), "게시글 적립", post.getId());
+        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
         return new PostResponse(post);
     }
 
