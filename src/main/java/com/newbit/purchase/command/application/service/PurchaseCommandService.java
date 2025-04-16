@@ -119,9 +119,7 @@ public class PurchaseCommandService {
         coffeechatCommandService.markAsPurchased(coffeechatId);
 
         // 2. 멘티 다이아 차감
-        userService.useDiamond(menteeId, totalPrice);
-
-        Integer balance = userService.getDiamondBalance(menteeId);
+        Integer balance = userService.useDiamond(menteeId, totalPrice);
 
         // 3. 다이아 내역 저장
         diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));

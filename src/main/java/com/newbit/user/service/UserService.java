@@ -82,15 +82,6 @@ public class UserService {
         mailServiceSupport.sendMailSupport(toEmail, subject, content);
     }
 
-
-
-    @Transactional(readOnly = true)
-    public Integer getDiamondBalance(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-        return user.getDiamond();
-    }
-
     @Transactional
     public Integer useDiamond(Long userId, int amount) {
         User user = userRepository.findById(userId)
