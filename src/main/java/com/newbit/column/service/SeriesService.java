@@ -1,21 +1,27 @@
 package com.newbit.column.service;
 
-import com.newbit.column.domain.Column;
-import com.newbit.column.dto.request.UpdateSeriesRequestDto;
-import com.newbit.column.dto.response.*;
-import com.newbit.column.repository.ColumnRepository;
-import com.newbit.column.dto.request.CreateSeriesRequestDto;
-import com.newbit.column.domain.Series;
-import com.newbit.column.mapper.SeriesMapper;
-import com.newbit.column.repository.SeriesRepository;
-import com.newbit.user.service.MentorService;
-import com.newbit.common.exception.BusinessException;
-import com.newbit.common.exception.ErrorCode;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.newbit.column.domain.Column;
+import com.newbit.column.domain.Series;
+import com.newbit.column.dto.request.CreateSeriesRequestDto;
+import com.newbit.column.dto.request.UpdateSeriesRequestDto;
+import com.newbit.column.dto.response.CreateSeriesResponseDto;
+import com.newbit.column.dto.response.GetMySeriesListResponseDto;
+import com.newbit.column.dto.response.GetSeriesColumnsResponseDto;
+import com.newbit.column.dto.response.GetSeriesDetailResponseDto;
+import com.newbit.column.dto.response.UpdateSeriesResponseDto;
+import com.newbit.column.mapper.SeriesMapper;
+import com.newbit.column.repository.ColumnRepository;
+import com.newbit.column.repository.SeriesRepository;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.user.service.MentorService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -141,6 +147,12 @@ public class SeriesService {
 
         // 시리즈 삭제
         seriesRepository.delete(series);
+    }
+
+    @Transactional(readOnly = true)
+    public Series getSeries(Long seriesId) {
+        return seriesRepository.findById(seriesId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)

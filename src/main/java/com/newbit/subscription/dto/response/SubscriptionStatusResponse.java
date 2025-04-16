@@ -17,8 +17,8 @@ public class SubscriptionStatusResponse {
     @Schema(description = "사용자 ID", example = "15")
     private Long userId;
     
-    @Schema(description = "구독 상태 (true: 구독중, false: 구독취소)", example = "true")
-    private boolean subscribed;
+    @Schema(description = "구독 여부", example = "true")
+    private boolean isSubscribed;
     
     @Schema(description = "구독자 수", example = "325")
     private int totalSubscribers;
@@ -27,7 +27,7 @@ public class SubscriptionStatusResponse {
         return SubscriptionStatusResponse.builder()
                 .seriesId(seriesId)
                 .userId(userId)
-                .subscribed(isSubscribed)
+                .isSubscribed(isSubscribed)
                 .totalSubscribers(totalSubscribers)
                 .build();
     }
