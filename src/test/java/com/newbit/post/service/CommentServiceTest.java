@@ -213,4 +213,67 @@ class CommentServiceTest {
                 .hasFieldOrPropertyWithValue("errorCode", ErrorCode.UNAUTHORIZED_TO_DELETE_COMMENT);
     }
 
+    @Test
+    void increaseReportCount_정상처리() {
+        // given
+        Long commentId = 1L;
+        Comment comment = Comment.builder()
+                .reportCount(2)
+                .build();
+
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        // when
+        commentService.increaseReportCount(commentId);
+
+        // then
+        assertThat(comment.getReportCount()).isEqualTo(3);
+    }
+
+
+    @Test
+    void increaseReportCount_댓글없음_예외() {
+        // given
+        Long commentId = 999L;
+        when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> commentService.increaseReportCount(commentId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.COMMENT_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    void getReportCount_정상처리() {
+        // given
+        Long commentId = 1L;
+        Comment comment = Comment.builder()
+                .id(commentId)
+                .reportCount(5)
+                .post(Post.builder().id(1L).build())
+                .userId(1L)
+                .content("댓글 내용")
+                .build();
+
+        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+
+        // when
+        int result = commentService.getReportCount(commentId);
+
+        // then
+        assertThat(result).isEqualTo(5);
+    }
+
+
+    @Test
+    void getReportCount_댓글없음_예외() {
+        // given
+        Long commentId = 888L;
+        when(commentRepository.findById(commentId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> commentService.getReportCount(commentId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.COMMENT_NOT_FOUND.getMessage());
+    }
 }

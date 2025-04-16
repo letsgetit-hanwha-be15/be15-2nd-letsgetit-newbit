@@ -47,88 +47,6 @@ class PostServiceTest {
     }
 
     @Test
-    void 게시글_수정_성공() {
-        Long postId = 1L;
-        Post originalPost = Post.builder()
-                .id(postId)
-                .title("기존 제목")
-                .content("기존 내용")
-                .userId(1L)
-                .postCategoryId(1L)
-                .build();
-
-        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
-                .title("수정된 제목")
-                .content("수정된 내용")
-                .build();
-
-        CustomUser user = CustomUser.builder()
-                .userId(1L)
-                .email("user@example.com")
-                .password("encoded")
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
-                .build();
-
-        when(postRepository.findById(postId)).thenReturn(Optional.of(originalPost));
-
-        postService.updatePost(postId, updateRequest, user);
-
-        assertThat(originalPost.getTitle()).isEqualTo("수정된 제목");
-        assertThat(originalPost.getContent()).isEqualTo("수정된 내용");
-    }
-
-    @Test
-    void 게시글_수정_실패_게시글이_없음() {
-        Long postId = 999L;
-        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
-                .title("수정된 제목")
-                .content("수정된 내용")
-                .build();
-
-        CustomUser user = CustomUser.builder()
-                .userId(1L)
-                .email("user@example.com")
-                .password("encoded")
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
-                .build();
-
-        when(postRepository.findById(postId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> postService.updatePost(postId, updateRequest, user))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(ErrorCode.POST_NOT_FOUND.getMessage());
-    }
-
-    @Test
-    void 게시글_수정_실패_작성자가_아님() {
-        Long postId = 1L;
-        Post post = Post.builder()
-                .id(postId)
-                .title("원래 제목")
-                .content("원래 내용")
-                .userId(100L) // 작성자 ID
-                .postCategoryId(1L)
-                .build();
-
-        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
-                .title("수정 시도 제목")
-                .content("수정 시도 내용")
-                .build();
-
-        CustomUser user = CustomUser.builder()
-                .userId(1L) // 다른 사용자
-                .email("not-author@example.com")
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
-                .build();
-
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-
-        assertThatThrownBy(() -> postService.updatePost(postId, updateRequest, user))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(ErrorCode.UNAUTHORIZED_TO_UPDATE_POST.getMessage());
-    }
-
-    @Test
     void 게시글_등록_성공_회원() {
         // given
         CustomUser user = CustomUser.builder()
@@ -171,74 +89,6 @@ class PostServiceTest {
 
         verify(postRepository, never()).save(any(Post.class));
     }
-
-
-    @Test
-    void 게시글_삭제_성공() {
-        Long postId = 1L;
-        Post post = Post.builder()
-                .id(postId)
-                .title("삭제할 제목")
-                .content("삭제할 내용")
-                .userId(1L)
-                .postCategoryId(1L)
-                .build();
-
-        CustomUser user = CustomUser.builder()
-                .userId(1L) // 작성자 본인
-                .email("user@example.com")
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
-                .build();
-
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-
-        postService.deletePost(postId, user);
-
-        assertThat(post.getDeletedAt()).isNotNull();
-    }
-
-
-    @Test
-    void 게시글_삭제_실패_게시글이_없음() {
-        Long postId = 999L;
-
-        CustomUser user = CustomUser.builder()
-                .userId(1L)
-                .email("user@example.com")
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
-                .build();
-
-        when(postRepository.findById(postId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> postService.deletePost(postId, user))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(ErrorCode.POST_NOT_FOUND.getMessage());
-    }
-
-    @Test
-    void 게시글_삭제_실패_작성자가_아님() {
-        Long postId = 1L;
-        Post post = Post.builder()
-                .id(postId)
-                .title("삭제 대상")
-                .content("삭제 내용")
-                .userId(100L) // 실제 작성자
-                .postCategoryId(1L)
-                .build();
-
-        CustomUser user = CustomUser.builder()
-                .userId(1L) // 삭제 시도자
-                .email("not-author@example.com")
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
-                .build();
-
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
-
-        assertThatThrownBy(() -> postService.deletePost(postId, user))
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(ErrorCode.UNAUTHORIZED_TO_DELETE_POST.getMessage());
-    }
-
 
     @Test
     void 게시글_목록_조회_성공() {
@@ -403,4 +253,241 @@ class PostServiceTest {
 
         verify(postRepository, times(1)).findPopularPosts(10);
     }
+
+    @Test
+    void 게시글_수정_성공() {
+        Long postId = 1L;
+        Post originalPost = Post.builder()
+                .id(postId)
+                .title("기존 제목")
+                .content("기존 내용")
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
+
+        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
+                .title("수정된 제목")
+                .content("수정된 내용")
+                .build();
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .password("encoded")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(originalPost));
+
+        postService.updatePost(postId, updateRequest, user);
+
+        assertThat(originalPost.getTitle()).isEqualTo("수정된 제목");
+        assertThat(originalPost.getContent()).isEqualTo("수정된 내용");
+    }
+
+    @Test
+    void 게시글_수정_실패_게시글이_없음() {
+        Long postId = 999L;
+        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
+                .title("수정된 제목")
+                .content("수정된 내용")
+                .build();
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .password("encoded")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.updatePost(postId, updateRequest, user))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.POST_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    void 게시글_수정_실패_작성자가_아님() {
+        Long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .title("원래 제목")
+                .content("원래 내용")
+                .userId(100L) // 작성자 ID
+                .postCategoryId(1L)
+                .build();
+
+        PostUpdateRequest updateRequest = PostUpdateRequest.builder()
+                .title("수정 시도 제목")
+                .content("수정 시도 내용")
+                .build();
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L) // 다른 사용자
+                .email("not-author@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        assertThatThrownBy(() -> postService.updatePost(postId, updateRequest, user))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.UNAUTHORIZED_TO_UPDATE_POST.getMessage());
+    }
+
+    @Test
+    void 게시글_삭제_성공() {
+        Long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .title("삭제할 제목")
+                .content("삭제할 내용")
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L) // 작성자 본인
+                .email("user@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        postService.deletePost(postId, user);
+
+        assertThat(post.getDeletedAt()).isNotNull();
+    }
+
+
+    @Test
+    void 게시글_삭제_실패_게시글이_없음() {
+        Long postId = 999L;
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L)
+                .email("user@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> postService.deletePost(postId, user))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.POST_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    void 게시글_삭제_실패_작성자가_아님() {
+        Long postId = 1L;
+        Post post = Post.builder()
+                .id(postId)
+                .title("삭제 대상")
+                .content("삭제 내용")
+                .userId(100L) // 실제 작성자
+                .postCategoryId(1L)
+                .build();
+
+        CustomUser user = CustomUser.builder()
+                .userId(1L) // 삭제 시도자
+                .email("not-author@example.com")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+
+        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+
+        assertThatThrownBy(() -> postService.deletePost(postId, user))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.UNAUTHORIZED_TO_DELETE_POST.getMessage());
+    }
+
+
+    @Test
+    void increaseLikeCount_정상처리() {
+        // given
+        Long postId = 1L;
+        Post post = mock(Post.class);
+
+        when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
+
+        // when
+        postService.increaseLikeCount(postId);
+
+        // then
+        verify(post, times(1)).increaseLikeCount();
+    }
+
+    @Test
+    void decreaseLikeCount_정상처리() {
+        // given
+        Long postId = 2L;
+        Post post = mock(Post.class);
+
+        when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
+
+        // when
+        postService.decreaseLikeCount(postId);
+
+        // then
+        verify(post, times(1)).decreaseLikeCount();
+    }
+
+    @Test
+    void increaseReportCount_정상처리() {
+        // given
+        Long postId = 3L;
+        Post post = mock(Post.class);
+
+        when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
+
+        // when
+        postService.increaseReportCount(postId);
+
+        // then
+        verify(post, times(1)).increaseReportCount();
+    }
+
+    @Test
+    void getReportCountByPostId_성공() {
+        // given
+        Long postId = 4L;
+        Post post = mock(Post.class);
+        when(post.getReportCount()).thenReturn(5);
+        when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
+
+        // when
+        int result = postService.getReportCountByPostId(postId);
+
+        // then
+        assertThat(result).isEqualTo(5);
+    }
+
+    @Test
+    void getWriterIdByPostId_성공() {
+        // given
+        Long postId = 5L;
+        Long writerId = 123L;
+
+        when(postRepository.findUserIdByPostId(postId)).thenReturn(Optional.of(writerId));
+
+        // when
+        Long result = postService.getWriterIdByPostId(postId);
+
+        // then
+        assertThat(result).isEqualTo(writerId);
+    }
+
+    @Test
+    void getWriterIdByPostId_실패_게시글없음() {
+        // given
+        Long postId = 99L;
+        when(postRepository.findUserIdByPostId(postId)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> postService.getWriterIdByPostId(postId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(ErrorCode.POST_NOT_FOUND.getMessage());
+    }
 }
+

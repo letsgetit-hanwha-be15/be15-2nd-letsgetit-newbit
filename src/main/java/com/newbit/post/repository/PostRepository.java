@@ -20,4 +20,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT COALESCE(SUM(p.reportCount), 0) FROM Post p WHERE p.user.userId = :userId")
     int sumReportCountByUserId(@Param("userId") Long userId);
 
+    @Query("SELECT p.userId FROM Post p WHERE p.id = :postId AND p.deletedAt IS NULL")
+    Optional<Long> findUserIdByPostId(@Param("postId") Long postId);
+
 }
