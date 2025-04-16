@@ -158,8 +158,6 @@ class PurchaseCommandServiceTest {
         Long mentorId = 3L;
         int purchaseQuantity = 2;
         int price = 500;
-        int balanceAfterPurchase = 1000;
-
         CoffeeChatPurchaseRequest request = new CoffeeChatPurchaseRequest();
         request.setCoffeechatId(coffeechatId);
 
@@ -176,7 +174,6 @@ class PurchaseCommandServiceTest {
         MentorDTO mentorDTO = new MentorDTO();
         mentorDTO.setPrice(price);
         when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
-        when(userService.getDiamondBalance(menteeId)).thenReturn(balanceAfterPurchase);
 
         // when
         purchaseCommandService.purchaseCoffeeChat(userId, request);
@@ -184,7 +181,6 @@ class PurchaseCommandServiceTest {
         // then
         verify(coffeechatCommandService).markAsPurchased(coffeechatId);
         verify(userService).useDiamond(menteeId, purchaseQuantity * price);
-        verify(userService).getDiamondBalance(menteeId);
 
         ArgumentCaptor<DiamondHistory> diamondCaptor = ArgumentCaptor.forClass(DiamondHistory.class);
         verify(diamondHistoryRepository).save(diamondCaptor.capture());
