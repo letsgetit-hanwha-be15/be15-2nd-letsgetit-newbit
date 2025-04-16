@@ -13,14 +13,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class ColumnMapper {
 
-    public Column toColumn(CreateColumnRequestDto dto, Mentor mentor, Series series) {
+    public Column toColumn(CreateColumnRequestDto dto, Long mentorId, Series series) {
         return Column.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .price(dto.getPrice())
                 .series(series)
                 .thumbnailUrl(dto.getThumbnailUrl())
-                .mentor(mentor)
+                .mentorId(mentorId)
                 .isPublic(false)
                 .likeCount(0)
                 .build();

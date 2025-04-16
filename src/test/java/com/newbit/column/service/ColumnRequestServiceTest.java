@@ -71,14 +71,13 @@ class ColumnRequestServiceTest {
                 .thumbnailUrl("https://test.com/thumb.jpg")
                 .build();
 
-        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
-        Column column = Column.builder().columnId(1L).mentor(mentor).build();
+        Column column = Column.builder().columnId(1L).mentorId(mentorId).build();
         Series series = Series.builder().seriesId(1L).build();
         ColumnRequest columnRequest = ColumnRequest.builder().columnRequestId(100L).build();
 
         when(seriesRepository.findById(1L)).thenReturn(Optional.of(series));
-        when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
-        when(columnMapper.toColumn(dto, mentor, series)).thenReturn(column);
+        when(mentorService.getMentorIdByUserId(userId)).thenReturn(mentorId);
+        when(columnMapper.toColumn(dto, mentorId, series)).thenReturn(column);
         when(columnRepository.save(column)).thenReturn(column);
         when(columnMapper.toColumnRequest(dto, column)).thenReturn(columnRequest);
         when(columnRequestRepository.save(columnRequest)).thenReturn(columnRequest);
@@ -173,7 +172,7 @@ class ColumnRequestServiceTest {
 
         Column column = Column.builder()
                 .columnId(100L)
-                .mentor(mentor)
+                .mentorId(mentorId)
                 .build();
 
         ColumnRequest columnRequest = ColumnRequest.builder()
@@ -196,8 +195,8 @@ class ColumnRequestServiceTest {
                 .createdAt(columnRequest.getCreatedAt())
                 .build();
 
-        when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
-        when(columnRequestRepository.findAllByColumn_Mentor_MentorIdOrderByCreatedAtDesc(mentorId))
+        when(mentorService.getMentorIdByUserId(userId)).thenReturn(mentorId);
+        when(columnRequestRepository.findAllByColumn_MentorIdOrderByCreatedAtDesc(mentorId))
                 .thenReturn(columnRequests);
         when(columnMapper.toMyColumnRequestResponseDto(columnRequest)).thenReturn(dto);
 
@@ -210,8 +209,8 @@ class ColumnRequestServiceTest {
         assertThat(result.get(0).getRequestType()).isEqualTo(RequestType.CREATE);
         assertThat(result.get(0).getTitle()).isEqualTo("요청 제목");
 
-        verify(mentorService).getMentorEntityByUserId(userId);
-        verify(columnRequestRepository).findAllByColumn_Mentor_MentorIdOrderByCreatedAtDesc(mentorId);
+        verify(mentorService).getMentorIdByUserId(userId);
+        verify(columnRequestRepository).findAllByColumn_MentorIdOrderByCreatedAtDesc(mentorId);
         verify(columnMapper).toMyColumnRequestResponseDto(columnRequest);
     }
 }

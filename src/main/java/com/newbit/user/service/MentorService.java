@@ -35,10 +35,10 @@ public class MentorService {
         mentorRepository.save(mentor);
     }
 
-    public Mentor getMentorEntityByUserId(Long userId) {
-        return mentorRepository.findByUser_UserId(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.MENTOR_NOT_FOUND));
-    }
+//    public Mentor getMentorEntityByUserId(Long userId) {
+//        return mentorRepository.findByUser_UserId(userId)
+//                .orElseThrow(() -> new BusinessException(ErrorCode.MENTOR_NOT_FOUND));
+//    }
 
     public Long getUserIdByMentorId(Long mentorId) {
         return mentorRepository.findById(mentorId)

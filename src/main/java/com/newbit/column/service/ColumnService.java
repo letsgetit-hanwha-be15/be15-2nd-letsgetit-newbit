@@ -9,7 +9,6 @@ import com.newbit.column.repository.ColumnRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.query.service.ColumnPurchaseHistoryQueryService;
-import com.newbit.user.entity.Mentor;
 import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -47,10 +46,10 @@ public class ColumnService {
     }
 
     public List<GetMyColumnListResponseDto> getMyColumnList(Long userId) {
-        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
+        Long mentorId = mentorService.getMentorIdByUserId(userId);
 
         List<Column> columns = columnRepository
-                .findAllByMentor_MentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentor.getMentorId());
+                .findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId);
 
         return columns.stream()
                 .map(columnMapper::toMyColumnListDto)
