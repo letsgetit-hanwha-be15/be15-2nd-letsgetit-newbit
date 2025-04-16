@@ -36,9 +36,8 @@ public class Series {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mentor_id")
-    private Mentor mentor;
+    @jakarta.persistence.Column(name = "mentor_id", nullable = false)
+    private Long mentorId;
 
     @OneToMany(mappedBy = "series", cascade = CascadeType.PERSIST)
     private List<Column> columns = new ArrayList<>();

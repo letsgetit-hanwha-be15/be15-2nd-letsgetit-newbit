@@ -214,7 +214,7 @@ class ColumnServiceTest {
                 .price(1000)
                 .likeCount(5)
                 .isPublic(true)
-                .mentor(mentor)
+                .mentorId(mentorId)
                 .build();
 
         Column column2 = Column.builder()
@@ -224,13 +224,13 @@ class ColumnServiceTest {
                 .price(1500)
                 .likeCount(10)
                 .isPublic(true)
-                .mentor(mentor)
+                .mentorId(mentorId)
                 .build();
 
         List<Column> columns = List.of(column1, column2);
 
-        when(mentorService.getMentorEntityByUserId(userId)).thenReturn(mentor);
-        when(columnRepository.findAllByMentor_MentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId)).thenReturn(columns);
+        when(mentorService.getMentorIdByUserId(userId)).thenReturn(mentorId);
+        when(columnRepository.findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId)).thenReturn(columns);
         when(columnMapper.toMyColumnListDto(column1)).thenReturn(
                 GetMyColumnListResponseDto.builder()
                         .columnId(1L)
@@ -259,8 +259,8 @@ class ColumnServiceTest {
         assertThat(result.get(0).getTitle()).isEqualTo("멘토 칼럼 1");
         assertThat(result.get(1).getTitle()).isEqualTo("멘토 칼럼 2");
 
-        verify(mentorService).getMentorEntityByUserId(userId);
-        verify(columnRepository).findAllByMentor_MentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId);
+        verify(mentorService).getMentorIdByUserId(mentorId);
+        verify(columnRepository).findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId);
         verify(columnMapper).toMyColumnListDto(column1);
         verify(columnMapper).toMyColumnListDto(column2);
     }

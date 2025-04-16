@@ -17,7 +17,6 @@ import com.newbit.column.repository.ColumnRequestRepository;
 import com.newbit.column.repository.SeriesRepository;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.user.entity.Mentor;
 import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,14 +35,14 @@ public class ColumnRequestService {
 
     public CreateColumnResponseDto createColumnRequest(CreateColumnRequestDto dto, Long userId) {
         // 1. Mentor 조회
-        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
+        Long mentorId = mentorService.getMentorIdByUserId(userId);
 
         // 2. 시리즈 조회
         Series series = seriesRepository.findById(dto.getSeriesId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
 
         // 3. Column 저장
-        Column column = columnMapper.toColumn(dto, mentor, series);
+        Column column = columnMapper.toColumn(dto, mentorId, series);
         Column savedColumn = columnRepository.save(column);
 
         // 4. ColumnRequest 저장
@@ -98,9 +97,9 @@ public class ColumnRequestService {
     }
 
     public List<GetMyColumnRequestResponseDto> getMyColumnRequests(Long userId) {
-        Mentor mentor = mentorService.getMentorEntityByUserId(userId);
+        Long mentorId = mentorService.getMentorIdByUserId(userId);
 
-        List<ColumnRequest> requests = columnRequestRepository.findAllByColumn_Mentor_MentorIdOrderByCreatedAtDesc(mentor.getMentorId());
+        List<ColumnRequest> requests = columnRequestRepository.findAllByColumn_MentorIdOrderByCreatedAtDesc(mentorId);
 
         return requests.stream()
                 .map(columnMapper::toMyColumnRequestResponseDto)
@@ -115,7 +114,7 @@ public class ColumnRequestService {
 
     public Long getMentorId(Long columnId) {
         return columnRepository.findById(columnId)
-                .map(column -> column.getMentor().getMentorId())
+                .map(Column::getMentorId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
     }
 }

@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ColumnRequestRepository extends JpaRepository<ColumnRequest, Long> {
 
-    List<ColumnRequest> findAllByColumn_Mentor_MentorIdOrderByCreatedAtDesc(Long mentorId);
+    List<ColumnRequest> findAllByColumn_MentorIdOrderByCreatedAtDesc(Long mentorId);
 }

@@ -54,9 +54,8 @@ public class Column {
     @Builder.Default
     private List<ColumnRequest> requests = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "mentor_id")
-    private Mentor mentor;
+    @jakarta.persistence.Column(name = "mentor_id")
+    private Long mentorId;
 
     @ManyToOne
     @JoinColumn(name = "series_id")

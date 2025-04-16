@@ -13,6 +13,7 @@ import com.newbit.common.exception.ErrorCode;
 import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.notification.command.application.service.NotificationCommandService;
 import com.newbit.subscription.service.SubscriptionService;
+import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ public class AdminColumnService {
     private final AdminColumnMapper adminColumnMapper;
     private final NotificationCommandService notificationCommandService;
     private final SubscriptionService subscriptionService;
+    private final MentorService mentorService;
 
     @Transactional
     public AdminColumnResponseDto approveCreateColumnRequest(ApproveColumnRequestDto dto, Long adminUserId) {
@@ -42,9 +44,10 @@ public class AdminColumnService {
         String notificationContent = String.format("'%s' 칼럼 등록이 승인되었습니다.",
                 request.getColumn().getTitle());
 
+        Long mentorId = request.getColumn().getMentorId();
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
-                        request.getColumn().getMentor().getUser().getUserId()
+                        mentorService.getMentorIdByUserId(mentorId)
                         , 11L
                         , request.getColumnRequestId(),
                         notificationContent
@@ -83,9 +86,10 @@ public class AdminColumnService {
         String notificationContent = String.format("'%s' 칼럼 등록이 거절되었습니다.",
                 request.getColumn().getTitle());
 
+        Long mentorId = request.getColumn().getMentorId();
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
-                        request.getColumn().getMentor().getUser().getUserId()
+                        mentorService.getMentorIdByUserId(mentorId)
                         , 12L
                         , request.getColumnRequestId(),
                         notificationContent
@@ -116,9 +120,10 @@ public class AdminColumnService {
                 request.getUpdatedTitle());
 
 
+        Long mentorId = request.getColumn().getMentorId();
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
-                        request.getColumn().getMentor().getUser().getUserId()
+                        mentorService.getMentorIdByUserId(mentorId)
                         , 11L
                         , request.getColumnRequestId(),
                         notificationContent
@@ -143,10 +148,10 @@ public class AdminColumnService {
         String notificationContent = String.format("'%s' 칼럼 수정이 거절되었습니다.",
                 request.getColumn().getTitle());
 
-
+        Long mentorId = request.getColumn().getMentorId();
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
-                        request.getColumn().getMentor().getUser().getUserId()
+                        mentorService.getMentorIdByUserId(mentorId)
                         , 12L
                         , request.getColumnRequestId(),
                         notificationContent
@@ -175,10 +180,10 @@ public class AdminColumnService {
         String notificationContent = String.format("'%s' 칼럼 삭제가 승인되었습니다.",
                 request.getColumn().getTitle());
 
-
+        Long mentorId = request.getColumn().getMentorId();
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
-                        request.getColumn().getMentor().getUser().getUserId()
+                        mentorService.getMentorIdByUserId(mentorId)
                         , 11L
                         , request.getColumnRequestId(),
                         notificationContent
@@ -202,10 +207,10 @@ public class AdminColumnService {
         String notificationContent = String.format("'%s' 칼럼 삭제가 거절되었습니다.",
                 request.getColumn().getTitle());
 
-
+        Long mentorId = request.getColumn().getMentorId();
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
-                        request.getColumn().getMentor().getUser().getUserId()
+                        mentorService.getUserIdByMentorId(mentorId)
                         , 12L
                         , request.getColumnRequestId(),
                         notificationContent
