@@ -11,6 +11,7 @@ import com.newbit.notification.command.application.service.NotificationCommandSe
 import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import com.newbit.purchase.command.domain.aggregate.*;
 import com.newbit.purchase.command.domain.repository.*;
 import com.newbit.user.dto.response.MentorDTO;
@@ -143,9 +144,8 @@ public class PurchaseCommandService {
         // 1. 유저 조회
         UserDTO userDto = userService.getUserByUserId(userId);
 
-        PointType mentorAuthorityType = pointTypeRepository.findById(5L)
+        PointType mentorAuthorityType = pointTypeRepository.findByPointTypeName(PointTypeConstants.MENTOR_AUTHORITY_PURCHASE)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
-
 
         //2. 이미 멘토인지 확인
         if (userDto.getAuthority() == Authority.MENTOR) {
