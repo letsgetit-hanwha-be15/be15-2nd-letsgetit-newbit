@@ -16,8 +16,8 @@ public class UserQueryService {
 
     private final UserMapper userMapper;
 
-    public OhterUserProfileDTO getOhterUserProfile(Long userId) {
-        OhterUserProfileDTO profile = userMapper.getOhterUserProfile(userId);
+    public OtherUserProfileDTO getOtherUserProfile(Long userId) {
+        OtherUserProfileDTO profile = userMapper.getOtherUserProfile(userId);
         if (profile == null) {
             throw new BusinessException(ErrorCode.USER_INFO_NOT_FOUND);
         }
