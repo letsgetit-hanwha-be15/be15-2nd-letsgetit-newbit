@@ -2,7 +2,7 @@ package com.newbit.user.service;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.user.dto.response.OhterUserProfileDTO;
+import com.newbit.user.dto.response.OtherUserProfileDTO;
 import com.newbit.user.mapper.UserMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -25,16 +25,16 @@ class UserQueryServiceTest {
     void getOtherUserProfile_성공() {
         // given
         Long userId = 2L;
-        OhterUserProfileDTO mockProfile = new OhterUserProfileDTO();
+        OtherUserProfileDTO mockProfile = new OtherUserProfileDTO();
         mockProfile.setUserName("김개발");
         mockProfile.setNickname("코딩짱");
         mockProfile.setProfileImageUrl("https://image.com/test.jpg");
         mockProfile.setJobName("백엔드");
 
-        when(userMapper.getOhterUserProfile(userId)).thenReturn(mockProfile);
+        when(userMapper.getOtherUserProfile(userId)).thenReturn(mockProfile);
 
         // when
-        OhterUserProfileDTO result = userQueryService.getOhterUserProfile(userId);
+        OtherUserProfileDTO result = userQueryService.getOtherUserProfile(userId);
 
         // then
         assertNotNull(result);
@@ -48,11 +48,11 @@ class UserQueryServiceTest {
     void getOtherUserProfile_실패_정보없음() {
         // given
         Long userId = 99L;
-        when(userMapper.getOhterUserProfile(userId)).thenReturn(null);
+        when(userMapper.getOtherUserProfile(userId)).thenReturn(null);
 
         // when & then
         BusinessException exception = assertThrows(BusinessException.class, () -> {
-            userQueryService.getOhterUserProfile(userId);
+            userQueryService.getOtherUserProfile(userId);
         });
 
         assertEquals(ErrorCode.USER_INFO_NOT_FOUND, exception.getErrorCode());

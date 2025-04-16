@@ -1,10 +1,10 @@
 package com.newbit.user.mapper;
 
-import com.newbit.user.dto.response.OhterUserProfileDTO;
+import com.newbit.user.dto.response.OtherUserProfileDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface UserMapper {
-    OhterUserProfileDTO getOhterUserProfile(@Param("userId") Long userId);
+    OtherUserProfileDTO getOtherUserProfile(@Param("userId") Long userId);
 }
