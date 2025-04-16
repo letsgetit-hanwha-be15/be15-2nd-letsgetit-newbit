@@ -9,7 +9,7 @@ import java.util.List;
 
 @Mapper
 public interface UserMapper {
-    OhterUserProfileDTO getOhterUserProfile(@Param("userId") Long userId);
+    OtherUserProfileDTO getOtherUserProfile(@Param("userId") Long userId);
 
     MentorProfileDTO findMentorProfile(@Param("mentorId") Long mentorId);
 

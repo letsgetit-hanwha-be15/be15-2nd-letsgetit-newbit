@@ -7,7 +7,7 @@ import com.newbit.user.dto.request.MentorListRequestDTO;
 import com.newbit.user.dto.request.UserInfoUpdateRequestDTO;
 import com.newbit.user.dto.response.MentorListResponseDTO;
 import com.newbit.user.dto.response.MentorProfileDTO;
-import com.newbit.user.dto.response.OhterUserProfileDTO;
+import com.newbit.user.dto.response.OtherUserProfileDTO;
 import com.newbit.user.dto.response.UserDTO;
 import com.newbit.user.service.UserInfoService;
 import com.newbit.user.service.UserQueryService;
@@ -62,8 +62,8 @@ public class UserInfoController {
 
     @Operation(summary = "다른 사용자 프로필 조회", description = "다른 사용자의 userId를 기반으로 프로필 조회")
     @GetMapping("/profile/{userId}")
-    public ResponseEntity<ApiResponse<OhterUserProfileDTO>> getOhterUserProfile(@PathVariable Long userId) {
-        OhterUserProfileDTO profile = userQueryService.getOhterUserProfile(userId);
+    public ResponseEntity<ApiResponse<OtherUserProfileDTO>> getOtherUserProfile(@PathVariable Long userId) {
+        OtherUserProfileDTO profile = userQueryService.getOtherUserProfile(userId);
         return ResponseEntity.ok(ApiResponse.success(profile));
     }
 
