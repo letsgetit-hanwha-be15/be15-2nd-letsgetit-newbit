@@ -84,4 +84,18 @@ public class CommentService {
         comment.softDelete();
     }
 
+    @Transactional
+    public void increaseReportCount(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+        comment.setReportCount(comment.getReportCount() + 1);
+    }
+
+    @Transactional(readOnly = true)
+    public int getReportCount(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+        return comment.getReportCount();
+    }
+
 }

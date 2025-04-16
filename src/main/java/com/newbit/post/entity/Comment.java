@@ -55,4 +55,8 @@ public class Comment {
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }
+
+    public void increaseReportCount() {
+        this.reportCount++;
+    }
 }

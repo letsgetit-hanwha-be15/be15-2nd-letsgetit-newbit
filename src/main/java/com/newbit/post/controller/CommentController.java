@@ -56,5 +56,24 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/{commentId}/report")
+    @Operation(summary = "댓글 신고", description = "댓글에 대해 신고 처리를 합니다.")
+    public ResponseEntity<Void> reportComment(
+            @PathVariable Long postId,
+            @PathVariable Long commentId,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        commentService.increaseReportCount(commentId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{commentId}/report")
+    @Operation(summary = "댓글 신고 수 조회", description = "해당 댓글의 신고 횟수를 반환합니다.")
+    public ResponseEntity<Integer> getReportCount(@PathVariable Long commentId) {
+        int reportCount = commentService.getReportCount(commentId);
+        return ResponseEntity.ok(reportCount);
+    }
 
 }

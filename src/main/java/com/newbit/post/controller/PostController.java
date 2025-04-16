@@ -31,18 +31,6 @@ public class PostController {
     private final PostService postService;
 
     @PreAuthorize("isAuthenticated()")
-    @PutMapping("/{id}")
-    @Operation(summary = "게시글 수정", description = "본인이 작성한 게시글의 제목과 내용을 수정합니다.")
-    public ResponseEntity<PostResponse> updatePost(
-            @PathVariable Long id,
-            @RequestBody @Valid PostUpdateRequest request,
-            @AuthenticationPrincipal CustomUser user
-    ) {
-        PostResponse response = postService.updatePost(id, request, user);
-        return ResponseEntity.ok(response);
-    }
-
-    @PreAuthorize("isAuthenticated()")
     @PostMapping
     @Operation(summary = "게시글 등록", description = "일반 사용자만 게시글을 등록할 수 있습니다.")
     public ResponseEntity<PostResponse> createPost(
@@ -59,25 +47,6 @@ public class PostController {
     public ResponseEntity<List<PostResponse>> searchPosts(@RequestParam("keyword") String keyword) {
         List<PostResponse> responses = postService.searchPosts(keyword);
         return ResponseEntity.ok(responses);
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/{id}")
-    @Operation(
-            summary = "게시글 삭제",
-            description = "본인이 작성한 게시글을 소프트 딜리트 방식으로 삭제합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "204", description = "삭제 성공"),
-                    @ApiResponse(responseCode = "403", description = "작성자 외 사용자 접근 시 실패"),
-                    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
-            }
-    )
-    public ResponseEntity<Void> deletePost(
-            @PathVariable Long id,
-            @AuthenticationPrincipal CustomUser user
-    ) {
-        postService.deletePost(id, user);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
@@ -106,6 +75,37 @@ public class PostController {
     public ResponseEntity<List<PostResponse>> getPopularPosts() {
         List<PostResponse> responses = postService.getPopularPosts();
         return ResponseEntity.ok(responses);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/{id}")
+    @Operation(summary = "게시글 수정", description = "본인이 작성한 게시글의 제목과 내용을 수정합니다.")
+    public ResponseEntity<PostResponse> updatePost(
+            @PathVariable Long id,
+            @RequestBody @Valid PostUpdateRequest request,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        PostResponse response = postService.updatePost(id, request, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "게시글 삭제",
+            description = "본인이 작성한 게시글을 소프트 딜리트 방식으로 삭제합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "삭제 성공"),
+                    @ApiResponse(responseCode = "403", description = "작성자 외 사용자 접근 시 실패"),
+                    @ApiResponse(responseCode = "404", description = "게시글을 찾을 수 없음")
+            }
+    )
+    public ResponseEntity<Void> deletePost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        postService.deletePost(id, user);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -143,4 +143,43 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/{postId}/like")
+    @Operation(summary = "게시글 좋아요 증가")
+    public ResponseEntity<Void> likePost(@PathVariable Long postId) {
+        postService.increaseLikeCount(postId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{postId}/like")
+    @Operation(summary = "게시글 좋아요 취소")
+    public ResponseEntity<Void> unlikePost(@PathVariable Long postId) {
+        postService.decreaseLikeCount(postId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/{postId}/report")
+    @Operation(summary = "게시글 신고")
+    public ResponseEntity<Void> reportPost(@PathVariable Long postId) {
+        postService.increaseReportCount(postId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{postId}/reports")
+    @Operation(summary = "게시글 누적 신고 수 조회", description = "해당 게시글의 누적 신고 횟수를 반환합니다.")
+    public ResponseEntity<Integer> getReportCountByPostId(@PathVariable Long postId) {
+        int reportCount = postService.getReportCountByPostId(postId);
+        return ResponseEntity.ok(reportCount);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{postId}/writer")
+    @Operation(summary = "게시글 작성자 조회", description = "postId를 통해 작성자의 userId를 조회합니다.")
+    public ResponseEntity<Long> getWriterIdByPostId(@PathVariable Long postId) {
+        Long writerId = postService.getWriterIdByPostId(postId);
+        return ResponseEntity.ok(writerId);
+    }
 }
