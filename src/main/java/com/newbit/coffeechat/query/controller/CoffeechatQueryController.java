@@ -49,7 +49,7 @@ public class CoffeechatQueryController {
 
         // 유저 아이디로 멘토 아이디를 찾아오기
         Long userId = customUser.getUserId();
-        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
+        Long mentorId = mentorService.getMentorIdByUserId(userId);
 
         // 서비스 레이어에 보낼 request 생성
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
@@ -72,7 +72,7 @@ public class CoffeechatQueryController {
     ) {
         // 유저 아이디로 멘토 아이디를 찾아오기
         Long userId = customUser.getUserId();
-        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
+        Long mentorId = mentorService.getMentorIdByUserId(userId);
 
         // 서비스 레이어에 보낼 request 생성
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();

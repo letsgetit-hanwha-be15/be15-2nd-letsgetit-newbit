@@ -76,7 +76,7 @@ public class ReviewQueryController {
 
         // 유저 아이디로 멘토 아이디를 찾아오기
         Long userId = customUser.getUserId();
-        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
+        Long mentorId = mentorService.getMentorIdByUserId(userId);
 
         ReviewSearchServiceRequest reviewSearchServiceRequest = new ReviewSearchServiceRequest();
         reviewSearchServiceRequest.setMentorId(mentorId);
