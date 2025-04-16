@@ -88,7 +88,7 @@ public class CommentService {
     public void increaseReportCount(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
-        comment.setReportCount(comment.getReportCount() + 1);
+        comment.increaseReportCount(); 
     }
 
     @Transactional(readOnly = true)
