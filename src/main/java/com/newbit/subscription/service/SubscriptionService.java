@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.newbit.column.service.SeriesService;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
 import com.newbit.subscription.dto.response.SubscriptionResponse;
 import com.newbit.subscription.dto.response.SubscriptionStatusResponse;
 import com.newbit.subscription.entity.Subscription;
@@ -25,15 +27,21 @@ public class SubscriptionService {
 
     @Transactional
     public SubscriptionResponse toggleSubscription(Long seriesId, Long userId) {
-        seriesService.getSeries(seriesId);
-        
-        SubscriptionId subscriptionId = new SubscriptionId(userId, seriesId);
-        Optional<Subscription> existingSubscription = subscriptionRepository.findById(subscriptionId);
-        
-        if (existingSubscription.isPresent()) {
-            return subscriptionCommandService.cancelSubscription(existingSubscription.get());
-        } else {
-            return subscriptionCommandService.createNewSubscription(userId, seriesId);
+        try {
+            seriesService.getSeries(seriesId);
+            
+            SubscriptionId subscriptionId = new SubscriptionId(userId, seriesId);
+            Optional<Subscription> existingSubscription = subscriptionRepository.findById(subscriptionId);
+            
+            if (existingSubscription.isPresent()) {
+                return subscriptionCommandService.cancelSubscription(existingSubscription.get());
+            } else {
+                return subscriptionCommandService.createNewSubscription(userId, seriesId);
+            }
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.SUBSCRIPTION_ERROR);
         }
     }
     

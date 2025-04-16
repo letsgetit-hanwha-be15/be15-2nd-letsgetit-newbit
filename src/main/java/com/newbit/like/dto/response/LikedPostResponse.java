@@ -24,9 +24,6 @@ public class LikedPostResponse {
     @Schema(description = "작성자 ID", example = "15")
     private Long authorId;
     
-    @Schema(description = "작성자 닉네임", example = "개발왕")
-    private String authorNickname;
-    
     @Schema(description = "좋아요 생성 시간", example = "2023-08-15T14:30:15")
     private LocalDateTime likedAt;
 } 

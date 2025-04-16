@@ -223,5 +223,16 @@ public class PostService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
     }
 
+    @Transactional(readOnly = true)
+    public Post getPost(Long postId) {
+        return postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+    }
+    
+    @Transactional(readOnly = true)
+    public String getPostTitle(Long postId) {
+        Post post = getPost(postId);
+        return post.getTitle();
+    }
 
 }

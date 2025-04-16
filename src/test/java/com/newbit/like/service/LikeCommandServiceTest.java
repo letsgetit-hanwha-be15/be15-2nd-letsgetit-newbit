@@ -23,15 +23,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.newbit.column.domain.Column;
-import com.newbit.column.repository.ColumnRepository;
+import com.newbit.column.service.ColumnService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.like.dto.response.ColumnLikeResponse;
 import com.newbit.like.dto.response.PostLikeResponse;
 import com.newbit.like.entity.Like;
 import com.newbit.like.repository.LikeRepository;
-import com.newbit.post.entity.Post;
-import com.newbit.post.repository.PostRepository;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.post.service.PostService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LikeCommandService 테스트")
@@ -39,15 +39,18 @@ class LikeCommandServiceTest {
 
     @Mock
     private LikeRepository likeRepository;
-
-    @Mock
-    private PostRepository postRepository;
-    
-    @Mock
-    private ColumnRepository columnRepository;
     
     @Mock
     private PointRewardService pointRewardService;
+    
+    @Mock
+    private PostService postService;
+    
+    @Mock
+    private ColumnService columnService;
+    
+    @Mock
+    private NotificationCommandService notificationCommandService;
 
     @InjectMocks
     private LikeCommandService likeCommandService;
@@ -69,7 +72,6 @@ class LikeCommandServiceTest {
             @DisplayName("좋아요를 추가하고 포인트 지급 처리를 호출해야 한다")
             void shouldAddLikeAndCallPointReward() {
                 // Given
-                Post post = mock(Post.class);
                 Like postLike = Like.builder()
                         .id(1L)
                         .postId(postId)
@@ -77,11 +79,11 @@ class LikeCommandServiceTest {
                         .isDelete(false)
                         .build();
 
-                when(post.getUserId()).thenReturn(authorId);
-                when(post.getLikeCount()).thenReturn(10).thenReturn(11);
-                when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
+                when(postService.getReportCountByPostId(postId)).thenReturn(0); // 게시글 존재 확인
+                when(postService.getWriterIdByPostId(postId)).thenReturn(authorId);
                 when(likeRepository.findByPostIdAndUserIdAndIsDeleteFalse(postId, userId)).thenReturn(Optional.empty());
                 when(likeRepository.save(any(Like.class))).thenReturn(postLike);
+                when(likeRepository.countByPostIdAndIsDeleteFalse(postId)).thenReturn(11);
 
                 // When
                 PostLikeResponse response = likeCommandService.togglePostLike(postId, userId);
@@ -91,9 +93,44 @@ class LikeCommandServiceTest {
                 assertTrue(response.isLiked());
                 assertEquals(11, response.getTotalLikes());
 
-                verify(post).setLikeCount(11);
-                verify(postRepository).save(post);
+                verify(postService).increaseLikeCount(postId);
                 verify(pointRewardService).givePointIfFirstLike(postId, userId, authorId);
+                // 11은 피보나치 수가 아니므로 알림이 발송되지 않아야 함
+                verify(notificationCommandService, never()).sendNotification(any());
+            }
+            
+            @Test
+            @DisplayName("좋아요 수가 피보나치 수(5)일 때 알림이 발송되어야 한다")
+            void shouldSendNotificationWhenLikeCountIsFibonacci() {
+                // Given
+                Like postLike = Like.builder()
+                        .id(1L)
+                        .postId(postId)
+                        .userId(userId)
+                        .isDelete(false)
+                        .build();
+
+                String postTitle = "테스트 게시글";
+                
+                when(postService.getReportCountByPostId(postId)).thenReturn(0);
+                when(postService.getWriterIdByPostId(postId)).thenReturn(authorId);
+                when(postService.getPostTitle(postId)).thenReturn(postTitle);
+                when(likeRepository.findByPostIdAndUserIdAndIsDeleteFalse(postId, userId)).thenReturn(Optional.empty());
+                when(likeRepository.save(any(Like.class))).thenReturn(postLike);
+                when(likeRepository.countByPostIdAndIsDeleteFalse(postId)).thenReturn(5); // 피보나치 수
+
+                // When
+                PostLikeResponse response = likeCommandService.togglePostLike(postId, userId);
+
+                // Then
+                assertNotNull(response);
+                assertTrue(response.isLiked());
+                assertEquals(5, response.getTotalLikes());
+
+                verify(postService).increaseLikeCount(postId);
+                verify(pointRewardService).givePointIfFirstLike(postId, userId, authorId);
+                // 5는 피보나치 수이므로 알림이 발송되어야 함
+                verify(notificationCommandService).sendNotification(any());
             }
         }
 
@@ -105,7 +142,6 @@ class LikeCommandServiceTest {
             @DisplayName("좋아요 수를 감소시키고 소프트 딜리트해야 한다")
             void shouldDecreaseLikeCountAndSoftDelete() {
                 // Given
-                Post post = mock(Post.class);
                 Like postLike = Like.builder()
                         .id(1L)
                         .postId(postId)
@@ -113,9 +149,9 @@ class LikeCommandServiceTest {
                         .isDelete(false)
                         .build();
 
-                when(post.getLikeCount()).thenReturn(10).thenReturn(9);
-                when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
+                when(postService.getReportCountByPostId(postId)).thenReturn(0); // 게시글 존재 확인
                 when(likeRepository.findByPostIdAndUserIdAndIsDeleteFalse(postId, userId)).thenReturn(Optional.of(postLike));
+                when(likeRepository.countByPostIdAndIsDeleteFalse(postId)).thenReturn(9);
 
                 // When
                 PostLikeResponse response = likeCommandService.togglePostLike(postId, userId);
@@ -126,8 +162,7 @@ class LikeCommandServiceTest {
                 assertEquals(9, response.getTotalLikes());
 
                 verify(likeRepository).save(postLike);
-                verify(post).setLikeCount(9);
-                verify(postRepository).save(post);
+                verify(postService).decreaseLikeCount(postId);
                 verify(pointRewardService, never()).givePointIfFirstLike(anyLong(), anyLong(), anyLong());
             }
         }
@@ -137,10 +172,10 @@ class LikeCommandServiceTest {
         class HandleExceptions {
 
             @Test
-            @DisplayName("게시글이 없으면 POST_LIKE_NOT_FOUND 예외를 발생시켜야 한다")
+            @DisplayName("게시글이 없으면 POST_NOT_FOUND 예외를 발생시켜야 한다")
             void shouldThrowExceptionWhenPostNotFound() {
                 // Given
-                when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.empty());
+                when(postService.getReportCountByPostId(postId)).thenThrow(new BusinessException(ErrorCode.POST_NOT_FOUND));
 
                 // When & Then
                 BusinessException exception = assertThrows(BusinessException.class, () -> 
@@ -173,10 +208,11 @@ class LikeCommandServiceTest {
                         .isDelete(false)
                         .build();
 
-                when(column.getLikeCount()).thenReturn(10);
-                when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
+                when(columnService.getColumn(columnId)).thenReturn(column);
+                when(columnService.isColumnAuthor(columnId, userId)).thenReturn(false);
                 when(likeRepository.findByColumnIdAndUserIdAndIsDeleteFalse(columnId, userId)).thenReturn(Optional.empty());
                 when(likeRepository.save(any(Like.class))).thenReturn(columnLike);
+                when(likeRepository.countByColumnIdAndIsDeleteFalse(columnId)).thenReturn(11);
 
                 // When
                 ColumnLikeResponse response = likeCommandService.toggleColumnLike(columnId, userId);
@@ -185,10 +221,46 @@ class LikeCommandServiceTest {
                 assertNotNull(response);
                 assertTrue(response.isLiked());
                 
-                verify(column).increaseLikeCount();
-                verify(columnRepository).save(column);
+                verify(columnService).increaseLikeCount(columnId);
+                // 11은 피보나치 수가 아니므로 알림이 발송되지 않아야 함
+                verify(notificationCommandService, never()).sendNotification(any());
                 // 포인트 지급이 없으므로 포인트 서비스는 호출되지 않아야 함
                 verify(pointRewardService, never()).givePointIfFirstLike(anyLong(), anyLong(), anyLong());
+            }
+            
+            @Test
+            @DisplayName("좋아요 수가 피보나치 수(8)일 때 알림이 발송되어야 한다")
+            void shouldSendNotificationWhenLikeCountIsFibonacci() {
+                // Given
+                Column column = mock(Column.class);
+                Like columnLike = Like.builder()
+                        .id(2L)
+                        .columnId(columnId)
+                        .userId(userId)
+                        .isDelete(false)
+                        .build();
+                
+                String columnTitle = "테스트 칼럼";
+                
+                when(columnService.getColumn(columnId)).thenReturn(column);
+                when(column.getMentorId()).thenReturn(5L);
+                when(columnService.isColumnAuthor(columnId, userId)).thenReturn(false);
+                when(columnService.getColumnTitle(columnId)).thenReturn(columnTitle);
+                when(columnService.getUserIdByMentorId(5L)).thenReturn(authorId);
+                when(likeRepository.findByColumnIdAndUserIdAndIsDeleteFalse(columnId, userId)).thenReturn(Optional.empty());
+                when(likeRepository.save(any(Like.class))).thenReturn(columnLike);
+                when(likeRepository.countByColumnIdAndIsDeleteFalse(columnId)).thenReturn(8); // 피보나치 수
+
+                // When
+                ColumnLikeResponse response = likeCommandService.toggleColumnLike(columnId, userId);
+
+                // Then
+                assertNotNull(response);
+                assertTrue(response.isLiked());
+                
+                verify(columnService).increaseLikeCount(columnId);
+                // 8은 피보나치 수이므로 알림이 발송되어야 함
+                verify(notificationCommandService).sendNotification(any());
             }
         }
 
@@ -208,9 +280,10 @@ class LikeCommandServiceTest {
                         .isDelete(false)
                         .build();
 
-                when(column.getLikeCount()).thenReturn(9);
-                when(columnRepository.findById(columnId)).thenReturn(Optional.of(column));
+                when(columnService.getColumn(columnId)).thenReturn(column);
+                when(columnService.isColumnAuthor(columnId, userId)).thenReturn(false);
                 when(likeRepository.findByColumnIdAndUserIdAndIsDeleteFalse(columnId, userId)).thenReturn(Optional.of(columnLike));
+                when(likeRepository.countByColumnIdAndIsDeleteFalse(columnId)).thenReturn(8);
 
                 // When
                 ColumnLikeResponse response = likeCommandService.toggleColumnLike(columnId, userId);
@@ -220,8 +293,7 @@ class LikeCommandServiceTest {
                 assertFalse(response.isLiked());
                 
                 verify(likeRepository).save(columnLike);
-                verify(column).decreaseLikeCount();
-                verify(columnRepository).save(column);
+                verify(columnService).decreaseLikeCount(columnId);
             }
         }
 
@@ -233,7 +305,7 @@ class LikeCommandServiceTest {
             @DisplayName("칼럼이 없으면 COLUMN_NOT_FOUND 예외를 발생시켜야 한다")
             void shouldThrowExceptionWhenColumnNotFound() {
                 // Given
-                when(columnRepository.findById(columnId)).thenReturn(Optional.empty());
+                when(columnService.getColumn(columnId)).thenThrow(new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
 
                 // When & Then
                 BusinessException exception = assertThrows(BusinessException.class, () -> 

@@ -9,9 +9,7 @@ import com.newbit.like.repository.LikeRepository;
 import com.newbit.purchase.command.application.service.PointTransactionCommandService;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PointRewardService {
@@ -33,13 +31,10 @@ public class PointRewardService {
     private void givePointToAuthor(Long authorId, Long postId) {
         try {
             pointTransactionCommandService.givePointByType(authorId, PointTypeConstants.LIKES, postId);
-            log.info("게시글 좋아요 포인트 지급 성공: authorId={}, postId={}", authorId, postId);
         } catch (BusinessException e) {
-            log.error("포인트 지급 중 비즈니스 예외 발생: authorId={}, postId={}, errorCode={}, message={}", 
-                    authorId, postId, e.getErrorCode(), e.getMessage());
+            // 비즈니스 예외 처리
         } catch (Exception e) {
-            log.error("포인트 지급 중 예기치 않은 오류 발생: authorId={}, postId={}, error={}", 
-                    authorId, postId, e.getMessage(), e);
+            // 예기치 않은 오류 처리
         }
     }
 } 

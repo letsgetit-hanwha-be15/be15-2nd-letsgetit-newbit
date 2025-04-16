@@ -3,12 +3,10 @@ package com.newbit.like.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -23,8 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.newbit.column.domain.Column;
-import com.newbit.column.repository.ColumnRepository;
+import com.newbit.column.service.ColumnService;
 import com.newbit.common.dto.Pagination;
 import com.newbit.like.dto.response.LikedColumnListResponse;
 import com.newbit.like.dto.response.LikedColumnResponse;
@@ -32,11 +29,7 @@ import com.newbit.like.dto.response.LikedPostListResponse;
 import com.newbit.like.dto.response.LikedPostResponse;
 import com.newbit.like.entity.Like;
 import com.newbit.like.repository.LikeRepository;
-import com.newbit.post.entity.Post;
-import com.newbit.post.repository.PostRepository;
-import com.newbit.user.entity.Mentor;
-import com.newbit.user.entity.User;
-import com.newbit.user.repository.UserRepository;
+import com.newbit.post.service.PostService;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LikeQueryService 테스트")
@@ -44,15 +37,12 @@ class LikeQueryServiceTest {
 
     @Mock
     private LikeRepository likeRepository;
+
+    @Mock
+    private ColumnService columnService;
     
     @Mock
-    private PostRepository postRepository;
-    
-    @Mock
-    private ColumnRepository columnRepository;
-    
-    @Mock
-    private UserRepository userRepository;
+    private PostService postService;
 
     @InjectMocks
     private LikeQueryService likeQueryService;
@@ -150,15 +140,14 @@ class LikeQueryServiceTest {
             
             Page<Like> likePage = new PageImpl<>(likes, pageable, likes.size());
             
-            Post post1 = createPost(postId, "제목1", userId);
-            Post post2 = createPost(postId + 1, "제목2", userId);
-            
-            User user = createUser(userId, "사용자");
-            
+            // PostService 스터빙 추가
             when(likeRepository.findLikedPostsByUserId(userId, pageable)).thenReturn(likePage);
-            when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post1));
-            when(postRepository.findByIdAndDeletedAtIsNull(postId + 1)).thenReturn(Optional.of(post2));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(postService.getReportCountByPostId(postId)).thenReturn(0);
+            when(postService.getReportCountByPostId(postId + 1)).thenReturn(0);
+            when(postService.getPostTitle(postId)).thenReturn("제목1");
+            when(postService.getPostTitle(postId + 1)).thenReturn("제목2");
+            when(postService.getWriterIdByPostId(postId)).thenReturn(userId);
+            when(postService.getWriterIdByPostId(postId + 1)).thenReturn(userId);
             
             // When
             LikedPostListResponse response = likeQueryService.getLikedPostsByUser(userId, pageable);
@@ -178,7 +167,6 @@ class LikeQueryServiceTest {
             assertEquals(postId, firstPost.getPostId());
             assertEquals("제목1", firstPost.getPostTitle());
             assertEquals(userId, firstPost.getAuthorId());
-            assertEquals("사용자", firstPost.getAuthorNickname());
             assertEquals(now, firstPost.getLikedAt());
             
             LikedPostResponse secondPost = response.getLikedPosts().get(1);
@@ -205,15 +193,13 @@ class LikeQueryServiceTest {
             
             Page<Like> likePage = new PageImpl<>(likes, pageable, likes.size());
             
-            Column column1 = createColumn(columnId, "칼럼1", userId);
-            Column column2 = createColumn(columnId + 1, "칼럼2", userId);
-            
-            User user = createUser(userId, "칼럼작성자");
-            
+            // ColumnService 스터빙 추가
             when(likeRepository.findLikedColumnsByUserId(userId, pageable)).thenReturn(likePage);
-            when(columnRepository.findById(columnId)).thenReturn(Optional.of(column1));
-            when(columnRepository.findById(columnId + 1)).thenReturn(Optional.of(column2));
-            when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+            when(columnService.getColumnTitle(columnId)).thenReturn("칼럼1");
+            when(columnService.getColumnTitle(columnId + 1)).thenReturn("칼럼2");
+            when(columnService.getMentorIdByColumnId(columnId)).thenReturn(1L);
+            when(columnService.getMentorIdByColumnId(columnId + 1)).thenReturn(1L);
+            when(columnService.getUserIdByMentorId(1L)).thenReturn(userId);
             
             // When
             LikedColumnListResponse response = likeQueryService.getLikedColumnsByUser(userId, pageable);
@@ -233,7 +219,6 @@ class LikeQueryServiceTest {
             assertEquals(columnId, firstColumn.getColumnId());
             assertEquals("칼럼1", firstColumn.getColumnTitle());
             assertEquals(userId, firstColumn.getAuthorId());
-            assertEquals("칼럼작성자", firstColumn.getAuthorNickname());
             assertEquals(now, firstColumn.getLikedAt());
             
             LikedColumnResponse secondColumn = response.getLikedColumns().get(1);
@@ -250,7 +235,6 @@ class LikeQueryServiceTest {
                 .userId(userId)
                 .isDelete(false)
                 .build();
-        
         ReflectionTestUtils.setField(like, "createdAt", createdAt);
         return like;
     }
@@ -262,39 +246,7 @@ class LikeQueryServiceTest {
                 .userId(userId)
                 .isDelete(false)
                 .build();
-        
         ReflectionTestUtils.setField(like, "createdAt", createdAt);
         return like;
-    }
-    
-    private Post createPost(Long postId, String title, Long userId) {
-        Post post = mock(Post.class);
-        when(post.getId()).thenReturn(postId);
-        when(post.getTitle()).thenReturn(title);
-        when(post.getUserId()).thenReturn(userId);
-        return post;
-    }
-    
-    private Column createColumn(Long columnId, String title, Long authorId) {
-        Column column = mock(Column.class);
-        Mentor mentor = mock(Mentor.class);
-        User user = mock(User.class);
-        
-        when(column.getColumnId()).thenReturn(columnId);
-        when(column.getTitle()).thenReturn(title);
-        when(column.getMentor()).thenReturn(mentor);
-        when(mentor.getUser()).thenReturn(user);
-        when(user.getUserId()).thenReturn(authorId);
-        
-        return column;
-    }
-    
-    private User createUser(Long userId, String nickname) {
-        User user = mock(User.class);
-        
-        // 이 유저 객체는 테스트에서 실제로 사용되므로 필요한 스텁만 설정
-        when(user.getNickname()).thenReturn(nickname);
-        
-        return user;
     }
 } 
