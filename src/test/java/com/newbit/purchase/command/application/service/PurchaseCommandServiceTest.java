@@ -92,7 +92,6 @@ class PurchaseCommandServiceTest {
         when(columnService.getColumnPriceById(columnId)).thenReturn(price);
         when(columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)).thenReturn(false);
         when(userService.useDiamond(userId, price)).thenReturn(diamondBalance);
-        when(userService.getDiamondBalance(userId)).thenReturn(diamondBalance);
         when(columnService.getMentorId(columnId)).thenReturn(mentorId);
 
         // When & Then
@@ -177,7 +176,6 @@ class PurchaseCommandServiceTest {
         MentorDTO mentorDTO = new MentorDTO();
         mentorDTO.setPrice(price);
         when(mentorService.getMentorInfo(mentorId)).thenReturn(mentorDTO);
-
         when(userService.getDiamondBalance(menteeId)).thenReturn(balanceAfterPurchase);
 
         // when
