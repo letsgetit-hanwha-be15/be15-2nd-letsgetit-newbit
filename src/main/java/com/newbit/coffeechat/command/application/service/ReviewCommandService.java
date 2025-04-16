@@ -9,6 +9,7 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.command.application.service.PointTransactionCommandService;
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import com.newbit.user.service.MentorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -66,7 +67,7 @@ public class ReviewCommandService {
         // 5. 코멘트까지 등록 시 멘티에게 50포인트 지급
         if(request.getComment() != null) {
             pointTransactionCommandService.givePointByType(
-                    coffeechatDto.getMenteeId(), "커피챗 리뷰 적립", review.getReviewId()
+                    coffeechatDto.getMenteeId(), PointTypeConstants.REVIEW, review.getReviewId()
             );
         }
 

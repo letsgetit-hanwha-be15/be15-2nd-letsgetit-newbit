@@ -1,5 +1,6 @@
 package com.newbit.like.service;
 
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,8 +18,7 @@ public class PointRewardService {
     
     private final LikeRepository likeRepository;
     private final PointTransactionCommandService pointTransactionCommandService;
-    private static final String POST_LIKE_POINT_TYPE = "게시글 좋아요";
-    
+
     @Transactional
     public void givePointIfFirstLike(Long postId, Long userId, Long authorId) {
         if (isFirstLike(postId, userId)) {
@@ -32,7 +32,7 @@ public class PointRewardService {
     
     private void givePointToAuthor(Long authorId, Long postId) {
         try {
-            pointTransactionCommandService.givePointByType(authorId, POST_LIKE_POINT_TYPE, postId);
+            pointTransactionCommandService.givePointByType(authorId, PointTypeConstants.LIKES, postId);
             log.info("게시글 좋아요 포인트 지급 성공: authorId={}, postId={}", authorId, postId);
         } catch (BusinessException e) {
             log.error("포인트 지급 중 비즈니스 예외 발생: authorId={}, postId={}, errorCode={}, message={}", 

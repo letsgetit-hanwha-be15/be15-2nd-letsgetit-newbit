@@ -1,6 +1,7 @@
 package com.newbit.user.service;
 
 import com.newbit.purchase.command.application.service.PointTransactionCommandService;
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import com.newbit.user.entity.LoginHistory;
 import com.newbit.user.repository.LoginHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class LoginService {
         boolean isFirstLoginToday = loginHistoryRepository.countByUserIdAndToday(userId) == 0;
 
         if (isFirstLoginToday) {
-            pointTransactionCommandService.givePointByType(userId, "첫 로그인 적립", null); // 로그인 포인트 지급
+            pointTransactionCommandService.givePointByType(userId, PointTypeConstants.FIRST_LOGIN, null); // 로그인 포인트 지급
         }
 
         loginHistoryRepository.save(LoginHistory.of(userId)); // 로그인 이력 저장

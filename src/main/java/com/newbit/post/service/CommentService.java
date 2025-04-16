@@ -13,6 +13,7 @@ import com.newbit.post.entity.Post;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
 import com.newbit.purchase.command.application.service.PointTransactionCommandService;
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +43,7 @@ public class CommentService {
                 .build();
 
         commentRepository.save(comment);
-        pointTransactionCommandService.givePointByType(user.getUserId(), "댓글 적립", comment.getId());
+        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.COMMENTS, comment.getId());
 
         String notificationContent = String.format("'%s' 게시글에 댓글이 달렸습니다. ('%s')",
                 post.getTitle(), comment.getContent());

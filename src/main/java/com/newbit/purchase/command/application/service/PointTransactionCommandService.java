@@ -2,6 +2,7 @@ package com.newbit.purchase.command.application.service;
 
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import com.newbit.purchase.command.domain.aggregate.PointHistory;
 import com.newbit.purchase.command.domain.aggregate.PointType;
 import com.newbit.purchase.command.domain.repository.PointHistoryRepository;
@@ -38,8 +39,18 @@ public class PointTransactionCommandService {
         Integer menteeBalance = userService.addPoint(menteeId, amount);
         Integer mentorBalance = userService.addPoint(mentorId, amount);
 
-        savePointHistory(menteeId, findPointType("팁 " + amount + "제공"), coffeechatId, menteeBalance);
-        savePointHistory(mentorId, findPointType("팁 " + amount + "수령"), coffeechatId, mentorBalance);
+        savePointHistory(
+                menteeId,
+                findPointType(String.format(PointTypeConstants.TIPS_PROVIDED, amount)),
+                coffeechatId,
+                menteeBalance
+        );
+        savePointHistory(
+                mentorId,
+                findPointType(String.format(PointTypeConstants.RECEIVE_TIPS, amount)),
+                coffeechatId,
+                mentorBalance
+        );
     }
 
     private PointType findPointType(String pointTypeName) {

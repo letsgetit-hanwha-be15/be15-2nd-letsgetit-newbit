@@ -10,6 +10,7 @@ import com.newbit.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.purchase.command.application.service.PointTransactionCommandService;
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -83,7 +84,7 @@ class ReviewCommandServiceTest {
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         when(mentorService.getUserIdByMentorId(mentorId)).thenReturn(5L);
         doNothing().when(pointTransactionCommandService).giveTipPoint(coffeechatId, userId, 5L, tip);
-        doNothing().when(pointTransactionCommandService).givePointByType(userId, "커피챗 리뷰 적립", review.getReviewId());
+        doNothing().when(pointTransactionCommandService).givePointByType(userId, PointTypeConstants.REVIEW, review.getReviewId());
 
         // when & then
         assertDoesNotThrow(() -> reviewCommandService.createReview(userId, request));
@@ -92,7 +93,7 @@ class ReviewCommandServiceTest {
         verify(reviewRepository).findByCoffeechatId(coffeechatId);
         verify(reviewRepository).save(any(Review.class));
         verify(pointTransactionCommandService).giveTipPoint(coffeechatId, userId, 5L, tip);
-        verify(pointTransactionCommandService).givePointByType(userId, "커피챗 리뷰 적립", reviewId);
+        verify(pointTransactionCommandService).givePointByType(userId, PointTypeConstants.REVIEW, reviewId);
 
         ArgumentCaptor<Review> reviewCaptor = ArgumentCaptor.forClass(Review.class);
         verify(reviewRepository).save(reviewCaptor.capture());
@@ -188,7 +189,7 @@ class ReviewCommandServiceTest {
         when(reviewRepository.findByCoffeechatId(coffeechatId)).thenReturn(Optional.empty());
         when(reviewRepository.save(any(Review.class))).thenReturn(review);
         // tip이 없으므로 giveTipPoint 호출은 발생하지 않아야 함.
-        doNothing().when(pointTransactionCommandService).givePointByType(userId, "커피챗 리뷰 적립", reviewId);
+        doNothing().when(pointTransactionCommandService).givePointByType(userId, PointTypeConstants.REVIEW, reviewId);
 
         // when & then
         assertDoesNotThrow(() -> reviewCommandService.createReview(userId, request));
@@ -200,7 +201,7 @@ class ReviewCommandServiceTest {
         // 팁이 없으므로 팁 지급은 호출되지 않아야 함
         verify(pointTransactionCommandService, never()).giveTipPoint(anyLong(), anyLong(), anyLong(), any());
         // 내용이 존재하므로 리뷰 적립 포인트 지급은 호출됨
-        verify(pointTransactionCommandService).givePointByType(userId, "커피챗 리뷰 적립", reviewId);
+        verify(pointTransactionCommandService).givePointByType(userId, PointTypeConstants.REVIEW, reviewId);
 
         ArgumentCaptor<Review> reviewCaptor = ArgumentCaptor.forClass(Review.class);
         verify(reviewRepository).save(reviewCaptor.capture());
