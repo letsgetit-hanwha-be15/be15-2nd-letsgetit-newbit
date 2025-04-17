@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.newbit.column.domain.Series;
-import com.newbit.column.repository.SeriesRepository;
+import com.newbit.column.service.SeriesService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
 import com.newbit.subscription.dto.response.SubscriptionResponse;
@@ -38,10 +38,10 @@ class SubscriptionServiceTest {
     private SubscriptionRepository subscriptionRepository;
 
     @Mock
-    private SeriesRepository seriesRepository;
+    private SeriesService seriesService;
     
     @Mock
-    private SubscriptionCommandService manager;
+    private SubscriptionCommandService subscriptionCommandService;
 
     @InjectMocks
     private SubscriptionService subscriptionService;
@@ -51,7 +51,7 @@ class SubscriptionServiceTest {
     }
     
     private void setupSeriesValidation(Long seriesId) {
-        when(seriesRepository.findById(seriesId)).thenReturn(Optional.of(mockSeries()));
+        when(seriesService.getSeries(seriesId)).thenReturn(mockSeries());
     }
     
     private Subscription createSubscription(Long userId, Long seriesId) {
@@ -75,7 +75,7 @@ class SubscriptionServiceTest {
         SubscriptionResponse expectedResponse = SubscriptionResponse.from(createSubscription(userId, seriesId));
         
         when(subscriptionRepository.findById(id)).thenReturn(Optional.empty());
-        when(manager.createNewSubscription(userId, seriesId)).thenReturn(expectedResponse);
+        when(subscriptionCommandService.createNewSubscription(userId, seriesId)).thenReturn(expectedResponse);
         
         // When
         SubscriptionResponse response = subscriptionService.toggleSubscription(seriesId, userId);
@@ -86,8 +86,8 @@ class SubscriptionServiceTest {
         assertThat(response.getSeriesId()).isEqualTo(seriesId);
         assertThat(response.isSubscribed()).isTrue();
         
-        verify(manager).createNewSubscription(userId, seriesId);
-        verify(manager, never()).cancelSubscription(any());
+        verify(subscriptionCommandService).createNewSubscription(userId, seriesId);
+        verify(subscriptionCommandService, never()).cancelSubscription(any());
     }
     
     @Test
@@ -103,7 +103,7 @@ class SubscriptionServiceTest {
         SubscriptionResponse expectedResponse = SubscriptionResponse.canceledSubscription(seriesId, userId);
         
         when(subscriptionRepository.findById(id)).thenReturn(Optional.of(subscription));
-        when(manager.cancelSubscription(subscription)).thenReturn(expectedResponse);
+        when(subscriptionCommandService.cancelSubscription(subscription)).thenReturn(expectedResponse);
         
         // When
         SubscriptionResponse response = subscriptionService.toggleSubscription(seriesId, userId);
@@ -114,8 +114,8 @@ class SubscriptionServiceTest {
         assertThat(response.getSeriesId()).isEqualTo(seriesId);
         assertThat(response.isSubscribed()).isFalse();
         
-        verify(manager).cancelSubscription(subscription);
-        verify(manager, never()).createNewSubscription(anyLong(), anyLong());
+        verify(subscriptionCommandService).cancelSubscription(subscription);
+        verify(subscriptionCommandService, never()).createNewSubscription(anyLong(), anyLong());
     }
     
     @Test
@@ -125,7 +125,7 @@ class SubscriptionServiceTest {
         Long userId = 1L;
         Long nonExistingSeriesId = 999L;
         
-        when(seriesRepository.findById(nonExistingSeriesId)).thenReturn(Optional.empty());
+        when(seriesService.getSeries(nonExistingSeriesId)).thenThrow(new BusinessException(ErrorCode.SERIES_NOT_FOUND));
         
         // When & Then
         BusinessException exception = assertThrows(BusinessException.class, () -> 
@@ -134,8 +134,8 @@ class SubscriptionServiceTest {
         
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SERIES_NOT_FOUND);
         
-        verify(manager, never()).createNewSubscription(anyLong(), anyLong());
-        verify(manager, never()).cancelSubscription(any());
+        verify(subscriptionCommandService, never()).createNewSubscription(anyLong(), anyLong());
+        verify(subscriptionCommandService, never()).cancelSubscription(any());
     }
     
     @Test
@@ -219,7 +219,7 @@ class SubscriptionServiceTest {
         // Given
         Long nonExistingSeriesId = 999L;
         
-        when(seriesRepository.findById(nonExistingSeriesId)).thenReturn(Optional.empty());
+        when(seriesService.getSeries(nonExistingSeriesId)).thenThrow(new BusinessException(ErrorCode.SERIES_NOT_FOUND));
         
         // When & Then
         BusinessException exception = assertThrows(BusinessException.class, () -> 
@@ -250,7 +250,7 @@ class SubscriptionServiceTest {
         
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SUBSCRIPTION_ERROR);
         
-        verify(manager, never()).createNewSubscription(anyLong(), anyLong());
-        verify(manager, never()).cancelSubscription(any());
+        verify(subscriptionCommandService, never()).createNewSubscription(anyLong(), anyLong());
+        verify(subscriptionCommandService, never()).cancelSubscription(any());
     }
 } 

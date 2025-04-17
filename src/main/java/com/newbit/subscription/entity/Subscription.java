@@ -18,12 +18,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "subscription_list")
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
@@ -51,4 +49,15 @@ public class Subscription {
     @Column(name = "updated_at")
     @Schema(description = "최종 상태 변경 시간", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
+    
+    public static Subscription createSubscription(Long userId, Long seriesId) {
+        return Subscription.builder()
+                .userId(userId)
+                .seriesId(seriesId)
+                .build();
+    }
+    
+    public SubscriptionId getId() {
+        return new SubscriptionId(userId, seriesId);
+    }
 } 
