@@ -235,4 +235,11 @@ public class PostService {
         return post.getTitle();
     }
 
+    @Transactional
+    public void deletePostAsAdmin(Long postId) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+        post.softDelete();
+    }
+
 }

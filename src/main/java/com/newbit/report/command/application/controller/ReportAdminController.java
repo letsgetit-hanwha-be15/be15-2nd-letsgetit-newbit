@@ -33,8 +33,13 @@ public class ReportAdminController {
     public ResponseEntity<ApiResponse<ReportCommandResponse>> processReport(
             @Parameter(description = "신고 처리 정보", required = true)
             @RequestBody @Valid ReportUpdateRequest request) {
-        ReportCommandResponse response = reportCommandService.processReport(request.getReportId(), request.getStatus());
-        ApiResponse<ReportCommandResponse> apiResponse = ApiResponse.success(response);
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+        try {
+            ReportCommandResponse response = reportCommandService.processReport(request.reportId(), request.status());
+            ApiResponse<ReportCommandResponse> apiResponse = ApiResponse.success(response);
+            return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+        } catch (Exception e) {
+            ApiResponse<ReportCommandResponse> apiResponse = ApiResponse.failure("REPORT_PROCESS_ERROR", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponse);
+        }
     }
 } 

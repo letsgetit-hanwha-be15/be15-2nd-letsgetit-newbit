@@ -1,6 +1,7 @@
 package com.newbit.report.command.infrastructure.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -27,14 +28,16 @@ public class JpaReportRepository implements ReportRepository {
     }
     
     @Override
-    public Report findById(Long id) {
-        return jpaRepository.findById(id).orElse(null);
+    public Optional<Report> findById(Long id) {
+        return jpaRepository.findById(id);
     }
     
+    @Override
     public List<Report> findAllByPostId(Long postId) {
         return jpaRepository.findAllByPostId(postId);
     }
     
+    @Override
     public List<Report> findAllByCommentId(Long commentId) {
         return jpaRepository.findAllByCommentId(commentId);
     }

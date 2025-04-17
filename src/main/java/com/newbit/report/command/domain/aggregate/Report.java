@@ -85,11 +85,15 @@ public class Report {
                 .build();
     }
     
-    /**
-     * 기존 테스트 코드와의 호환성을 위해 ReportType의 ID를 반환
-     * @return 신고 유형 ID
-     */
     public Long getReportTypeId() {
         return reportType != null ? reportType.getId() : null;
+    }
+    
+    public Long getPostId() {
+        return this.postId;
+    }
+    
+    public Long getCommentId() {
+        return this.commentId;
     }
 }

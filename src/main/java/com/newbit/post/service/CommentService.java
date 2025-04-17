@@ -85,6 +85,20 @@ public class CommentService {
     }
 
     @Transactional
+    public void deleteCommentAsAdmin(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+        comment.softDelete();
+    }
+    
+    @Transactional(readOnly = true)
+    public Long getPostIdByCommentId(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+        return comment.getPost().getId();
+    }
+
+    @Transactional
     public void increaseReportCount(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));

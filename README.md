@@ -6,7 +6,11 @@
 
 ## 📝 프로젝트 소개
 
-NewBit은 개발자를 위한 멘토링 플랫폼으로, 멘토와 멘티 간의 연결을 통해 개발 지식 공유와 커리어 성장을 지원합니다. 현재는 모놀리식으로 개발되어 있지만 향후 MSA 아키텍처를 적용한 확장성 있는 백엔드 시스템을 구축하여 안정적인 서비스 제공을 목표로 합니다.
+**이 레포지토리는 한화 BEYOND 부트캠프 15기 'LetsGetIt' 팀의 학습과 협업을 위한 프로젝트 파일을 담고 있습니다.<br>
+모든 문서와 코드에 서술된 내용은 학습 목적으로 설정된 가상의 데이터와 환경을 기반으로 작성되었습니다.**
+
+NewBit은 개발자를 위한 멘토링 플랫폼으로, 멘토와 멘티 간의 연결을 통해 개발 지식 공유와 커리어 성장을 지원합니다.<br>
+현재는 모놀리식으로 개발되어 있지만 향후 MSA 아키텍처를 적용한 확장성 있는 백엔드 시스템을 구축하여 안정적인 서비스 제공을 목표로 합니다.
 
 ## 👨‍👩‍👧‍👦 팀원
 
@@ -52,7 +56,11 @@ NewBit은 개발자를 위한 멘토링 플랫폼으로, 멘토와 멘티 간의
 
 </div>
 
-## 📚 문서
+## 🔗 문서 링크
+
+### 프레젠테이션
+
+- [Powerpoint 문서](https://docs.google.com/presentation/d/11G4_GNc5dlZcgKw5RPP-vGZSRRCIeN7t/edit#slide=id.p1)
 
 ### API 문서
 
@@ -62,7 +70,18 @@ NewBit은 개발자를 위한 멘토링 플랫폼으로, 멘토와 멘티 간의
 
 - [DDD 설계 문서](https://miro.com/app/board/uXjVINvVwgo=/?share_link_id=532750127721)
 - [요구사항 명세서](https://docs.google.com/spreadsheets/d/1aflf9F-G79LgBtK9sxy4J_ZFPHslv-X5P6s3-67kGR4/edit?gid=2084470607#gid=2084470607)
+
+### 테스크 결과 보고서
+
 - [테스트 결과 보고서](https://docs.google.com/document/d/1eEU6sED_ITLF-2X6D3e6yWcYB-gYg7WDk_agsvssvpw/edit?tab=t.0)
+- [Test Coverage Report](https://64etuor.github.io/700_studies/2501-2507-%ED%95%9C%ED%99%94beyond-sw%EC%BA%A0%ED%94%84/1_%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8/2%EC%B0%A8-%EB%B0%B1%EC%97%94%EB%93%9C/test_report/jacocoHtml/)
+- [JUnit Test Report](https://64etuor.github.io/700_studies/2501-2507-%ED%95%9C%ED%99%94beyond-sw%EC%BA%A0%ED%94%84/1_%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8/2%EC%B0%A8-%EB%B0%B1%EC%97%94%EB%93%9C/test_report/reports/tests/test/)
+
+## 💾 ERD
+
+프로젝트 데이터베이스 설계는 아래 링크에서 확인할 수 있습니다:
+
+- [ERD Cloud - NewBit 데이터베이스 설계](https://www.erdcloud.com/d/u5XEXGDGqbanZgQNK)
 
 ## 🏗 아키텍처
 
@@ -71,12 +90,6 @@ NewBit은 개발자를 위한 멘토링 플랫폼으로, 멘토와 멘티 간의
 향후에 MSA(Microservice Architecture)로 리팩토링 될 예정입니다.
 
 - [MSA 아키텍처 구조도](https://drive.google.com/file/d/1hwv_3-6wvwWICz7X8pHirrVbbir8UUcg/view)
-
-## 💾 ERD
-
-프로젝트 데이터베이스 설계는 아래 링크에서 확인할 수 있습니다:
-
-- [ERD Cloud - NewBit 데이터베이스 설계](https://www.erdcloud.com/d/u5XEXGDGqbanZgQNK)
 
 ## 📋 주요 기능
 

@@ -77,7 +77,7 @@ class ReportProcessIntegrationTest {
         Post savedPost = postRepository.save(testPost);
                 
         // 2. 신고 생성
-        ReportCreateRequest reportCreateRequest = new ReportCreateRequest(1L, savedPost.getId(), testReportType.getId(), "테스트 신고입니다.");
+        ReportCreateRequest reportCreateRequest = ReportCreateRequest.forPost(1L, savedPost.getId(), testReportType.getId(), "테스트 신고입니다.");
         
         mockMvc.perform(post("/api/v1/reports/post")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -101,7 +101,8 @@ class ReportProcessIntegrationTest {
         assertNotNull(updatedPost.getDeletedAt());
         
         // 5. 신고 상태 확인
-        Report updatedReport = reportRepository.findById(report.getReportId());
+        Report updatedReport = reportRepository.findById(report.getReportId())
+                .orElseThrow(() -> new RuntimeException("저장된 신고를 찾을 수 없습니다."));
         assertEquals(ReportStatus.DELETED, updatedReport.getStatus());
     }
     
@@ -120,7 +121,7 @@ class ReportProcessIntegrationTest {
         Post savedPost = postRepository.save(testPost);
         
         // 2. 신고 생성
-        ReportCreateRequest reportCreateRequest = new ReportCreateRequest(1L, savedPost.getId(), testReportType.getId(), "임계값 테스트 신고입니다.");
+        ReportCreateRequest reportCreateRequest = ReportCreateRequest.forPost(1L, savedPost.getId(), testReportType.getId(), "임계값 테스트 신고입니다.");
         
         mockMvc.perform(post("/api/v1/reports/post")
                 .contentType(MediaType.APPLICATION_JSON)
