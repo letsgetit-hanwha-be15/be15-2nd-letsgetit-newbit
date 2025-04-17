@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.newbit.post.entity.Comment;
-import com.newbit.post.entity.Post;
-import com.newbit.post.repository.CommentRepository;
-import com.newbit.post.repository.PostRepository;
+import com.newbit.common.exception.BusinessException;
+import com.newbit.common.exception.ErrorCode;
+import com.newbit.post.service.CommentService;
+import com.newbit.post.service.PostService;
 import com.newbit.report.command.application.dto.request.ReportCreateRequest;
 import com.newbit.report.command.application.dto.response.ReportCommandResponse;
 import com.newbit.report.command.domain.aggregate.Report;
@@ -26,63 +26,61 @@ public class ReportCommandService {
 
     private final ReportRepository reportRepository;
     private final ReportTypeRepository reportTypeRepository;
-    private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
+    private final PostService postService;
+    private final CommentService commentService;
 
     private static final int REPORT_THRESHOLD = 50;
 
     public ReportCommandResponse createPostReport(ReportCreateRequest request) {
-        if (request.getPostId() == null) {
-            throw new IllegalArgumentException("게시글 ID는 필수입니다.");
+        if (request.postId() == null) {
+            throw new BusinessException(ErrorCode.REPORT_CONTENT_NOT_FOUND);
         }
         
-        ReportType reportType = reportTypeRepository.findById(request.getReportTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 신고 유형입니다."));
+        ReportType reportType = reportTypeRepository.findById(request.reportTypeId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.REPORT_TYPE_NOT_FOUND));
 
         Report report = Report.createPostReport(
-                request.getUserId(),
-                request.getPostId(),
+                request.userId(),
+                request.postId(),
                 reportType,
-                request.getContent()
+                request.content()
         );
         
         Report savedReport = reportRepository.save(report);
         
-        incrementPostReportCount(request.getPostId());
+        incrementPostReportCount(request.postId());
         
         return new ReportCommandResponse(savedReport);
     }
 
     public ReportCommandResponse createCommentReport(ReportCreateRequest request) {
-        if (request.getCommentId() == null) {
-            throw new IllegalArgumentException("댓글 ID는 필수입니다.");
+        if (request.commentId() == null) {
+            throw new BusinessException(ErrorCode.REPORT_CONTENT_NOT_FOUND);
         }
 
-        ReportType reportType = reportTypeRepository.findById(request.getReportTypeId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 신고 유형입니다."));
+        ReportType reportType = reportTypeRepository.findById(request.reportTypeId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.REPORT_TYPE_NOT_FOUND));
 
         Report report = Report.createCommentReport(
-                request.getUserId(),
-                request.getCommentId(),
+                request.userId(),
+                request.commentId(),
                 reportType,
-                request.getContent()
+                request.content()
         );
         
         Report savedReport = reportRepository.save(report);
         
-        incrementCommentReportCount(request.getCommentId());
+        incrementCommentReportCount(request.commentId());
         
         return new ReportCommandResponse(savedReport);
     }
     
     private boolean incrementPostReportCount(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+        postService.increaseReportCount(postId);
         
-        post.setReportCount(post.getReportCount() + 1);
-        
-        if (post.getReportCount() >= REPORT_THRESHOLD) {
-            post.softDelete();
+        int reportCount = postService.getReportCountByPostId(postId);
+        if (reportCount >= REPORT_THRESHOLD) {
+            postService.deletePostAsAdmin(postId);
             
             List<Report> reports = reportRepository.findAllByPostId(postId);
             for (Report report : reports) {
@@ -96,13 +94,11 @@ public class ReportCommandService {
     }
     
     private boolean incrementCommentReportCount(Long commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
+        commentService.increaseReportCount(commentId);
         
-        comment.setReportCount(comment.getReportCount() + 1);
-        
-        if (comment.getReportCount() >= REPORT_THRESHOLD) {
-            comment.softDelete();
+        int reportCount = commentService.getReportCount(commentId);
+        if (reportCount >= REPORT_THRESHOLD) {
+            commentService.deleteCommentAsAdmin(commentId);
             
             List<Report> reports = reportRepository.findAllByCommentId(commentId);
             for (Report report : reports) {
@@ -116,24 +112,16 @@ public class ReportCommandService {
     }
     
     public ReportCommandResponse processReport(Long reportId, ReportStatus newStatus) {
-        Report report = reportRepository.findById(reportId);
-        if (report == null) {
-            throw new IllegalArgumentException("존재하지 않는 신고입니다.");
-        }
+        Report report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.REPORT_NOT_FOUND));
         
         report.updateStatus(newStatus);
         
         if (newStatus == ReportStatus.DELETED) {
             if (report.getPostId() != null) {
-                Post post = postRepository.findById(report.getPostId())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
-                
-                post.softDelete();
+                postService.deletePostAsAdmin(report.getPostId());
             } else if (report.getCommentId() != null) {
-                Comment comment = commentRepository.findById(report.getCommentId())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
-                
-                comment.softDelete();
+                commentService.deleteCommentAsAdmin(report.getCommentId());
             }
         }
         

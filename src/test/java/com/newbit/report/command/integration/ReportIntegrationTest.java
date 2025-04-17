@@ -108,7 +108,7 @@ class ReportIntegrationTest {
         Long reportTypeId = 1L;
         String content = "이 게시글은 스팸입니다.";
 
-        ReportCreateRequest request = new ReportCreateRequest(testUserId, testPostId, reportTypeId, content);
+        ReportCreateRequest request = ReportCreateRequest.forPost(testUserId, testPostId, reportTypeId, content);
         System.out.println("신고 생성 요청 준비: userId=" + testUserId + ", postId=" + testPostId + ", reportTypeId=" + reportTypeId);
 
         // When
@@ -144,8 +144,9 @@ class ReportIntegrationTest {
         
         // 2. DB에서 직접 조회하여 저장 여부 확인
         System.out.println("===== DB 저장 검증 시작 =====");
-        Report savedReport = reportRepository.findById(response.getReportId());
-        System.out.println("DB에서 신고 조회 완료: " + (savedReport != null ? "성공" : "실패"));
+        Report savedReport = reportRepository.findById(response.getReportId())
+                .orElseThrow(() -> new RuntimeException("저장된 신고를 찾을 수 없습니다."));
+        System.out.println("DB에서 신고 조회 완료: 성공");
         
         assertThat(savedReport).isNotNull();
         System.out.println("저장된 신고가 null이 아님 검증 완료");
@@ -178,7 +179,7 @@ class ReportIntegrationTest {
         Long reportTypeId = 1L;
         String content = "이 댓글은 스팸입니다.";
 
-        ReportCreateRequest request = new ReportCreateRequest(testUserId, testCommentId, reportTypeId, content, true);
+        ReportCreateRequest request = ReportCreateRequest.forComment(testUserId, testCommentId, reportTypeId, content);
         System.out.println("신고 생성 요청 준비: userId=" + testUserId + ", commentId=" + testCommentId + ", reportTypeId=" + reportTypeId);
 
         // When
@@ -214,8 +215,9 @@ class ReportIntegrationTest {
         
         // 2. DB에서 직접 조회하여 저장 여부 확인
         System.out.println("===== DB 저장 검증 시작 =====");
-        Report savedReport = reportRepository.findById(response.getReportId());
-        System.out.println("DB에서 신고 조회 완료: " + (savedReport != null ? "성공" : "실패"));
+        Report savedReport = reportRepository.findById(response.getReportId())
+                .orElseThrow(() -> new RuntimeException("저장된 신고를 찾을 수 없습니다."));
+        System.out.println("DB에서 신고 조회 완료: 성공");
         
         assertThat(savedReport).isNotNull();
         System.out.println("저장된 신고가 null이 아님 검증 완료");

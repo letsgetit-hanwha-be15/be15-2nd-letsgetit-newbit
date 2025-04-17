@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,10 +17,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.newbit.post.entity.Comment;
-import com.newbit.post.entity.Post;
 import com.newbit.post.repository.CommentRepository;
 import com.newbit.post.repository.PostRepository;
+import com.newbit.post.service.CommentService;
+import com.newbit.post.service.PostService;
 import com.newbit.report.command.application.dto.request.ReportCreateRequest;
 import com.newbit.report.command.application.dto.response.ReportCommandResponse;
 import com.newbit.report.command.domain.aggregate.Report;
@@ -45,6 +44,12 @@ class ReportCommandServiceTest {
     @Mock
     private CommentRepository commentRepository;
     
+    @Mock
+    private PostService postService;
+    
+    @Mock
+    private CommentService commentService;
+    
     @InjectMocks
     private ReportCommandService reportCommandService;
     
@@ -57,7 +62,7 @@ class ReportCommandServiceTest {
         Long reportTypeId = 1L;
         String content = "신고 내용";
         
-        ReportCreateRequest postReportRequest = new ReportCreateRequest(userId, postId, reportTypeId, content);
+        ReportCreateRequest postReportRequest = ReportCreateRequest.forPost(userId, postId, reportTypeId, content);
         
         // ReportType 모킹
         ReportType reportType = mock(ReportType.class);
@@ -67,16 +72,8 @@ class ReportCommandServiceTest {
         Report report = mock(Report.class);
         when(reportRepository.save(any(Report.class))).thenReturn(report);
         
-        // Post 모킹
-        Post post = Post.builder()
-                .id(postId)
-                .title("테스트 게시글")
-                .content("테스트 내용")
-                .userId(2L)
-                .reportCount(0)
-                .build();
-        
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        // PostService 모킹
+        when(postService.getReportCountByPostId(postId)).thenReturn(1);
         
         // When
         ReportCommandResponse response = reportCommandService.createPostReport(postReportRequest);
@@ -84,7 +81,8 @@ class ReportCommandServiceTest {
         // Then
         assertNotNull(response);
         verify(reportRepository, times(1)).save(any(Report.class));
-        verify(postRepository, times(1)).findById(postId);
+        verify(postService, times(1)).increaseReportCount(postId);
+        verify(postService, times(1)).getReportCountByPostId(postId);
     }
     
     @Test
@@ -96,16 +94,7 @@ class ReportCommandServiceTest {
         Long reportTypeId = 1L;
         String content = "신고 내용";
         
-        ReportCreateRequest postReportRequest = new ReportCreateRequest(userId, postId, reportTypeId, content);
-        
-        // 임계값 직전의 게시글 설정
-        Post postWithHighReportCount = Post.builder()
-                .id(postId)
-                .title("많은 신고를 받은 게시글")
-                .content("신고가 많은 내용")
-                .userId(2L)
-                .reportCount(49) // 임계값 직전
-                .build();
+        ReportCreateRequest postReportRequest = ReportCreateRequest.forPost(userId, postId, reportTypeId, content);
         
         // ReportType 모킹
         ReportType reportType = mock(ReportType.class);
@@ -114,7 +103,9 @@ class ReportCommandServiceTest {
         // Report 모킹
         Report report = mock(Report.class);
         when(reportRepository.save(any(Report.class))).thenReturn(report);
-        when(postRepository.findById(postId)).thenReturn(Optional.of(postWithHighReportCount));
+        
+        // PostService 모킹 - 임계값에 도달하도록 설정
+        when(postService.getReportCountByPostId(postId)).thenReturn(50);
         
         // 관련 신고 리스트 모킹
         Report mockReport1 = mock(Report.class);
@@ -127,9 +118,13 @@ class ReportCommandServiceTest {
         
         // Then
         assertNotNull(response);
-        assertEquals(50, postWithHighReportCount.getReportCount()); // 50개로 증가
-        assertNotNull(postWithHighReportCount.getDeletedAt()); // 삭제일시 설정됨
+        verify(reportRepository, times(1)).save(any(Report.class));
+        verify(postService, times(1)).increaseReportCount(postId);
+        verify(postService, times(1)).getReportCountByPostId(postId);
+        verify(postService, times(1)).deletePostAsAdmin(postId);
         verify(reportRepository, times(1)).findAllByPostId(postId);
+        verify(mockReport1, times(1)).updateStatus(ReportStatus.DELETED);
+        verify(mockReport2, times(1)).updateStatus(ReportStatus.DELETED);
     }
     
     @Test
@@ -140,7 +135,7 @@ class ReportCommandServiceTest {
         
         // Report 모킹
         Report report = mock(Report.class);
-        when(reportRepository.findById(reportId)).thenReturn(report);
+        when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         
         // When
         ReportCommandResponse response = reportCommandService.processReport(reportId, ReportStatus.NOT_VIOLATED);
@@ -163,17 +158,7 @@ class ReportCommandServiceTest {
         when(report.getReportId()).thenReturn(reportId);
         when(report.getPostId()).thenReturn(postId);
         when(report.getCommentId()).thenReturn(null);
-        when(reportRepository.findById(reportId)).thenReturn(report);
-        
-        // Post 모킹
-        Post post = Post.builder()
-                .id(postId)
-                .title("테스트 게시글")
-                .content("테스트 내용")
-                .userId(2L)
-                .build();
-        
-        when(postRepository.findById(postId)).thenReturn(Optional.of(post));
+        when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         
         // When
         ReportCommandResponse response = reportCommandService.processReport(reportId, ReportStatus.DELETED);
@@ -181,9 +166,8 @@ class ReportCommandServiceTest {
         // Then
         assertNotNull(response);
         verify(report, times(1)).updateStatus(ReportStatus.DELETED);
-        assertNotNull(post.getDeletedAt()); // 삭제일시 설정됨
         verify(reportRepository, times(1)).findById(reportId);
-        verify(postRepository, times(1)).findById(postId);
+        verify(postService, times(1)).deletePostAsAdmin(postId);
     }
     
     @Test
@@ -195,7 +179,7 @@ class ReportCommandServiceTest {
         Long reportTypeId = 1L;
         String content = "댓글 신고 내용";
         
-        ReportCreateRequest commentReportRequest = new ReportCreateRequest(userId, commentId, reportTypeId, content, true);
+        ReportCreateRequest commentReportRequest = ReportCreateRequest.forComment(userId, commentId, reportTypeId, content);
         
         // ReportType 모킹
         ReportType reportType = mock(ReportType.class);
@@ -205,32 +189,17 @@ class ReportCommandServiceTest {
         Report report = mock(Report.class);
         when(reportRepository.save(any(Report.class))).thenReturn(report);
         
-        // Comment 모킹
-        Post post = Post.builder()
-                .id(1L)
-                .title("테스트 게시글")
-                .content("테스트 내용")
-                .userId(2L)
-                .build();
-                
-        Comment comment = Comment.builder()
-                .id(commentId)
-                .content("테스트 댓글")
-                .userId(2L)
-                .post(post)
-                .reportCount(0)
-                .build();
-        
-        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        // CommentService 모킹
+        when(commentService.getReportCount(commentId)).thenReturn(1);
         
         // When
         ReportCommandResponse response = reportCommandService.createCommentReport(commentReportRequest);
         
         // Then
         assertNotNull(response);
-        assertEquals(1, comment.getReportCount()); // 신고 횟수 증가 확인
         verify(reportRepository, times(1)).save(any(Report.class));
-        verify(commentRepository, times(1)).findById(commentId);
+        verify(commentService, times(1)).increaseReportCount(commentId);
+        verify(commentService, times(1)).getReportCount(commentId);
     }
     
     @Test
@@ -242,23 +211,7 @@ class ReportCommandServiceTest {
         Long reportTypeId = 1L;
         String content = "댓글 신고 내용";
         
-        ReportCreateRequest commentReportRequest = new ReportCreateRequest(userId, commentId, reportTypeId, content, true);
-        
-        // 임계값 직전의 댓글 설정
-        Post post = Post.builder()
-                .id(1L)
-                .title("테스트 게시글")
-                .content("테스트 내용")
-                .userId(2L)
-                .build();
-                
-        Comment commentWithHighReportCount = Comment.builder()
-                .id(commentId)
-                .content("신고가 많은 댓글")
-                .userId(2L)
-                .post(post)
-                .reportCount(49) // 임계값 직전
-                .build();
+        ReportCreateRequest commentReportRequest = ReportCreateRequest.forComment(userId, commentId, reportTypeId, content);
         
         // ReportType 모킹
         ReportType reportType = mock(ReportType.class);
@@ -267,7 +220,9 @@ class ReportCommandServiceTest {
         // Report 모킹
         Report report = mock(Report.class);
         when(reportRepository.save(any(Report.class))).thenReturn(report);
-        when(commentRepository.findById(commentId)).thenReturn(Optional.of(commentWithHighReportCount));
+        
+        // CommentService 모킹 - 임계값에 도달하도록 설정
+        when(commentService.getReportCount(commentId)).thenReturn(50);
         
         // 관련 신고 리스트 모킹
         Report mockReport1 = mock(Report.class);
@@ -280,8 +235,10 @@ class ReportCommandServiceTest {
         
         // Then
         assertNotNull(response);
-        assertEquals(50, commentWithHighReportCount.getReportCount()); // 50개로 증가
-        assertNotNull(commentWithHighReportCount.getDeletedAt()); // 삭제일시 설정됨
+        verify(reportRepository, times(1)).save(any(Report.class));
+        verify(commentService, times(1)).increaseReportCount(commentId);
+        verify(commentService, times(1)).getReportCount(commentId);
+        verify(commentService, times(1)).deleteCommentAsAdmin(commentId);
         verify(reportRepository, times(1)).findAllByCommentId(commentId);
         verify(mockReport1, times(1)).updateStatus(ReportStatus.DELETED);
         verify(mockReport2, times(1)).updateStatus(ReportStatus.DELETED);
@@ -299,24 +256,7 @@ class ReportCommandServiceTest {
         when(report.getReportId()).thenReturn(reportId);
         when(report.getPostId()).thenReturn(null);
         when(report.getCommentId()).thenReturn(commentId);
-        when(reportRepository.findById(reportId)).thenReturn(report);
-        
-        // Comment 모킹
-        Post post = Post.builder()
-                .id(1L)
-                .title("테스트 게시글")
-                .content("테스트 내용")
-                .userId(2L)
-                .build();
-                
-        Comment comment = Comment.builder()
-                .id(commentId)
-                .content("테스트 댓글")
-                .userId(2L)
-                .post(post)
-                .build();
-        
-        when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
+        when(reportRepository.findById(reportId)).thenReturn(Optional.of(report));
         
         // When
         ReportCommandResponse response = reportCommandService.processReport(reportId, ReportStatus.DELETED);
@@ -324,8 +264,7 @@ class ReportCommandServiceTest {
         // Then
         assertNotNull(response);
         verify(report, times(1)).updateStatus(ReportStatus.DELETED);
-        assertNotNull(comment.getDeletedAt()); // 삭제일시 설정됨
         verify(reportRepository, times(1)).findById(reportId);
-        verify(commentRepository, times(1)).findById(commentId);
+        verify(commentService, times(1)).deleteCommentAsAdmin(commentId);
     }
 } 
