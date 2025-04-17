@@ -60,13 +60,12 @@ class AdminColumnServiceTest {
         // given
         Long requestId = 1L;
         Long adminUserId = 100L;
+        Long mentorId = 10L;
         ApproveColumnRequestDto dto = new ApproveColumnRequestDto();
         ReflectionTestUtils.setField(dto, "columnRequestId", requestId);
 
-        User user = User.builder().userId(1L).email("mentor@example.com").build();
-        Mentor mentor = Mentor.builder().mentorId(10L).user(user).build();
         Series series = Series.builder().seriesId(1L).build();
-        Column column = Column.builder().columnId(10L).title("테스트 칼럼").series(series).mentor(mentor).build();
+        Column column = Column.builder().columnId(10L).title("테스트 칼럼").series(series).mentorId(mentorId).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(requestId)
                 .requestType(RequestType.CREATE)
@@ -120,13 +119,13 @@ class AdminColumnServiceTest {
         // given
         Long requestId = 3L;
         Long adminUserId = 101L;
+        Long mentorId = 10L;
+
         RejectColumnRequestDto dto = new RejectColumnRequestDto();
         ReflectionTestUtils.setField(dto, "columnRequestId", requestId);
         ReflectionTestUtils.setField(dto, "reason", "부적절한 내용");
 
-        User user = User.builder().userId(1L).email("mentor@example.com").build();
-        Mentor mentor = Mentor.builder().mentorId(10L).user(user).build();
-        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentor(mentor).build();
+        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentorId(mentorId).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(requestId)
                 .requestType(RequestType.CREATE)
@@ -173,21 +172,11 @@ class AdminColumnServiceTest {
     void approveUpdateColumnRequest_success() {
         // given
         Long columnRequestId = 1L;
-        Long adminUserId = 99L;
 
-        User user = User.builder()
-                .userId(1L)
-                .email("mentor@example.com")
-                .build();
-
-        Mentor mentor = Mentor.builder()
-                .mentorId(10L)
-                .user(user)
-                .build();
 
         Column column = Column.builder()
-                .columnId(100L)
-                .mentor(mentor)
+                .columnId(200L)
+                .mentorId(20L)
                 .title("기존 제목")
                 .build();
 
@@ -213,7 +202,7 @@ class AdminColumnServiceTest {
 
         // when
         AdminColumnResponseDto result = adminColumnService.approveUpdateColumnRequest(
-                createApproveDto(columnRequestId), adminUserId);
+                createApproveDto(columnRequestId), 1L);
 
         // then
         assertThat(result.getRequestId()).isEqualTo(columnRequestId);
@@ -246,10 +235,9 @@ class AdminColumnServiceTest {
         // given
         Long columnRequestId = 3L;
         Long adminUserId = 99L;
+        Long mentorId = 10L;
 
-        User user = User.builder().userId(1L).email("mentor@example.com").build();
-        Mentor mentor = Mentor.builder().mentorId(10L).user(user).build();
-        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentor(mentor).build();
+        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentorId(mentorId).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(columnRequestId)
                 .requestType(RequestType.UPDATE)
@@ -295,21 +283,12 @@ class AdminColumnServiceTest {
         // given
         Long columnRequestId = 11L;
         Long adminUserId = 99L;
-
-        User user = User.builder()
-                .userId(1L)
-                .email("mentor@example.com")
-                .build();
-
-        Mentor mentor = Mentor.builder()
-                .mentorId(10L)
-                .user(user)
-                .build();
+        Long mentorId = 10L;
 
         Column column = Column.builder()
                 .columnId(100L)
                 .title("삭제 대상 칼럼")
-                .mentor(mentor)
+                .mentorId(mentorId)
                 .build();
 
         ColumnRequest request = ColumnRequest.builder()
@@ -362,10 +341,8 @@ class AdminColumnServiceTest {
         // given
         Long columnRequestId = 13L;
         Long adminUserId = 99L;
-
-        User user = User.builder().userId(1L).email("mentor@example.com").build();
-        Mentor mentor = Mentor.builder().mentorId(10L).user(user).build();
-        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentor(mentor).build();
+        Long mentorId = 10L;
+        Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentorId(mentorId).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(columnRequestId)
                 .requestType(RequestType.DELETE)

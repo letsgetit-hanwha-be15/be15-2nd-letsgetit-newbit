@@ -43,7 +43,7 @@ public class MentorSettlementController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Long userId = customUser.getUserId();
-        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
+        Long mentorId = mentorService.getMentorIdByUserId(userId);
         MentorSettlementListResponseDto response = mentorSettlementService.getMySettlements(mentorId, page, size);
         return ApiResponse.success(response);
     }
@@ -65,7 +65,7 @@ public class MentorSettlementController {
             @PathVariable Long settlementId
     ) {
         Long userId = customUser.getUserId();
-        Long mentorId = mentorService.getMentorEntityByUserId(userId).getMentorId();
+        Long mentorId = mentorService.getMentorIdByUserId(userId);
         mentorSettlementService.sendSettlementEmail(mentorId, settlementId);
         return ApiResponse.success(null);
     }
