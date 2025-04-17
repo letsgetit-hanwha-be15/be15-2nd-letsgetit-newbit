@@ -11,6 +11,7 @@ import com.newbit.notification.command.application.service.NotificationCommandSe
 import com.newbit.purchase.command.application.dto.CoffeeChatPurchaseRequest;
 import com.newbit.purchase.command.application.dto.ColumnPurchaseRequest;
 import com.newbit.purchase.command.application.dto.MentorAuthorityPurchaseRequest;
+import com.newbit.purchase.command.domain.PointTypeConstants;
 import com.newbit.purchase.command.domain.aggregate.*;
 import com.newbit.purchase.command.domain.repository.*;
 import com.newbit.user.dto.response.MentorDTO;
@@ -67,10 +68,10 @@ class PurchaseCommandServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        when(pointTypeRepository.findById(anyLong()))
+        when(pointTypeRepository.findByPointTypeName(PointTypeConstants.MENTOR_AUTHORITY_PURCHASE))
                 .thenReturn(Optional.of(PointType.builder()
                         .pointTypeId(1L)
-                        .pointTypeName("구매 테스트용 타입")
+                        .pointTypeName(PointTypeConstants.MENTOR_AUTHORITY_PURCHASE)
                         .increaseAmount(null)
                         .decreaseAmount(null)
                         .createdAt(LocalDateTime.now())
