@@ -2,59 +2,52 @@ package com.newbit.like.service;
 
 import java.util.Optional;
 
-import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
-import com.newbit.notification.command.application.service.NotificationCommandService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.newbit.column.service.ColumnService;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
-import com.newbit.column.domain.Column;
-import com.newbit.column.repository.ColumnRepository;
 import com.newbit.like.dto.response.ColumnLikeResponse;
 import com.newbit.like.dto.response.PostLikeResponse;
 import com.newbit.like.entity.Like;
 import com.newbit.like.repository.LikeRepository;
-import com.newbit.post.entity.Post;
-import com.newbit.post.repository.PostRepository;
+import com.newbit.notification.command.application.dto.request.NotificationSendRequest;
+import com.newbit.notification.command.application.service.NotificationCommandService;
+import com.newbit.post.service.PostService;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LikeCommandService {
 
     private final LikeRepository likeRepository;
-    private final PostRepository postRepository;
-    private final ColumnRepository columnRepository;
+    private final PostService postService;
+    private final ColumnService columnService;
     private final PointRewardService pointRewardService;
     private final NotificationCommandService notificationCommandService;
 
     @Transactional
     public PostLikeResponse togglePostLike(Long postId, Long userId) {
         try {
-            Post post = findPostById(postId);
+            checkPostExists(postId);
             
-            if (post.getUserId() != null && post.getUserId().equals(userId)) {
+            Long authorId = postService.getWriterIdByPostId(postId);
+            if (authorId != null && authorId.equals(userId)) {
                 throw new BusinessException(ErrorCode.LIKE_SELF_NOT_ALLOWED);
             }
             
             Optional<Like> existingLike = findExistingPostLike(postId, userId);
             
             if (existingLike.isPresent()) {
-                return unlikePost(existingLike.get(), post);
+                return unlikePost(existingLike.get(), postId);
             } else {
-                return likePost(postId, userId, post);
+                return likePost(postId, userId);
             }
         } catch (BusinessException e) {
-            log.error("좋아요 처리 중 비즈니스 예외 발생: postId={}, userId={}, errorCode={}, message={}",
-                    postId, userId, e.getErrorCode(), e.getMessage());
             throw e;
         } catch (Exception e) {
-            log.error("좋아요 처리 중 예기치 않은 오류 발생: postId={}, userId={}, error={}", 
-                    postId, userId, e.getMessage(), e);
             throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
@@ -62,88 +55,83 @@ public class LikeCommandService {
     @Transactional
     public ColumnLikeResponse toggleColumnLike(Long columnId, Long userId) {
         try {
-            Column column = findColumnById(columnId);
+            columnService.getColumn(columnId);
             
-            if (column.getMentor() != null && 
-                column.getMentor().getUser() != null && 
-                column.getMentor().getUser().getUserId() != null && 
-                column.getMentor().getUser().getUserId().equals(userId)) {
+            if (columnService.isColumnAuthor(columnId, userId)) {
                 throw new BusinessException(ErrorCode.LIKE_SELF_NOT_ALLOWED);
             }
             
             Optional<Like> existingLike = findExistingColumnLike(columnId, userId);
             
             if (existingLike.isPresent()) {
-                return unlikeColumn(existingLike.get(), column);
+                return unlikeColumn(existingLike.get(), columnId);
             } else {
-                return likeColumn(columnId, userId, column);
+                return likeColumn(columnId, userId);
             }
         } catch (BusinessException e) {
-            log.error("칼럼 좋아요 처리 중 비즈니스 예외 발생: columnId={}, userId={}, errorCode={}, message={}",
-                    columnId, userId, e.getErrorCode(), e.getMessage());
             throw e;
         } catch (Exception e) {
-            log.error("칼럼 좋아요 처리 중 예기치 않은 오류 발생: columnId={}, userId={}, error={}", 
-                    columnId, userId, e.getMessage(), e);
             throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
 
-    private Post findPostById(Long postId) {
-        return postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> {
-                    log.warn("좋아요 처리를 위한 게시글을 찾을 수 없음: postId={}", postId);
-                    return new BusinessException(ErrorCode.POST_NOT_FOUND);
-                });
+    private void checkPostExists(Long postId) {
+        postService.getReportCountByPostId(postId);
     }
 
     private Optional<Like> findExistingPostLike(Long postId, Long userId) {
         return likeRepository.findByPostIdAndUserIdAndIsDeleteFalse(postId, userId);
     }
 
-    private PostLikeResponse unlikePost(Like like, Post post) {
+    private PostLikeResponse unlikePost(Like like, Long postId) {
         try {
-            like.setDelete(true);
+            like.markAsDeleted();
             likeRepository.save(like);
             
-            decreaseLikeCount(post);
+            postService.decreaseLikeCount(postId);
             
-            return PostLikeResponse.unliked(post.getId(), like.getUserId(), post.getLikeCount());
+            int updatedLikeCount = likeRepository.countByPostIdAndIsDeleteFalse(postId);
+            
+            return PostLikeResponse.unliked(postId, like.getUserId(), updatedLikeCount);
         } catch (Exception e) {
-            log.error("좋아요 취소 처리 중 오류 발생: postId={}, userId={}, error={}", 
-                    post.getId(), like.getUserId(), e.getMessage(), e);
             throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
 
-    private PostLikeResponse likePost(Long postId, Long userId, Post post) {
+    private PostLikeResponse likePost(Long postId, Long userId) {
         try {
             Like like = createPostLike(postId, userId);
             likeRepository.save(like);
             
-            increaseLikeCount(post);
+            postService.increaseLikeCount(postId);
             
-            pointRewardService.givePointIfFirstLike(postId, userId, post.getUserId());
+            Long authorId = postService.getWriterIdByPostId(postId);
+            pointRewardService.givePointIfFirstLike(postId, userId, authorId);
 
-            if(isFibonacci(post.getLikeCount())){
+            int updatedLikeCount = likeRepository.countByPostIdAndIsDeleteFalse(postId);
+            
+            if (isFibonacci(updatedLikeCount)) {
+                String title = "게시글";
+                try {
+                    title = postService.getPostTitle(postId);
+                } catch (Exception e) {
+                }
+                
                 String notificationContent = String.format("'%s' 게시글이 좋아요를 받았습니다. (총 %d개)",
-                        post.getTitle(), post.getLikeCount());
+                        title, updatedLikeCount);
 
                 notificationCommandService.sendNotification(
                         new NotificationSendRequest(
-                                post.getUserId()
-                                , 2L // 예: 좋아요 알림 유형 ID
-                                , postId,
+                                authorId,
+                                2L, // 예: 좋아요 알림 유형 ID
+                                postId,
                                 notificationContent
                         )
                 );
             }
-
             
-            return PostLikeResponse.of(like, post.getLikeCount());
+            return PostLikeResponse.of(like, updatedLikeCount);
         } catch (Exception e) {
-            log.error("좋아요 추가 처리 중 오류 발생: postId={}, userId={}, error={}", 
-                    postId, userId, e.getMessage(), e);
             throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
@@ -155,88 +143,90 @@ public class LikeCommandService {
                 .isDelete(false)
                 .build();
     }
-
-    private void decreaseLikeCount(Post post) {
-        post.setLikeCount(Math.max(0, post.getLikeCount() - 1));
-        postRepository.save(post);
-    }
-
-    private void increaseLikeCount(Post post) {
-        post.setLikeCount(post.getLikeCount() + 1);
-        postRepository.save(post);
-    }
-    
-    private Column findColumnById(Long columnId) {
-        return columnRepository.findById(columnId)
-                .orElseThrow(() -> {
-                    log.warn("좋아요 처리를 위한 칼럼을 찾을 수 없음: columnId={}", columnId);
-                    return new BusinessException(ErrorCode.COLUMN_NOT_FOUND);
-                });
-    }
     
     private Optional<Like> findExistingColumnLike(Long columnId, Long userId) {
         return likeRepository.findByColumnIdAndUserIdAndIsDeleteFalse(columnId, userId);
     }
     
-    private ColumnLikeResponse unlikeColumn(Like like, Column column) {
+    private ColumnLikeResponse unlikeColumn(Like like, Long columnId) {
         try {
-            like.setDelete(true);
+            like.markAsDeleted();
             likeRepository.save(like);
             
-            column.decreaseLikeCount();
-            columnRepository.save(column);
+            columnService.decreaseLikeCount(columnId);
             
-            return ColumnLikeResponse.unliked(column.getColumnId(), like.getUserId(), column.getLikeCount());
+            int updatedLikeCount = likeRepository.countByColumnIdAndIsDeleteFalse(columnId);
+            
+            return ColumnLikeResponse.unliked(columnId, like.getUserId(), updatedLikeCount);
         } catch (Exception e) {
-            log.error("칼럼 좋아요 취소 처리 중 오류 발생: columnId={}, userId={}, error={}", 
-                    column.getColumnId(), like.getUserId(), e.getMessage(), e);
             throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
     
-    private ColumnLikeResponse likeColumn(Long columnId, Long userId, Column column) {
+    private ColumnLikeResponse likeColumn(Long columnId, Long userId) {
         try {
             Like like = createColumnLike(columnId, userId);
             likeRepository.save(like);
             
-            column.increaseLikeCount();
-            columnRepository.save(column);
+            columnService.increaseLikeCount(columnId);
+            
+            int updatedLikeCount = likeRepository.countByColumnIdAndIsDeleteFalse(columnId);
 
-            if(isFibonacci(column.getLikeCount()) && column.getMentor() != null && 
-               column.getMentor().getUser() != null && 
-               column.getMentor().getUser().getUserId() != null) {
+            if(isFibonacci(updatedLikeCount)) {
+                String title = "칼럼";
+                try {
+                    title = columnService.getColumnTitle(columnId);
+                } catch (Exception ignored) {
+                }
                 
                 String notificationContent = String.format("'%s' 칼럼이 좋아요를 받았습니다. (총 %d개)",
-                        column.getTitle(), column.getLikeCount());
+                        title, updatedLikeCount);
 
-                notificationCommandService.sendNotification(
-                        new NotificationSendRequest(
-                                column.getMentor().getUser().getUserId()
-                                , 2L // 예: 좋아요 알림 유형 ID
-                                , columnId,
-                                notificationContent
-                        )
-                );
+                // 멘토 정보 조회 및 알림 발송
+                try {
+                    Long mentorId = columnService.getColumn(columnId).getMentorId();
+                    if (mentorId != null) {
+                        Long authorId = columnService.getUserIdByMentorId(mentorId);
+                        if (authorId != null) {
+                            notificationCommandService.sendNotification(
+                                    new NotificationSendRequest(
+                                            authorId,
+                                            2L, // 예: 좋아요 알림 유형 ID
+                                            columnId,
+                                            notificationContent
+                                    )
+                            );
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
             }
 
-            return ColumnLikeResponse.of(like, column.getLikeCount());
+            return ColumnLikeResponse.of(like, updatedLikeCount);
         } catch (Exception e) {
-            log.error("칼럼 좋아요 추가 처리 중 오류 발생: columnId={}, userId={}, error={}", 
-                    columnId, userId, e.getMessage(), e);
             throw new BusinessException(ErrorCode.LIKE_ERROR);
         }
     }
 
     private boolean isFibonacci(int n) {
-        int a = 0, b = 1;
-        while (b < n) {
-            int temp = b;
-            b = a + b;
-            a = temp;
+        if (n <= 0) return false;
+        
+        if (n == 1 || n == 2 || n == 3 || n == 5 || n == 8 || n == 13 || 
+            n == 21 || n == 34 || n == 55 || n == 89 || n == 144) {
+            return true;
         }
-        return b == n;
+        
+        if (n > 100) {
+            return isPerfectSquare(5 * n * n + 4) || isPerfectSquare(5 * n * n - 4);
+        }
+        
+        return false;
     }
-
+    
+    private boolean isPerfectSquare(int n) {
+        int sqrt = (int) Math.sqrt(n);
+        return sqrt * sqrt == n;
+    }
 
     private Like createColumnLike(Long columnId, Long userId) {
         return Like.builder()
@@ -245,4 +235,4 @@ public class LikeCommandService {
                 .isDelete(false)
                 .build();
     }
-} 
+}

@@ -8,8 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.newbit.column.domain.Column;
-import com.newbit.column.repository.ColumnRepository;
+import com.newbit.column.service.ColumnService;
 import com.newbit.common.dto.Pagination;
 import com.newbit.common.exception.BusinessException;
 import com.newbit.common.exception.ErrorCode;
@@ -19,10 +18,7 @@ import com.newbit.like.dto.response.LikedPostListResponse;
 import com.newbit.like.dto.response.LikedPostResponse;
 import com.newbit.like.entity.Like;
 import com.newbit.like.repository.LikeRepository;
-import com.newbit.post.entity.Post;
-import com.newbit.post.repository.PostRepository;
-import com.newbit.user.entity.User;
-import com.newbit.user.repository.UserRepository;
+import com.newbit.post.service.PostService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 public class LikeQueryService {
     
     private final LikeRepository likeRepository;
-    private final PostRepository postRepository;
-    private final ColumnRepository columnRepository;
-    private final UserRepository userRepository;
+    private final PostService postService;
+    private final ColumnService columnService;
     
     @Transactional(readOnly = true)
     public boolean isPostLiked(Long postId, Long userId) {
@@ -104,45 +99,59 @@ public class LikeQueryService {
     private List<LikedPostResponse> mapToLikedPostResponses(List<Like> likes) {
         return likes.stream()
             .map(like -> {
-                Post post = postRepository.findByIdAndDeletedAtIsNull(like.getPostId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+                try {
+                    Long postId = like.getPostId();
                     
-                String authorNickname = userRepository.findById(post.getUserId())
-                    .map(User::getNickname)
-                    .orElse("알 수 없음");
+                    postService.getReportCountByPostId(postId);
                     
-                return LikedPostResponse.builder()
-                    .likeId(like.getId())
-                    .postId(post.getId())
-                    .postTitle(post.getTitle())
-                    .authorId(post.getUserId())
-                    .authorNickname(authorNickname)
-                    .likedAt(like.getCreatedAt())
-                    .build();
+                    String postTitle = postService.getPostTitle(postId);
+                    Long authorId = postService.getWriterIdByPostId(postId);
+                    
+                    return LikedPostResponse.builder()
+                        .likeId(like.getId())
+                        .postId(postId)
+                        .postTitle(postTitle)
+                        .authorId(authorId)
+                        .likedAt(like.getCreatedAt())
+                        .build();
+                } catch (Exception e) {
+                    log.warn("좋아요한 게시글 정보 조회 실패: likeId={}, postId={}, 오류={}", like.getId(), like.getPostId(), e.getMessage());
+                    return null;
+                }
             })
+            .filter(response -> response != null)
             .collect(Collectors.toList());
     }
     
     private List<LikedColumnResponse> mapToLikedColumnResponses(List<Like> likes) {
         return likes.stream()
             .map(like -> {
-                Column column = columnRepository.findById(like.getColumnId())
-                    .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
-                
-                Long authorId = column.getMentor().getUser().getUserId();
-                String authorNickname = userRepository.findById(authorId)
-                    .map(User::getNickname)
-                    .orElse("알 수 없음");
+                try {
+                    Long columnId = like.getColumnId();
                     
-                return LikedColumnResponse.builder()
-                    .likeId(like.getId())
-                    .columnId(column.getColumnId())
-                    .columnTitle(column.getTitle())
-                    .authorId(authorId)
-                    .authorNickname(authorNickname)
-                    .likedAt(like.getCreatedAt())
-                    .build();
+                    String columnTitle = columnService.getColumnTitle(columnId);
+                    Long mentorId = columnService.getMentorIdByColumnId(columnId);
+                    
+                    if (mentorId == null) {
+                        log.warn("칼럼의 멘토 정보가 없음: columnId={}", columnId);
+                        return null;
+                    }
+                    
+                    Long authorId = columnService.getUserIdByMentorId(mentorId);
+                    
+                    return LikedColumnResponse.builder()
+                        .likeId(like.getId())
+                        .columnId(columnId)
+                        .columnTitle(columnTitle)
+                        .authorId(authorId)
+                        .likedAt(like.getCreatedAt())
+                        .build();
+                } catch (Exception e) {
+                    log.warn("좋아요한 칼럼 정보 조회 실패: likeId={}, columnId={}, 오류={}", like.getId(), like.getColumnId(), e.getMessage());
+                    return null;
+                }
             })
+            .filter(response -> response != null)
             .collect(Collectors.toList());
     }
     

@@ -19,12 +19,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "`like`")
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
@@ -64,4 +62,12 @@ public class Like {
     @Column(name = "updated_at")
     @Schema(description = "수정 시간", accessMode = Schema.AccessMode.READ_ONLY)
     private LocalDateTime updatedAt;
+
+    public void markAsDeleted() {
+        this.isDelete = true;
+    }
+    
+    public void cancelDelete() {
+        this.isDelete = false;
+    }
 } 

@@ -31,19 +31,6 @@ public class PostService {
     private final PointTransactionCommandService pointTransactionCommandService;
 
     @Transactional
-    public PostResponse updatePost(Long postId, PostUpdateRequest request, CustomUser user) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-
-        if (!post.getUserId().equals(user.getUserId())) {
-            throw new BusinessException(ErrorCode.UNAUTHORIZED_TO_UPDATE_POST);
-        }
-
-        post.update(request.getTitle(), request.getContent());
-        return new PostResponse(post);
-    }
-
-    @Transactional
     public PostResponse createPost(PostCreateRequest request, CustomUser user) {
         if (user == null) {
             throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);
@@ -75,6 +62,19 @@ public class PostService {
     public List<PostResponse> searchPosts(String keyword) {
         List<Post> posts = postRepository.searchByKeyword(keyword);
         return posts.stream().map(PostResponse::new).toList();
+    }
+
+    @Transactional
+    public PostResponse updatePost(Long postId, PostUpdateRequest request, CustomUser user) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+
+        if (!post.getUserId().equals(user.getUserId())) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_TO_UPDATE_POST);
+        }
+
+        post.update(request.getTitle(), request.getContent());
+        return new PostResponse(post);
     }
 
     @Transactional
@@ -187,6 +187,52 @@ public class PostService {
         }
 
         post.softDelete();
+    }
+
+    @Transactional
+    public void increaseLikeCount(Long postId) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+        post.increaseLikeCount();
+    }
+
+    @Transactional
+    public void decreaseLikeCount(Long postId) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+        post.decreaseLikeCount();
+    }
+
+    @Transactional
+    public void increaseReportCount(Long postId) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+        post.increaseReportCount();
+    }
+
+    @Transactional(readOnly = true)
+    public int getReportCountByPostId(Long postId) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+        return post.getReportCount();
+    }
+
+    @Transactional(readOnly = true)
+    public Long getWriterIdByPostId(Long postId) {
+        return postRepository.findUserIdByPostId(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public Post getPost(Long postId) {
+        return postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+    }
+    
+    @Transactional(readOnly = true)
+    public String getPostTitle(Long postId) {
+        Post post = getPost(postId);
+        return post.getTitle();
     }
 
 }
