@@ -15,6 +15,7 @@ import com.newbit.notification.command.application.service.NotificationCommandSe
 import com.newbit.subscription.service.SubscriptionService;
 import com.newbit.user.entity.Mentor;
 import com.newbit.user.entity.User;
+import com.newbit.user.service.MentorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,9 @@ class AdminColumnServiceTest {
     private AdminColumnMapper adminColumnMapper;
 
     @Mock
+    private MentorService mentorService;
+
+    @Mock
     private NotificationCommandService notificationCommandService;
 
     @Mock
@@ -61,10 +65,12 @@ class AdminColumnServiceTest {
         Long requestId = 1L;
         Long adminUserId = 100L;
         Long mentorId = 10L;
+        Long seriesId = 5L;
+
         ApproveColumnRequestDto dto = new ApproveColumnRequestDto();
         ReflectionTestUtils.setField(dto, "columnRequestId", requestId);
 
-        Series series = Series.builder().seriesId(1L).build();
+        Series series = Series.builder().seriesId(seriesId).title("테스트 시리즈").build();
         Column column = Column.builder().columnId(10L).title("테스트 칼럼").series(series).mentorId(mentorId).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(requestId)
@@ -120,11 +126,13 @@ class AdminColumnServiceTest {
         Long requestId = 3L;
         Long adminUserId = 101L;
         Long mentorId = 10L;
+        Long seriesId = 5L;
 
         RejectColumnRequestDto dto = new RejectColumnRequestDto();
         ReflectionTestUtils.setField(dto, "columnRequestId", requestId);
         ReflectionTestUtils.setField(dto, "reason", "부적절한 내용");
 
+        Series series = Series.builder().seriesId(seriesId).title("테스트 시리즈").build();
         Column column = Column.builder().columnId(10L).title("테스트 칼럼").mentorId(mentorId).build();
         ColumnRequest request = ColumnRequest.builder()
                 .columnRequestId(requestId)
