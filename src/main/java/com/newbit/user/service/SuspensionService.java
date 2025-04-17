@@ -1,6 +1,7 @@
 package com.newbit.user.service;
 
 import com.newbit.user.entity.User;
+import com.newbit.user.port.ReportCountPort;
 import com.newbit.user.repository.UserRepository;
 import com.newbit.post.repository.PostRepository;
 import com.newbit.post.repository.CommentRepository;
@@ -14,13 +15,10 @@ import java.time.LocalDateTime;
 public class SuspensionService {
 
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
+    private final ReportCountPort reportCountPort;
 
     public void checkAndSuspendUser(Long userId) {
-        int postReports = postRepository.sumReportCountByUserId(userId);
-        int commentReports = commentRepository.sumReportCountByUserId(userId);
-        int totalReports = postReports + commentReports;
+        int totalReports = reportCountPort.getTotalReportCountByUserId(userId);
 
         if (totalReports >= 50 && totalReports % 50 == 0) {
             User user = userRepository.findById(userId)
