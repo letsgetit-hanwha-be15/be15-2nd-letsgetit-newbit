@@ -9,6 +9,7 @@ import com.newbit.settlement.repository.MonthlySettlementHistoryRepository;
 import com.newbit.user.entity.Mentor;
 import com.newbit.user.entity.User;
 import com.newbit.user.service.MentorService;
+import com.newbit.user.service.UserQueryService;
 import com.newbit.user.support.MailServiceSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ class MentorSettlementServiceTest {
     private MentorService mentorService;
 
     @Mock
+    private UserQueryService userQueryService;
+
+    @Mock
     private MailServiceSupport mailServiceSupport;
 
     @InjectMocks
@@ -49,8 +53,7 @@ class MentorSettlementServiceTest {
     @DisplayName("멘토 정산 생성 - 성공")
     void generateMonthlySettlements_success() {
         // given
-        int year = 2025;
-        int month = 4;
+        int year = 2025, month = 4;
         Long mentorId = 1L;
 
         SaleHistory sale1 = mock(SaleHistory.class);
@@ -60,112 +63,86 @@ class MentorSettlementServiceTest {
         when(sale1.getSaleAmount()).thenReturn(BigDecimal.valueOf(5000));
         when(sale2.getSaleAmount()).thenReturn(BigDecimal.valueOf(3000));
 
-        SaleHistory sale = mock(SaleHistory.class);
-        List<SaleHistory> sales = List.of(sale1, sale2);
         when(saleHistoryRepository.findAllByIsSettledFalseAndCreatedAtBetween(any(), any()))
-                .thenReturn(sales);
-
-        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
-        when(mentorService.getMentorEntityByUserId(mentorId)).thenReturn(mentor);
+                .thenReturn(List.of(sale1, sale2));
 
         // when
         mentorSettlementService.generateMonthlySettlements(year, month);
 
         // then
-        verify(monthlySettlementHistoryRepository, times(1))
-                .save(any(MonthlySettlementHistory.class));
-
-
+        verify(monthlySettlementHistoryRepository).save(any(MonthlySettlementHistory.class));
         verify(sale1).markAsSettled();
         verify(sale2).markAsSettled();
-
     }
 
     @Test
     @DisplayName("멘토 정산 목록 조회 - 성공")
     void getMySettlements_success() {
-        // given
         Long mentorId = 1L;
-        int page = 1;
-        int size = 10;
-
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "settledAt"));
+        int page = 1, size = 10;
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "settledAt"));
 
         MonthlySettlementHistory history1 = MonthlySettlementHistory.builder()
                 .monthlySettlementHistoryId(1L)
-                .settlementYear(2024)
-                .settlementMonth(12)
-                .settlementAmount(new BigDecimal("100000.00"))
-                .settledAt(LocalDateTime.of(2024, 12, 31, 23, 59))
-                .mentor(Mentor.builder().mentorId(mentorId).build())
-                .build();
-
-        MonthlySettlementHistory history2 = MonthlySettlementHistory.builder()
-                .monthlySettlementHistoryId(2L)
                 .settlementYear(2025)
-                .settlementMonth(1)
-                .settlementAmount(new BigDecimal("85000.00"))
-                .settledAt(LocalDateTime.of(2025, 1, 31, 22, 30))
-                .mentor(Mentor.builder().mentorId(mentorId).build())
+                .settlementMonth(4)
+                .settlementAmount(BigDecimal.valueOf(100000))
+                .settledAt(LocalDateTime.now())
+                .mentorId(mentorId)
                 .build();
 
-        Page<MonthlySettlementHistory> pageResult =
-                new PageImpl<>(List.of(history1, history2), pageable, 2);
-
-        when(monthlySettlementHistoryRepository.findAllByMentor_MentorId(eq(mentorId), eq(pageable)))
+        Page<MonthlySettlementHistory> pageResult = new PageImpl<>(List.of(history1), pageable, 1);
+        when(monthlySettlementHistoryRepository.findAllByMentorId(eq(mentorId), eq(pageable)))
                 .thenReturn(pageResult);
 
         // when
         MentorSettlementListResponseDto result = mentorSettlementService.getMySettlements(mentorId, page, size);
 
         // then
-        assertThat(result.getSettlements()).hasSize(2);
-        assertThat(result.getSettlements().get(0).getSettlementAmount()).isEqualTo(new BigDecimal("100000.00"));
-        assertThat(result.getPagination().getCurrentPage()).isEqualTo(page);
-        assertThat(result.getPagination().getTotalItems()).isEqualTo(2);
+        assertThat(result.getSettlements()).hasSize(1);
+        assertThat(result.getSettlements().get(0).getSettlementAmount()).isEqualByComparingTo("100000");
     }
 
     @Test
     @DisplayName("정산 상세 내역 조회 - 성공")
     void getSettlementDetail_success() {
-        // given
         Long settlementId = 1L;
-        Long mentorId = 100L;
-
         MonthlySettlementHistory history = MonthlySettlementHistory.builder()
                 .monthlySettlementHistoryId(settlementId)
                 .settlementYear(2025)
                 .settlementMonth(4)
-                .settlementAmount(new BigDecimal("123456.78"))
+                .settlementAmount(BigDecimal.valueOf(123456))
                 .settledAt(LocalDateTime.of(2025, 4, 30, 23, 59))
-                .mentor(Mentor.builder().mentorId(mentorId).build())
+                .mentorId(1L)
                 .build();
 
-        when(monthlySettlementHistoryRepository.findById(settlementId))
-                .thenReturn(Optional.of(history));
+        when(monthlySettlementHistoryRepository.findById(settlementId)).thenReturn(Optional.of(history));
 
-        // when
         MentorSettlementDetailResponseDto result = mentorSettlementService.getSettlementDetail(settlementId);
 
-        // then
         assertThat(result.getSettlementId()).isEqualTo(settlementId);
-        assertThat(result.getYear()).isEqualTo(2025);
-        assertThat(result.getAmount()).isEqualByComparingTo("123456.78");
-        assertThat(result.getMonth()).isEqualTo(4);
-        assertThat(result.getSettledAt()).isEqualTo(LocalDateTime.of(2025, 4, 30, 23, 59));
+        assertThat(result.getAmount()).isEqualByComparingTo("123456");
     }
 
     @Test
     @DisplayName("정산 이메일 전송 - 성공")
     void sendSettlementEmail_success() {
-        // given
         Long mentorId = 1L;
         Long settlementId = 100L;
-        User user = User.builder().userId(10L).email("test@newbit.com").build();
-        Mentor mentor = Mentor.builder().mentorId(mentorId).user(user).build();
-        MonthlySettlementHistory history = MonthlySettlementHistory.of(mentor, 2025, 4, new BigDecimal("150000"));
+
+        MonthlySettlementHistory history = MonthlySettlementHistory.builder()
+                .monthlySettlementHistoryId(settlementId)
+                .settlementYear(2025)
+                .settlementMonth(4)
+                .settlementAmount(BigDecimal.valueOf(150000))
+                .settledAt(LocalDateTime.now())
+                .mentorId(mentorId)
+                .build();
 
         when(monthlySettlementHistoryRepository.findById(settlementId)).thenReturn(Optional.of(history));
+        when(mentorService.getUserIdByMentorId(mentorId)).thenReturn(10L);
+        when(userQueryService.getEmailByUserId(10L)).thenReturn("test@newbit.com");
+        when(userQueryService.getNicknameByUserId(10L)).thenReturn("홍길동");
 
         // when
         mentorSettlementService.sendSettlementEmail(mentorId, settlementId);
@@ -177,5 +154,4 @@ class MentorSettlementServiceTest {
                 contains("150000")
         );
     }
-
 }

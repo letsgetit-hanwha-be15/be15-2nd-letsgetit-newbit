@@ -37,13 +37,12 @@ public class MonthlySettlementHistory {
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mentor_id", nullable = false)
-    private Mentor mentor;
+    @Column(name = "mentor_id", nullable = false)
+    private Long mentorId;
 
-    public static MonthlySettlementHistory of(Mentor mentor, int year, int month, BigDecimal amount) {
+    public static MonthlySettlementHistory of(Long mentorId, int year, int month, BigDecimal amount) {
         return MonthlySettlementHistory.builder()
-                .mentor(mentor)
+                .mentorId(mentorId)
                 .settlementYear(year)
                 .settlementMonth(month)
                 .settlementAmount(amount)

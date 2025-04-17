@@ -10,9 +10,8 @@ import com.newbit.settlement.dto.response.MentorSettlementListResponseDto;
 import com.newbit.settlement.dto.response.MentorSettlementSummaryDto;
 import com.newbit.settlement.entity.MonthlySettlementHistory;
 import com.newbit.settlement.repository.MonthlySettlementHistoryRepository;
-import com.newbit.user.entity.Mentor;
-import com.newbit.user.entity.User;
 import com.newbit.user.service.MentorService;
+import com.newbit.user.service.UserQueryService;
 import com.newbit.user.support.MailServiceSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,6 +38,7 @@ public class MentorSettlementService {
     private final MonthlySettlementHistoryRepository monthlySettlementHistoryRepository;
     private final MentorService mentorService;
     private final MailServiceSupport mailServiceSupport;
+    private final UserQueryService userQueryService;
 
     @Transactional
     public void generateMonthlySettlements(int year, int month) {
@@ -64,9 +64,7 @@ public class MentorSettlementService {
                     .map(SaleHistory::getSaleAmount)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            Mentor mentor = mentorService.getMentorEntityByUserId(mentorId);
-
-            MonthlySettlementHistory settlement = MonthlySettlementHistory.of(mentor, year, month, totalAmount);
+            MonthlySettlementHistory settlement = MonthlySettlementHistory.of(mentorId, year, month, totalAmount);
             monthlySettlementHistoryRepository.save(settlement);
 
             // 해당 판매내역 정산처리
@@ -78,7 +76,7 @@ public class MentorSettlementService {
     public MentorSettlementListResponseDto getMySettlements(Long mentorId, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "settledAt"));
         Page<MonthlySettlementHistory> resultPage =
-                monthlySettlementHistoryRepository.findAllByMentor_MentorId(mentorId, pageable);
+                monthlySettlementHistoryRepository.findAllByMentorId(mentorId, pageable);
 
         List<MentorSettlementSummaryDto> content = resultPage.getContent().stream()
                 .map(MentorSettlementSummaryDto::from)
@@ -107,12 +105,14 @@ public class MentorSettlementService {
         MonthlySettlementHistory history = monthlySettlementHistoryRepository.findById(settlementId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SETTLEMENT_NOT_FOUND));
 
-        if(!history.getMentor().getMentorId().equals(mentorId)) {
+        if(!history.getMentorId().equals(mentorId)) {
             throw new BusinessException(ErrorCode.SETTLEMENT_NOT_FOUND);
         }
 
-        User user = history.getMentor().getUser();
-        String toEmail = user.getEmail();
+        Long userId = mentorService.getUserIdByMentorId(mentorId);
+        String email = userQueryService.getEmailByUserId(userId);
+        String nickname = userQueryService.getNicknameByUserId(userId);
+
         String subject = "[Newbit] 월별 정산 내역 안내";
         String content = String.format("""
                 <h3>안녕하세요, %s님</h3>
@@ -123,14 +123,14 @@ public class MentorSettlementService {
                 </ul>
                 <p>감사합니다.</p>
                 """,
-                user.getNickname(),
+                nickname,
                 history.getSettlementYear(),
                 history.getSettlementMonth(),
                 history.getSettlementAmount().toPlainString(),
                 history.getSettledAt().toString()
         );
 
-        mailServiceSupport.sendMailSupport(toEmail, subject, content);
+        mailServiceSupport.sendMailSupport(email, subject, content);
 
     }
 

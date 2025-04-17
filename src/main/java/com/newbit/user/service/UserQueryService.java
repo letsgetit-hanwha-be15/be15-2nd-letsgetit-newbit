@@ -5,6 +5,7 @@ import com.newbit.common.exception.ErrorCode;
 import com.newbit.user.dto.request.MentorListRequestDTO;
 import com.newbit.user.dto.response.*;
 import com.newbit.user.mapper.UserMapper;
+import com.newbit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 public class UserQueryService {
 
     private final UserMapper userMapper;
+    private final UserRepository userRepository;
 
     public OtherUserProfileDTO getOtherUserProfile(Long userId) {
         OtherUserProfileDTO profile = userMapper.getOtherUserProfile(userId);
@@ -53,5 +55,17 @@ public class UserQueryService {
             throw new BusinessException(ErrorCode.MENTOR_NOT_FOUND);
         }
         return mentors;
+    }
+
+    public String getEmailByUserId(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND))
+                .getEmail();
+    }
+
+    public String getNicknameByUserId(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND))
+                .getNickname();
     }
 }

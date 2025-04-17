@@ -205,8 +205,6 @@ class ColumnServiceTest {
         Long userId = 1L;
         Long mentorId = 10L;
 
-        Mentor mentor = Mentor.builder().mentorId(mentorId).build();
-
         Column column1 = Column.builder()
                 .columnId(1L)
                 .title("멘토 칼럼 1")
@@ -259,7 +257,7 @@ class ColumnServiceTest {
         assertThat(result.get(0).getTitle()).isEqualTo("멘토 칼럼 1");
         assertThat(result.get(1).getTitle()).isEqualTo("멘토 칼럼 2");
 
-        verify(mentorService).getMentorIdByUserId(mentorId);
+        verify(mentorService).getMentorIdByUserId(userId);
         verify(columnRepository).findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId);
         verify(columnMapper).toMyColumnListDto(column1);
         verify(columnMapper).toMyColumnListDto(column2);
