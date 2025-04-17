@@ -9,6 +9,7 @@ import com.newbit.settlement.repository.MonthlySettlementHistoryRepository;
 import com.newbit.user.entity.Mentor;
 import com.newbit.user.entity.User;
 import com.newbit.user.service.MentorService;
+import com.newbit.user.service.UserQueryService;
 import com.newbit.user.support.MailServiceSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,9 @@ class MentorSettlementServiceTest {
 
     @Mock
     private MentorService mentorService;
+
+    @Mock
+    private UserQueryService userQueryService;
 
     @Mock
     private MailServiceSupport mailServiceSupport;
@@ -137,8 +141,8 @@ class MentorSettlementServiceTest {
 
         when(monthlySettlementHistoryRepository.findById(settlementId)).thenReturn(Optional.of(history));
         when(mentorService.getUserIdByMentorId(mentorId)).thenReturn(10L);
-        when(mailServiceSupport.getEmailByUserId(10L)).thenReturn("test@newbit.com");
-        when(mailServiceSupport.getNicknameByUserId(10L)).thenReturn("홍길동");
+        when(userQueryService.getEmailByUserId(10L)).thenReturn("test@newbit.com");
+        when(userQueryService.getNicknameByUserId(10L)).thenReturn("홍길동");
 
         // when
         mentorSettlementService.sendSettlementEmail(mentorId, settlementId);

@@ -30,16 +30,4 @@ public class MailServiceSupport {
             throw new BusinessException(ErrorCode.MAIL_SEND_FAIL);
         }
     }
-
-    public String getEmailByUserId(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND))
-                .getEmail();
-    }
-
-    public String getNicknameByUserId(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND))
-                .getNickname();
-    }
 }

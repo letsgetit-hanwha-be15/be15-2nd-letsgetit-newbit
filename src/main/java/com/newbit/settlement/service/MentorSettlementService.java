@@ -10,9 +10,8 @@ import com.newbit.settlement.dto.response.MentorSettlementListResponseDto;
 import com.newbit.settlement.dto.response.MentorSettlementSummaryDto;
 import com.newbit.settlement.entity.MonthlySettlementHistory;
 import com.newbit.settlement.repository.MonthlySettlementHistoryRepository;
-import com.newbit.user.entity.Mentor;
-import com.newbit.user.entity.User;
 import com.newbit.user.service.MentorService;
+import com.newbit.user.service.UserQueryService;
 import com.newbit.user.support.MailServiceSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,6 +38,7 @@ public class MentorSettlementService {
     private final MonthlySettlementHistoryRepository monthlySettlementHistoryRepository;
     private final MentorService mentorService;
     private final MailServiceSupport mailServiceSupport;
+    private final UserQueryService userQueryService;
 
     @Transactional
     public void generateMonthlySettlements(int year, int month) {
@@ -110,8 +110,8 @@ public class MentorSettlementService {
         }
 
         Long userId = mentorService.getUserIdByMentorId(mentorId);
-        String email = mailServiceSupport.getEmailByUserId(userId);
-        String nickname = mailServiceSupport.getNicknameByUserId(userId);
+        String email = userQueryService.getEmailByUserId(userId);
+        String nickname = userQueryService.getNicknameByUserId(userId);
 
         String subject = "[Newbit] 월별 정산 내역 안내";
         String content = String.format("""
