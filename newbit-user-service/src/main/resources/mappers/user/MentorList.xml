@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.newbit.newbituserservice.user.mapper.UserMapper">
+
+    <select id="findMentors" resultType="com.newbit.newbituserservice.user.dto.response.MentorListResponseDTO">
+        SELECT
+        m.mentor_id AS mentorId,
+        u.user_name AS userName,
+        u.nickname,
+        u.profile_image_url AS profileImageUrl,
+        m.price,
+        m.temperature,
+        ts.techstack_name AS techstackName
+        FROM mentor m
+        JOIN user u ON m.user_id = u.user_id
+        LEFT JOIN user_and_techstack ut ON u.user_id = ut.user_id
+        LEFT JOIN techstack ts ON ut.techstack_id = ts.techstack_id
+        <where>
+            <if test="techstackName != null and techstackName != ''">
+                AND ts.techstack_name = #{techstackName}
+            </if>
+            <if test="userName != null and userName != ''">
+                AND u.user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+        </where>
+        <choose>
+            <when test="coffeechatPrice != null and coffeechatPrice != ''">
+                ORDER BY m.price ${coffeechatPrice}
+            </when>
+            <when test="temperature != null and temperature != ''">
+                ORDER BY m.temperature ${temperature}
+            </when>
+            <otherwise>
+                ORDER BY m.created_at DESC
+            </otherwise>
+        </choose>
+        LIMIT #{size} OFFSET #{page}
+    </select>
+
+</mapper>

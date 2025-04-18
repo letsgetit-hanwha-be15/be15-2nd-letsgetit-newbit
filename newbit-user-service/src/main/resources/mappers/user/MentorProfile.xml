@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.newbit.newbituserservice.user.mapper.UserMapper">
+
+    <!-- 멘토 프로필 기본 정보 -->
+    <select id="findMentorProfile" resultType="com.newbit.newbituserservice.user.dto.response.MentorProfileDTO">
+        SELECT u.user_name       AS userName,
+               u.nickname        AS nickname,
+               u.profile_image_url AS profileImageUrl,
+               j.job_name        AS jobName,
+               m.temperature     AS temperature,
+               m.preferred_time  AS preferredTime,
+               m.is_active       AS isActive,
+               m.price           AS price,
+               GROUP_CONCAT(ts.techstack_name SEPARATOR ', ') AS techstackName
+        FROM mentor m
+                 JOIN user u ON u.user_id = m.user_id
+                 LEFT JOIN job j ON u.job_id = j.job_id
+                 LEFT JOIN user_and_techstack ut ON u.user_id = ut.user_id
+                 LEFT JOIN techstack ts ON ut.techstack_id = ts.techstack_id
+        WHERE m.mentor_id = #{mentorId}
+        GROUP BY u.user_id, u.user_name, u.nickname, u.profile_image_url, j.job_name,
+                 m.temperature, m.preferred_time, m.is_active, m.price
+    </select>
+
+    <!-- 최근 게시글 3개 -->
+    <select id="findMentorPosts" resultType="com.newbit.newbituserservice.user.dto.response.PostDTO">
+        SELECT p.post_id AS postId,
+               p.title,
+               u.nickname AS author,
+               p.created_at AS createdAt
+        FROM post p
+                 JOIN user u ON p.user_id = u.user_id
+                 JOIN mentor m ON u.user_id = m.user_id
+        WHERE m.mentor_id = #{mentorId}
+        ORDER BY p.created_at DESC
+            LIMIT 3
+    </select>
+
+    <!-- 최근 컬럼 3개 -->
+    <select id="findMentorColumns" resultType="com.newbit.newbituserservice.user.dto.response.ColumnDTO">
+        SELECT c.column_id AS columnId,
+               c.title,
+               u.nickname AS author,
+               c.created_at AS createdAt
+        FROM `column` c
+                 JOIN mentor m ON c.mentor_id = m.mentor_id
+                 JOIN user u ON m.user_id = u.user_id
+        WHERE m.mentor_id = #{mentorId}
+        ORDER BY c.created_at DESC
+            LIMIT 3
+    </select>
+
+    <!-- 최근 시리즈 3개 -->
+    <select id="findMentorSeries" resultType="com.newbit.newbituserservice.user.dto.response.SeriesDTO">
+        SELECT s.series_id AS seriesId,
+               s.title,
+               u.nickname AS author,
+               s.created_at AS createdAt
+        FROM series s
+                 JOIN `column` c ON c.series_id = s.series_id
+                 JOIN mentor m ON c.mentor_id = m.mentor_id
+                 JOIN user u ON m.user_id = u.user_id
+        WHERE m.mentor_id = #{mentorId}
+        GROUP BY s.series_id, s.title, u.nickname, s.created_at
+        ORDER BY MAX(c.created_at) DESC
+            LIMIT 3
+    </select>
+
+    <!-- 멘토 리뷰 목록 -->
+    <select id="findReviewsByMentorId" resultType="com.newbit.newbituserservice.user.dto.response.ReviewDTO">
+        SELECT r.user_id AS userId,
+               r.rating,
+               r.comment
+        FROM review r
+                 JOIN coffeechat c ON r.coffeechat_id = c.coffeechat_id
+                 JOIN mentor m ON c.mentor_id = m.mentor_id
+        WHERE m.mentor_id = #{mentorId}
+        ORDER BY r.created_at DESC
+    </select>
+</mapper>
