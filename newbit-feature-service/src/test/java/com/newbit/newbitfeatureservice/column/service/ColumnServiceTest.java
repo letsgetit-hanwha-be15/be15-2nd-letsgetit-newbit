@@ -2,6 +2,7 @@ package com.newbit.newbitfeatureservice.column.service;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
+import com.newbit.newbitfeatureservice.client.user.dto.UserDTO;
 import com.newbit.newbitfeatureservice.column.domain.Column;
 import com.newbit.newbitfeatureservice.column.dto.response.GetColumnDetailResponseDto;
 import com.newbit.newbitfeatureservice.column.dto.response.GetColumnListResponseDto;
@@ -43,6 +44,9 @@ class ColumnServiceTest {
     private MentorFeignClient mentorFeignClient;
 
     @Mock
+    private UserFeignClient userFeignClient;
+
+    @Mock
     private ColumnMapper columnMapper;
 
     @InjectMocks
@@ -72,10 +76,25 @@ class ColumnServiceTest {
                 5,
                 mentorId
         );
-        responseDto.setMentorNickname(nickname);
 
         when(columnRepository.findPublicColumnDetailById(columnId)).thenReturn(Optional.of(responseDto));
         when(columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId)).thenReturn(true);
+        when(mentorFeignClient.getUserIdByMentorId(mentorId)).thenReturn(ApiResponse.success(userId));
+
+        UserDTO userDTO = UserDTO.builder()
+                .userId(userId)
+                .email("test@email.com")
+                .phoneNumber("010-1234-5678")
+                .userName("홍길동")
+                .nickname(nickname)
+                .point(100)
+                .diamond(50)
+                .authority(null)
+                .profileImageUrl("https://example.com/profile.jpg")
+                .jobId("dev")
+                .build();
+
+        when(userFeignClient.getUserByUserId(userId)).thenReturn(ApiResponse.success(userDTO));
 
         // when
         GetColumnDetailResponseDto result = columnService.getColumnDetail(userId, columnId);

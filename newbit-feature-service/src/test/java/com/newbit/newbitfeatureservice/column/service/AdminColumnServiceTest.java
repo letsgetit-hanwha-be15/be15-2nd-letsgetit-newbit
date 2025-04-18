@@ -1,5 +1,6 @@
 package com.newbit.newbitfeatureservice.column.service;
 
+import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
 import com.newbit.newbitfeatureservice.column.domain.Column;
 import com.newbit.newbitfeatureservice.column.domain.ColumnRequest;
 import com.newbit.newbitfeatureservice.column.domain.Series;
@@ -9,6 +10,7 @@ import com.newbit.newbitfeatureservice.column.dto.response.AdminColumnResponseDt
 import com.newbit.newbitfeatureservice.column.enums.RequestType;
 import com.newbit.newbitfeatureservice.column.mapper.AdminColumnMapper;
 import com.newbit.newbitfeatureservice.column.repository.ColumnRequestRepository;
+import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.notification.command.application.service.NotificationCommandService;
@@ -41,6 +43,9 @@ class AdminColumnServiceTest {
 
     @Mock
     private AdminColumnMapper adminColumnMapper;
+
+    @Mock
+    private MentorFeignClient mentorFeignClient;
 
     @Mock
     private NotificationCommandService notificationCommandService;
@@ -82,6 +87,7 @@ class AdminColumnServiceTest {
 
         when(columnRequestRepository.findById(requestId)).thenReturn(Optional.of(request));
         when(adminColumnMapper.toDto(any())).thenReturn(responseDto);
+        when(mentorFeignClient.getUserIdByMentorId(mentorId)).thenReturn(ApiResponse.success(123L));
 
         // when
         AdminColumnResponseDto result = adminColumnService.approveCreateColumnRequest(dto, adminUserId);
@@ -144,6 +150,7 @@ class AdminColumnServiceTest {
 
         when(columnRequestRepository.findById(requestId)).thenReturn(Optional.of(request));
         when(adminColumnMapper.toDto(any())).thenReturn(responseDto);
+        when(mentorFeignClient.getUserIdByMentorId(mentorId)).thenReturn(ApiResponse.success(123L));
 
         // when
         AdminColumnResponseDto result = adminColumnService.rejectCreateColumnRequest(dto, adminUserId);
@@ -174,11 +181,12 @@ class AdminColumnServiceTest {
     void approveUpdateColumnRequest_success() {
         // given
         Long columnRequestId = 1L;
+        Long mentorId = 20L;
 
 
         Column column = Column.builder()
                 .columnId(200L)
-                .mentorId(20L)
+                .mentorId(mentorId)
                 .title("기존 제목")
                 .build();
 
@@ -201,6 +209,7 @@ class AdminColumnServiceTest {
 
         when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
         when(adminColumnMapper.toDto(request)).thenReturn(expectedDto);
+        when(mentorFeignClient.getUserIdByMentorId(mentorId)).thenReturn(ApiResponse.success(123L));
 
         // when
         AdminColumnResponseDto result = adminColumnService.approveUpdateColumnRequest(
@@ -255,6 +264,7 @@ class AdminColumnServiceTest {
 
         when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
         when(adminColumnMapper.toDto(request)).thenReturn(expectedDto);
+        when(mentorFeignClient.getUserIdByMentorId(mentorId)).thenReturn(ApiResponse.success(123L));
 
         // when
         AdminColumnResponseDto result = adminColumnService.rejectUpdateColumnRequest(
@@ -308,6 +318,7 @@ class AdminColumnServiceTest {
 
         when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
         when(adminColumnMapper.toDto(request)).thenReturn(expectedDto);
+        when(mentorFeignClient.getUserIdByMentorId(mentorId)).thenReturn(ApiResponse.success(123L));
 
         // when
         AdminColumnResponseDto result = adminColumnService.approveDeleteColumnRequest(
@@ -358,6 +369,7 @@ class AdminColumnServiceTest {
                 .columnId(3L)
                 .build();
 
+        when(mentorFeignClient.getUserIdByMentorId(mentorId)).thenReturn(ApiResponse.success(123L));
         when(columnRequestRepository.findById(columnRequestId)).thenReturn(Optional.of(request));
         when(adminColumnMapper.toDto(request)).thenReturn(expectedDto);
 
