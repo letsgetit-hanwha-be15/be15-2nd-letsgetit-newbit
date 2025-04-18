@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.newbit.newbitfeatureservice.coffeechat.query.mapper.CoffeechatMapper">
+    <select id="selectCoffeechatById" resultType="CoffeechatDto">
+        SELECT
+        c.coffeechat_id,
+        c.progress_status,
+        c.request_message,
+        c.purchase_quantity,
+        c.confirmed_schedule,
+        c.ended_at,
+        c.mentor_id,
+        c.mentee_id
+        FROM coffeechat c
+        WHERE coffeechat_id = #{ coffeechatId }
+    </select>
+    <select id="selectCoffeechats" resultType="CoffeechatDto">
+        SELECT
+        c.coffeechat_id,
+        c.progress_status,
+        c.request_message,
+        c.mentor_id,
+        c.mentee_id,
+        c.confirmed_schedule
+        FROM coffeechat c
+        <where>
+            <if test="mentorId != null">
+                AND c.mentor_id = #{ mentorId }
+            </if>
+            <if test="menteeId != null">
+                AND c.mentee_id = #{ menteeId }
+            </if>
+            <if test="isProgressing != null">
+                AND c.progress_status NOT IN ('COMPLETE', 'CANCEL')
+            </if>
+            <if test="progressStatus != null">
+                AND c.progress_status = #{ progressStatus }
+            </if>
+        </where>
+        ORDER BY c.coffeechat_id DESC
+        LIMIT #{ limit } OFFSET #{ offset }
+    </select>
+    <select id="countCoffeechats" resultType="long">
+        SELECT COUNT(*)
+        FROM coffeechat c
+        <where>
+            <if test="mentorId != null">
+                AND c.mentor_id = #{ mentorId }
+            </if>
+            <if test="menteeId != null">
+                AND c.mentee_id = #{ menteeId }
+            </if>
+            <if test="isProgressing != null">
+                AND c.progress_status NOT IN ('COMPLETE', 'CANCEL')
+            </if>
+            <if test="progressStatus != null">
+                AND c.progress_status = #{ progressStatus }
+            </if>
+        </where>
+    </select>
+    <select id="selectRequestTimeByCoffeechatId" resultType="RequestTimeDto">
+        SELECT
+        r.request_time_id,
+        r.event_date,
+        r.start_time,
+        r.end_time,
+        r.coffeechat_id
+        FROM request_time r
+        WHERE r.coffeechat_id = #{ coffeechatId }
+    </select>
+    <select id="selectCoffeechatIdByEndDate" resultType="java.lang.Long">
+        SELECT
+        c.coffeechat_id
+        FROM coffeechat c
+        WHERE DATE(ended_at) = #{ targetDate }
+    </select>
+</mapper>

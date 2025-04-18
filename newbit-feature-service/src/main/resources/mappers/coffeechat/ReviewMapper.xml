@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.newbit.newbitfeatureservice.coffeechat.query.mapper.ReviewMapper">
+    <select id="selectReviews" resultType="ReviewListDto">
+        SELECT
+        r.review_id,
+        r.rating,
+        r.comment,
+        r.user_id,
+        u.nickname
+        FROM review r
+        JOIN coffeechat c ON (c.coffeechat_id = r.coffeechat_id)
+        JOIN user u ON (r.user_id = u.user_id)
+        <where>
+            <if test="mentorId != null">
+                AND c.mentor_id = #{ mentorId }
+            </if>
+            <if test="menteeId != null">
+                AND r.user_id = #{ menteeId }
+            </if>
+        </where>
+        ORDER BY r.review_id DESC
+        LIMIT #{ limit } OFFSET #{ offset }
+    </select>
+    <select id="countReviews" resultType="long">
+        SELECT COUNT(*)
+        FROM review r
+        JOIN coffeechat c ON (c.coffeechat_id = r.coffeechat_id)
+        <where>
+            <if test="mentorId != null">
+                AND c.mentor_id = #{ mentorId }
+            </if>
+            <if test="menteeId != null">
+                AND r.user_id = #{ menteeId }
+            </if>
+        </where>
+    </select>
+</mapper>
