@@ -53,7 +53,7 @@ class ProductControllerTest {
         given(productService.getAllProducts()).willReturn(products);
 
         // when & then
-        mockMvc.perform(get("/api/v1/products")
+        mockMvc.perform(get("/products")
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -76,7 +76,7 @@ class ProductControllerTest {
         given(productService.getProductById(productId)).willReturn(product);
 
         // when & then
-        mockMvc.perform(get("/api/v1/products/{id}", productId)
+        mockMvc.perform(get("/products/{id}", productId)
                 .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -97,7 +97,7 @@ class ProductControllerTest {
         given(productService.createProduct(any(ProductCreateRequest.class))).willReturn(createdProduct);
 
         // when & then
-        mockMvc.perform(post("/api/v1/products")
+        mockMvc.perform(post("/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson))
                 .andDo(print())
