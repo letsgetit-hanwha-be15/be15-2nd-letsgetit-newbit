@@ -8,6 +8,7 @@ import com.newbit.newbitfeatureservice.coffeeletter.dto.ChatMessageDTO;
 import com.newbit.newbitfeatureservice.coffeeletter.repository.ChatMessageRepository;
 import com.newbit.newbitfeatureservice.coffeeletter.repository.CoffeeLetterRoomRepository;
 import com.newbit.newbitfeatureservice.coffeeletter.util.RoomUtils;
+import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import com.newbit.newbitfeatureservice.notification.command.application.service.NotificationCommandService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -133,7 +134,8 @@ class MessageServiceTest {
             
             when(messageRepository.save(any(ChatMessage.class))).thenReturn(message);
             when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(room);
-            
+            when(mentorFeignClient.getUserIdByMentorId(any(Long.class))).thenReturn(ApiResponse.success(1L));
+
             // When
             ChatMessageDTO result = messageService.sendMessage(messageDTO);
             
@@ -177,7 +179,8 @@ class MessageServiceTest {
             
             when(messageRepository.save(any(ChatMessage.class))).thenReturn(message);
             when(roomRepository.save(any(CoffeeLetterRoom.class))).thenReturn(room);
-            
+            when(mentorFeignClient.getUserIdByMentorId(any(Long.class))).thenReturn(ApiResponse.success(1L));
+
             // When
             ChatMessageDTO result = messageService.sendMessage(messageDTO);
             
