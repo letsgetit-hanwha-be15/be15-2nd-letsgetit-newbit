@@ -1,7 +1,7 @@
 # NewBit - 개발자 멘토링 플랫폼
 
 <div align="center">
-  <img src="./essets/images/newbit-logo.png" />
+  <img src="./assets/images/newbit-logo.png" height=180px />
 </div>
 
 ## 📝 프로젝트 소개
