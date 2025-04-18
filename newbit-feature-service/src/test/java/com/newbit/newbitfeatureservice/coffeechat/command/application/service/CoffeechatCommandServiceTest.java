@@ -15,6 +15,7 @@ import com.newbit.newbitfeatureservice.coffeechat.query.dto.response.ProgressSta
 import com.newbit.newbitfeatureservice.coffeechat.query.service.CoffeechatQueryService;
 import com.newbit.newbitfeatureservice.coffeeletter.dto.CoffeeLetterRoomDTO;
 import com.newbit.newbitfeatureservice.coffeeletter.service.RoomService;
+import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.notification.command.application.service.NotificationCommandService;
@@ -419,7 +420,7 @@ class CoffeechatCommandServiceTest {
                 .price(price)
                 .isActive(true)
                 .build();
-        when(mentorClient.getMentorInfo(mentorId).getData()).thenReturn(mentorDTO);
+        when(mentorClient.getMentorInfo(mentorId)).thenReturn(ApiResponse.success(mentorDTO));
 
         // when & then: 예외가 발생하지 않으면 테스트 통과
         // 실행
