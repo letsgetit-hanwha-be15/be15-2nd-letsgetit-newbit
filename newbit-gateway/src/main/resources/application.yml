@@ -18,13 +18,11 @@ spring:
             - Path=/api/v1/feature/**
           filters:
             - RewritePath=/api/v1/feature/(?<segment>.*), /$\{segment}
+  config:
+    import: classpath:/bootstrap.yml
 eureka:
   client:
     fetch-registry: true
     register-with-eureka: false
     service-url:
       defaultZone: http://localhost:8761/eureka
-
-
-jwt:
-  secret: piNJLqqZn11WtZLtIb3QLKBD+8YQIezuCuPngGLC/+E3dftI61jPHllDWO+T0h3esx/m9R+buOyTu5e6jiJOtA==
