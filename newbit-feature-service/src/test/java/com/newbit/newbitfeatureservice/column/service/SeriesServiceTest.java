@@ -12,6 +12,7 @@ import com.newbit.newbitfeatureservice.column.dto.response.GetSeriesDetailRespon
 import com.newbit.newbitfeatureservice.column.mapper.SeriesMapper;
 import com.newbit.newbitfeatureservice.column.repository.ColumnRepository;
 import com.newbit.newbitfeatureservice.column.repository.SeriesRepository;
+import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,7 +70,7 @@ class SeriesServiceTest {
         Series series = Series.builder().seriesId(100L).title(dto.getTitle()).build();
         CreateSeriesResponseDto responseDto = CreateSeriesResponseDto.builder().seriesId(100L).build();
 
-        when(mentorFeignClient.getMentorIdByUserId(userId).getData()).thenReturn(mentorId);
+        when(mentorFeignClient.getMentorIdByUserId(userId)).thenReturn(ApiResponse.success(mentorId));
         when(columnRepository.findAllById(dto.getColumnIds())).thenReturn(columns);
         when(seriesMapper.toSeries(dto)).thenReturn(series);
         when(seriesRepository.save(series)).thenReturn(series);
@@ -112,7 +113,7 @@ class SeriesServiceTest {
                 List.of(3L, 4L)
         );
 
-        when(mentorFeignClient.getMentorIdByUserId(userId).getData()).thenReturn(mentorId);
+        when(mentorFeignClient.getMentorIdByUserId(userId)).thenReturn(ApiResponse.success(mentorId));
         when(seriesRepository.findById(seriesId)).thenReturn(Optional.of(series));
         when(columnRepository.findAllById(dto.getColumnIds())).thenReturn(newColumns);
         when(columnRepository.findAllBySeries_SeriesId(seriesId)).thenReturn(existingColumns);
@@ -147,7 +148,7 @@ class SeriesServiceTest {
         Column column2 = Column.builder().columnId(2L).mentorId(mentorId).series(series).build();
         List<Column> columns = List.of(column1, column2);
 
-        when(mentorFeignClient.getMentorIdByUserId(userId).getData()).thenReturn(mentorId);
+        when(mentorFeignClient.getMentorIdByUserId(userId)).thenReturn(ApiResponse.success(mentorId));
         when(seriesRepository.findById(seriesId)).thenReturn(Optional.of(series));
         when(columnRepository.findAllBySeries_SeriesId(seriesId)).thenReturn(columns);
 
@@ -221,7 +222,7 @@ class SeriesServiceTest {
 
         List<Series> seriesList = List.of(series1, series2);
 
-        when(mentorFeignClient.getMentorIdByUserId(userId).getData()).thenReturn(mentorId);
+        when(mentorFeignClient.getMentorIdByUserId(userId)).thenReturn(ApiResponse.success(mentorId));
         when(seriesRepository.findAllByMentorIdOrderByCreatedAtDesc(mentorId)).thenReturn(seriesList);
         when(seriesMapper.toMySeriesListDto(series1)).thenReturn(
                 GetMySeriesListResponseDto.builder()
