@@ -80,21 +80,21 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReports(eq(status), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports")
+        mockMvc.perform(get("/reports")
                         .param("status", status.name())
                         .param("page", "0")
                         .param("size", "10")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].reportId").value(report1.getReportId()))
-                .andExpect(jsonPath("$.content[0].reportType.reportTypeId").value(report1.getReportType().getReportTypeId()))
-                .andExpect(jsonPath("$.content[0].reportType.reportTypeName").value(report1.getReportType().getReportTypeName()))
-                .andExpect(jsonPath("$.content[0].status").value(status.name()))
-                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
-                .andExpect(jsonPath("$.pageable.pageSize").value(10))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.content[0].reportId").value(report1.getReportId()))
+                .andExpect(jsonPath("$.data.content[0].reportType.reportTypeId").value(report1.getReportType().getReportTypeId()))
+                .andExpect(jsonPath("$.data.content[0].reportType.reportTypeName").value(report1.getReportType().getReportTypeName()))
+                .andExpect(jsonPath("$.data.content[0].status").value(status.name()))
+                .andExpect(jsonPath("$.data.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.data.pageable.pageSize").value(10))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
 
     @Test
@@ -104,17 +104,17 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReports(eq(null), any(Pageable.class))).willReturn(multipleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports")
+        mockMvc.perform(get("/reports")
                         .param("page", "0")
                         .param("size", "10")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(2))
-                .andExpect(jsonPath("$.content[0].reportType.reportTypeName").value(report1.getReportType().getReportTypeName()))
-                .andExpect(jsonPath("$.content[1].reportType.reportTypeName").value(report2.getReportType().getReportTypeName()))
-                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
-                .andExpect(jsonPath("$.totalElements").value(2));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(2))
+                .andExpect(jsonPath("$.data.content[0].reportType.reportTypeName").value(report1.getReportType().getReportTypeName()))
+                .andExpect(jsonPath("$.data.content[1].reportType.reportTypeName").value(report2.getReportType().getReportTypeName()))
+                .andExpect(jsonPath("$.data.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.data.totalElements").value(2));
     }
 
     @Test
@@ -125,15 +125,15 @@ class ReportQueryControllerTest {
         given(reportQueryService.findAllReportsWithoutPaging()).willReturn(reportList);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/all")
+        mockMvc.perform(get("/reports/all")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].reportId").value(report1.getReportId()))
-                .andExpect(jsonPath("$[0].reportType.reportTypeName").value(report1.getReportType().getReportTypeName()))
-                .andExpect(jsonPath("$[1].reportId").value(report2.getReportId()))
-                .andExpect(jsonPath("$[1].reportType.reportTypeName").value(report2.getReportType().getReportTypeName()));
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0].reportId").value(report1.getReportId()))
+                .andExpect(jsonPath("$.data[0].reportType.reportTypeName").value(report1.getReportType().getReportTypeName()))
+                .andExpect(jsonPath("$.data[1].reportId").value(report2.getReportId()))
+                .andExpect(jsonPath("$.data[1].reportType.reportTypeName").value(report2.getReportType().getReportTypeName()));
     }
     
     @Test
@@ -144,14 +144,14 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByPostId(eq(postId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/post/{postId}", postId)
+        mockMvc.perform(get("/reports/post/{postId}", postId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].reportId").value(report1.getReportId()))
-                .andExpect(jsonPath("$.content[0].postId").value(report1.getPostId()))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.content[0].reportId").value(report1.getReportId()))
+                .andExpect(jsonPath("$.data.content[0].postId").value(report1.getPostId()))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
     
     @Test
@@ -162,12 +162,12 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByCommentId(eq(commentId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/comment/{commentId}", commentId)
+        mockMvc.perform(get("/reports/comment/{commentId}", commentId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
     
     @Test
@@ -178,13 +178,13 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByReporterId(eq(userId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/reporter/{userId}", userId)
+        mockMvc.perform(get("/reports/reporter/{userId}", userId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].userId").value(report1.getUserId()))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.content[0].userId").value(report1.getUserId()))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
     
     @Test
@@ -195,13 +195,13 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByReportTypeId(eq(reportTypeId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/type/{reportTypeId}", reportTypeId)
+        mockMvc.perform(get("/reports/type/{reportTypeId}", reportTypeId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].reportType.reportTypeId").value(reportType1.getReportTypeId()))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.content[0].reportType.reportTypeId").value(reportType1.getReportTypeId()))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
     
     @Test
@@ -212,12 +212,12 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByPostUserId(eq(userId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/post-user/{userId}", userId)
+        mockMvc.perform(get("/reports/post-user/{userId}", userId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
     
     @Test
@@ -228,12 +228,12 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByCommentUserId(eq(userId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/comment-user/{userId}", userId)
+        mockMvc.perform(get("/reports/comment-user/{userId}", userId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
     
     @Test
@@ -244,12 +244,12 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReportsByContentUserId(eq(userId), any(Pageable.class))).willReturn(multipleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/content-user/{userId}", userId)
+        mockMvc.perform(get("/reports/content-user/{userId}", userId)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(2))
-                .andExpect(jsonPath("$.totalElements").value(2));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(2))
+                .andExpect(jsonPath("$.data.totalElements").value(2));
     }
     
     @Test
@@ -259,19 +259,19 @@ class ReportQueryControllerTest {
         ReportStatus status = ReportStatus.SUBMITTED;
         Long reportTypeId = 1L;
         given(reportQueryService.findReportsByStatusAndReportTypeId(eq(status), eq(reportTypeId), any(Pageable.class)))
-            .willReturn(singleReportPage);
+                .willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/filter")
+        mockMvc.perform(get("/reports/filter")
                         .param("status", status.name())
                         .param("reportTypeId", reportTypeId.toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].status").value(status.name()))
-                .andExpect(jsonPath("$.content[0].reportType.reportTypeId").value(reportType1.getReportTypeId()))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.content[0].status").value(status.name()))
+                .andExpect(jsonPath("$.data.content[0].reportType.reportTypeId").value(reportTypeId))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
     
     @Test
@@ -282,14 +282,14 @@ class ReportQueryControllerTest {
         given(reportQueryService.findReports(eq(status), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/filter")
+        mockMvc.perform(get("/reports/filter")
                         .param("status", status.name())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].status").value(status.name()))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.content[0].status").value(status.name()))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
     
     @Test
@@ -297,17 +297,16 @@ class ReportQueryControllerTest {
     void getReportsByTypeOnly() throws Exception {
         // given
         Long reportTypeId = 1L;
-        given(reportQueryService.findReportsByReportTypeId(eq(reportTypeId), any(Pageable.class)))
-            .willReturn(singleReportPage);
+        given(reportQueryService.findReportsByReportTypeId(eq(reportTypeId), any(Pageable.class))).willReturn(singleReportPage);
 
         // when & then
-        mockMvc.perform(get("/api/v1/reports/filter")
+        mockMvc.perform(get("/reports/filter")
                         .param("reportTypeId", reportTypeId.toString())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].reportType.reportTypeId").value(reportType1.getReportTypeId()))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.length()").value(1))
+                .andExpect(jsonPath("$.data.content[0].reportType.reportTypeId").value(reportTypeId))
+                .andExpect(jsonPath("$.data.totalElements").value(1));
     }
 } 

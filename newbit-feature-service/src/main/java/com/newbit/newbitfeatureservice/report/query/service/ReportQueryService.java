@@ -1,11 +1,17 @@
 package com.newbit.newbitfeatureservice.report.query.service;
 
 import java.util.List;
+import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
 
+import com.newbit.newbitfeatureservice.common.exception.BusinessException;
+import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.report.command.domain.aggregate.ReportStatus;
 import com.newbit.newbitfeatureservice.report.query.domain.repository.ReportQueryRepository;
 import com.newbit.newbitfeatureservice.report.query.dto.response.ReportDTO;
@@ -13,6 +19,8 @@ import com.newbit.newbitfeatureservice.report.query.dto.response.ReportDTO;
 @Service
 public class ReportQueryService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ReportQueryService.class);
+    
     private final ReportQueryRepository reportQueryRepository;
 
     public ReportQueryService(ReportQueryRepository reportQueryRepository) {
@@ -20,11 +28,24 @@ public class ReportQueryService {
     }
 
     public Page<ReportDTO> findReports(ReportStatus status, Pageable pageable) {
-        return reportQueryRepository.findReports(status, pageable);
+        try {
+            return reportQueryRepository.findReports(status, pageable);
+        } catch (Exception e) {
+            logger.error("Error finding reports with status {}: {}", status, e.getMessage(), e);
+            throw new BusinessException(ErrorCode.REPORT_PROCESS_ERROR);
+        }
     }
 
     public List<ReportDTO> findAllReportsWithoutPaging() {
-        return reportQueryRepository.findAllWithoutPaging();
+        try {
+            logger.info("Finding all reports without paging");
+            List<ReportDTO> reports = reportQueryRepository.findAllWithoutPaging();
+            logger.info("Found {} reports", reports.size());
+            return reports;
+        } catch (Exception e) {
+            logger.error("Error finding all reports: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.REPORT_PROCESS_ERROR);
+        }
     }
 
     public Page<ReportDTO> findReportsByPostId(Long postId, Pageable pageable) {
