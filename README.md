@@ -104,10 +104,6 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 
 ## 🏗 아키텍처
 
-프로젝트는 현재 모놀리식으로 개발되었습니다.
-
-향후에 MSA(Microservice Architecture)로 리팩토링 될 예정입니다.
-
 - [MSA 아키텍처 구조도](https://drive.google.com/file/d/1hwv_3-6wvwWICz7X8pHirrVbbir8UUcg/view)
 
 ## 📋 주요 기능
@@ -115,7 +111,6 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 ### 회원 관리
 
 - 회원가입 및 로그인
-- 소셜 로그인 연동
 - 회원 정보 관리
 
 ### 멘토링 시스템
