@@ -18,11 +18,6 @@ public class PostInternalService {
 
     @Transactional
     public Post createPostInternal(PostCreateRequest request, CustomUser user) {
-        if (user == null || user.getAuthorities().stream()
-                .noneMatch(auth -> "ROLE_USER".equals(auth.getAuthority()))) {
-            throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);
-        }
-
         Post post = Post.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
