@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @FeignClient(name = "newbit-feature-service", contextId = "PointTransactionClient", configuration = FeignClientConfig.class)
 public interface PointTransactionClient {
-    @PostMapping("/point/type")
+    @PostMapping("/point/by-type")
     ApiResponse<Void> givePointByType(
             @RequestParam("userId") Long userId,
             @RequestParam("pointTypeName") String pointTypeName,
