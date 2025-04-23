@@ -11,8 +11,5 @@ import lombok.RequiredArgsConstructor;
 public class CoffeechatCancelRequest {
     @NotNull
     @Min(value = 1)
-    private final Long coffeechatId;
-    @NotNull
-    @Min(value = 1)
     private final Long cancelReasonId;
 }

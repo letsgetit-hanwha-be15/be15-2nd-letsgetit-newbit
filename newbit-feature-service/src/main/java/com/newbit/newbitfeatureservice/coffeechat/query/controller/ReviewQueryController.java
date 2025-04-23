@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "리뷰API", description = "리뷰 조회 API")
 @RestController
-@RequestMapping("/review")
+@RequestMapping("/reviews")
 @RequiredArgsConstructor
 public class ReviewQueryController {
     private final ReviewQueryService reviewQueryService;
@@ -27,7 +27,7 @@ public class ReviewQueryController {
     @Operation(
             summary = "멘토의 리뷰 목록 조회", description = "멘토에게 달린 리뷰 목록을 조회한다."
     )
-    @GetMapping("/{mentorId}")
+    @GetMapping("/mentors/{mentorId}")
     public ResponseEntity<ApiResponse<ReviewListResponse>> getMentorReviews(
             @PathVariable Long mentorId
     ) {
@@ -51,7 +51,7 @@ public class ReviewQueryController {
     @Operation(
             summary = "내 리뷰 목록 조회", description = "멘티입장에서 내가 작성한 리뷰 목록을 조회한다."
     )
-    @GetMapping("/mentee/my")
+    @GetMapping("/me/written")
     public ResponseEntity<ApiResponse<ReviewListResponse>> getMenteeMyReviews(
             @AuthenticationPrincipal CustomUser customUser
     ) {
@@ -68,7 +68,7 @@ public class ReviewQueryController {
     @Operation(
             summary = "나에게 달린 리뷰 목록 조회", description = "멘토입장에서 나에게 달린 리뷰 목록을 조회한다."
     )
-    @GetMapping("/mentor/my")
+    @GetMapping("/me/received")
 //    @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<ReviewListResponse>> getMentorMyReviews(
             @AuthenticationPrincipal CustomUser customUser

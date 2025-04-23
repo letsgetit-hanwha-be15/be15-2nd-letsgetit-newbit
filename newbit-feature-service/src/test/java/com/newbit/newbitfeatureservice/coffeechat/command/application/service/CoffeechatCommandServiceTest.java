@@ -379,7 +379,7 @@ class CoffeechatCommandServiceTest {
         // given
         Long userId = 5L;
         Long coffeechatId = 9L;
-        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(1L);
 
         // 커피챗 객체 만들어주기, IN_PROGRESS 상태
         Coffeechat mockCoffeechat = Coffeechat.of(userId,
@@ -391,7 +391,7 @@ class CoffeechatCommandServiceTest {
         when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
 
         // when & then: 예외가 발생하지 않으면 테스트 통과
-        assertDoesNotThrow(() -> coffeechatCommandService.cancelCoffeechat(userId, request));
+        assertDoesNotThrow(() -> coffeechatCommandService.cancelCoffeechat(userId, request, coffeechatId));
     }
 
 
@@ -404,7 +404,7 @@ class CoffeechatCommandServiceTest {
         Long coffeechatId = 9L;
         int purchaseQuantity = 2;
         int price = 10;
-        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(1L);
 
         // 커피챗 객체 만들어주기, IN_PROGRESS 상태
         Coffeechat mockCoffeechat = Coffeechat.of(userId,
@@ -424,7 +424,7 @@ class CoffeechatCommandServiceTest {
 
         // when & then: 예외가 발생하지 않으면 테스트 통과
         // 실행
-        assertDoesNotThrow(() -> coffeechatCommandService.cancelCoffeechat(userId, request));
+        assertDoesNotThrow(() -> coffeechatCommandService.cancelCoffeechat(userId, request, coffeechatId));
         // 검증
         verify(mentorClient).getMentorInfo(mentorId);
         verify(transactionCommandService).refundCoffeeChat(coffeechatId, userId, purchaseQuantity * price);
@@ -436,13 +436,13 @@ class CoffeechatCommandServiceTest {
         // given
         Long coffeechatId = 9L;
         Long userId = 5L;
-        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(1L);
 
         // repo setting
         when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.empty());
 
         // when & then
-        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request));
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request, coffeechatId));
         assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
     }
 
@@ -452,7 +452,7 @@ class CoffeechatCommandServiceTest {
         // given
         Long userId = 5L;
         Long coffeechatId = 9L;
-        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(1L);
 
         // 커피챗 객체 만들어주기, IN_PROGRESS 상태
         Coffeechat mockCoffeechat = Coffeechat.of(3L,
@@ -464,7 +464,7 @@ class CoffeechatCommandServiceTest {
         when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
 
         // when & then
-        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request));
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request, coffeechatId));
         assertEquals(ErrorCode.COFFEECHAT_CANCEL_NOT_ALLOWED, exception.getErrorCode());
     }
 
@@ -475,7 +475,7 @@ class CoffeechatCommandServiceTest {
         // given
         Long userId = 5L;
         Long coffeechatId = 9L;
-        CoffeechatCancelRequest request = new CoffeechatCancelRequest(coffeechatId, 1L);
+        CoffeechatCancelRequest request = new CoffeechatCancelRequest(1L);
 
         // 커피챗 객체 만들어주기, IN_PROGRESS 상태
         Coffeechat mockCoffeechat = Coffeechat.of(userId,
@@ -489,7 +489,7 @@ class CoffeechatCommandServiceTest {
         when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
 
         // when & then
-        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request));
+        BusinessException exception = assertThrows(BusinessException.class, () -> coffeechatCommandService.cancelCoffeechat(userId, request, coffeechatId));
         assertEquals(ErrorCode.INVALID_COFFEECHAT_STATUS_CANCEL, exception.getErrorCode());
     }
 }
