@@ -34,6 +34,7 @@ class PostServiceTest {
     private PostCreateRequest request;
     private CommentRepository commentRepository;
     private UserFeignClient userFeignClient;
+    private PostInternalService postInternalService;
 
     @BeforeEach
     void setUp() {
@@ -41,8 +42,9 @@ class PostServiceTest {
         commentRepository = mock(CommentRepository.class);
         pointTransactionCommandService = mock(PointTransactionCommandService.class);
         userFeignClient = mock(UserFeignClient.class);
+        postInternalService = mock(PostInternalService.class);
 
-        postService = new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient);
+        postService = new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient, postInternalService);
 
         request = new PostCreateRequest();
         request.setTitle("단위 테스트 제목");
@@ -166,7 +168,7 @@ class PostServiceTest {
 
         // PostService를 다시 생성해서 의존성 주입
         PointTransactionCommandService pointTransactionCommandService = mock(PointTransactionCommandService.class);
-        PostService postServiceWithMocks = new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient);
+        PostService postServiceWithMocks = new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient, postInternalService);
 
 
         // when

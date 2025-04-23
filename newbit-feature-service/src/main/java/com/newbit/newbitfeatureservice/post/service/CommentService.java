@@ -28,31 +28,23 @@ public class CommentService {
     private final PostRepository postRepository;
     private final PointTransactionCommandService pointTransactionCommandService;
     private final NotificationCommandService notificationCommandService;
-
-    @Transactional
+    private final CommentInternalService commentInternalService;
     public CommentResponse createComment(Long postId, CommentCreateRequest request, CustomUser user) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+        // 댓글 저장 및 응답은 트랜잭션 처리
+        Comment comment = commentInternalService.saveCommentInternal(postId, request, user);
 
-        Comment comment = Comment.builder()
-                .content(request.getContent())
-                .userId(user.getUserId())
-                .reportCount(0)
-                .post(post)
-                .build();
-
-        commentRepository.save(comment);
+        // 트랜잭션 이후 외부 호출 (포인트 지급, 알림 전송)
         pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.COMMENTS, comment.getId());
 
         String notificationContent = String.format("'%s' 게시글에 댓글이 달렸습니다. ('%s')",
-                post.getTitle(), comment.getContent());
+                comment.getPost().getTitle(), comment.getContent());
 
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
-                        post.getUserId()
-                        , 1L
-                        , postId
-                        , notificationContent
+                        comment.getPost().getUserId(),
+                        1L,
+                        postId,
+                        notificationContent
                 )
         );
 

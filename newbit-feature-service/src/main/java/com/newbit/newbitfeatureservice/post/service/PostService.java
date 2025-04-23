@@ -33,32 +33,15 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final PointTransactionCommandService pointTransactionCommandService;
     private final UserFeignClient userFeignClient;
+    private final PostInternalService postInternalService;
 
-    @Transactional
     public PostResponse createPost(PostCreateRequest request, CustomUser user) {
-        if (user == null) {
-            throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);
-        }
+        // 1. 트랜잭션 내에서 게시글 저장
+        Post post = postInternalService.createPostInternal(request, user);
 
-        boolean isUser = user.getAuthorities().stream()
-                .anyMatch(auth -> "ROLE_USER".equals(auth.getAuthority()));
-
-        if (!isUser) {
-            throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);
-        }
-
-        Post post = Post.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
-                .userId(user.getUserId())
-                .postCategoryId(request.getPostCategoryId())
-                .likeCount(0)
-                .reportCount(0)
-                .isNotice(false)
-                .build();
-
-        postRepository.save(post);
+        // 2. 외부 시스템 호출 (트랜잭션 이후)
         pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
+
         return new PostResponse(post);
     }
 
