@@ -57,7 +57,7 @@ public class CommentController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/{commentId}/report")
+    @PostMapping("/{commentId}/reports")
     @Operation(summary = "댓글 신고", description = "댓글에 대해 신고 처리를 합니다.")
     public ResponseEntity<Void> reportComment(
             @PathVariable Long postId,
@@ -69,7 +69,7 @@ public class CommentController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/{commentId}/report")
+    @GetMapping("/{commentId}/reports/count")
     @Operation(summary = "댓글 신고 수 조회", description = "해당 댓글의 신고 횟수를 반환합니다.")
     public ResponseEntity<Integer> getReportCount(@PathVariable Long commentId) {
         int reportCount = commentService.getReportCount(commentId);
