@@ -15,7 +15,7 @@ public class PointTransactionCommandController {
 
     private final PointTransactionCommandService pointTransactionCommandService;
 
-    @PostMapping("/type")
+    @PostMapping("/by-type")
     public ResponseEntity<ApiResponse<Void>> givePointByType(
             @RequestParam Long userId,
             @RequestParam String pointTypeName,

@@ -2,6 +2,7 @@ package com.newbit.newbitfeatureservice.post.service;
 
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
+import com.newbit.newbitfeatureservice.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.newbitfeatureservice.notification.command.application.service.NotificationCommandService;
 import com.newbit.newbitfeatureservice.post.dto.request.CommentCreateRequest;
 import com.newbit.newbitfeatureservice.post.dto.response.CommentResponse;
@@ -10,9 +11,11 @@ import com.newbit.newbitfeatureservice.post.entity.Post;
 import com.newbit.newbitfeatureservice.post.repository.CommentRepository;
 import com.newbit.newbitfeatureservice.post.repository.PostRepository;
 import com.newbit.newbitfeatureservice.purchase.command.application.service.PointTransactionCommandService;
+import com.newbit.newbitfeatureservice.purchase.command.domain.PointTypeConstants;
 import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
@@ -29,15 +32,19 @@ class CommentServiceTest {
     private CommentRepository commentRepository;
     private PostRepository postRepository;
     private CommentService commentService;
+    private CommentInternalService commentInternalService;
+    private PointTransactionCommandService pointTransactionCommandService;
+    private NotificationCommandService notificationCommandService;
+
 
     @BeforeEach
     void setUp() {
         commentRepository = mock(CommentRepository.class);
         postRepository = mock(PostRepository.class);
-        PointTransactionCommandService pointTransactionCommandService = mock(PointTransactionCommandService.class);
-        NotificationCommandService notificationCommandService = mock(NotificationCommandService.class);
-
-        commentService = new CommentService(commentRepository, postRepository, pointTransactionCommandService, notificationCommandService);
+        pointTransactionCommandService = mock(PointTransactionCommandService.class);
+        notificationCommandService = mock(NotificationCommandService.class);
+        commentInternalService = mock(CommentInternalService.class);
+        commentService = new CommentService(commentRepository, postRepository, pointTransactionCommandService, notificationCommandService, commentInternalService);
     }
 
     @Test
@@ -80,34 +87,50 @@ class CommentServiceTest {
 
     @Test
     void 댓글_등록_성공() {
+        // given
         Long postId = 10L;
+        Long userId = 1L;
+        String commentContent = "댓글 내용입니다.";
+        String postTitle = "게시글 제목";
 
         CommentCreateRequest request = CommentCreateRequest.builder()
-                .content("댓글 내용입니다.")
+                .content(commentContent)
                 .build();
 
         CustomUser user = CustomUser.builder()
-                .userId(1L)
+                .userId(userId)
                 .email("user@example.com")
                 .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
                 .build();
 
-        Post mockPost = Post.builder()
+        Post post = Post.builder()
                 .id(postId)
-                .title("제목")
-                .content("내용")
-                .userId(1L)
-                .postCategoryId(2L)
+                .title(postTitle)
+                .userId(2L) // 게시글 작성자 (알림 수신자)
+                .postCategoryId(1L)
                 .build();
 
-        when(postRepository.findById(postId)).thenReturn(Optional.of(mockPost));
-        when(commentRepository.save(any(Comment.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        Comment comment = Comment.builder()
+                .id(100L)
+                .content(commentContent)
+                .post(post)
+                .userId(userId)
+                .build();
 
+        when(commentInternalService.saveCommentInternal(postId, request, user)).thenReturn(comment);
+
+        // when
         CommentResponse response = commentService.createComment(postId, request, user);
 
-        assertThat(response.getContent()).isEqualTo("댓글 내용입니다.");
-        verify(commentRepository, times(1)).save(any(Comment.class));
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getContent()).isEqualTo(commentContent);
+
+        verify(commentInternalService, times(1)).saveCommentInternal(postId, request, user);
+        verify(pointTransactionCommandService, times(1))
+                .givePointByType(userId, PointTypeConstants.COMMENTS, 100L);
+        verify(notificationCommandService, times(1))
+                .sendNotification(any(NotificationSendRequest.class));
     }
 
 

@@ -67,7 +67,6 @@ public class PointTransactionCommandService {
         }
     }
 
-    @Transactional
     protected void savePointHistory(Long userId, PointType pointType, Long serviceId, Integer balance) {
         PointHistory history = PointHistory.builder()
                 .userId(userId)

@@ -25,49 +25,25 @@ public class ReviewCommandService {
     private final CoffeechatQueryService coffeechatQueryService;
     private final PointTransactionCommandService pointTransactionCommandService;
     private final MentorFeignClient mentorClient;
+    private final ReviewInternalService reviewInternalService;
 
-    @Transactional
     public Long createReview(Long userId, ReviewCreateRequest request) {
-        // 1. 완료된 커피챗인지 확인
-        CoffeechatDto coffeechatDto = coffeechatQueryService.getCoffeechat(request.getCoffeechatId())
-                .getCoffeechat();
-        if (!coffeechatDto.getProgressStatus().equals(ProgressStatus.COMPLETE)){
-            throw new BusinessException(ErrorCode.INVALID_COFFEECHAT_STATUS_COMPLETE);
-        }
+        // 트랜잭션 처리: 리뷰 저장 및 검증 로직
+        Review review = reviewInternalService.saveReview(userId, request);
 
-        // 커피챗의 멘티가 맞는지 확인
-        if (!coffeechatDto.getMenteeId().equals(userId)){
-            throw new BusinessException(ErrorCode.REVIEW_CREATE_NOT_ALLOWED);
-        }
+        // 트랜잭션 이후 외부 호출 처리
+        CoffeechatDto coffeechat = coffeechatQueryService.getCoffeechat(request.getCoffeechatId()).getCoffeechat();
 
-        // 2. 해당 커피챗에 대한 리뷰가 이미 존재
-        Optional<Review> existingReview = reviewRepository.findByCoffeechatId(request.getCoffeechatId());
-        if (existingReview.isPresent()) {
-            throw new BusinessException(ErrorCode.REVIEW_ALREADY_EXIST);
-        }
-
-        // 3. 리뷰 등록
-        Review newReview = Review.of(
-                request.getRating(),
-                request.getComment(),
-                request.getTip(),
-                request.getCoffeechatId(),
-                userId);
-        Review review = reviewRepository.save(newReview);
-
-        // 4. 팁이 존재하면 팁 등록
-        if(request.getTip() != null) {
-            // 멘토 아이디로 멘토의 유저 아이디를 찾아오기
-            Long mentorId = mentorClient.getUserIdByMentorId(coffeechatDto.getMentorId()).getData();
+        if (request.getTip() != null) {
+            Long mentorUserId = mentorClient.getUserIdByMentorId(coffeechat.getMentorId()).getData();
             pointTransactionCommandService.giveTipPoint(
-                    request.getCoffeechatId(), coffeechatDto.getMenteeId(), mentorId, request.getTip()
+                    request.getCoffeechatId(), userId, mentorUserId, request.getTip()
             );
         }
 
-        // 5. 코멘트까지 등록 시 멘티에게 50포인트 지급
-        if(request.getComment() != null) {
+        if (request.getComment() != null) {
             pointTransactionCommandService.givePointByType(
-                    coffeechatDto.getMenteeId(), PointTypeConstants.REVIEW, review.getReviewId()
+                    userId, PointTypeConstants.REVIEW, review.getReviewId()
             );
         }
 
