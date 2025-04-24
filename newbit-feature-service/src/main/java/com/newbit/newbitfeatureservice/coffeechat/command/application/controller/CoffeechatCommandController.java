@@ -49,7 +49,7 @@ public class CoffeechatCommandController {
             summary = "커피챗 일정 승인",
             description = "멘토가 커피챗 일정을 승인합니다."
     )
-    @PutMapping("/approve/{requestTimeId}")
+    @PutMapping("/{requestTimeId}/approve")
 //    @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<Void>> acceptCoffeechatTime(
             @PathVariable Long requestTimeId

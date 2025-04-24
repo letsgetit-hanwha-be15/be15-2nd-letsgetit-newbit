@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/review")
+@RequestMapping("/reviews")
 @Tag(name = "리뷰 API", description = "리뷰 등록, 수정, 삭제 API")
 public class ReviewCommandController {
 
@@ -27,7 +27,7 @@ public class ReviewCommandController {
             summary = "리뷰 등록",
             description = "커피챗 종료 후 사용자가 멘토에 대한 리뷰를 작성합니다. 별점은 필수, 리뷰내용과 팁은 옵션입니다."
     )
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<ApiResponse<ReviewCommandResponse>> createCoffeechat(
             @Valid @RequestBody ReviewCreateRequest reviewCreateRequest,
             @AuthenticationPrincipal CustomUser customUser
@@ -49,7 +49,7 @@ public class ReviewCommandController {
             summary = "리뷰 삭제",
             description = "사용자가 본인이 작성한 리뷰를 삭제합니다."
     )
-    @PutMapping("/delete/{reviewId}")
+    @DeleteMapping("/{reviewId}")
     public ResponseEntity<ApiResponse<ReviewCommandResponse>> deleteCoffeechat(
             @PathVariable Long reviewId,
             @AuthenticationPrincipal CustomUser customUser
