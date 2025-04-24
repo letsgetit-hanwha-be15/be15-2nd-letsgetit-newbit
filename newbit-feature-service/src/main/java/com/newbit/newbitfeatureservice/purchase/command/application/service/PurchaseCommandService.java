@@ -21,6 +21,7 @@ import com.newbit.newbitfeatureservice.purchase.command.domain.PointTypeConstant
 import com.newbit.newbitfeatureservice.purchase.command.domain.aggregate.*;
 import com.newbit.newbitfeatureservice.purchase.command.domain.repository.*;
 
+import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -42,63 +43,83 @@ public class PurchaseCommandService {
     private final MentorFeignClient mentorFeignClient;
     private final UserFeignClient userFeignClient;
     private final NotificationCommandService notificationCommandService;
+    private final CompletePurchaseService completePurchaseService;
+    private final CoffeechatCommandService coffeechatCommandService;
 
 
 
     private static final int MENTOR_AUTHORITY_DIAMOND_COST = 700;
     private static final int MENTOR_AUTHORITY_POINT_COST = 2000;
 
-    private final CoffeechatCommandService coffeechatCommandService;
 
+//
+//    public void purchaseColumn(Long userId, ColumnPurchaseRequest request) {
+//        Long columnId = request.getColumnId();
+//
+//
+//        // 1. 칼럼 가격 조회
+//        Integer columnPrice = columnService.getColumnPriceById(columnId);
+//
+//        // 2. 중복 구매 여부 확인
+//        if (columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)) {
+//            throw new BusinessException(ErrorCode.COLUMN_ALREADY_PURCHASED);
+//        }
+//
+//        // 3. 무료 칼럼일 경우 예외 발생
+//        if (columnPrice == 0) {
+//            throw new BusinessException(ErrorCode.COLUMN_FREE_CANNOT_PURCHASE);
+//        }
+//
+//        // 4. 다이아 충분한지 확인 및 차감 (내부에서 다이아 부족 시 예외 발생)
+//        Integer diamondBalance = userInternalFeignClient.useDiamond(userId, columnPrice);
+//
+//        // 5. 구매 내역 저장
+//        try {
+//            ColumnPurchaseHistory purchaseHistory = ColumnPurchaseHistory.of(userId, columnId, columnPrice);
+//            columnPurchaseHistoryRepository.save(purchaseHistory);
+//        } catch (DataIntegrityViolationException e) {
+//            throw new BusinessException(ErrorCode.COLUMN_ALREADY_PURCHASED);
+//        }
+//
+//        // 6. 다이아몬드 사용 내역 저장
+//        DiamondHistory diamondHistory = DiamondHistory.forColumnPurchase(userId, columnId, columnPrice, diamondBalance);
+//        diamondHistoryRepository.save(diamondHistory);
+//
+//        // 7. 멘토ID 조회
+//        Long mentorId = columnService.getMentorId(columnId);
+//
+//        // 8. 판매 내역 저장
+//        SaleHistory saleHistory = SaleHistory.forColumn(columnId, columnPrice, mentorId);
+//        saleHistoryRepository.save(saleHistory);
+//
+//
+//        notificationCommandService.sendNotification(
+//                new NotificationSendRequest(
+//                        userId,
+//                        13L,
+//                        columnId,
+//                        "칼럼 구매가 완료되었습니다."
+//                )
+//        );
+//    }
 
     public void purchaseColumn(Long userId, ColumnPurchaseRequest request) {
         Long columnId = request.getColumnId();
 
-
-        // 1. 칼럼 가격 조회
         Integer columnPrice = columnService.getColumnPriceById(columnId);
 
-        // 2. 중복 구매 여부 확인
         if (columnPurchaseHistoryRepository.existsByUserIdAndColumnId(userId, columnId)) {
             throw new BusinessException(ErrorCode.COLUMN_ALREADY_PURCHASED);
         }
 
-        // 3. 무료 칼럼일 경우 예외 발생
         if (columnPrice == 0) {
             throw new BusinessException(ErrorCode.COLUMN_FREE_CANNOT_PURCHASE);
         }
 
-        // 4. 다이아 충분한지 확인 및 차감 (내부에서 다이아 부족 시 예외 발생)
-        Integer diamondBalance = userInternalFeignClient.useDiamond(userId, columnPrice);
-
-        // 5. 구매 내역 저장
-        try {
-            ColumnPurchaseHistory purchaseHistory = ColumnPurchaseHistory.of(userId, columnId, columnPrice);
-            columnPurchaseHistoryRepository.save(purchaseHistory);
-        } catch (DataIntegrityViolationException e) {
-            throw new BusinessException(ErrorCode.COLUMN_ALREADY_PURCHASED);
-        }
-
-        // 6. 다이아몬드 사용 내역 저장
-        DiamondHistory diamondHistory = DiamondHistory.forColumnPurchase(userId, columnId, columnPrice, diamondBalance);
-        diamondHistoryRepository.save(diamondHistory);
-
-        // 7. 멘토ID 조회
-        Long mentorId = columnService.getMentorId(columnId);
-
-        // 8. 판매 내역 저장
-        SaleHistory saleHistory = SaleHistory.forColumn(columnId, columnPrice, mentorId);
-        saleHistoryRepository.save(saleHistory);
+        Integer balance = userInternalFeignClient.useDiamond(userId, columnPrice);
 
 
-        notificationCommandService.sendNotification(
-                new NotificationSendRequest(
-                        userId,
-                        13L,
-                        columnId,
-                        "칼럼 구매가 완료되었습니다."
-                )
-        );
+        completePurchaseService.completeColumnPurchase(userId, columnId, columnPrice, balance);
     }
 
 
