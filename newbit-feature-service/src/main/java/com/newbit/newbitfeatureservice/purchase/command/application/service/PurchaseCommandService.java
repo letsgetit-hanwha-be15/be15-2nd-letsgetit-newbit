@@ -71,42 +71,25 @@ public class PurchaseCommandService {
     }
 
 
-
-
     public void purchaseCoffeeChat(Long userId, CoffeeChatPurchaseRequest request) {
         Long coffeechatId = request.getCoffeechatId();
+
+        // 커피챗, 멘티/멘토 정보 조회
         CoffeechatDto coffeeChat = coffeechatQueryService.getCoffeechat(coffeechatId).getCoffeechat();
         Long menteeId = coffeeChat.getMenteeId();
         Long mentorId = coffeeChat.getMentorId();
 
-        MentorDTO mentorInfo = mentorFeignClient.getMentorInfo(mentorId).getData();
-
-        Integer price = mentorInfo.getPrice();
-
-        int totalPrice = coffeeChat.getPurchaseQuantity() * price;
-
-        if(!Objects.equals(menteeId, userId)){
+        if (!Objects.equals(menteeId, userId)) {
             throw new BusinessException(ErrorCode.COFFEECHAT_PURCHASE_NOT_ALLOWED);
         }
 
+        MentorDTO mentorInfo = mentorFeignClient.getMentorInfo(mentorId).getData();
+        Integer price = mentorInfo.getPrice();
+        int totalPrice = coffeeChat.getPurchaseQuantity() * price;
 
-        // 1. 커피챗 상태 변경
-        coffeechatCommandService.markAsPurchased(coffeechatId);
-
-        // 2. 멘티 다이아 차감
         Integer balance = userInternalFeignClient.useDiamond(menteeId, totalPrice);
 
-        // 3. 다이아 내역 저장
-        diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
-
-        notificationCommandService.sendNotification(
-                new NotificationSendRequest(
-                        userId,
-                        13L,
-                        coffeechatId,
-                        "커피챗 구매가 완료되었습니다."
-                )
-        );
+        completePurchaseService.completeCoffeeChatPurchase(userId, coffeechatId, menteeId, totalPrice, balance);
     }
 
 

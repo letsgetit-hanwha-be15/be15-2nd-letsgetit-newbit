@@ -1,5 +1,6 @@
 package com.newbit.newbitfeatureservice.purchase.command.application.service;
 
+import com.newbit.newbitfeatureservice.coffeechat.command.application.service.CoffeechatCommandService;
 import com.newbit.newbitfeatureservice.column.service.ColumnRequestService;
 import com.newbit.newbitfeatureservice.column.service.ColumnService;
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
@@ -25,6 +26,7 @@ public class CompletePurchaseService {
     private final SaleHistoryRepository saleHistoryRepository;
     private final ColumnRequestService columnRequestService;
     private final NotificationCommandService notificationCommandService;
+    private final CoffeechatCommandService coffeechatCommandService;
 
     @Transactional
     public void completeColumnPurchase(Long userId, Long columnId, Integer columnPrice, Integer balance) {
@@ -42,6 +44,26 @@ public class CompletePurchaseService {
 
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(userId, 13L, columnId, "칼럼 구매가 완료되었습니다.")
+        );
+    }
+
+    @Transactional
+    public void completeCoffeeChatPurchase(Long userId, Long coffeechatId, Long menteeId, int totalPrice, int balance) {
+
+        // 1. 커피챗 상태 변경
+        coffeechatCommandService.markAsPurchased(coffeechatId);
+
+        // 2. 다이아 사용 내역 저장
+        diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
+
+        // 3. 알림 발송
+        notificationCommandService.sendNotification(
+                new NotificationSendRequest(
+                        userId,
+                        13L,
+                        coffeechatId,
+                        "커피챗 구매가 완료되었습니다."
+                )
         );
     }
 }
