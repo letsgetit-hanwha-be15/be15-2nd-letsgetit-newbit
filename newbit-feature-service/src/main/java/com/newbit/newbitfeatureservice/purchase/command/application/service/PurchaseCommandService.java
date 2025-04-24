@@ -33,18 +33,13 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class PurchaseCommandService {
     private final ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
-    private final DiamondHistoryRepository diamondHistoryRepository;
-    private final SaleHistoryRepository saleHistoryRepository;
-    private final PointHistoryRepository pointHistoryRepository;
     private final PointTypeRepository pointTypeRepository;
     private final ColumnRequestService columnService;
     private final UserInternalFeignClient userInternalFeignClient;
     private final CoffeechatQueryService coffeechatQueryService;
     private final MentorFeignClient mentorFeignClient;
     private final UserFeignClient userFeignClient;
-    private final NotificationCommandService notificationCommandService;
     private final CompletePurchaseService completePurchaseService;
-    private final CoffeechatCommandService coffeechatCommandService;
 
 
     private static final int MENTOR_AUTHORITY_DIAMOND_COST = 700;
@@ -96,42 +91,30 @@ public class PurchaseCommandService {
     public void purchaseMentorAuthority(Long userId, MentorAuthorityPurchaseRequest request) {
         PurchaseAssetType assetType = request.getAssetType();
 
-        // 1. 유저 조회
+        // 1. 유저 조회 및 검증
         UserDTO userDto = userFeignClient.getUserByUserId(userId).getData();
-
-        PointType mentorAuthorityType = pointTypeRepository.findByPointTypeName(PointTypeConstants.MENTOR_AUTHORITY_PURCHASE)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
-
-        //2. 이미 멘토인지 확인
         if (userDto.getAuthority() == Authority.MENTOR) {
             throw new BusinessException(ErrorCode.ALREADY_MENTOR);
         }
 
+        PointType mentorAuthorityType = pointTypeRepository.findByPointTypeName(PointTypeConstants.MENTOR_AUTHORITY_PURCHASE)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POINT_TYPE_NOT_FOUND));
 
-        // 3. 다이아 혹은 포인트 내역 생성
+        // 2. 다이아/포인트 차감 (외부 호출)
+        int balance;
+
         if (assetType == PurchaseAssetType.DIAMOND) {
-            Integer diamondBalance = userInternalFeignClient.useDiamond(userId, MENTOR_AUTHORITY_DIAMOND_COST);
-            diamondHistoryRepository.save(DiamondHistory.forMentorAuthority(userId, diamondBalance, MENTOR_AUTHORITY_DIAMOND_COST));
+            balance = userInternalFeignClient.useDiamond(userId, MENTOR_AUTHORITY_DIAMOND_COST);
         } else if (assetType == PurchaseAssetType.POINT) {
-            Integer pointBalance = userInternalFeignClient.usePoint(userId, MENTOR_AUTHORITY_POINT_COST);
-            pointHistoryRepository.save(PointHistory.forMentorAuthority(userId, mentorAuthorityType, pointBalance, MENTOR_AUTHORITY_POINT_COST));
+            balance = userInternalFeignClient.usePoint(userId, MENTOR_AUTHORITY_POINT_COST);
         } else {
             throw new BusinessException(ErrorCode.INVALID_PURCHASE_TYPE);
         }
 
+        // 3. 트랜잭션 처리: 히스토리 저장
+        completePurchaseService.completeMentorAuthorityPurchase(userId, assetType, balance, mentorAuthorityType);
 
-        // 4. 멘토 등록
+        // 4. 후처리: 멘토 등록 및 알림 전송
         mentorFeignClient.createMentor(userId);
-
-        if(assetType == PurchaseAssetType.DIAMOND){
-            notificationCommandService.sendNotification(
-                    new NotificationSendRequest(
-                            userId,
-                            13L,
-                            null,
-                            "멘토 권한 구매가 완료되었습니다."
-                    )
-            );
-        }
     }
 }
