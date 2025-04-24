@@ -35,18 +35,12 @@ class PurchaseCommandServiceTest {
     @InjectMocks
     private PurchaseCommandService purchaseCommandService;
 
-    @Mock private ColumnPurchaseHistoryRepository columnPurchaseHistoryRepository;
     @Mock private DiamondHistoryRepository diamondHistoryRepository;
-    @Mock private SaleHistoryRepository saleHistoryRepository;
     @Mock private PointHistoryRepository pointHistoryRepository;
-    @Mock private ColumnRequestService columnService;
     @Mock private UserInternalFeignClient userService;
     @Mock private UserFeignClient userFeignClient;
     @Mock private MentorFeignClient mentorService;
-    @Mock private CoffeechatQueryService coffeechatQueryService;
-    @Mock private CoffeechatCommandService coffeechatCommandService;
     @Mock private PointTypeRepository pointTypeRepository;
-    @Mock private NotificationCommandService notificationCommandService;
     @Mock private CompletePurchaseService completePurchaseService;
 
     private final Long userId = 1L;
