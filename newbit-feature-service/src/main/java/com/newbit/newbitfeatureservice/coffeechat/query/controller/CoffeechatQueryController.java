@@ -39,12 +39,13 @@ public class CoffeechatQueryController {
     }
 
     @Operation(
-            summary = "멘토의 커피챗 목록 조회", description = "멘토ID로 커피챗 목록 정보를 조회한다."
+            summary = "멘토의 커피챗 목록 조회", description = "멘토ID로 진행상태에 따른 커피챗 목록 정보를 조회한다."
     )
-    @GetMapping({"/mentor"})
+    @GetMapping({"/mentors/me"})
 //    @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMentorCoffeechats(
-            @AuthenticationPrincipal CustomUser customUser
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(required = false) ProgressStatus status
     ) {
 
         // 유저 아이디로 멘토 아이디를 찾아오기
@@ -55,6 +56,9 @@ public class CoffeechatQueryController {
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
 
         coffeechatSearchServiceRequest.setMentorId(mentorId);
+        if(status != null) {
+            coffeechatSearchServiceRequest.setProgressStatus(status);
+        }
 
         CoffeechatListResponse response = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
 
@@ -63,45 +67,25 @@ public class CoffeechatQueryController {
     }
 
     @Operation(
-            summary = "멘토의 커피챗 요청 목록 조회", description = "멘토ID로 커피챗 요청(IN_PROGRESSING) 목록 정보를 조회한다."
+            summary = "멘티의 커피챗 목록 조회", description = "멘티ID로 진행 상태에 따른 커피챗 목록 정보를 조회한다."
     )
-    @GetMapping({"/mentor/in-progress"})
-//    @PreAuthorize("hasAuthority('MENTOR')")
-    public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMentorInProgressCoffeechats(
-            @AuthenticationPrincipal CustomUser customUser
-    ) {
-        // 유저 아이디로 멘토 아이디를 찾아오기
-        Long userId = customUser.getUserId();
-        Long mentorId = mentorClient.getMentorIdByUserId(userId).getData();
-
-        // 서비스 레이어에 보낼 request 생성
-        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
-        coffeechatSearchServiceRequest.setMentorId(mentorId);
-        coffeechatSearchServiceRequest.setProgressStatus(ProgressStatus.IN_PROGRESS);
-
-        CoffeechatListResponse response = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
-
-        return ResponseEntity.ok(ApiResponse.success(response));
-
-    }
-
-    @Operation(
-            summary = "멘티의 커피챗 목록 조회", description = "멘티ID로 커피챗 목록 정보를 조회한다."
-    )
-    @GetMapping({"/mentee"})
+    @GetMapping({"/mentees/me"})
     public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMenteeCoffeechats(
-            @AuthenticationPrincipal CustomUser customUser
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(required = false) ProgressStatus status
     ) {
 
         // 서비스 레이어에 보낼 request 생성
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
         Long menteeId = customUser.getUserId();
         coffeechatSearchServiceRequest.setMenteeId(menteeId);
+        if(status != null) {
+            coffeechatSearchServiceRequest.setProgressStatus(status);
+        }
 
         CoffeechatListResponse response = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
 
         return ResponseEntity.ok(ApiResponse.success(response));
-
     }
 
     @Operation(
@@ -112,11 +96,8 @@ public class CoffeechatQueryController {
             @PathVariable Long coffeechatId
     ) {
 
-        // TODO : 로그인한 회원 정보 읽어오기
-
         RequestTimeListResponse response = coffeechatQueryService.getCoffeechatRequestTimes(coffeechatId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
-
     }
 }

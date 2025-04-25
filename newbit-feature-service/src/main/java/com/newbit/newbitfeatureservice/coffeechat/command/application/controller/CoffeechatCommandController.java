@@ -27,7 +27,7 @@ public class CoffeechatCommandController {
             summary = "커피챗 등록",
             description = "사용자가 멘토에게 커피챗을 요청합니다."
     )
-    @PostMapping("/register")
+    @PostMapping
     public ResponseEntity<ApiResponse<CoffeechatCommandResponse>> createCoffeechat(
             @Valid @RequestBody CoffeechatCreateRequest coffeechatCreateRequest,
             @AuthenticationPrincipal CustomUser customUser
@@ -49,7 +49,7 @@ public class CoffeechatCommandController {
             summary = "커피챗 일정 승인",
             description = "멘토가 커피챗 일정을 승인합니다."
     )
-    @PutMapping("/approve/{requestTimeId}")
+    @PutMapping("/{requestTimeId}/approve")
 //    @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<Void>> acceptCoffeechatTime(
             @PathVariable Long requestTimeId
@@ -65,7 +65,7 @@ public class CoffeechatCommandController {
             summary = "커피챗 일정 거절",
             description = "멘토가 커피챗 일정을 거절합니다."
     )
-    @PutMapping("/reject/{coffeechatId}")
+    @PutMapping("/{coffeechatId}/reject")
 //    @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<Void>> rejectCoffeechatTime(
             @PathVariable Long coffeechatId
@@ -81,7 +81,7 @@ public class CoffeechatCommandController {
             summary = "커피챗 종료",
             description = "멘토가 커피챗을 종료합니다."
     )
-    @PutMapping("/close/{coffeechatId}")
+    @PutMapping("/{coffeechatId}/close")
 //    @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<Void>> closeCoffeechat(
             @PathVariable Long coffeechatId
@@ -97,7 +97,7 @@ public class CoffeechatCommandController {
             summary = "커피챗 구매확정",
             description = "멘티가 커피챗 구매확정합니다."
     )
-    @PutMapping("/confirm-purchase/{coffeechatId}")
+    @PutMapping("/{coffeechatId}/confirm-purchase")
     public ResponseEntity<ApiResponse<Void>> confirmPurchaseCoffeechat(
             @PathVariable Long coffeechatId
     ) {
@@ -112,14 +112,15 @@ public class CoffeechatCommandController {
             summary = "커피챗 취소",
             description = "멘티가 커피챗을 취소합니다."
     )
-    @PutMapping("/cancel")
+    @DeleteMapping("/{coffeechatId}")
     public ResponseEntity<ApiResponse<Void>> cancelCoffeechat(
+            @PathVariable Long coffeechatId,
             @Valid @RequestBody CoffeechatCancelRequest coffeechatCancelRequest,
             @AuthenticationPrincipal CustomUser customUser
     ) {
 
         Long userId = customUser.getUserId();
-        coffeechatCommandService.cancelCoffeechat(userId, coffeechatCancelRequest);
+        coffeechatCommandService.cancelCoffeechat(userId, coffeechatCancelRequest, coffeechatId);
 
         return ResponseEntity
                 .ok(ApiResponse.success(null));

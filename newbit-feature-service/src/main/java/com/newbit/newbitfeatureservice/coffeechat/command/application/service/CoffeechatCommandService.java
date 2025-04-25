@@ -208,9 +208,9 @@ public class CoffeechatCommandService {
     }
 
     @Transactional
-    public void cancelCoffeechat(Long userId, CoffeechatCancelRequest coffeechatCancelRequest) {
+    public void cancelCoffeechat(Long userId, CoffeechatCancelRequest coffeechatCancelRequest, Long coffeechatId) {
         // 1. 커피챗 ID로 커피챗 객체 찾기
-        Coffeechat coffeechat = coffeechatRepository.findById(coffeechatCancelRequest.getCoffeechatId())
+        Coffeechat coffeechat = coffeechatRepository.findById(coffeechatId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COFFEECHAT_NOT_FOUND));
 
         // 2. userId가 멘티Id인지 확인하기
@@ -227,7 +227,7 @@ public class CoffeechatCommandService {
         if(coffeechat.getProgressStatus().equals(ProgressStatus.COFFEECHAT_WAITING)) {
             MentorDTO mentorDTO = mentorClient.getMentorInfo(coffeechat.getMentorId()).getData();
             int totalQuantity = mentorDTO.getPrice() * coffeechat.getPurchaseQuantity();
-            transactionCommandService.refundCoffeeChat(coffeechatCancelRequest.getCoffeechatId(), userId, totalQuantity);
+            transactionCommandService.refundCoffeeChat(coffeechatId, userId, totalQuantity);
         }
 
         // 5. 커피챗 객체 업데이트하기
