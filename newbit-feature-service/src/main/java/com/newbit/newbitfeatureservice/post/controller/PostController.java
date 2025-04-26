@@ -78,7 +78,7 @@ public class PostController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PutMapping("/{id}")
+    @PutMapping("/{postId}")
     @Operation(summary = "게시글 수정", description = "본인이 작성한 게시글의 제목과 내용을 수정합니다.")
     public ResponseEntity<PostResponse> updatePost(
             @PathVariable Long id,
@@ -90,7 +90,7 @@ public class PostController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{postId}")
     @Operation(
             summary = "게시글 삭제",
             description = "본인이 작성한 게시글을 소프트 딜리트 방식으로 삭제합니다.",
@@ -144,7 +144,7 @@ public class PostController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/{postId}/like")
+    @PostMapping("/{postId}/likes")
     @Operation(summary = "게시글 좋아요 증가")
     public ResponseEntity<Void> likePost(@PathVariable Long postId) {
         postService.increaseLikeCount(postId);
@@ -152,7 +152,7 @@ public class PostController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/{postId}/like")
+    @DeleteMapping("/{postId}/likes")
     @Operation(summary = "게시글 좋아요 취소")
     public ResponseEntity<Void> unlikePost(@PathVariable Long postId) {
         postService.decreaseLikeCount(postId);
@@ -160,7 +160,7 @@ public class PostController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/{postId}/report")
+    @PostMapping("/{postId}/reports")
     @Operation(summary = "게시글 신고")
     public ResponseEntity<Void> reportPost(@PathVariable Long postId) {
         postService.increaseReportCount(postId);
