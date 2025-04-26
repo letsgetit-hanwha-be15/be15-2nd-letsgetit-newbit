@@ -29,6 +29,7 @@ class PostServiceNoticeTest {
     private PostService postService;
     private UserFeignClient userFeignClient;
     private PostInternalService postInternalService;
+    private PostCategoryService postCategoryService;
 
     @BeforeEach
     void setUp() {
@@ -36,7 +37,7 @@ class PostServiceNoticeTest {
         commentRepository = mock(CommentRepository.class);
         pointTransactionCommandService = mock(PointTransactionCommandService.class);
         postInternalService = mock(PostInternalService.class);
-
+        postCategoryService = mock(PostCategoryService.class);
 
         postService = new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient, postInternalService);
     }

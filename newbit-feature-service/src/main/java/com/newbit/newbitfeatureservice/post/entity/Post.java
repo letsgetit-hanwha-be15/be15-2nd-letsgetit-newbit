@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "post")
 @Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Builder
@@ -51,6 +50,10 @@ public class Post {
     @Column(name = "post_category_id", nullable = false)
     private Long postCategoryId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_category_id", insertable = false, updatable = false)
+    private PostCategory postCategory;
+
     @Column(name = "is_notice", nullable = false)
     private boolean isNotice;
 
@@ -86,9 +89,4 @@ public class Post {
     public void increaseReportCount() {
         this.reportCount++;
     }
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_category_id", insertable = false, updatable = false)
-    private PostCategory postCategory;
-
 }
