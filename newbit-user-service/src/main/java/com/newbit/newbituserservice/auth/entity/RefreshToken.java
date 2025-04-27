@@ -15,7 +15,7 @@ import java.util.Date;
 @Table(name = "refresh_token")
 @Getter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class RefreshToken {
 
