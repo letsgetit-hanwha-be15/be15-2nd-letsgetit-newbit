@@ -36,8 +36,17 @@ public class PostService {
     private final PostInternalService postInternalService;
 
     public PostResponse createPost(PostCreateRequest request, CustomUser user) {
+        if (user == null) {
+            throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);  // 사용자 체크
+        }
+
         // 1. 트랜잭션 내에서 게시글 저장
         Post post = postInternalService.createPostInternal(request, user);
+
+        // post가 null일 경우 예외 처리
+        if (post == null || post.getId() == null) {
+            throw new BusinessException(ErrorCode.POST_CREATION_FAILED);  // 예외 코드 변경
+        }
 
         // 2. 외부 시스템 호출 (트랜잭션 이후)
         pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());

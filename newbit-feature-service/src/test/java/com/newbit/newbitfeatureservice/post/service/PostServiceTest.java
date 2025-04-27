@@ -1,6 +1,8 @@
 package com.newbit.newbitfeatureservice.post.service;
 
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
+import com.newbit.newbitfeatureservice.client.user.dto.UserDTO;
+import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.post.dto.request.PostCreateRequest;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,6 +38,7 @@ class PostServiceTest {
     private CommentRepository commentRepository;
     private UserFeignClient userFeignClient;
     private PostInternalService postInternalService;
+    private PostCategoryService postCategoryService;
 
     @BeforeEach
     void setUp() {
@@ -43,6 +47,7 @@ class PostServiceTest {
         pointTransactionCommandService = mock(PointTransactionCommandService.class);
         userFeignClient = mock(UserFeignClient.class);
         postInternalService = mock(PostInternalService.class);
+        postCategoryService = mock(PostCategoryService.class);
 
         postService = new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient, postInternalService);
 
@@ -67,16 +72,30 @@ class PostServiceTest {
         userRequest.setContent("내용");
         userRequest.setPostCategoryId(1L);
 
-        when(postRepository.save(any(Post.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(postInternalService.createPostInternal(any(PostCreateRequest.class), any(CustomUser.class)))
+                .thenReturn(Post.builder()
+                        .id(123L)
+                        .title(userRequest.getTitle())
+                        .content(userRequest.getContent())
+                        .userId(user.getUserId())
+                        .postCategoryId(userRequest.getPostCategoryId())
+                        .likeCount(0)
+                        .reportCount(0)
+                        .isNotice(false)
+                        .build());
 
         // when
         PostResponse response = postService.createPost(userRequest, user);
 
         // then
         assertThat(response.getTitle()).isEqualTo("일반 글");
-        verify(postRepository, times(1)).save(any(Post.class));
+        assertThat(response.getContent()).isEqualTo("내용");
+        assertThat(response.getPostCategoryId()).isEqualTo(1L);
+        assertThat(response.isNotice()).isFalse();
     }
+
+
+
 
     @Test
     void 게시글_등록_실패_비회원() {
@@ -136,24 +155,27 @@ class PostServiceTest {
     }
 
     @Test
-    void 게시글_상세_조회_성공() {
+    void 게시글_상세_조회_성공() throws Exception {
         // given
         Long postId = 1L;
-
-        Post post = Post.builder()
-                .id(postId)
-                .title("상세 제목")
-                .content("상세 내용")
-                .userId(1L)
-                .postCategoryId(2L)
-                .build();
+        Long userId = 1L;
 
         PostCategory mockCategory = PostCategory.builder()
                 .id(2L)
                 .name("카테고리이름")
                 .build();
 
-        post.setPostCategory(mockCategory);
+        Post post = Post.builder()
+                .id(postId)
+                .title("상세 제목")
+                .content("상세 내용")
+                .userId(userId)
+                .postCategoryId(mockCategory.getId())
+                .build();
+
+        Field field = Post.class.getDeclaredField("postCategory");
+        field.setAccessible(true);
+        field.set(post, mockCategory);
 
         Comment comment = Comment.builder()
                 .id(1L)
@@ -162,17 +184,28 @@ class PostServiceTest {
                 .content("댓글입니다")
                 .build();
 
+        UserDTO mockUserDTO = UserDTO.builder()
+                .nickname("작성자이름")
+                .build();
+
+        ApiResponse<UserDTO> mockApiResponse = ApiResponse.<UserDTO>builder()
+                .data(mockUserDTO)
+                .build();
+
         when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
-        CommentRepository commentRepository = mock(CommentRepository.class);
         when(commentRepository.findByPostIdAndDeletedAtIsNull(postId)).thenReturn(List.of(comment));
+        when(userFeignClient.getUserByUserId(userId)).thenReturn(mockApiResponse);
 
-        // PostService를 다시 생성해서 의존성 주입
-        PointTransactionCommandService pointTransactionCommandService = mock(PointTransactionCommandService.class);
-        PostService postServiceWithMocks = new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient, postInternalService);
-
+        postService = new PostService(
+                postRepository,
+                commentRepository,
+                pointTransactionCommandService,
+                userFeignClient,
+                postInternalService
+        );
 
         // when
-        var response = postServiceWithMocks.getPostDetail(postId);
+        var response = postService.getPostDetail(postId);
 
         // then
         assertThat(response.getTitle()).isEqualTo("상세 제목");
@@ -181,6 +214,7 @@ class PostServiceTest {
         assertThat(response.getComments()).hasSize(1);
         assertThat(response.getComments().get(0).getContent()).isEqualTo("댓글입니다");
     }
+
 
     @Test
     void 본인_게시글_조회_성공() {

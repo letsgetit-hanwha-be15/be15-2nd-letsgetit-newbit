@@ -1,5 +1,7 @@
 package com.newbit.newbitgateway.jwt;
 
+import com.newbit.newbitgateway.exception.BusinessException;
+import com.newbit.newbitgateway.exception.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -31,6 +33,14 @@ public class GatewayJwtTokenProvider {
                     .build()
                     .parseSignedClaims(token);
             return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            throw new BusinessException(ErrorCode.JWT_INVALID);
+        } catch (ExpiredJwtException e) {
+            throw new BusinessException(ErrorCode.JWT_EXPIRED);
+        } catch (UnsupportedJwtException e) {
+            throw new BusinessException(ErrorCode.JWT_UNSUPPORTED);
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(ErrorCode.JWT_CLAIMS_EMPTY);
         } catch (SecurityException | MalformedJwtException e) {
             throw new MalformedJwtException("Invalid JWT Token");
         } catch (ExpiredJwtException e) {
