@@ -28,7 +28,10 @@ public class GatewayJwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
+            Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token);
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             throw new BusinessException(ErrorCode.JWT_INVALID);
@@ -38,6 +41,14 @@ public class GatewayJwtTokenProvider {
             throw new BusinessException(ErrorCode.JWT_UNSUPPORTED);
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ErrorCode.JWT_CLAIMS_EMPTY);
+        } catch (SecurityException | MalformedJwtException e) {
+            throw new MalformedJwtException("Invalid JWT Token");
+        } catch (ExpiredJwtException e) {
+            throw new ExpiredJwtException(e.getHeader(), e.getClaims(), "Expired JWT Token");
+        } catch (UnsupportedJwtException e) {
+            throw new UnsupportedJwtException("Unsupported JWT Token");
+        } catch (IllegalArgumentException e) {
+            throw new JwtException("Empty JWT claims");
         }
     }
 
