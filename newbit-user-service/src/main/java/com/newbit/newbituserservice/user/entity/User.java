@@ -66,6 +66,10 @@ public class User {
     @Column(name = "job_id")
     private Long jobId;
 
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
+    }
+
     public void setEncodedPassword(String encodedPassword) {
         this.password = encodedPassword;
     }
