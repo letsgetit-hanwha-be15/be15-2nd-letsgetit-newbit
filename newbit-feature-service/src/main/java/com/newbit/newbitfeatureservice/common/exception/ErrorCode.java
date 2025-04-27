@@ -44,11 +44,14 @@ public enum ErrorCode {
     LIKE_PROCESSING_ERROR("20010", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_SAVE_ERROR("20011", "파일 저장에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_DELETE_ERROR("20012", "파일 삭제에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    POST_CATEGORY_NOT_FOUND("20013", "존재하지 않는 게시글 카테고리입니다.", HttpStatus.NOT_FOUND),
+    POST_CREATION_FAILED("20014", "게시글 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+
     //댓글
-    COMMENT_NOT_FOUND("20013", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_TO_DELETE_COMMENT("20014", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
-    UNAUTHORIZED_TO_CREATE_COMMENT("20015", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
-    COMMENT_POST_MISMATCH("20016", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
+    COMMENT_NOT_FOUND("20015", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_DELETE_COMMENT("20016", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_CREATE_COMMENT("20017", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
+    COMMENT_POST_MISMATCH("20018", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
 
     /*--------------- 칼럼 ------------------*/
     // 칼럼

@@ -78,8 +78,8 @@ public class ReportCommandService {
     private boolean incrementPostReportCount(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
-        
-        post.setReportCount(post.getReportCount() + 1);
+
+        post.increaseReportCount();
         
         if (post.getReportCount() >= REPORT_THRESHOLD) {
             post.softDelete();
@@ -98,8 +98,8 @@ public class ReportCommandService {
     private boolean incrementCommentReportCount(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글입니다."));
-        
-        comment.setReportCount(comment.getReportCount() + 1);
+
+        comment.increaseReportCount();
         
         if (comment.getReportCount() >= REPORT_THRESHOLD) {
             comment.softDelete();
