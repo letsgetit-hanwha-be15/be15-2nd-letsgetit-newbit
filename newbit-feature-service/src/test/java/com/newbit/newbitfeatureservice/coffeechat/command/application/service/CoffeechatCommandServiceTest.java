@@ -16,6 +16,7 @@ import com.newbit.newbitfeatureservice.coffeechat.query.service.CoffeechatQueryS
 import com.newbit.newbitfeatureservice.coffeeletter.dto.CoffeeLetterRoomDTO;
 import com.newbit.newbitfeatureservice.coffeeletter.service.RoomService;
 import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
+import com.newbit.newbitfeatureservice.common.dto.Pagination;
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.notification.command.application.service.NotificationCommandService;
@@ -63,50 +64,72 @@ class CoffeechatCommandServiceTest {
     private UserFeignClient userClient;
     @Mock
     private RoomService roomService;
+    @Mock
+    private CoffeechatInternalService coffeechatInternalService;
 
     @DisplayName("커피챗 요청 등록 성공")
     @Test
     void createCoffeechat_성공() {
         // given
         Long userId = 8L;
-        LocalDateTime pastStartDateTime = LocalDateTime.now().plusDays(1);
-
+        LocalDateTime startTime = LocalDateTime.now().plusDays(1);
         CoffeechatCreateRequest request = new CoffeechatCreateRequest(
                 "취업 관련 꿀팁 얻고 싶어요.",
                 2,
                 2L,
-                List.of(pastStartDateTime));
+                List.of(startTime)
+        );
 
-        Coffeechat mockCoffeechat = Coffeechat.of(userId,
+        // 저장될 엔티티 목업
+        Coffeechat saved = Coffeechat.of(
+                userId,
                 request.getMentorId(),
                 request.getRequestMessage(),
-                request.getPurchaseQuantity());
+                request.getPurchaseQuantity()
+        );
+        ReflectionTestUtils.setField(saved, "coffeechatId", 999L);
 
-        // private 필드인 coffeechatId에 직접 주입
-        ReflectionTestUtils.setField(mockCoffeechat, "coffeechatId", 999L);
-        when(coffeechatRepository.save(any(Coffeechat.class))).thenReturn(mockCoffeechat);
+        // 1) 진행중인 커피챗 확인 → 빈 리스트 + 페이징
+        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class)))
+                .thenReturn(
+                        CoffeechatListResponse.builder()
+                                .coffeechats(new LinkedList<>())
+                                .pagination(
+                                        Pagination.builder()
+                                                .currentPage(1)
+                                                .totalPage(1)
+                                                .totalItems(0)
+                                                .build()
+                                )
+                                .build()
+                );
+        // 2) 커피챗 저장
+        when(coffeechatRepository.save(any(Coffeechat.class)))
+                .thenReturn(saved);
 
-        // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
-        CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
-                .coffeechats(new LinkedList<>()).build();
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class))).thenReturn(coffeechatListResponse);
+        // 3) RequestTime 저장
+        RequestTime rt = RequestTime.of(
+                startTime.toLocalDate(),
+                startTime,
+                startTime.plusMinutes(30L * request.getPurchaseQuantity()),
+                999L
+        );
+        when(requestTimeRepository.save(any(RequestTime.class)))
+                .thenReturn(rt);
 
-        // requestTimeRepository::save 시 requestTime 반환
-        RequestTime requestTime = RequestTime.of(
-                pastStartDateTime.toLocalDate(),
-                pastStartDateTime,
-                pastStartDateTime.plusMinutes(60L),
-                999L);
-        when(requestTimeRepository.save(any(RequestTime.class))).thenReturn(requestTime);
+        // 4) 멘토 userId 조회 stub
+        when(mentorClient.getUserIdByMentorId(request.getMentorId()))
+                .thenReturn(ApiResponse.success(42L));
 
         // when
         Long result = coffeechatCommandService.createCoffeechat(userId, request);
 
         // then
-        assertNotNull(result);
         assertEquals(999L, result);
         verify(coffeechatRepository).save(any(Coffeechat.class));
-
+        verify(requestTimeRepository).save(any(RequestTime.class));
+        verify(mentorClient).getUserIdByMentorId(request.getMentorId());
+        verify(notificationCommandService).sendNotification(any());
     }
 
     @DisplayName("이미 진행중인 커피챗이 존재할 시 에러 반환")
@@ -178,37 +201,61 @@ class CoffeechatCommandServiceTest {
                 () -> coffeechatCommandService.createCoffeechat(userId, request)
         );
     }
-
     @DisplayName("커피챗 승인 성공")
     @Test
     void acceptCoffeechatTime_성공() {
         // given
         Long requestTimeId = 1L;
-        Long coffeechatId = 999L;
-        Long userId = 12L;
-        Long mentorId = 2L;
-        Long mentorUserId = 3L;
+        Long coffeechatId   = 999L;
+        Long menteeId       = 12L;
+        Long mentorId       = 2L;
+        Long mentorUserId   = 3L;
 
-        // requestTime 객체 만들어주기
+        // requestTime 객체 준비
         LocalDateTime start = LocalDateTime.of(2025, 5, 1, 10, 0);
-        LocalDateTime end = LocalDateTime.of(2025, 5, 1, 11, 30);
+        LocalDateTime end   = LocalDateTime.of(2025, 5, 1, 11, 30);
         RequestTime requestTime = RequestTime.of(start.toLocalDate(), start, end, coffeechatId);
 
-        // 커피챗 객체 만들어주기
-        Coffeechat mockCoffeechat = Coffeechat.of(userId,
-                mentorId,
-                "취업 관련 꿀팁 얻고 싶어요.",
-                2);
+        // 커피챗 엔티티 준비
+        Coffeechat mockCoffeechat = Coffeechat.of(menteeId, mentorId, "취업 관련 꿀팁 얻고 싶어요.", 2);
 
-        // repo setting
-        when(requestTimeRepository.findById(requestTimeId)).thenReturn(Optional.of(requestTime));
-        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
-        when(mentorClient.getUserIdByMentorId(mentorId).getData()).thenReturn(mentorUserId);
-        when(userClient.getUserByUserId(mentorUserId).getData()).thenReturn(UserDTO.builder().userId(mentorUserId).userName("멘토닉네임").build());
-        when(userClient.getUserByUserId(userId).getData()).thenReturn(UserDTO.builder().userId(userId).userName("멘티닉네임").build());
-        when(roomService.createRoom(any(CoffeeLetterRoomDTO.class))).thenReturn(CoffeeLetterRoomDTO.builder().build());
-        // when & then: 예외가 발생하지 않으면 테스트 통과
-        assertDoesNotThrow(() -> coffeechatCommandService.acceptCoffeechatTime(requestTimeId));
+        // stub 설정
+        when(requestTimeRepository.findById(requestTimeId))
+                .thenReturn(Optional.of(requestTime));
+        when(coffeechatRepository.findById(coffeechatId))
+                .thenReturn(Optional.of(mockCoffeechat));
+        when(mentorClient.getUserIdByMentorId(mentorId))
+                .thenReturn(ApiResponse.success(mentorUserId));
+        when(userClient.getUserByUserId(mentorUserId))
+                .thenReturn(ApiResponse.success(
+                        UserDTO.builder()
+                                .userId(mentorUserId)
+                                .nickname("멘토닉네임")
+                                .build()
+                ));
+        when(userClient.getUserByUserId(menteeId))
+                .thenReturn(ApiResponse.success(
+                        UserDTO.builder()
+                                .userId(menteeId)
+                                .nickname("멘티닉네임")
+                                .build()
+                ));
+        when(roomService.createRoom(any(CoffeeLetterRoomDTO.class)))
+                .thenReturn(CoffeeLetterRoomDTO.builder().build());
+
+        // when & then
+        assertDoesNotThrow(() ->
+                coffeechatCommandService.acceptCoffeechatTime(requestTimeId)
+        );
+
+        // verify
+        verify(requestTimeRepository).findById(requestTimeId);
+        verify(coffeechatRepository).findById(coffeechatId);
+        verify(mentorClient).getUserIdByMentorId(mentorId);
+        verify(userClient).getUserByUserId(mentorUserId);
+        verify(userClient).getUserByUserId(menteeId);
+        verify(roomService).createRoom(any(CoffeeLetterRoomDTO.class));
+        verify(notificationCommandService).sendNotification(any());
     }
 
     @DisplayName("requsetTime 객체를 찾을 수 없습니다")
@@ -330,32 +377,31 @@ class CoffeechatCommandServiceTest {
     @DisplayName("멘티 구매 확정 성공")
     void confirmPurchaseCoffeechat_성공() {
         // given
-        Long coffeechatId = 999L;
-        Long mentorId = 2L;
-        int purchaseQuantity = 2;
-        int pricePerUnit = 10;
-        int totalPrice = pricePerUnit * purchaseQuantity;
+        Long coffeechatId     = 999L;
+        Long mentorId         = 2L;
+        int  purchaseQuantity = 2;
+        int  pricePerUnit     = 10;
+        int  totalPrice       = pricePerUnit * purchaseQuantity;
 
-        // mockCoffeechat 생성
-        Coffeechat mockCoffeechat = Coffeechat.of(12L,
-                mentorId,
-                "취업 관련 꿀팁 얻고 싶어요.",
-                purchaseQuantity);
-        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+        Coffeechat mockCoffeechat = Coffeechat.of(12L, mentorId, "내용", purchaseQuantity);
+        when(coffeechatRepository.findById(coffeechatId))
+                .thenReturn(Optional.of(mockCoffeechat));
 
-        // mentorClient.getMentorInfo 설정
         MentorDTO mentorDTO = MentorDTO.builder()
                 .price(pricePerUnit)
                 .isActive(true)
                 .build();
-        when(mentorClient.getMentorInfo(mentorId).getData()).thenReturn(mentorDTO);
+        when(mentorClient.getMentorInfo(mentorId))
+                .thenReturn(ApiResponse.success(mentorDTO));
 
-        // transactionCommandService 호출 mock
-        doNothing().when(transactionCommandService)
-                .addSaleHistory(mentorId, totalPrice, coffeechatId);
+        // when
+        assertDoesNotThrow(() ->
+                coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId)
+        );
 
-        // when & then
-        assertDoesNotThrow(() -> coffeechatCommandService.confirmPurchaseCoffeechat(coffeechatId));
+        // then
+        verify(mentorClient).getMentorInfo(mentorId);
+        verify(transactionCommandService).addSaleHistory(mentorId, totalPrice, coffeechatId);
     }
 
     @DisplayName("구매확정 시 객체 찾지 못함")
@@ -372,28 +418,34 @@ class CoffeechatCommandServiceTest {
         assertEquals(ErrorCode.COFFEECHAT_NOT_FOUND, exception.getErrorCode());
     }
 
-
     @DisplayName("IN_PROGRESS 상태일 때 커피챗 취소 성공")
     @Test
     void cancelCoffeechat_성공() {
         // given
         Long userId = 5L;
+        Long mentorUserId = 42L;
         Long coffeechatId = 9L;
         CoffeechatCancelRequest request = new CoffeechatCancelRequest(1L);
 
-        // 커피챗 객체 만들어주기, IN_PROGRESS 상태
-        Coffeechat mockCoffeechat = Coffeechat.of(userId,
-                2L,
-                "취업 관련 꿀팁 얻고 싶어요.",
-                2);
+        // 커피챗 객체 생성 (초기 상태가 IN_PROGRESS)
+        Coffeechat mockCoffeechat = Coffeechat.of(userId, 2L, "취업 관련 꿀팁 얻고 싶어요.", 2);
+        when(coffeechatRepository.findById(coffeechatId))
+                .thenReturn(Optional.of(mockCoffeechat));
 
-        // repo setting
-        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+        // mentorClient.getUserIdByMentorId stub
+        when(mentorClient.getUserIdByMentorId(2L))
+                .thenReturn(ApiResponse.success(mentorUserId));
 
-        // when & then: 예외가 발생하지 않으면 테스트 통과
-        assertDoesNotThrow(() -> coffeechatCommandService.cancelCoffeechat(userId, request, coffeechatId));
+        // when & then
+        assertDoesNotThrow(() ->
+                coffeechatCommandService.cancelCoffeechat(userId, request, coffeechatId)
+        );
+
+        // verify
+        verify(mentorClient).getUserIdByMentorId(2L);
+        verify(transactionCommandService, never()).refundCoffeeChat(anyLong(), anyLong(), anyInt());
+        verify(coffeechatInternalService).cancelCoffeechatTransactional(request, mockCoffeechat, mentorUserId);
     }
-
 
     @DisplayName("COFFEECHAT_WAITING 상태일 때 커피챗 취소 성공")
     @Test
@@ -404,30 +456,42 @@ class CoffeechatCommandServiceTest {
         Long coffeechatId = 9L;
         int purchaseQuantity = 2;
         int price = 10;
+        Long mentorUserId = 42L;
+
         CoffeechatCancelRequest request = new CoffeechatCancelRequest(1L);
 
-        // 커피챗 객체 만들어주기, IN_PROGRESS 상태
-        Coffeechat mockCoffeechat = Coffeechat.of(userId,
-                mentorId,
-                "취업 관련 꿀팁 얻고 싶어요.",
-                purchaseQuantity);
-
+        // 커피챗 객체 생성 + 상태를 WAITING 으로 세팅
+        Coffeechat mockCoffeechat = Coffeechat.of(userId, mentorId, "취업 관련 꿀팁 얻고 싶어요.", purchaseQuantity);
         ReflectionTestUtils.setField(mockCoffeechat, "progressStatus", ProgressStatus.COFFEECHAT_WAITING);
 
-        // repo setting
-        when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
+        // repository stub
+        when(coffeechatRepository.findById(coffeechatId))
+                .thenReturn(Optional.of(mockCoffeechat));
+
+        // FeignClient stubbing
         MentorDTO mentorDTO = MentorDTO.builder()
                 .price(price)
                 .isActive(true)
                 .build();
-        when(mentorClient.getMentorInfo(mentorId)).thenReturn(ApiResponse.success(mentorDTO));
+        when(mentorClient.getMentorInfo(mentorId))
+                .thenReturn(ApiResponse.success(mentorDTO));
+        when(mentorClient.getUserIdByMentorId(mentorId))
+                .thenReturn(ApiResponse.success(mentorUserId));
 
-        // when & then: 예외가 발생하지 않으면 테스트 통과
-        // 실행
-        assertDoesNotThrow(() -> coffeechatCommandService.cancelCoffeechat(userId, request, coffeechatId));
-        // 검증
+        // when & then
+        assertDoesNotThrow(() ->
+                coffeechatCommandService.cancelCoffeechat(userId, request, coffeechatId)
+        );
+
+        // verify
         verify(mentorClient).getMentorInfo(mentorId);
-        verify(transactionCommandService).refundCoffeeChat(coffeechatId, userId, purchaseQuantity * price);
+        verify(transactionCommandService).refundCoffeeChat(
+                coffeechatId, userId, purchaseQuantity * price
+        );
+        verify(mentorClient).getUserIdByMentorId(mentorId);
+        verify(coffeechatInternalService).cancelCoffeechatTransactional(
+                request, mockCoffeechat, mentorUserId
+        );
     }
 
     @DisplayName("커피챗 찾지 못해서 커피챗 취소 실패")
