@@ -7,7 +7,10 @@ import com.newbit.newbituserservice.user.dto.request.FindIdDTO;
 import com.newbit.newbituserservice.user.dto.request.UserRequestDTO;
 import com.newbit.newbituserservice.user.dto.response.UserDTO;
 import com.newbit.newbituserservice.user.dto.response.UserIdDTO;
-import com.newbit.newbituserservice.user.entity.User;
+import com.newbit.newbituserservice.user.entity.*;
+import com.newbit.newbituserservice.user.repository.JobRepository;
+import com.newbit.newbituserservice.user.repository.TechstackRepository;
+import com.newbit.newbituserservice.user.repository.UserAndTechstackRepository;
 import com.newbit.newbituserservice.user.repository.UserRepository;
 import com.newbit.newbituserservice.user.support.MailServiceSupport;
 import com.newbit.newbituserservice.user.support.PasswordValidator;
@@ -24,6 +27,9 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final JobRepository jobRepository;
+    private final TechstackRepository techstackRepository;
+    private final UserAndTechstackRepository  userAndTechstackRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
     private  final MailServiceSupport mailServiceSupport;
@@ -44,10 +50,28 @@ public class UserService {
         if (userRepository.existsByNickname(request.getNickname())) {
             throw new BusinessException(ErrorCode.ALREADY_REGISTERED_NICKNAME);
         }
+        Job job = jobRepository.findByJobName(request.getJobName())
+                .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
         // 회원 가입
         User user = modelMapper.map(request, User.class);
         user.setEncodedPassword(passwordEncoder.encode(request.getPassword()));
+        user.setJobId(job.getJobId());
         userRepository.save(user);
+
+        User savedUser = userRepository.save(user);
+
+        if (request.getTechstackNames() != null && !request.getTechstackNames().isEmpty()) {
+            for (String techstackName : request.getTechstackNames()) {
+                Techstack techstack = techstackRepository.findByTechstackName(techstackName)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.TECHSTACK_NOT_FOUND));
+
+                UserAndTechstack mapping = UserAndTechstack.builder()
+                        .id(new UserAndTechstackId(savedUser.getUserId(), techstack.getTechstackId()))
+                        .build();
+
+                userAndTechstackRepository.save(mapping);
+            }
+        }
     }
 
     public UserIdDTO findEmailByNameAndPhone(FindIdDTO findIdDTO) {
