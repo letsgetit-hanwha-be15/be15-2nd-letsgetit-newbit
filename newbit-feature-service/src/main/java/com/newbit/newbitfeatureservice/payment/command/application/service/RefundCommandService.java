@@ -5,8 +5,11 @@ import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.newbitfeatureservice.notification.command.application.service.NotificationCommandService;
 import com.newbit.newbitfeatureservice.payment.command.application.dto.TossPaymentApiDto;
+import com.newbit.newbitfeatureservice.payment.command.application.dto.request.PaymentCancelRequest;
 import com.newbit.newbitfeatureservice.payment.command.application.dto.response.PaymentRefundResponse;
 import com.newbit.newbitfeatureservice.payment.command.domain.aggregate.Payment;
+import com.newbit.newbitfeatureservice.payment.command.domain.aggregate.PaymentMethod;
+import com.newbit.newbitfeatureservice.payment.command.domain.aggregate.PaymentStatus;
 import com.newbit.newbitfeatureservice.payment.command.domain.aggregate.Refund;
 import com.newbit.newbitfeatureservice.payment.command.domain.repository.PaymentRepository;
 import com.newbit.newbitfeatureservice.payment.command.domain.repository.RefundRepository;
@@ -16,8 +19,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class RefundCommandService extends AbstractPaymentService<PaymentRefundResponse> {
 
@@ -41,7 +48,6 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
     @Transactional
     public PaymentRefundResponse cancelPayment(Long paymentId, String cancelReason) {
         Payment payment = findPaymentById(paymentId);
-        
         validateCancelable(payment);
         
         TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.cancelPayment(
@@ -49,36 +55,13 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
                 cancelReason
         );
         
-        payment.refund();
+        payment.cancel();
         payment = paymentRepository.save(payment);
         
-        Refund refund = Refund.createRefund(
-                payment, 
-                payment.getAmount(), 
-                cancelReason, 
-                response.getPaymentKey(),
-                false
-        );
-        
+        Refund refund = createRefundEntity(payment, payment.getAmount(), cancelReason, response);
         Refund savedRefund = refundRepository.save(refund);
 
-        String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", savedRefund.getAmount().intValue());
-
-        int refundDiamondAmount = savedRefund.getAmount().intValue() / DIAMOND_UNIT_PRICE;
-        diamondTransactionCommandService.applyDiamondRefund(
-                payment.getUserId(),
-                savedRefund.getRefundId(),
-                refundDiamondAmount
-        );
-
-        notificationCommandService.sendNotification(
-                new NotificationSendRequest(
-                        payment.getUserId()
-                        , 15L
-                        , savedRefund.getRefundId()
-                        , notificationContent
-                )
-        );
+        processRefundNotificationAndDiamonds(payment, savedRefund);
         
         return createRefundResponse(savedRefund);
     }
@@ -86,9 +69,7 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
     @Transactional
     public PaymentRefundResponse cancelPaymentPartial(Long paymentId, BigDecimal cancelAmount, String cancelReason) {
         Payment payment = findPaymentById(paymentId);
-        
         validatePartialCancelable(payment);
-        
         validateRefundAmount(payment, cancelAmount);
         
         TossPaymentApiDto.PaymentResponse response = tossPaymentApiClient.cancelPaymentPartial(
@@ -97,39 +78,113 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
                 cancelAmount.longValue()
         );
         
-        payment.partialRefund(cancelAmount);
+        payment.updatePaymentStatus(PaymentStatus.PARTIAL_CANCELED);
         payment = paymentRepository.save(payment);
         
-        Refund refund = Refund.createRefund(
-                payment, 
-                cancelAmount, 
-                cancelReason, 
-                response.getPaymentKey(),
-                true
-        );
-        
+        Refund refund = createRefundEntity(payment, cancelAmount, cancelReason, response);
+        refund.setPartialRefund(true);
         Refund savedRefund = refundRepository.save(refund);
 
-        int refundDiamondAmount = savedRefund.getAmount().intValue() / DIAMOND_UNIT_PRICE;
-        diamondTransactionCommandService.applyDiamondRefund(
-                payment.getUserId(),
-                savedRefund.getRefundId(),
-                refundDiamondAmount
-        );
-
-        String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", savedRefund.getAmount().intValue());
-
-
-        notificationCommandService.sendNotification(
-                new NotificationSendRequest(
-                        payment.getUserId()
-                        , 15L
-                        , savedRefund.getRefundId()
-                        , notificationContent
-                )
-        );
-
+        processRefundNotificationAndDiamonds(payment, savedRefund);
+        
         return createRefundResponse(savedRefund);
+    }
+    
+    @Transactional
+    public PaymentRefundResponse cancelVirtualAccountPayment(Long paymentId, PaymentCancelRequest request) {
+        Payment payment = findPaymentById(paymentId);
+        validateCancelable(payment);
+        
+        if (payment.getPaymentMethod() != PaymentMethod.VIRTUAL_ACCOUNT) {
+            throw new BusinessException(ErrorCode.PAYMENT_NOT_VIRTUAL_ACCOUNT);
+        }
+        
+        if (request.getRefundReceiveAccount() == null) {
+            throw new BusinessException(ErrorCode.PAYMENT_REFUND_ACCOUNT_REQUIRED);
+        }
+        
+        PaymentCancelRequest.RefundReceiveAccount refundAccount = request.getRefundReceiveAccount();
+        
+        TossPaymentApiDto.PaymentResponse response;
+        BigDecimal cancelAmount = request.getCancelAmount() != null ? 
+                request.getCancelAmount() : payment.getAmount();
+        
+        response = tossPaymentApiClient.cancelVirtualAccountPayment(
+                payment.getPaymentKey(),
+                request.getReason(),
+                cancelAmount.longValue(),
+                refundAccount.getBank(),
+                refundAccount.getAccountNumber(),
+                refundAccount.getHolderName()
+        );
+        
+        boolean isPartialCancel = request.getCancelAmount() != null && 
+                payment.getAmount().compareTo(request.getCancelAmount()) > 0;
+        
+        if (isPartialCancel) {
+            payment.updatePaymentStatus(PaymentStatus.PARTIAL_CANCELED);
+        } else {
+            payment.cancel();
+        }
+        
+        payment = paymentRepository.save(payment);
+        
+        Refund refund = createRefundEntity(payment, cancelAmount, request.getReason(), response);
+        refund.updateRefundAccountInfo(
+                refundAccount.getBank(),
+                refundAccount.getAccountNumber(),
+                refundAccount.getHolderName()
+        );
+        refund.setPartialRefund(isPartialCancel);
+        
+        Refund savedRefund = refundRepository.save(refund);
+        processRefundNotificationAndDiamonds(payment, savedRefund);
+        
+        return createRefundResponse(savedRefund);
+    }
+    
+    private Refund createRefundEntity(Payment payment, BigDecimal amount, String reason, TossPaymentApiDto.PaymentResponse response) {
+        String transactionKey = null;
+        
+        if (response.getCancels() != null && !response.getCancels().isEmpty()) {
+            Map<String, Object> latestCancel = response.getCancels().get(response.getCancels().size() - 1);
+            if (latestCancel.containsKey("transactionKey")) {
+                transactionKey = (String) latestCancel.get("transactionKey");
+            }
+        }
+        
+        return Refund.builder()
+                .payment(payment)
+                .amount(amount)
+                .reason(reason)
+                .refundKey(transactionKey != null ? transactionKey : response.getPaymentKey())
+                .isPartialRefund(false)
+                .build();
+    }
+    
+    private void processRefundNotificationAndDiamonds(Payment payment, Refund refund) {
+        try {
+            int refundDiamondAmount = refund.getAmount().intValue() / DIAMOND_UNIT_PRICE;
+            
+            diamondTransactionCommandService.applyDiamondRefund(
+                    payment.getUserId(),
+                    refund.getRefundId(),
+                    refundDiamondAmount
+            );
+            
+            String notificationContent = String.format("환불이 완료되었습니다. (환불금액 : %,d)", refund.getAmount().intValue());
+            
+            notificationCommandService.sendNotification(
+                    new NotificationSendRequest(
+                            payment.getUserId(),
+                            15L,
+                            refund.getRefundId(),
+                            notificationContent
+                    )
+            );
+        } catch (Exception e) {
+            log.error("환불 후처리 중 오류 발생: {}", e.getMessage(), e);
+        }
     }
     
     @Transactional(readOnly = true)
@@ -164,6 +219,7 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
         
         return createRefundResponse(refund);
     }
+    
     private PaymentRefundResponse createRefundResponse(Refund refund) {
         return PaymentRefundResponse.builder()
                 .refundId(refund.getRefundId())

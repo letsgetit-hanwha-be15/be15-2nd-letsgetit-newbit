@@ -1,10 +1,9 @@
-package com.newbit.newbitfeatureservice.common.exception;
-
-import org.springframework.http.HttpStatus;
+package com.newbit.newbitgateway.exception;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
@@ -23,11 +22,11 @@ public enum ErrorCode {
     INVALID_PASSWORD_FORMAT("10009", "최소 8자, 영문자, 숫자, 특수문자 포함해야합니다.", HttpStatus.BAD_REQUEST),
     INVALID_CURRENT_PASSWORD("10010", "비밀번호가 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
     //인증
-    JWT_INVALID("11011", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
-    JWT_EXPIRED("11012", "만료된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
-    JWT_UNSUPPORTED("11013", "지원하지 않는 JWT 토큰입니다.", HttpStatus.BAD_REQUEST),
-    JWT_CLAIMS_EMPTY("11014", "JWT 클레임이 비어 있습니다.", HttpStatus.BAD_REQUEST),
-    INTERNAL_SERVER_ERROR("11015", "내부 서버 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    JWT_INVALID("10011", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
+    JWT_EXPIRED("10012", "만료된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
+    JWT_UNSUPPORTED("10013", "지원하지 않는 JWT 토큰입니다.", HttpStatus.BAD_REQUEST),
+    JWT_CLAIMS_EMPTY("10014", "JWT 클레임이 비어 있습니다.", HttpStatus.BAD_REQUEST),
+    INTERNAL_SERVER_ERROR("10015", "내부 서버 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     // 입력 값 검증 오류
     VALIDATION_ERROR("11001", "입력 값 검증 오류입니다.", HttpStatus.BAD_REQUEST),
 
@@ -41,17 +40,15 @@ public enum ErrorCode {
     ONLY_ADMIN_CAN_UPDATE_NOTICE("20006", "공지사항은 관리자만 수정할 수 있습니다.", HttpStatus.FORBIDDEN),
     ONLY_ADMIN_CAN_DELETE_NOTICE("20007", "공지사항은 관리자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
     NOT_A_NOTICE("20008", "해당 게시글은 공지사항이 아닙니다.", HttpStatus.BAD_REQUEST),
+    POST_LIKE_NOT_FOUND("20009", "해당 게시글 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     LIKE_PROCESSING_ERROR("20010", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_SAVE_ERROR("20011", "파일 저장에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_DELETE_ERROR("20012", "파일 삭제에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    POST_CATEGORY_NOT_FOUND("20013", "존재하지 않는 게시글 카테고리입니다.", HttpStatus.NOT_FOUND),
-    POST_CREATION_FAILED("20014", "게시글 생성에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-
     //댓글
-    COMMENT_NOT_FOUND("20015", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    UNAUTHORIZED_TO_DELETE_COMMENT("20016", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
-    UNAUTHORIZED_TO_CREATE_COMMENT("20017", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
-    COMMENT_POST_MISMATCH("20018", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
+    COMMENT_NOT_FOUND("20013", "해당 댓글이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    UNAUTHORIZED_TO_DELETE_COMMENT("20014", "댓글은 작성자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED_TO_CREATE_COMMENT("20015", "댓글 작성은 회원만 가능합니다.", HttpStatus.FORBIDDEN),
+    COMMENT_POST_MISMATCH("20016", "해당 댓글은 게시글과 매칭되지 않습니다.", HttpStatus.BAD_REQUEST),
 
     /*--------------- 칼럼 ------------------*/
     // 칼럼
@@ -60,25 +57,12 @@ public enum ErrorCode {
     COLUMN_ALREADY_IN_SERIES("21003", "해당 칼럼은 이미 다른 시리즈에 속해있습니다.", HttpStatus.BAD_REQUEST),
     COLUMN_REQUEST_NOT_FOUND("21004", "해당 칼럼 요청을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     INVALID_REQUEST_TYPE("21005", "잘못된 요청 타입 입니다.", HttpStatus.BAD_REQUEST),
+    COLUMN_LIKE_NOT_FOUND("21006", "해당 칼럼 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     // 시리즈
     SERIES_CREATION_REQUIRES_COLUMNS("21007", "시리즈는 최소 1개 이상의 칼럼으로 생성되어야 합니다.", HttpStatus.BAD_REQUEST),
     SERIES_NOT_FOUND("21008", "해당 시리즈를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     SUBSCRIPTION_NOT_FOUND("21009", "해당 구독 정보를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     SUBSCRIPTION_PROCESSING_ERROR("21010", "구독 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-
-    /*--------------- 좋아요 ------------------*/
-    LIKE_NOT_FOUND("25001", "해당 좋아요를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    LIKE_ALREADY_EXISTS("25002", "이미 좋아요가 존재합니다.", HttpStatus.CONFLICT),
-    LIKE_USER_MISMATCH("25003", "해당 좋아요는 사용자와 매칭되지 않습니다.", HttpStatus.FORBIDDEN),
-    LIKE_ERROR("25004", "좋아요 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    LIKE_SELF_NOT_ALLOWED("25007", "자신의 콘텐츠에는 좋아요할 수 없습니다.", HttpStatus.BAD_REQUEST),
-
-    /*--------------- 구독 ------------------*/
-    SUBSCRIPTION_ALREADY_EXISTS("26002", "이미 구독 중인 시리즈입니다.", HttpStatus.CONFLICT),
-    SUBSCRIPTION_USER_MISMATCH("26003", "해당 구독은 사용자와 매칭되지 않습니다.", HttpStatus.FORBIDDEN),
-    SUBSCRIPTION_ERROR("26004", "구독 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    SUBSCRIPTION_SELF_NOT_ALLOWED("26006", "자신의 시리즈는 구독할 수 없습니다.", HttpStatus.BAD_REQUEST),
-    SUBSCRIPTION_CANCEL_ERROR("26007", "구독 취소 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
 
     /*--------------- 커피챗 ------------------*/
     // 커피챗
@@ -129,8 +113,6 @@ public enum ErrorCode {
     PAYMENT_NOT_PARTIAL_CANCELABLE("61011", "부분 취소가 불가능한 결제입니다.", HttpStatus.BAD_REQUEST),
     REFUND_AMOUNT_EXCEEDS_BALANCE("61012", "환불 금액이 잔액을 초과합니다.", HttpStatus.BAD_REQUEST),
     PAYMENT_CANCEL_FAILED("61013", "결제 취소 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    PAYMENT_NOT_VIRTUAL_ACCOUNT("61014", "가상계좌 결제가 아닙니다.", HttpStatus.BAD_REQUEST),
-    PAYMENT_REFUND_ACCOUNT_REQUIRED("61015", "가상계좌 환불을 위해서는 환불 계좌 정보가 필요합니다.", HttpStatus.BAD_REQUEST),
 
     /*--------------- 정산 ------------------*/
     SETTLEMENT_NOT_FOUND("62001", "정산 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

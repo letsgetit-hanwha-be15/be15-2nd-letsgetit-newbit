@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>결제 위젯</title>
+    <!-- 토스페이먼츠 결제 위젯 SDK -->
+    <script src="https://js.tosspayments.com/v1/payment-widget"></script>
+    <style>
+      body {
+        font-family: "Noto Sans KR", sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+      .payment-info {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f5f5f5;
+        border-radius: 5px;
+      }
+      .payment-info p {
+        margin: 5px 0;
+        display: flex;
+        justify-content: space-between;
+      }
+      .payment-button {
+        width: 100%;
+        padding: 12px;
+        background-color: #3182f6;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+      .payment-button:hover {
+        background-color: #1c62d8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>결제 정보</h1>
+
+      <div class="payment-info">
+        <p>
+          <span>주문명:</span>
+          <span th:text="${orderName}"></span>
+        </p>
+        <p>
+          <span>주문번호:</span>
+          <span th:text="${orderId}"></span>
+        </p>
+        <p>
+          <span>결제금액:</span>
+          <span
+            th:text="${#numbers.formatInteger(amount, 0, 'COMMA')} + '원'"
+          ></span>
+        </p>
+      </div>
+
+      <!-- 결제 위젯이 렌더링될 영역 -->
+      <div id="payment-widget"></div>
+
+      <!-- 결제하기 버튼 -->
+      <button class="payment-button" id="payment-button">결제하기</button>
+    </div>
+
+    <script th:inline="javascript">
+      // 클라이언트 키로 결제 위젯 SDK 초기화
+      const clientKey =
+        /*[[${clientKey}]]*/ "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
+      const customerKey = /*[[${customerKey}]]*/ "";
+      const successUrl = /*[[${successUrl}]]*/ "/payments/success";
+      const failUrl = /*[[${failUrl}]]*/ "/payments/fail";
+
+      // 주문 정보
+      const orderId = /*[[${orderId}]]*/ "";
+      const amount = /*[[${amount}]]*/ 0;
+      const orderName = /*[[${orderName}]]*/ "";
+
+      const paymentWidget = PaymentWidget(clientKey, customerKey);
+
+      // 결제 위젯 렌더링
+      const paymentMethodsWidget = paymentWidget.renderPaymentMethods(
+        "#payment-widget",
+        {
+          value: amount,
+          currency: "KRW",
+          country: "KR",
+        },
+        {
+          variantKey: "DEFAULT",
+          showMinimumPaymentLogo: true,
+        }
+      );
+
+      // 약관 위젯 렌더링
+      const termsWidget = paymentWidget.renderTerms("#payment-widget");
+
+      // 결제 버튼 클릭 이벤트 핸들러
+      document
+        .querySelector("#payment-button")
+        .addEventListener("click", function () {
+          // 결제 요청
+          paymentWidget
+            .requestPayment({
+              orderId: orderId,
+              orderName: orderName,
+              successUrl: successUrl,
+              failUrl: failUrl,
+              customerEmail: null,
+              customerName: null,
+            })
+            .catch(function (error) {
+              console.error("결제 에러:", error);
+            });
+        });
+    </script>
+  </body>
+</html>

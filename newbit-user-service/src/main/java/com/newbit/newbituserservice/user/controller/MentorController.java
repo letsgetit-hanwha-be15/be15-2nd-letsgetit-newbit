@@ -1,4 +1,4 @@
-package com.newbit.newbituserservice.mentor.controller;
+package com.newbit.newbituserservice.user.controller;
 
 
 import com.newbit.newbituserservice.common.dto.ApiResponse;
