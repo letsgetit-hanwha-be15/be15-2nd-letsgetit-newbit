@@ -41,6 +41,7 @@ public class CoffeechatCommandService {
     private final NotificationCommandService notificationCommandService;
     private final RoomService roomService;
     private final UserFeignClient userClient;
+    private final CoffeechatInternalService coffeechatInternalService;
 
     /**
      * 한두 번만 사용하는 간단한 조회여서 과도한 추상화를 피하기 위해
@@ -207,6 +208,7 @@ public class CoffeechatCommandService {
         transactionCommandService.addSaleHistory(coffeechat.getMentorId(), totalQuantity, coffeechatId);
     }
 
+
     public void cancelCoffeechat(Long userId, CoffeechatCancelRequest coffeechatCancelRequest, Long coffeechatId) {
         // 1. 커피챗 ID로 커피챗 객체 찾기
         Coffeechat coffeechat = coffeechatRepository.findById(coffeechatId)
@@ -232,28 +234,9 @@ public class CoffeechatCommandService {
         Long mentorUserId = mentorClient.getUserIdByMentorId(coffeechat.getMentorId()).getData();
 
 
-        cancelCoffeechatTransactional(coffeechatCancelRequest, coffeechat, mentorUserId);
+        coffeechatInternalService.cancelCoffeechatTransactional(coffeechatCancelRequest, coffeechat, mentorUserId);
     }
 
-    @Transactional
-    protected void cancelCoffeechatTransactional(CoffeechatCancelRequest request,
-                                                 Coffeechat coffeechat, Long mentorUserId) {
-        // 1. 커피챗 상태 업데이트
-        coffeechat.cancelCoffeechat(request.getCancelReasonId());
 
-        // 2. 채팅방 취소 처리
-        String roomId = roomService.findRoomIdByCoffeeChatId(coffeechat.getCoffeechatId());
-        roomService.cancelRoom(roomId);
-
-        // 3. 멘토에게 커피챗 취소 알림 전송
-        notificationCommandService.sendNotification(
-                new NotificationSendRequest(
-                        mentorUserId,
-                        6L, // 알림 타입 ID
-                        coffeechat.getCoffeechatId(),
-                        "진행 예정인 커피챗이 취소되었습니다."
-                )
-        );
-    }
 
 }
