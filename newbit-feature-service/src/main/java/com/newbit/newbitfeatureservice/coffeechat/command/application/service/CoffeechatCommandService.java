@@ -207,7 +207,6 @@ public class CoffeechatCommandService {
         transactionCommandService.addSaleHistory(coffeechat.getMentorId(), totalQuantity, coffeechatId);
     }
 
-    @Transactional
     public void cancelCoffeechat(Long userId, CoffeechatCancelRequest coffeechatCancelRequest, Long coffeechatId) {
         // 1. 커피챗 ID로 커피챗 객체 찾기
         Coffeechat coffeechat = coffeechatRepository.findById(coffeechatId)
@@ -218,33 +217,43 @@ public class CoffeechatCommandService {
             throw new BusinessException(ErrorCode.COFFEECHAT_CANCEL_NOT_ALLOWED);
         }
 
+        ProgressStatus progressStatus = coffeechat.getProgressStatus();
         // 3. 커피챗이 CANCEL 상태이거나, COMPLETE 상태이면 에러
-        switch (coffeechat.getProgressStatus()){
+        switch (progressStatus){
             case CANCEL, COMPLETE -> throw new BusinessException(ErrorCode.INVALID_COFFEECHAT_STATUS_CANCEL);
         }
 
         // 4. 커피챗이 coffeechat_waiting 상태이면 환불 진행하기
-        if(coffeechat.getProgressStatus().equals(ProgressStatus.COFFEECHAT_WAITING)) {
+        if (progressStatus == ProgressStatus.COFFEECHAT_WAITING) {
             MentorDTO mentorDTO = mentorClient.getMentorInfo(coffeechat.getMentorId()).getData();
-            int totalQuantity = mentorDTO.getPrice() * coffeechat.getPurchaseQuantity();
-            transactionCommandService.refundCoffeeChat(coffeechatId, userId, totalQuantity);
+            int totalPrice = mentorDTO.getPrice() * coffeechat.getPurchaseQuantity();
+            transactionCommandService.refundCoffeeChat(coffeechatId, userId, totalPrice);
         }
+        Long mentorUserId = mentorClient.getUserIdByMentorId(coffeechat.getMentorId()).getData();
 
-        // 5. 커피챗 객체 업데이트하기
-        coffeechat.cancelCoffeechat(coffeechatCancelRequest.getCancelReasonId());
 
-        // 6. 채팅방 취소
+        cancelCoffeechatTransactional(coffeechatCancelRequest, coffeechat, mentorUserId);
+    }
+
+    @Transactional
+    protected void cancelCoffeechatTransactional(CoffeechatCancelRequest request,
+                                                 Coffeechat coffeechat, Long mentorUserId) {
+        // 1. 커피챗 상태 업데이트
+        coffeechat.cancelCoffeechat(request.getCancelReasonId());
+
+        // 2. 채팅방 취소 처리
         String roomId = roomService.findRoomIdByCoffeeChatId(coffeechat.getCoffeechatId());
         roomService.cancelRoom(roomId);
 
-        // 7. 멘토에게 커피챗 취소 알림
+        // 3. 멘토에게 커피챗 취소 알림 전송
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
-                        mentorClient.getUserIdByMentorId(coffeechat.getMentorId()).getData()
-                        , 6L
-                        , coffeechat.getCoffeechatId()
-                        , "진행 예정인 커피챗이 취소되었습니다."
+                        mentorUserId,
+                        6L, // 알림 타입 ID
+                        coffeechat.getCoffeechatId(),
+                        "진행 예정인 커피챗이 취소되었습니다."
                 )
         );
     }
+
 }
