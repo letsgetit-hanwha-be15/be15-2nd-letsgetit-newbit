@@ -15,4 +15,15 @@ public class PaymentCancelRequest {
     private Long paymentId;
     private String reason;
     private BigDecimal cancelAmount;
+    private RefundReceiveAccount refundReceiveAccount;
+    
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RefundReceiveAccount {
+        private String bank;       // 은행 코드
+        private String accountNumber; // 계좌번호
+        private String holderName;    // 예금주명
+    }
 } 

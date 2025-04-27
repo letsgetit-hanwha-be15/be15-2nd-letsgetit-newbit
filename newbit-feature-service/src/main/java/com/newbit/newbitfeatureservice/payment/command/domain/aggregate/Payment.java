@@ -33,7 +33,7 @@ public class Payment {
     
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
-    
+
     @Column(name = "balance_amount")
     private BigDecimal balanceAmount;
 
@@ -62,21 +62,6 @@ public class Payment {
     
     @Column(name = "requested_at")
     private LocalDateTime requestedAt;
-
-    @Column(name = "is_refunded")
-    private boolean isRefunded;
-    
-    @Column(name = "vat")
-    private BigDecimal vat;
-    
-    @Column(name = "supplied_amount")
-    private BigDecimal suppliedAmount;
-    
-    @Column(name = "tax_free_amount")
-    private BigDecimal taxFreeAmount;
-    
-    @Column(name = "is_partial_cancelable")
-    private boolean isPartialCancelable;
     
     @Column(name = "receipt_url")
     private String receiptUrl;
@@ -94,7 +79,6 @@ public class Payment {
         this.updatedAt = LocalDateTime.now();
         this.requestedAt = LocalDateTime.now();
         
-        // 기본값 설정
         if (this.totalAmount == null) {
             this.totalAmount = this.amount;
         }
@@ -103,9 +87,6 @@ public class Payment {
         }
         if (this.currency == null) {
             this.currency = "KRW";
-        }
-        if (this.taxFreeAmount == null) {
-            this.taxFreeAmount = BigDecimal.ZERO;
         }
     }
 
@@ -117,9 +98,7 @@ public class Payment {
     @Builder
     private Payment(BigDecimal amount, PaymentMethod paymentMethod, String paymentKey, 
                    Long userId, PaymentStatus paymentStatus, String orderId, String orderName, 
-                   LocalDateTime approvedAt, BigDecimal vat, BigDecimal suppliedAmount, 
-                   BigDecimal taxFreeAmount, String receiptUrl, String currency,
-                   boolean isPartialCancelable) {
+                   LocalDateTime approvedAt, String receiptUrl, String currency) {
         this.amount = amount;
         this.totalAmount = amount;
         this.balanceAmount = amount;
@@ -130,18 +109,10 @@ public class Payment {
         this.orderId = orderId;
         this.orderName = orderName;
         this.approvedAt = approvedAt;
-        this.isRefunded = false;
-        this.vat = vat;
-        this.suppliedAmount = suppliedAmount;
-        this.taxFreeAmount = taxFreeAmount != null ? taxFreeAmount : BigDecimal.ZERO;
         this.receiptUrl = receiptUrl;
         this.currency = currency != null ? currency : "KRW";
-        this.isPartialCancelable = isPartialCancelable;
     }
 
-    /**
-     * 결제 준비를 위한 Payment 객체 생성
-     */
     public static Payment createPayment(BigDecimal amount, PaymentMethod paymentMethod, 
                                       Long userId, String orderId, String orderName) {
         return Payment.builder()
@@ -151,75 +122,70 @@ public class Payment {
                 .orderId(orderId)
                 .orderName(orderName)
                 .paymentStatus(PaymentStatus.READY)
-                .isPartialCancelable(true)
                 .build();
     }
-    
-    /**
-     * 간단한 결제 생성 (이름 없는 주문)
-     */
-    public static Payment createPayment(BigDecimal amount, PaymentMethod paymentMethod, 
-                                      Long userId, String orderId) {
-        return createPayment(amount, paymentMethod, userId, orderId, null);
+
+    public void approve(String paymentKey, LocalDateTime approvedAt, String receiptUrl) {
+        this.paymentStatus = PaymentStatus.DONE;
+        this.paymentKey = paymentKey;
+        this.approvedAt = approvedAt;
+        this.receiptUrl = receiptUrl;
     }
 
     /**
-     * 결제 승인
+     * 테스트용 메소드 - approvedAt만 설정
      */
     public void approve(LocalDateTime approvedAt) {
         this.paymentStatus = PaymentStatus.DONE;
         this.approvedAt = approvedAt;
     }
-
+    
     /**
-     * 결제 상태 업데이트
-     */
-    public void updatePaymentStatus(PaymentStatus status) {
-        this.paymentStatus = status;
-    }
-
-    /**
-     * 결제 키 업데이트
+     * 테스트용 메소드 - paymentKey 업데이트
      */
     public void updatePaymentKey(String paymentKey) {
         this.paymentKey = paymentKey;
     }
     
     /**
-     * 영수증 URL 업데이트
+     * 테스트용 메소드 - receiptUrl 업데이트
      */
     public void updateReceiptUrl(String receiptUrl) {
         this.receiptUrl = receiptUrl;
     }
-    
-    /**
-     * 전체 환불 처리
-     */
-    public void refund() {
-        this.isRefunded = true;
+
+    public void updatePaymentStatus(PaymentStatus status) {
+        this.paymentStatus = status;
+    }
+
+    public void cancel() {
         this.paymentStatus = PaymentStatus.CANCELED;
-        this.balanceAmount = BigDecimal.ZERO;
     }
     
     /**
-     * 부분 환불 처리
+     * 부분 취소 가능 여부 확인
+     * 카드 결제의 경우만 부분 취소 가능
+     * @return 부분 취소 가능 여부
      */
-    public void partialRefund(BigDecimal refundAmount) {
-        if (!this.isPartialCancelable) {
-            throw new IllegalStateException("해당 결제는 부분 환불이 불가능합니다");
-        }
-        
-        if (refundAmount.compareTo(this.balanceAmount) > 0) {
-            throw new IllegalArgumentException("환불 금액은 잔액보다 클 수 없습니다");
-        }
-        
-        this.balanceAmount = this.balanceAmount.subtract(refundAmount);
-        
-        if (this.balanceAmount.compareTo(BigDecimal.ZERO) == 0) {
-            this.isRefunded = true;
-            this.paymentStatus = PaymentStatus.CANCELED;
-        } else {
-            this.paymentStatus = PaymentStatus.PARTIAL_CANCELED;
-        }
+    public boolean isPartialCancelable() {
+        return this.paymentMethod == PaymentMethod.CARD;
+    }
+    
+    /**
+     * 잔액 조회
+     * 전체 금액에서 부분 취소된 금액을 제외한 잔액 반환
+     * @return 취소 가능한 잔액
+     */
+    public BigDecimal getBalanceAmount() {
+        return this.balanceAmount;
+    }
+    
+    /**
+     * 결제 금액 업데이트 (부분 취소 후)
+     * @param cancelAmount 취소된 금액
+     */
+    public void updateAmountAfterPartialCancel(BigDecimal cancelAmount) {
+        this.balanceAmount = this.balanceAmount.subtract(cancelAmount);
+        this.paymentStatus = PaymentStatus.PARTIAL_CANCELED;
     }
 } 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.List;
 
 public class TossPaymentApiDto {
 
@@ -66,6 +67,8 @@ public class TossPaymentApiDto {
         private Map<String, Object> easyPay;
         private String country;
         private Map<String, Object> failure;
+        private List<Map<String, Object>> cancels;
+        private String customerKey;
         
         public LocalDateTime getApprovedAtDateTime() {
             if (approvedAt == null || approvedAt.isEmpty()) {
@@ -91,5 +94,16 @@ public class TossPaymentApiDto {
         private Long cancelAmount;
         private Boolean refundableAmount;
         private String taxFreeAmount;
+        private RefundReceiveAccount refundReceiveAccount;
+    }
+    
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RefundReceiveAccount {
+        private String bank;
+        private String accountNumber;
+        private String holderName;
     }
 } 

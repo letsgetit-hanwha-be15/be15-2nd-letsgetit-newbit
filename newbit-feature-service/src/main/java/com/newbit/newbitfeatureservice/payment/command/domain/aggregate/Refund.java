@@ -79,7 +79,7 @@ public class Refund {
         this.holderName = holderName;
         this.isPartialRefund = isPartialRefund;
     }
-    
+
     public static Refund createRefund(Payment payment, BigDecimal amount, String reason, 
                                    String refundKey, boolean isPartialRefund) {
         return Refund.builder()
@@ -89,5 +89,15 @@ public class Refund {
                 .refundKey(refundKey)
                 .isPartialRefund(isPartialRefund)
                 .build();
+    }
+
+    public void setPartialRefund(boolean isPartialRefund) {
+        this.isPartialRefund = isPartialRefund;
+    }
+
+    public void updateRefundAccountInfo(String bankCode, String accountNumber, String holderName) {
+        this.bankCode = bankCode;
+        this.accountNumber = accountNumber;
+        this.holderName = holderName;
     }
 } 

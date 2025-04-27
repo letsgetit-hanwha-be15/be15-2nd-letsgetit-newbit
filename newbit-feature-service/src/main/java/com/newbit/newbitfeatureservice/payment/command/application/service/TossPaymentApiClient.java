@@ -3,6 +3,7 @@ package com.newbit.newbitfeatureservice.payment.command.application.service;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -13,9 +14,12 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.newbit.newbitfeatureservice.payment.command.application.dto.TossPaymentApiDto;
+import com.newbit.newbitfeatureservice.payment.command.application.dto.TossPaymentApiDto.RefundReceiveAccount;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TossPaymentApiClient {
@@ -100,8 +104,37 @@ public class TossPaymentApiClient {
         return requestCancelPayment(paymentKey, request);
     }
     
+    public TossPaymentApiDto.PaymentResponse cancelVirtualAccountPayment(
+            String paymentKey, String cancelReason, Long cancelAmount, 
+            String bankCode, String accountNumber, String holderName) {
+        
+        RefundReceiveAccount refundAccount = RefundReceiveAccount.builder()
+                .bank(bankCode)
+                .accountNumber(accountNumber)
+                .holderName(holderName)
+                .build();
+        
+        TossPaymentApiDto.PaymentCancelRequest request = TossPaymentApiDto.PaymentCancelRequest.builder()
+                .cancelReason(cancelReason)
+                .cancelAmount(cancelAmount)
+                .refundReceiveAccount(refundAccount)
+                .build();
+                
+        return requestCancelPayment(paymentKey, request);
+    }
+    
     private TossPaymentApiDto.PaymentResponse requestCancelPayment(String paymentKey, TossPaymentApiDto.PaymentCancelRequest request) {
-        HttpEntity<TossPaymentApiDto.PaymentCancelRequest> entity = new HttpEntity<>(request, createAuthHeaders());
+        // 멱등성 키 생성
+        String idempotencyKey = UUID.randomUUID().toString();
+        
+        HttpHeaders headers = createAuthHeaders();
+        // 멱등성 키 헤더 추가
+        headers.set("Idempotency-Key", idempotencyKey);
+        
+        HttpEntity<TossPaymentApiDto.PaymentCancelRequest> entity = new HttpEntity<>(request, headers);
+        
+        log.info("결제 취소 요청: paymentKey={}, cancelReason={}, idempotencyKey={}", 
+                 paymentKey, request.getCancelReason(), idempotencyKey);
         
         return restTemplate.postForObject(
                 apiUrl + "/v1/payments/" + paymentKey + "/cancel",

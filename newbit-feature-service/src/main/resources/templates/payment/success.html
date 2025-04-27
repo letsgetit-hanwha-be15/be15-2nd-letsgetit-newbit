@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>결제 성공</title>
+    <style>
+      body {
+        font-family: "Noto Sans KR", sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 30px;
+      }
+      .success-icon {
+        font-size: 60px;
+        color: #3ab14a;
+        margin-bottom: 20px;
+      }
+      .payment-info {
+        margin: 30px 0;
+        padding: 15px;
+        background: #f5f5f5;
+        border-radius: 5px;
+        text-align: left;
+      }
+      .payment-info p {
+        margin: 8px 0;
+        display: flex;
+        justify-content: space-between;
+      }
+      .home-button {
+        padding: 12px 24px;
+        background-color: #3182f6;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 20px;
+      }
+      .home-button:hover {
+        background-color: #1c62d8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="success-icon">✓</div>
+      <h1>결제가 성공적으로 완료되었습니다</h1>
+
+      <div class="payment-info">
+        <p>
+          <span>결제 키:</span>
+          <span th:text="${paymentKey}"></span>
+        </p>
+        <p>
+          <span>주문 번호:</span>
+          <span th:text="${orderId}"></span>
+        </p>
+        <p>
+          <span>결제 금액:</span>
+          <span th:text="${amount} + '원'"></span>
+        </p>
+      </div>
+
+      <a href="/" class="home-button">홈으로 돌아가기</a>
+    </div>
+
+    <script th:inline="javascript">
+      // 결제 승인 요청
+      const paymentKey = /*[[${paymentKey}]]*/ "";
+      const orderId = /*[[${orderId}]]*/ "";
+      const amount = /*[[${amount}]]*/ "";
+
+      // 서버로 결제 승인 요청을 보냄
+      fetch("/payments/confirm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          paymentKey: paymentKey,
+          orderId: orderId,
+          amount: amount,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("결제 승인 성공:", data);
+        })
+        .catch((error) => {
+          console.error("결제 승인 에러:", error);
+        });
+    </script>
+  </body>
+</html>
