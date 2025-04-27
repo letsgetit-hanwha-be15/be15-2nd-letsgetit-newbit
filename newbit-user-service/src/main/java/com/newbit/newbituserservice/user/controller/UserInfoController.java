@@ -26,6 +26,7 @@ import java.util.List;
 @Tag(name = "유저 정보 API", description = "정보 조회 (나의 프로필, 다른 사용자 프로필)")
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/users")
 @Slf4j
 public class UserInfoController {
 
@@ -33,14 +34,14 @@ public class UserInfoController {
     private final UserQueryService userQueryService;
 
     @Operation(summary = "회원 정보 조회", description = "내 프로필 조회")
-    @GetMapping("/myprofile")
+    @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserDTO>> getMyInfo(@AuthenticationPrincipal CustomUser user) {// 현재 로그인한 사용자의 이메일
         UserDTO myInfo = userInfoService.getMyInfo(user.getUserId()); // 서비스로 위임
         return ResponseEntity.ok(ApiResponse.success(myInfo));
     }
 
     @Operation(summary = "회원 정보 수정", description = "내 프로필 정보 수정")
-    @PutMapping("/myprofile-modify")
+    @PutMapping("/me")
     public ResponseEntity<ApiResponse<UserDTO>> updateMyInfo(@RequestBody @Valid UserInfoUpdateRequestDTO request
     , @AuthenticationPrincipal CustomUser customUser) {
         UserDTO updatedInfo = userInfoService.updateMyInfo(request, customUser.getUserId());
@@ -48,35 +49,35 @@ public class UserInfoController {
     }
 
     @Operation(summary = "비밀번호 변경", description = "비밀번호 수정")
-    @PutMapping("/change-password")
+    @PutMapping("/me/password")
     public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody ChangePasswordRequestDTO request) {
         userInfoService.changePassword(request.getCurrentPassword(), request.getNewPassword());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @Operation(summary = "회원 탈퇴", description = "비밀번호 확인 후 회원 탈퇴")
-    @DeleteMapping("/unsubscribe")
+    @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<String>> deleteUser(@RequestBody @Valid DeleteUserRequestDTO request) {
         userInfoService.unsubscribeService(request);
         return ResponseEntity.ok(ApiResponse.success("회원 탈퇴가 완료되었습니다."));
     }
 
     @Operation(summary = "다른 사용자 프로필 조회", description = "다른 사용자의 userId를 기반으로 프로필 조회")
-    @GetMapping("/profile/{userId}")
+    @GetMapping("/{userId}/profile")
     public ResponseEntity<ApiResponse<OhterUserProfileDTO>> getOhterUserProfile(@PathVariable Long userId) {
         OhterUserProfileDTO profile = userQueryService.getOhterUserProfile(userId);
         return ResponseEntity.ok(ApiResponse.success(profile));
     }
 
     @Operation(summary = "멘토 프로필 조회", description = "멘토의 mentorId를 기반으로 멘토 프로필 및 최근 게시물, 칼럼, 시리즈 3개씩 조회")
-    @GetMapping("/mentor-profile/{mentorId}")
+    @GetMapping("/{mentorId}/profile/")
     public ResponseEntity<ApiResponse<MentorProfileDTO>> getMentorProfile(@PathVariable Long mentorId) {
         MentorProfileDTO profile = userQueryService.getMentorProfile(mentorId);
         return ResponseEntity.ok(ApiResponse.success(profile));
     }
 
     @Operation(summary = "멘토 목록 조회", description = "조건에 따라 멘토 목록을 조회합니다.")
-    @GetMapping("/mentor-list")
+    @GetMapping("/mentors")
     public ResponseEntity<ApiResponse<List<MentorListResponseDTO>>> getMentors(MentorListRequestDTO request) {
         List<MentorListResponseDTO> mentors = userQueryService.getMentors(request);
         return ResponseEntity.ok(ApiResponse.success(mentors));
