@@ -23,11 +23,11 @@ public enum ErrorCode {
     INVALID_PASSWORD_FORMAT("10009", "최소 8자, 영문자, 숫자, 특수문자 포함해야합니다.", HttpStatus.BAD_REQUEST),
     INVALID_CURRENT_PASSWORD("10010", "비밀번호가 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
     //인증
-    JWT_INVALID("10011", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
-    JWT_EXPIRED("10012", "만료된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
-    JWT_UNSUPPORTED("10013", "지원하지 않는 JWT 토큰입니다.", HttpStatus.BAD_REQUEST),
-    JWT_CLAIMS_EMPTY("10014", "JWT 클레임이 비어 있습니다.", HttpStatus.BAD_REQUEST),
-    INTERNAL_SERVER_ERROR("10015", "내부 서버 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    JWT_INVALID("11011", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
+    JWT_EXPIRED("11012", "만료된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
+    JWT_UNSUPPORTED("11013", "지원하지 않는 JWT 토큰입니다.", HttpStatus.BAD_REQUEST),
+    JWT_CLAIMS_EMPTY("11014", "JWT 클레임이 비어 있습니다.", HttpStatus.BAD_REQUEST),
+    INTERNAL_SERVER_ERROR("11015", "내부 서버 오류입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     // 입력 값 검증 오류
     VALIDATION_ERROR("11001", "입력 값 검증 오류입니다.", HttpStatus.BAD_REQUEST),
 
