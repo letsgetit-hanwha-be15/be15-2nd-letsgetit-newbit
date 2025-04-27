@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "유저 계정 API", description = "회원 관련 API (회원가입, 아이디/비밀번호 찾기 등)")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -29,7 +29,6 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(null));
-
     }
 
     @Operation(summary = "아이디 찾기", description = "아이디 찾기 기능")
