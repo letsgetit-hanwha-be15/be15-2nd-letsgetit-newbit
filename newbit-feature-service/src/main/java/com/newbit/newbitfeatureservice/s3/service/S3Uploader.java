@@ -27,8 +27,8 @@ public class S3Uploader {
         metadata.setContentType(file.getContentType());
 
         try {
-            amazonS3.putObject(new PutObjectRequest(bucket, fileName, file.getInputStream(), metadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead));
+            amazonS3.putObject(new PutObjectRequest(bucket, fileName, file.getInputStream(), metadata));
+            // ACL 설정 제거! (버킷 정책으로 접근 제어)
         } catch (IOException e) {
             throw new RuntimeException("S3 파일 업로드에 실패했습니다.", e);
         }

@@ -281,5 +281,4 @@ class ColumnServiceTest {
         verify(columnMapper).toMyColumnListDto(column1);
         verify(columnMapper).toMyColumnListDto(column2);
     }
-
 }
