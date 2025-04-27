@@ -89,4 +89,11 @@ public class CommentService {
         return comment.getReportCount();
     }
 
+    @Transactional(readOnly = true)
+    public String getCommentContent(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+        return comment.getContent();
+    }
+
 }
