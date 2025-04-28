@@ -29,4 +29,14 @@ public class NotificationQueryController {
         List<NotificationResponse> notifications = notificationQueryService.getNotifications(customUser.getUserId());
         return ResponseEntity.ok(ApiResponse.success(notifications));
     }
+
+
+    @Operation(summary = "읽지 않은 알림 목록 조회", description = "해당 유저의 읽지 않은 알림 목록을 조회합니다.")
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getUnreadNotificationList(
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        List<NotificationResponse> notifications = notificationQueryService.getUnreadNotifications(customUser.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(notifications));
+    }
 }
