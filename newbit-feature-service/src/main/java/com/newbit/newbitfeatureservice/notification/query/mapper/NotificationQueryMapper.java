@@ -8,4 +8,6 @@ import java.util.List;
 @Mapper
 public interface NotificationQueryMapper {
     List<NotificationResponse> findAllByUserId(Long userId);
+    List<NotificationResponse> findUnreadByUserId(Long userId);
+
 }

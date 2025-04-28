@@ -15,4 +15,18 @@
         ORDER BY n.created_at DESC
     </select>
 
+    <select id="findUnreadByUserId" resultType="com.newbit.newbitfeatureservice.notification.query.dto.NotificationResponse">
+        SELECT
+        n.notification_id AS notificationId,
+        n.content,
+        n.service_id AS serviceId,
+        n.is_read AS isRead,
+        n.created_at AS createdAt,
+        nt.notification_type_name AS typeName
+        FROM notification n
+        JOIN notification_type nt ON n.notification_type_id = nt.notification_type_id
+        WHERE n.user_id = #{userId}
+        AND n.is_read = 0
+        ORDER BY n.created_at DESC
+    </select>
 </mapper>
