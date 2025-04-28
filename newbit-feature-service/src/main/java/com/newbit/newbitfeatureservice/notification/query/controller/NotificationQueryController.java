@@ -22,7 +22,7 @@ public class NotificationQueryController {
     private final NotificationQueryService notificationQueryService;
 
     @Operation(summary = "알림 목록 조회", description = "해당 유저의 알림 목록을 조회합니다.")
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<ApiResponse<List<NotificationResponse>>> getNotificationList(
             @AuthenticationPrincipal CustomUser customUser
     ) {
@@ -32,7 +32,7 @@ public class NotificationQueryController {
 
 
     @Operation(summary = "읽지 않은 알림 목록 조회", description = "해당 유저의 읽지 않은 알림 목록을 조회합니다.")
-    @GetMapping
+    @GetMapping("/unread")
     public ResponseEntity<ApiResponse<List<NotificationResponse>>> getUnreadNotificationList(
             @AuthenticationPrincipal CustomUser customUser
     ) {
