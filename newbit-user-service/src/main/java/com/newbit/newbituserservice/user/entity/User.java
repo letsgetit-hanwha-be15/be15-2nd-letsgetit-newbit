@@ -117,6 +117,7 @@ public class User {
     public void updateProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
+    public void updatePhonenumber(String phoneNumber){this.phoneNumber = phoneNumber;};
 
     public void setIsSuspended(boolean isSuspended) {
         this.isSuspended = isSuspended;
