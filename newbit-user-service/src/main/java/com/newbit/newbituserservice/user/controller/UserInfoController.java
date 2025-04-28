@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,12 +49,17 @@ public class UserInfoController {
     }
 
 
-    @Operation(summary = "비밀번호 변경", description = "비밀번호 수정")
-    @PutMapping("/me/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody ChangePasswordRequestDTO request) {
-        userInfoService.changePassword(request.getCurrentPassword(), request.getNewPassword());
+    @Operation(summary = "회원 개인정보 수정", description = "개인 정보 수정")
+    @PutMapping("/me/info")
+    public ResponseEntity<ApiResponse<Void>> updateMyInfo(
+            @RequestBody @Valid UserInfoUpdateRequestDTO request,
+            @AuthenticationPrincipal CustomUser customUser) {
+
+        userInfoService.updateMyInfo(request, customUser.getUserId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+
 
     @Operation(summary = "회원 탈퇴", description = "비밀번호 확인 후 회원 탈퇴")
     @DeleteMapping("/me")
