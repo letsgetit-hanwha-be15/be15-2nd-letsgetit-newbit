@@ -16,6 +16,7 @@ import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
@@ -45,44 +46,6 @@ class CommentServiceTest {
         notificationCommandService = mock(NotificationCommandService.class);
         commentInternalService = mock(CommentInternalService.class);
         commentService = new CommentService(commentRepository, postRepository, pointTransactionCommandService, notificationCommandService, commentInternalService);
-    }
-
-    @Test
-    void 댓글_조회_성공() {
-        Long postId = 1L;
-
-        Post post = Post.builder()
-                .id(postId)
-                .title("테스트 게시글")
-                .content("내용")
-                .userId(1L)
-                .postCategoryId(2L)
-                .build();
-
-        Comment comment1 = Comment.builder()
-                .id(1L)
-                .content("첫 번째 댓글")
-                .userId(1L)
-                .post(post)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        Comment comment2 = Comment.builder()
-                .id(2L)
-                .content("두 번째 댓글")
-                .userId(2L)
-                .post(post)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        when(commentRepository.findByPostIdAndDeletedAtIsNull(postId))
-                .thenReturn(Arrays.asList(comment1, comment2));
-
-        List<CommentResponse> responses = commentService.getCommentsByPostId(postId);
-
-        assertThat(responses).hasSize(2);
-        assertThat(responses.get(0).getContent()).isEqualTo("첫 번째 댓글");
-        assertThat(responses.get(1).getContent()).isEqualTo("두 번째 댓글");
     }
 
     @Test
@@ -133,7 +96,90 @@ class CommentServiceTest {
                 .sendNotification(any(NotificationSendRequest.class));
     }
 
+    @Test
+    void 댓글_조회_성공() {
+        Long postId = 1L;
 
+        Post post = Post.builder()
+                .id(postId)
+                .title("테스트 게시글")
+                .content("내용")
+                .userId(1L)
+                .postCategoryId(2L)
+                .build();
+
+        Comment comment1 = Comment.builder()
+                .id(1L)
+                .content("첫 번째 댓글")
+                .userId(1L)
+                .post(post)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Comment comment2 = Comment.builder()
+                .id(2L)
+                .content("두 번째 댓글")
+                .userId(2L)
+                .post(post)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        when(commentRepository.findByPostIdAndDeletedAtIsNull(postId))
+                .thenReturn(Arrays.asList(comment1, comment2));
+
+        List<CommentResponse> responses = commentService.getCommentsByPostId(postId);
+
+        assertThat(responses).hasSize(2);
+        assertThat(responses.get(0).getContent()).isEqualTo("첫 번째 댓글");
+        assertThat(responses.get(1).getContent()).isEqualTo("두 번째 댓글");
+    }
+
+    @Test
+    void 댓글_페이징_조회_성공() {
+        // given
+        Long postId = 1L;
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Post post = Post.builder()
+                .id(postId)
+                .title("게시글 제목")
+                .content("내용")
+                .userId(1L)
+                .postCategoryId(1L)
+                .build();
+
+        Comment comment1 = Comment.builder()
+                .id(1L)
+                .content("댓글 1번")
+                .post(post)
+                .userId(1L)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Comment comment2 = Comment.builder()
+                .id(2L)
+                .content("댓글 2번")
+                .post(post)
+                .userId(2L)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Page<Comment> commentPage = new PageImpl<>(List.of(comment1, comment2), pageable, 10);
+
+        when(commentRepository.findByPostIdAndDeletedAtIsNull(postId, pageable)).thenReturn(commentPage);
+
+        // when
+        Page<CommentResponse> responses = commentService.getCommentsByPostId(postId, pageable);
+
+        // then
+        assertThat(responses).isNotNull();
+        assertThat(responses.getContent()).hasSize(2); // 실제 조회한 댓글 수
+        assertThat(responses.getTotalElements()).isEqualTo(10); // 전체 댓글 수
+        assertThat(responses.getContent().get(0).getContent()).isEqualTo("댓글 1번"); // 첫 번째 댓글 내용 검증
+        assertThat(responses.getContent().get(1).getContent()).isEqualTo("댓글 2번"); // 두 번째 댓글 내용 검증
+
+        verify(commentRepository, times(1)).findByPostIdAndDeletedAtIsNull(postId, pageable);
+    }
 
     @Test
     void 댓글_삭제_성공() {
