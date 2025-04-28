@@ -144,13 +144,18 @@ public class CoffeechatCommandService {
         // 6. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
 
+
+        String notificationContent = String.format("'%s'멘토와의 커피챗 요청이 승인되었습니다.",
+                mentor.getNickname());
+
+
         // 7. 멘티에게 승인 알림 보내주기
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
                         coffeechat.getMenteeId()
                         , 4L
                         , coffeechat.getCoffeechatId()
-                        , "커피챗 요청이 승인되었습니다."
+                        , notificationContent
                 )
         );
     }
@@ -170,13 +175,20 @@ public class CoffeechatCommandService {
         // 4. 해당 객체들 삭제
         requests.forEach(req -> requestTimeRepository.deleteById(req.getRequestTimeId()));
 
+        Long mentorUserId = mentorClient.getUserIdByMentorId(coffeechat.getMentorId()).getData();
+        UserDTO mentor = userClient.getUserByUserId(mentorUserId).getData();
+
+
+        String notificationContent = String.format("'%s'멘토와의 커피챗 요청이 거절되었습니다.",
+                mentor.getNickname());
+
         // 5. 멘토에게 거절 알림 보내주기
         notificationCommandService.sendNotification(
                 new NotificationSendRequest(
                         coffeechat.getMenteeId()
                         , 5L
                         , coffeechat.getCoffeechatId()
-                        , "커피챗 요청이 거절되었습니다."
+                        , notificationContent
                 )
         );
     }
