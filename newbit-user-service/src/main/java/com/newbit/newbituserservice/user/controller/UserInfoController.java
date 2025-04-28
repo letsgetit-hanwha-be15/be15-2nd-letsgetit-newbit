@@ -2,10 +2,7 @@ package com.newbit.newbituserservice.user.controller;
 
 import com.newbit.newbituserservice.common.dto.ApiResponse;
 import com.newbit.newbituserservice.security.model.CustomUser;
-import com.newbit.newbituserservice.user.dto.request.ChangePasswordRequestDTO;
-import com.newbit.newbituserservice.user.dto.request.DeleteUserRequestDTO;
-import com.newbit.newbituserservice.user.dto.request.MentorListRequestDTO;
-import com.newbit.newbituserservice.user.dto.request.UserInfoUpdateRequestDTO;
+import com.newbit.newbituserservice.user.dto.request.*;
 import com.newbit.newbituserservice.user.dto.response.MentorListResponseDTO;
 import com.newbit.newbituserservice.user.dto.response.MentorProfileDTO;
 import com.newbit.newbituserservice.user.dto.response.OhterUserProfileDTO;
@@ -40,13 +37,16 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success(myInfo));
     }
 
-    @Operation(summary = "회원 정보 수정", description = "내 프로필 정보 수정")
+    @Operation(summary = "회원 프로필 정보 수정", description = "내 프로필 정보 수정")
     @PutMapping("/me")
-    public ResponseEntity<ApiResponse<UserDTO>> updateMyInfo(@RequestBody @Valid UserInfoUpdateRequestDTO request
-    , @AuthenticationPrincipal CustomUser customUser) {
-        UserDTO updatedInfo = userInfoService.updateMyInfo(request, customUser.getUserId());
-        return ResponseEntity.ok(ApiResponse.success(updatedInfo));
+    public ResponseEntity<ApiResponse<Void>> updateMyProfileInfo(
+            @RequestBody @Valid UserProfileInfoUpdateRequestDTO request,
+            @AuthenticationPrincipal CustomUser customUser) {
+
+        userInfoService.updateMyProfileInfo(request, customUser.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
+
 
     @Operation(summary = "비밀번호 변경", description = "비밀번호 수정")
     @PutMapping("/me/password")
