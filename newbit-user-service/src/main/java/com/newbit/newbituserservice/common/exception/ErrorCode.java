@@ -21,6 +21,8 @@ public enum ErrorCode {
     ALREADY_REGISTERED_NICKNAME("10008", "이미 존재하는 닉네임입니다.", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD_FORMAT("10009", "최소 8자, 영문자, 숫자, 특수문자 포함해야합니다.", HttpStatus.BAD_REQUEST),
     INVALID_CURRENT_PASSWORD("10010", "비밀번호가 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
+    JOB_NOT_FOUND("10020","존재하지 않는 직종입니다.", HttpStatus.NOT_FOUND),
+    TECHSTACK_NOT_FOUND("10021","존재하지 않는 기술스택입니다.",HttpStatus.NOT_FOUND),
     //인증
     JWT_INVALID("10011", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
     JWT_EXPIRED("10012", "만료된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),

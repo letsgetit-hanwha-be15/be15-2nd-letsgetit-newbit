@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @RequiredArgsConstructor
 public class UserRequestDTO {
@@ -27,5 +29,11 @@ public class UserRequestDTO {
 
     @Schema(description = "사용자 프로필 url")
     private final String profileImgUrl;
+
+    @Schema(description = "사용자 직종")
+    private final String jobName; // 추가
+
+    @Schema(description = "사용자 기술 스택")
+    private final List<String> techstackNames;
     // 추가 회원 가입 시 필요한 데이터
 }
