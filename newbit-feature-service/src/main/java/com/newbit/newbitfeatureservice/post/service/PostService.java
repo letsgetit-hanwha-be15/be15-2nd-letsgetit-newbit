@@ -60,6 +60,37 @@ public class PostService {
         return posts.stream().map(PostResponse::new).toList();
     }
 
+    @Transactional(readOnly = true)
+    public PostDetailResponse getPostDetail(Long postId) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
+
+        List<Comment> comments = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
+        List<CommentResponse> commentResponses = comments.stream()
+                .map(CommentResponse::new)
+                .toList();
+
+        Long userId = post.getUserId();
+        ApiResponse<UserDTO> userByUserId = userFeignClient.getUserByUserId(userId);
+        String writerName = userByUserId.getData().getNickname();
+        String categoryName = post.getPostCategory().getName();
+
+        return PostDetailResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .writerName(writerName)
+                .categoryName(categoryName)
+                .likeCount(post.getLikeCount())
+                .reportCount(post.getReportCount())
+                .isNotice(post.isNotice())
+                .createdAt(post.getCreatedAt())
+                .imageUrl(post.getImageUrl())
+                .comments(commentResponses)
+                .build();
+    }
+
+
     @Transactional
     public PostResponse updatePost(Long postId, PostUpdateRequest request, CustomUser user) {
         Post post = postRepository.findById(postId)
@@ -89,24 +120,6 @@ public class PostService {
     public Page<PostResponse> getPostList(Pageable pageable) {
         Page<Post> postPage = postRepository.findAll(pageable);
         return postPage.map(PostResponse::new);
-    }
-
-    @Transactional(readOnly = true)
-    public PostDetailResponse getPostDetail(Long postId) {
-        Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-
-        List<Comment> comments = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
-        List<CommentResponse> commentResponses = comments.stream()
-                .map(CommentResponse::new)
-                .toList();
-
-        Long userId = post.getUserId();
-        ApiResponse<UserDTO> userByUserId = userFeignClient.getUserByUserId(userId);
-        String writerName = userByUserId.getData().getNickname();
-        String categoryName = post.getPostCategory().getName();
-
-        return new PostDetailResponse(post, commentResponses, writerName, categoryName);
     }
 
     @Transactional(readOnly = true)
