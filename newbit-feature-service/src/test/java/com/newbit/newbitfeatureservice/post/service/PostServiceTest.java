@@ -253,7 +253,7 @@ class PostServiceTest {
         assertThat(result.get(1).getTitle()).isEqualTo("내 게시글 2");
         assertThat(result.get(0).getImageUrl()).isEqualTo("https://example.com/image1.jpg");
         assertThat(result.get(1).getImageUrl()).isEqualTo("https://example.com/image2.jpg");
-
+      
         verify(postRepository, times(1)).findByUserIdAndDeletedAtIsNull(userId);
     }
 
