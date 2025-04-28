@@ -37,39 +37,43 @@ public class SeriesService {
         // 1. 유저 → 멘토 엔티티 조회
         Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
 
-        // 2. 빈 칼럼 리스트 방지
-        if (dto.getColumnIds() == null || dto.getColumnIds().isEmpty()) {
-            throw new BusinessException(ErrorCode.SERIES_CREATION_REQUIRES_COLUMNS);
-        }
-
-        // 3. 칼럼 ID에 해당하는 Column 리스트 조회
-        List<Column> columns = columnRepository.findAllById(dto.getColumnIds());
+        // 2. 칼럼 ID에 해당하는 Column 리스트 조회
+        List<Column> columns = (dto.getColumnIds() != null && !dto.getColumnIds().isEmpty())
+                ? columnRepository.findAllById(dto.getColumnIds())
+                :List.of(); // 비어있으면 빈 리스트로 대체
 
         if (columns.size() != dto.getColumnIds().size()) {
             throw new BusinessException(ErrorCode.COLUMN_NOT_FOUND);
         }
 
-        // 4. 본인 칼럼인지 확인
-        boolean hasInvalidOwner = columns.stream()
-                .anyMatch(column -> !column.getMentorId().equals(mentorId));
-        if (hasInvalidOwner) {
-            throw new BusinessException(ErrorCode.COLUMN_NOT_OWNED);
+        // 3. (칼럼이 존재할 경우에만) 본인 칼럼인지 확인
+        if(!columns.isEmpty()) {
+            if (columns.size() != dto.getColumnIds().size()) {
+                throw new BusinessException(ErrorCode.COLUMN_NOT_FOUND);
+            }
+
+            boolean hasInvalidOwner = columns.stream()
+                    .anyMatch(column -> !column.getMentorId().equals(mentorId));
+            if(hasInvalidOwner) {
+                throw new BusinessException(ErrorCode.COLUMN_NOT_OWNED);
+            }
+
+            boolean hasAlreadyGrouped = columns.stream().anyMatch(column -> column.getSeries() != null);
+            if (hasAlreadyGrouped) {
+                throw new BusinessException(ErrorCode.COLUMN_ALREADY_IN_SERIES);
+            }
         }
 
-        // 5. 이미 시리즈에 포함된 칼럼인지 확인
-        boolean hasAlreadyGrouped = columns.stream().anyMatch(column -> column.getSeries() != null);
-        if (hasAlreadyGrouped) {
-            throw new BusinessException(ErrorCode.COLUMN_ALREADY_IN_SERIES);
-        }
-
-        // 6. 시리즈 저장
+        // 4. 시리즈 저장
         Series series = seriesRepository.save(seriesMapper.toSeries(dto));
 
-        // 7. 각 칼럼에 시리즈 연결
-        columns.forEach(column -> column.updateSeries(series));
-        columnRepository.saveAll(columns);
+        // 5. (칼럼이 있을 경우에만) 각 칼럼에 시리즈 연결
+        if (!columns.isEmpty()) {
+            columns.forEach(column -> column.updateSeries(series));
+            columnRepository.saveAll(columns);
+        }
 
-        // 8. 응답 반환
+        // 6. 응답 반환
         return seriesMapper.toCreateSeriesResponseDto(series);
     }
 
