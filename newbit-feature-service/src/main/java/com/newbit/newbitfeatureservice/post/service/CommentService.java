@@ -14,6 +14,8 @@ import com.newbit.newbitfeatureservice.purchase.command.application.service.Poin
 import com.newbit.newbitfeatureservice.purchase.command.domain.PointTypeConstants;
 import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +59,12 @@ public class CommentService {
         return comments.stream()
                 .map(CommentResponse::new)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CommentResponse> getCommentsByPostId(Long postId, Pageable pageable) {
+        Page<Comment> commentPage = commentRepository.findByPostIdAndDeletedAtIsNull(postId, pageable);
+        return commentPage.map(CommentResponse::new);
     }
 
     @Transactional
