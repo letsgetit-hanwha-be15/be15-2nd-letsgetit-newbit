@@ -24,7 +24,6 @@ public class CreateSeriesRequestDto {
     private String thumbnailUrl;
 
     @Schema(description = "시리즈에 포함될 칼럼 ID 목록", example = "[1, 2, 3]")
-    @NotEmpty(message = "최소 하나 이상의 칼럼 ID가 필요합니다.")
     private List<Long> columnIds;
 }
 
