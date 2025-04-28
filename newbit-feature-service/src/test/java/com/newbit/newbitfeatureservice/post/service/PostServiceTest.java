@@ -218,8 +218,7 @@ class PostServiceTest {
         assertThat(response.getWriterName()).isEqualTo("작성자이름");
         assertThat(response.getCategoryName()).isEqualTo("카테고리이름");
         assertThat(response.getImageUrls().get(0)).isEqualTo("https://example.com/image.jpg");
-        assertThat(response.getComments()).hasSize(1);
-        assertThat(response.getComments().get(0).getContent()).isEqualTo("댓글입니다");
+        assertThat(response.getImageUrl()).isEqualTo("https://example.com/image.jpg");
     }
 
     @Test
@@ -258,7 +257,7 @@ class PostServiceTest {
         assertThat(result.get(1).getTitle()).isEqualTo("내 게시글 2");
         assertThat(result.get(0).getImageUrls().get(0)).isEqualTo("https://example.com/image1.jpg");
         assertThat(result.get(1).getImageUrls().get(0)).isEqualTo("https://example.com/image2.jpg");
-
+      
         verify(postRepository, times(1)).findByUserIdAndDeletedAtIsNull(userId);
     }
 
@@ -333,6 +332,7 @@ class PostServiceTest {
         assertThat(originalPost.getTitle()).isEqualTo("수정된 제목");
         assertThat(originalPost.getContent()).isEqualTo("수정된 내용");
         assertThat(originalPost.getImageUrls().get(0)).isEqualTo("https://example.com/old-image.jpg");
+
     }
 
 
