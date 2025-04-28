@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 
 @Service
@@ -80,48 +81,32 @@ public class UserInfoService {
 
 
 
-//    @Transactional
-//    public UserDTO updateMyInfo(UserInfoUpdateRequestDTO request, Long userId) {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new BusinessException(ErrorCode.USER_INFO_NOT_FOUND));
-//
-//        // 닉네임 중복 검사 (본인의 닉네임이 아니라면)
-//        if (!user.getNickname().equals(request.getNickname())
-//                && userRepository.existsByNickname(request.getNickname())) {
-//            throw new BusinessException(ErrorCode.ALREADY_REGISTERED_NICKNAME); // 적절한 에러코드 필요
-//        }
-//
-//        // 전화번호 중복 검사 (본인의 번호가 아니라면)
-//        if (!user.getPhoneNumber().equals(request.getPhoneNumber())
-//                && userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-//            throw new BusinessException(ErrorCode.ALREADY_REGISTERED_PHONENUMBER); // 적절한 에러코드 필요
-//        }
-//
-//        user.updateInfo(request.getNickname(), request.getPhoneNumber(), request.getProfileImageUrl());
-//
-//        return UserDTO.fromEntity(user);
-//    }
     @Transactional
-    public void changePassword(String currentPassword, String newPassword) {
-        // 현재 로그인한 사용자 정보 가져오기
-        CustomUser customUser = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email = customUser.getEmail();
-
-        User user = userRepository.findByEmail(email)
+    public void updateMyInfo(UserInfoUpdateRequestDTO request, Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_INFO_NOT_FOUND));
 
-        // 기존 비밀번호 확인
-        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-            throw new BusinessException(ErrorCode.INVALID_CURRENT_PASSWORD); // 비밀번호 틀림
+        // 전화번호 수정
+        if (!user.getPhoneNumber().equals(request.getPhoneNumber())
+                && userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            throw new BusinessException(ErrorCode.ALREADY_REGISTERED_PHONENUMBER);
+        }
+        if (!request.getPhoneNumber().matches("\\d+")) {
+            throw new BusinessException(ErrorCode.INVALID_PHONE_NUMBER_FORMAT);
+        }
+        user.updatePhonenumber(request.getPhoneNumber());
+
+        // 비밀번호 수정
+        if (StringUtils.hasText(request.getCurrentPassword()) || StringUtils.hasText(request.getNewPassword())) {
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                throw new BusinessException(ErrorCode.INVALID_CURRENT_PASSWORD);
+            }
+            if (!PasswordValidator.isValid(request.getNewPassword())) {
+                throw new BusinessException(ErrorCode.INVALID_PASSWORD_FORMAT);
+            }
+            user.setEncodedPassword(passwordEncoder.encode(request.getNewPassword()));
         }
 
-        // 새 비밀번호 유효성 검사
-        if (!PasswordValidator.isValid(newPassword)) {
-            throw new BusinessException(ErrorCode.INVALID_PASSWORD_FORMAT); // 조건 불충족
-        }
-
-        // 비밀번호 변경
-        user.setEncodedPassword(passwordEncoder.encode(newPassword));
     }
 
     @Transactional
