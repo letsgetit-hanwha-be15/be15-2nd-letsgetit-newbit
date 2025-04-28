@@ -25,9 +25,6 @@ public class Post {
     @Lob
     private String content;
 
-    @Column(name = "image_url")
-    private String imageUrl;
-
     @Builder.Default
     @Column(name = "like_count", nullable = false)
     private int likeCount = 0;

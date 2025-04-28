@@ -68,10 +68,9 @@ class PostServiceTest {
                 .build();
 
         PostCreateRequest userRequest = new PostCreateRequest();
-        userRequest.setTitle("이미지 포함 글");
-        userRequest.setContent("이미지가 있는 게시글입니다.");
+        userRequest.setTitle("일반 글");
+        userRequest.setContent("내용");
         userRequest.setPostCategoryId(1L);
-        userRequest.setImageUrl("https://example-bucket.s3.ap-northeast-2.amazonaws.com/posts/test-image.jpg");
 
         when(postInternalService.createPostInternal(any(PostCreateRequest.class), any(CustomUser.class)))
                 .thenReturn(Post.builder()
@@ -83,19 +82,20 @@ class PostServiceTest {
                         .likeCount(0)
                         .reportCount(0)
                         .isNotice(false)
-                        .imageUrl(userRequest.getImageUrl())
                         .build());
 
         // when
         PostResponse response = postService.createPost(userRequest, user);
 
         // then
-        assertThat(response.getTitle()).isEqualTo("이미지 포함 글");
-        assertThat(response.getContent()).isEqualTo("이미지가 있는 게시글입니다.");
+        assertThat(response.getTitle()).isEqualTo("일반 글");
+        assertThat(response.getContent()).isEqualTo("내용");
         assertThat(response.getPostCategoryId()).isEqualTo(1L);
         assertThat(response.isNotice()).isFalse();
-        assertThat(response.getImageUrl()).isEqualTo("https://example-bucket.s3.ap-northeast-2.amazonaws.com/posts/test-image.jpg");
     }
+
+
+
 
     @Test
     void 게시글_등록_실패_비회원() {
@@ -171,7 +171,6 @@ class PostServiceTest {
                 .content("상세 내용")
                 .userId(userId)
                 .postCategoryId(mockCategory.getId())
-                .imageUrl("https://example.com/image.jpg")
                 .build();
 
         Field field = Post.class.getDeclaredField("postCategory");
@@ -212,10 +211,10 @@ class PostServiceTest {
         assertThat(response.getTitle()).isEqualTo("상세 제목");
         assertThat(response.getWriterName()).isEqualTo("작성자이름");
         assertThat(response.getCategoryName()).isEqualTo("카테고리이름");
-        assertThat(response.getImageUrl()).isEqualTo("https://example.com/image.jpg"); // ✅ imageUrl 검증 추가
         assertThat(response.getComments()).hasSize(1);
         assertThat(response.getComments().get(0).getContent()).isEqualTo("댓글입니다");
     }
+
 
     @Test
     void 본인_게시글_조회_성공() {
@@ -228,7 +227,6 @@ class PostServiceTest {
                 .content("내용 1")
                 .userId(userId)
                 .postCategoryId(1L)
-                .imageUrl("https://example.com/image1.jpg")
                 .build();
 
         Post post2 = Post.builder()
@@ -237,7 +235,6 @@ class PostServiceTest {
                 .content("내용 2")
                 .userId(userId)
                 .postCategoryId(1L)
-                .imageUrl("https://example.com/image2.jpg")
                 .build();
 
         List<Post> myPosts = List.of(post1, post2);
@@ -251,12 +248,9 @@ class PostServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getTitle()).isEqualTo("내 게시글 1");
         assertThat(result.get(1).getTitle()).isEqualTo("내 게시글 2");
-        assertThat(result.get(0).getImageUrl()).isEqualTo("https://example.com/image1.jpg"); // ✅ imageUrl 검증 추가
-        assertThat(result.get(1).getImageUrl()).isEqualTo("https://example.com/image2.jpg"); // ✅ imageUrl 검증 추가
 
         verify(postRepository, times(1)).findByUserIdAndDeletedAtIsNull(userId);
     }
-
 
     @Test
     void 인기_게시글_조회_성공() {
@@ -296,7 +290,6 @@ class PostServiceTest {
 
     @Test
     void 게시글_수정_성공() {
-        // given
         Long postId = 1L;
         Post originalPost = Post.builder()
                 .id(postId)
@@ -304,7 +297,6 @@ class PostServiceTest {
                 .content("기존 내용")
                 .userId(1L)
                 .postCategoryId(1L)
-                .imageUrl("https://example.com/old-image.jpg")
                 .build();
 
         PostUpdateRequest updateRequest = PostUpdateRequest.builder()
@@ -321,15 +313,11 @@ class PostServiceTest {
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(originalPost));
 
-        // when
         postService.updatePost(postId, updateRequest, user);
 
-        // then
         assertThat(originalPost.getTitle()).isEqualTo("수정된 제목");
         assertThat(originalPost.getContent()).isEqualTo("수정된 내용");
-        assertThat(originalPost.getImageUrl()).isEqualTo("https://example.com/old-image.jpg"); // ✅ 수정 후에도 기존 imageUrl 유지 검증
     }
-
 
     @Test
     void 게시글_수정_실패_게시글이_없음() {

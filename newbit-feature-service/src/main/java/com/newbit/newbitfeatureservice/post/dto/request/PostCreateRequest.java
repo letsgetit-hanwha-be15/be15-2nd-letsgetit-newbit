@@ -9,5 +9,4 @@ public class PostCreateRequest {
     private String title;
     private String content;
     private Long postCategoryId;
-    private String imageUrl;
 }
