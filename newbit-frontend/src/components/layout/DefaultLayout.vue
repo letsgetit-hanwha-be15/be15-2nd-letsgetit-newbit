@@ -14,7 +14,7 @@
 <script setup>
 import Header from '@/components/common/Header.vue'
 import Footer from '@/components/common/Footer.vue'
-import '@/assets/css/styleguide.css'
+import '@/assets/styles/styleguide.css'
 </script>
 
 <style scoped>
