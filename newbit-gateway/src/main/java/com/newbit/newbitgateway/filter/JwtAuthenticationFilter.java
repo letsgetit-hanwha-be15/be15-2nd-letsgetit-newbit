@@ -33,18 +33,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
         String token = authHeader.substring(7); // Bearer 떼고 토큰만 추출
 
-        try {
-            jwtTokenProvider.validateToken(token);
-        } catch (ExpiredJwtException e) {
-            return writeErrorResponse(exchange, JwtErrorCode.EXPIRED_TOKEN);
-        } catch (UnsupportedJwtException e) {
-            return writeErrorResponse(exchange, JwtErrorCode.UNSUPPORTED_TOKEN);
-        } catch (MalformedJwtException | SecurityException e) {
-            return writeErrorResponse(exchange, JwtErrorCode.INVALID_TOKEN);
-        } catch (JwtException | IllegalArgumentException e) {
-            return writeErrorResponse(exchange, JwtErrorCode.EMPTY_CLAIMS);
-        }
-
         Long userId = jwtTokenProvider.getUserIdFromJWT(token);
         String authority = jwtTokenProvider.getAuthorityFromJWT(token);
         String username = jwtTokenProvider.getUsernameFromJWT(token);
