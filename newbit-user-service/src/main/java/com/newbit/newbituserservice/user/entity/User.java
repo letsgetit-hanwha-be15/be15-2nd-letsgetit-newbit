@@ -66,9 +66,7 @@ public class User {
     @Column(name = "job_id")
     private Long jobId;
 
-    public void setJobId(Long jobId) {
-        this.jobId = jobId;
-    }
+    public void setJobId(Long jobId) {this.jobId = jobId;}
 
     public void setEncodedPassword(String encodedPassword) {
         this.password = encodedPassword;
@@ -113,11 +111,13 @@ public class User {
         this.password = newPassword;
     }
 
-    public void updateInfo(String nickname, String phoneNumber, String profileImageUrl) {
+    public void updateProfileNicknameInfo(String nickname) {
         this.nickname = nickname;
-        this.phoneNumber = phoneNumber;
+    }
+    public void updateProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
+    public void updatePhonenumber(String phoneNumber){this.phoneNumber = phoneNumber;};
 
     public void setIsSuspended(boolean isSuspended) {
         this.isSuspended = isSuspended;
