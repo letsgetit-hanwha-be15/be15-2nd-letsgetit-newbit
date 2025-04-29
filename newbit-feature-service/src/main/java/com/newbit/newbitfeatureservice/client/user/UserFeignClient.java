@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @FeignClient(name = "newbit-user-service", contextId = "userFeignClient", configuration = UserFeignClientConfig.class)
 public interface UserFeignClient {
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/users/{userId}")
     ApiResponse<UserDTO> getUserByUserId(@PathVariable("userId") Long userId);
 
     @GetMapping("/{userId}/email")

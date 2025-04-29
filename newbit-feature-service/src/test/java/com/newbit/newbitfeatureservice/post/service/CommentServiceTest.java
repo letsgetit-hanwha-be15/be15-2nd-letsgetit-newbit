@@ -1,5 +1,8 @@
 package com.newbit.newbitfeatureservice.post.service;
 
+import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
+import com.newbit.newbitfeatureservice.client.user.dto.UserDTO;
+import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.notification.command.application.dto.request.NotificationSendRequest;
@@ -36,7 +39,7 @@ class CommentServiceTest {
     private CommentInternalService commentInternalService;
     private PointTransactionCommandService pointTransactionCommandService;
     private NotificationCommandService notificationCommandService;
-
+    private UserFeignClient userFeignClient;
 
     @BeforeEach
     void setUp() {
@@ -45,7 +48,8 @@ class CommentServiceTest {
         pointTransactionCommandService = mock(PointTransactionCommandService.class);
         notificationCommandService = mock(NotificationCommandService.class);
         commentInternalService = mock(CommentInternalService.class);
-        commentService = new CommentService(commentRepository, postRepository, pointTransactionCommandService, notificationCommandService, commentInternalService);
+        userFeignClient = mock(UserFeignClient.class);
+        commentService = new CommentService(commentRepository, postRepository, pointTransactionCommandService, notificationCommandService, commentInternalService, userFeignClient);
     }
 
     @Test
@@ -80,7 +84,25 @@ class CommentServiceTest {
                 .userId(userId)
                 .build();
 
+        // 작성자 닉네임 조회 목(mock) 설정
         when(commentInternalService.saveCommentInternal(postId, request, user)).thenReturn(comment);
+        when(userFeignClient.getUserByUserId(userId))
+                .thenReturn(ApiResponse.success(
+                        new UserDTO(
+                                userId,
+                                "user@example.com",
+                                "encodedPassword",
+                                "길동이23",
+                                null,
+                                100,
+                                0,
+                                null,
+                                null,
+                                null
+                        )
+                ));
+
+
 
         // when
         CommentResponse response = commentService.createComment(postId, request, user);
@@ -88,6 +110,7 @@ class CommentServiceTest {
         // then
         assertThat(response).isNotNull();
         assertThat(response.getContent()).isEqualTo(commentContent);
+        assertThat(response.getWriterName()).isEqualTo("길동이23");
 
         verify(commentInternalService, times(1)).saveCommentInternal(postId, request, user);
         verify(pointTransactionCommandService, times(1))
@@ -95,6 +118,7 @@ class CommentServiceTest {
         verify(notificationCommandService, times(1))
                 .sendNotification(any(NotificationSendRequest.class));
     }
+
 
     @Test
     void 댓글_조회_성공() {
@@ -127,12 +151,23 @@ class CommentServiceTest {
         when(commentRepository.findByPostIdAndDeletedAtIsNull(postId))
                 .thenReturn(Arrays.asList(comment1, comment2));
 
+        // 수정된 부분: ApiResponse.success() 사용
+        when(userFeignClient.getUserByUserId(1L))
+                .thenReturn(ApiResponse.success(new UserDTO(
+                        1L, "user1@example.com", "encoded", "작성자1", null, 100, 0, null, null, null
+                )));
+        when(userFeignClient.getUserByUserId(2L))
+                .thenReturn(ApiResponse.success(new UserDTO(
+                        2L, "user2@example.com", "encoded", "작성자2", null, 100, 0, null, null, null
+                )));
+
         List<CommentResponse> responses = commentService.getCommentsByPostId(postId);
 
         assertThat(responses).hasSize(2);
         assertThat(responses.get(0).getContent()).isEqualTo("첫 번째 댓글");
         assertThat(responses.get(1).getContent()).isEqualTo("두 번째 댓글");
     }
+
 
     @Test
     void 댓글_페이징_조회_성공() {

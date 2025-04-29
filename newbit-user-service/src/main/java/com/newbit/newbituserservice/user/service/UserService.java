@@ -156,6 +156,7 @@ public class UserService {
 
         return UserDTO.builder()
                 .userId(userId)
+                .nickname(user.getNickname())
                 .authority(user.getAuthority())
                 .diamond(user.getDiamond())
                 .point(user.getPoint())

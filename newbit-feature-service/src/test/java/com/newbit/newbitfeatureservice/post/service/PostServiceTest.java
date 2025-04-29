@@ -8,9 +8,11 @@ import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.post.dto.request.PostCreateRequest;
 import com.newbit.newbitfeatureservice.post.dto.request.PostUpdateRequest;
 import com.newbit.newbitfeatureservice.post.dto.response.PostResponse;
+import com.newbit.newbitfeatureservice.post.entity.Attachment;
 import com.newbit.newbitfeatureservice.post.entity.Comment;
 import com.newbit.newbitfeatureservice.post.entity.Post;
 import com.newbit.newbitfeatureservice.post.entity.PostCategory;
+import com.newbit.newbitfeatureservice.post.repository.AttachmentRepository;
 import com.newbit.newbitfeatureservice.post.repository.CommentRepository;
 import com.newbit.newbitfeatureservice.post.repository.PostRepository;
 import com.newbit.newbitfeatureservice.purchase.command.application.service.PointTransactionCommandService;
@@ -19,7 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -39,6 +40,8 @@ class PostServiceTest {
     private UserFeignClient userFeignClient;
     private PostInternalService postInternalService;
     private PostCategoryService postCategoryService;
+    private AttachmentRepository attachmentRepository;
+
 
     @BeforeEach
     void setUp() {
@@ -48,8 +51,10 @@ class PostServiceTest {
         userFeignClient = mock(UserFeignClient.class);
         postInternalService = mock(PostInternalService.class);
         postCategoryService = mock(PostCategoryService.class);
+        attachmentRepository = mock(AttachmentRepository.class);
 
-        postService = new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient, postInternalService);
+        postService =  new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient, postInternalService,
+                attachmentRepository);
 
         request = new PostCreateRequest();
         request.setTitle("단위 테스트 제목");
@@ -71,20 +76,45 @@ class PostServiceTest {
         userRequest.setTitle("이미지 포함 글");
         userRequest.setContent("이미지가 있는 게시글입니다.");
         userRequest.setPostCategoryId(1L);
-        userRequest.setImageUrl("https://example-bucket.s3.ap-northeast-2.amazonaws.com/posts/test-image.jpg");
+        userRequest.setImageUrls(List.of("https://example-bucket.s3.ap-northeast-2.amazonaws.com/posts/test-image.jpg"));
+
+        PostCategory mockCategory = PostCategory.builder()
+                .id(1L)
+                .name("자유게시판")
+                .build();
+
+        Post mockPost = Post.builder()
+                .id(123L)
+                .title(userRequest.getTitle())
+                .content(userRequest.getContent())
+                .userId(user.getUserId())
+                .postCategoryId(userRequest.getPostCategoryId())
+                .postCategory(mockCategory)
+                .likeCount(0)
+                .reportCount(0)
+                .isNotice(false)
+                .build();
 
         when(postInternalService.createPostInternal(any(PostCreateRequest.class), any(CustomUser.class)))
-                .thenReturn(Post.builder()
-                        .id(123L)
-                        .title(userRequest.getTitle())
-                        .content(userRequest.getContent())
-                        .userId(user.getUserId())
-                        .postCategoryId(userRequest.getPostCategoryId())
-                        .likeCount(0)
-                        .reportCount(0)
-                        .isNotice(false)
-                        .imageUrl(userRequest.getImageUrl())
-                        .build());
+                .thenReturn(mockPost);
+
+        when(userFeignClient.getUserByUserId(user.getUserId()))
+                .thenReturn(ApiResponse.<UserDTO>builder()
+                        .success(true)
+                        .data(UserDTO.builder()
+                                .userId(user.getUserId())
+                                .nickname("작성자닉네임")
+                                .build())
+                        .build()
+                );
+
+        when(attachmentRepository.findByPostId(123L))
+                .thenReturn(List.of(
+                        Attachment.builder()
+                                .post(mockPost)
+                                .imageUrl("https://example-bucket.s3.ap-northeast-2.amazonaws.com/posts/test-image.jpg")
+                                .build()
+                ));
 
         // when
         PostResponse response = postService.createPost(userRequest, user);
@@ -94,8 +124,13 @@ class PostServiceTest {
         assertThat(response.getContent()).isEqualTo("이미지가 있는 게시글입니다.");
         assertThat(response.getPostCategoryId()).isEqualTo(1L);
         assertThat(response.isNotice()).isFalse();
-        assertThat(response.getImageUrl()).isEqualTo("https://example-bucket.s3.ap-northeast-2.amazonaws.com/posts/test-image.jpg");
+        assertThat(response.getWriterName()).isEqualTo("작성자닉네임");
+        assertThat(response.getImageUrls()).containsExactly("https://example-bucket.s3.ap-northeast-2.amazonaws.com/posts/test-image.jpg");
+
+        verify(attachmentRepository, times(1)).save(any(Attachment.class));
     }
+
+
 
     @Test
     void 게시글_등록_실패_비회원() {
@@ -120,14 +155,16 @@ class PostServiceTest {
         // given
         Pageable pageable = PageRequest.of(0, 5, Sort.by("createdAt").descending());
 
-
-
         Post post1 = Post.builder()
                 .id(1L)
                 .title("테스트 제목1")
                 .content("테스트 내용1")
                 .userId(1L)
                 .postCategoryId(1L)
+                .postCategory(PostCategory.builder()
+                        .id(1L)
+                        .name("자유게시판")
+                        .build())
                 .build();
 
         Post post2 = Post.builder()
@@ -136,11 +173,24 @@ class PostServiceTest {
                 .content("테스트 내용2")
                 .userId(2L)
                 .postCategoryId(1L)
+                .postCategory(PostCategory.builder()
+                        .id(1L)
+                        .name("자유게시판")
+                        .build())
                 .build();
 
         Page<Post> postPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
 
         when(postRepository.findAll(pageable)).thenReturn(postPage);
+
+        when(userFeignClient.getUserByUserId(1L))
+                .thenReturn(ApiResponse.<UserDTO>builder()
+                        .data(UserDTO.builder().nickname("작성자1").build())
+                        .build());
+        when(userFeignClient.getUserByUserId(2L))
+                .thenReturn(ApiResponse.<UserDTO>builder()
+                        .data(UserDTO.builder().nickname("작성자2").build())
+                        .build());
 
         // when
         var result = postService.getPostList(pageable);
@@ -149,10 +199,16 @@ class PostServiceTest {
         assertThat(result.getContent()).hasSize(2);
 
         assertThat(result.getContent().get(0).getTitle()).isEqualTo("테스트 제목1");
+        assertThat(result.getContent().get(0).getWriterName()).isEqualTo("작성자1");
+        assertThat(result.getContent().get(0).getCategoryName()).isEqualTo("자유게시판");
+
         assertThat(result.getContent().get(1).getTitle()).isEqualTo("테스트 제목2");
+        assertThat(result.getContent().get(1).getWriterName()).isEqualTo("작성자2");
+        assertThat(result.getContent().get(1).getCategoryName()).isEqualTo("자유게시판");
 
         verify(postRepository, times(1)).findAll(pageable);
     }
+
 
     @Test
     void 게시글_상세_조회_성공() throws Exception {
@@ -171,7 +227,6 @@ class PostServiceTest {
                 .content("상세 내용")
                 .userId(userId)
                 .postCategoryId(mockCategory.getId())
-                .imageUrl("https://example.com/image.jpg")
                 .build();
 
         Field field = Post.class.getDeclaredField("postCategory");
@@ -185,24 +240,40 @@ class PostServiceTest {
                 .content("댓글입니다")
                 .build();
 
-        UserDTO mockUserDTO = UserDTO.builder()
+        UserDTO postWriterDTO = UserDTO.builder()
                 .nickname("작성자이름")
                 .build();
 
-        ApiResponse<UserDTO> mockApiResponse = ApiResponse.<UserDTO>builder()
-                .data(mockUserDTO)
+        ApiResponse<UserDTO> postWriterResponse = ApiResponse.<UserDTO>builder()
+                .data(postWriterDTO)
+                .build();
+
+        UserDTO commentWriterDTO = UserDTO.builder()
+                .nickname("댓글작성자")
+                .build();
+
+        ApiResponse<UserDTO> commentWriterResponse = ApiResponse.<UserDTO>builder()
+                .data(commentWriterDTO)
+                .build();
+
+        Attachment attachment = Attachment.builder()
+                .post(post)
+                .imageUrl("https://example.com/image.jpg")
                 .build();
 
         when(postRepository.findByIdAndDeletedAtIsNull(postId)).thenReturn(Optional.of(post));
         when(commentRepository.findByPostIdAndDeletedAtIsNull(postId)).thenReturn(List.of(comment));
-        when(userFeignClient.getUserByUserId(userId)).thenReturn(mockApiResponse);
+        when(userFeignClient.getUserByUserId(userId)).thenReturn(postWriterResponse); // 게시글 작성자
+        when(userFeignClient.getUserByUserId(2L)).thenReturn(commentWriterResponse);  // 댓글 작성자
+        when(attachmentRepository.findByPostId(postId)).thenReturn(List.of(attachment));
 
         postService = new PostService(
                 postRepository,
                 commentRepository,
                 pointTransactionCommandService,
                 userFeignClient,
-                postInternalService
+                postInternalService,
+                attachmentRepository
         );
 
         // when
@@ -212,15 +283,23 @@ class PostServiceTest {
         assertThat(response.getTitle()).isEqualTo("상세 제목");
         assertThat(response.getWriterName()).isEqualTo("작성자이름");
         assertThat(response.getCategoryName()).isEqualTo("카테고리이름");
-        assertThat(response.getImageUrl()).isEqualTo("https://example.com/image.jpg");
+
+        assertThat(response.getImageUrls()).containsExactly("https://example.com/image.jpg");
         assertThat(response.getComments()).hasSize(1);
         assertThat(response.getComments().get(0).getContent()).isEqualTo("댓글입니다");
+        assertThat(response.getComments().get(0).getWriterName()).isEqualTo("댓글작성자");
     }
 
+
     @Test
-    void 본인_게시글_조회_성공() {
+    void 본인_게시글_조회_성공() throws Exception{
         // given
         Long userId = 1L;
+
+        PostCategory category = PostCategory.builder()
+                .id(1L)
+                .name("자유게시판")
+                .build();
 
         Post post1 = Post.builder()
                 .id(1L)
@@ -228,46 +307,69 @@ class PostServiceTest {
                 .content("내용 1")
                 .userId(userId)
                 .postCategoryId(1L)
-                .imageUrl("https://example.com/image1.jpg")
                 .build();
-
         Post post2 = Post.builder()
                 .id(2L)
                 .title("내 게시글 2")
                 .content("내용 2")
                 .userId(userId)
                 .postCategoryId(1L)
-                .imageUrl("https://example.com/image2.jpg")
                 .build();
+
+        // postCategory 필드 직접 세팅 (Reflection 사용)
+        Field categoryField = Post.class.getDeclaredField("postCategory");
+        categoryField.setAccessible(true);
+        categoryField.set(post1, category);
+        categoryField.set(post2, category);
 
         List<Post> myPosts = List.of(post1, post2);
 
         when(postRepository.findByUserIdAndDeletedAtIsNull(userId)).thenReturn(myPosts);
+
+        // 유저 닉네임 조회 모킹
+        when(userFeignClient.getUserByUserId(userId))
+                .thenReturn(ApiResponse.<UserDTO>builder()
+                        .data(UserDTO.builder()
+                                .nickname("작성자닉네임")
+                                .build())
+                        .build()
+                );
 
         // when
         List<PostResponse> result = postService.getMyPosts(userId);
 
         // then
         assertThat(result).hasSize(2);
+
         assertThat(result.get(0).getTitle()).isEqualTo("내 게시글 1");
         assertThat(result.get(1).getTitle()).isEqualTo("내 게시글 2");
-        assertThat(result.get(0).getImageUrl()).isEqualTo("https://example.com/image1.jpg");
-        assertThat(result.get(1).getImageUrl()).isEqualTo("https://example.com/image2.jpg");
-      
+
+        assertThat(result.get(0).getWriterName()).isEqualTo("작성자닉네임");
+        assertThat(result.get(1).getWriterName()).isEqualTo("작성자닉네임");
+
+        assertThat(result.get(0).getCategoryName()).isEqualTo("자유게시판");
+        assertThat(result.get(1).getCategoryName()).isEqualTo("자유게시판");
+
         verify(postRepository, times(1)).findByUserIdAndDeletedAtIsNull(userId);
     }
 
 
+
     @Test
-    void 인기_게시글_조회_성공() {
+    void 인기_게시글_조회_성공() throws Exception {
         // given
+        PostCategory mockCategory = PostCategory.builder()
+                .id(1L)
+                .name("자유게시판")
+                .build();
+
         Post post1 = Post.builder()
                 .id(1L)
                 .title("인기글 1")
                 .content("내용 1")
                 .likeCount(15)
                 .userId(1L)
-                .postCategoryId(1L)
+                .postCategoryId(mockCategory.getId())
                 .build();
 
         Post post2 = Post.builder()
@@ -276,12 +378,26 @@ class PostServiceTest {
                 .content("내용 2")
                 .likeCount(12)
                 .userId(2L)
-                .postCategoryId(1L)
+                .postCategoryId(mockCategory.getId())
                 .build();
+
+        Field categoryField = Post.class.getDeclaredField("postCategory");
+        categoryField.setAccessible(true);
+        categoryField.set(post1, mockCategory);
+        categoryField.set(post2, mockCategory);
 
         List<Post> popularPosts = List.of(post1, post2);
 
         when(postRepository.findPopularPosts(10)).thenReturn(popularPosts);
+
+        when(userFeignClient.getUserByUserId(1L))
+                .thenReturn(ApiResponse.<UserDTO>builder()
+                        .data(UserDTO.builder().nickname("작성자1").build())
+                        .build());
+        when(userFeignClient.getUserByUserId(2L))
+                .thenReturn(ApiResponse.<UserDTO>builder()
+                        .data(UserDTO.builder().nickname("작성자2").build())
+                        .build());
 
         // when
         List<PostResponse> result = postService.getPopularPosts();
@@ -290,14 +406,24 @@ class PostServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result.get(0).getTitle()).isEqualTo("인기글 1");
         assertThat(result.get(1).getTitle()).isEqualTo("인기글 2");
+        assertThat(result.get(0).getWriterName()).isEqualTo("작성자1");
+        assertThat(result.get(1).getWriterName()).isEqualTo("작성자2");
+        assertThat(result.get(0).getCategoryName()).isEqualTo("자유게시판");
+        assertThat(result.get(1).getCategoryName()).isEqualTo("자유게시판");
 
         verify(postRepository, times(1)).findPopularPosts(10);
     }
 
+
     @Test
-    void 게시글_수정_성공() {
+    void 게시글_수정_성공() throws Exception {
         // given
         Long postId = 1L;
+        PostCategory mockCategory = PostCategory.builder()
+                .id(1L)
+                .name("카테고리명")
+                .build();
+
         Post originalPost = Post.builder()
                 .id(postId)
                 .title("기존 제목")
@@ -306,6 +432,11 @@ class PostServiceTest {
                 .postCategoryId(1L)
                 .imageUrl("https://example.com/old-image.jpg")
                 .build();
+
+        // 👉 postCategory 강제로 주입
+        Field categoryField = Post.class.getDeclaredField("postCategory");
+        categoryField.setAccessible(true);
+        categoryField.set(originalPost, mockCategory);
 
         PostUpdateRequest updateRequest = PostUpdateRequest.builder()
                 .title("수정된 제목")
@@ -320,16 +451,25 @@ class PostServiceTest {
                 .build();
 
         when(postRepository.findById(postId)).thenReturn(Optional.of(originalPost));
+        when(userFeignClient.getUserByUserId(user.getUserId()))
+                .thenReturn(ApiResponse.<UserDTO>builder()
+                        .data(UserDTO.builder()
+                                .nickname("작성자닉네임")
+                                .build())
+                        .build());
 
         // when
-        postService.updatePost(postId, updateRequest, user);
+        PostResponse response = postService.updatePost(postId, updateRequest, user);
 
         // then
         assertThat(originalPost.getTitle()).isEqualTo("수정된 제목");
         assertThat(originalPost.getContent()).isEqualTo("수정된 내용");
-        assertThat(originalPost.getImageUrl()).isEqualTo("https://example.com/old-image.jpg");
-    }
 
+        assertThat(response.getTitle()).isEqualTo("수정된 제목");
+        assertThat(response.getContent()).isEqualTo("수정된 내용");
+        assertThat(response.getWriterName()).isEqualTo("작성자닉네임");
+        assertThat(response.getCategoryName()).isEqualTo("카테고리명");
+    }
 
     @Test
     void 게시글_수정_실패_게시글이_없음() {
