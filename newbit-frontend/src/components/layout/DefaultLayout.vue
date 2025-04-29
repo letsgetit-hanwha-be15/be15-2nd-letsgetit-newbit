@@ -19,16 +19,16 @@ import '@/assets/styles/styleguide.css'
 
 <style scoped>
 main {
-  min-height: calc(100vh - 120px); /* 대략 헤더+푸터 뺀 영역 높이 설정 */
+  min-height: calc(100vh - 120px);
   padding: 20px;
 }
 .content {
-  max-width: 1280px;  /* 너비 제한 */
+  max-width: 1280px;
   height: 1000px;
-  margin: 0 auto;     /* 가운데 정렬 */
-  min-height: calc(100vh - 120px); /* (헤더+푸터) 뺀 영역 높이 */
+  margin: 0 auto;
+  min-height: calc(100vh - 120px);
   padding: 20px;
-  box-sizing: border-box; /* padding 포함해서 사이즈 계산 */
+  box-sizing: border-box;
   border-left: 0.5px solid var(--newbitdivider);
   border-right: 0.5px solid var(--newbitdivider);
 }

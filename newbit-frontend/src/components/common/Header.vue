@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-// 별도 스크립트 필요 없음
+
 </script>
 
 <style scoped>
@@ -77,7 +77,7 @@
 }
 
 .nav a:hover {
-  color: var(--newbitnormal-hover); /* 파란색 hover */
+  color: var(--newbitnormal-hover);
 }
 
 .router-link-exact-active.nav-link {
@@ -101,14 +101,14 @@
 .shop-button {
   display: inline-flex;
   align-items: center;
-  gap: 4px; /* 아이콘과 텍스트 사이 간격 */
+  gap: 4px;
   padding: 10px 12px;
   margin-right: 20px;
-  border: 1px solid var(--newbitdivider); /* 네가 정의한 색상 변수 */
+  border: 1px solid var(--newbitdivider);
   border-radius: 8px;
   background-color: white;
-  text-decoration: none; /* a태그 밑줄 없애기 */
-  color: black; /* 글자색 검정 */
+  text-decoration: none;
+  color: black;
   font-size: 14px;
   font-weight: 500;
 
@@ -145,12 +145,12 @@
 }
 
 .profile-button {
-  width: 40px;      /* 원하는 사이즈 */
+  width: 40px;
   height: 40px;
-  object-fit: cover; /* 사진 비율 깨지지 않게 */
-  border-radius: 50%; /* 완전 동그랗게! */
-  border: none;     /* 테두리 제거 */
-  background: none; /* 배경색 제거 */
+  object-fit: cover;
+  border-radius: 50%;
+  border: none;
+  background: none;
 }
 
 .profile-button img {
