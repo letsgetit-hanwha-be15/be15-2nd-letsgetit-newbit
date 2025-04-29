@@ -7,6 +7,7 @@ import com.newbit.newbitfeatureservice.post.dto.request.PostCreateRequest;
 import com.newbit.newbitfeatureservice.post.dto.request.PostUpdateRequest;
 import com.newbit.newbitfeatureservice.post.dto.response.PostResponse;
 import com.newbit.newbitfeatureservice.post.entity.Post;
+import com.newbit.newbitfeatureservice.post.repository.AttachmentRepository;
 import com.newbit.newbitfeatureservice.post.repository.CommentRepository;
 import com.newbit.newbitfeatureservice.post.repository.PostRepository;
 import com.newbit.newbitfeatureservice.purchase.command.application.service.PointTransactionCommandService;
@@ -30,6 +31,7 @@ class PostServiceNoticeTest {
     private UserFeignClient userFeignClient;
     private PostInternalService postInternalService;
     private PostCategoryService postCategoryService;
+    private AttachmentRepository attachmentRepository;
 
     @BeforeEach
     void setUp() {
@@ -38,8 +40,17 @@ class PostServiceNoticeTest {
         pointTransactionCommandService = mock(PointTransactionCommandService.class);
         postInternalService = mock(PostInternalService.class);
         postCategoryService = mock(PostCategoryService.class);
+        userFeignClient = mock(UserFeignClient.class);
+        attachmentRepository = mock(AttachmentRepository.class);
 
-        postService = new PostService(postRepository, commentRepository, pointTransactionCommandService, userFeignClient, postInternalService);
+        postService = new PostService(
+                postRepository,
+                commentRepository,
+                pointTransactionCommandService,
+                userFeignClient,
+                postInternalService,
+                attachmentRepository
+        );
     }
 
     @Test

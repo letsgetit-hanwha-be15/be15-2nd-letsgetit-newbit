@@ -2,6 +2,8 @@ package com.newbit.newbitfeatureservice.post.repository;
 
 import com.newbit.newbitfeatureservice.post.entity.Post;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -23,4 +25,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p.userId FROM Post p WHERE p.id = :postId AND p.deletedAt IS NULL")
     Optional<Long> findUserIdByPostId(@Param("postId") Long postId);
 
+    Page<Post> findByPostCategoryIdAndDeletedAtIsNull(Long postCategoryId, Pageable pageable);
 }

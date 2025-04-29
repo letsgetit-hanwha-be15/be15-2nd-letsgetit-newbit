@@ -4,6 +4,7 @@ import com.newbit.newbitfeatureservice.post.entity.Post;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 public class PostResponse {
@@ -19,9 +20,11 @@ public class PostResponse {
     private final LocalDateTime deletedAt;
     private final Long userId;
     private final Long postCategoryId;
-    private final String imageUrl;
+    private String categoryName;
+    private final String writerName;
+    private final List<String> imageUrls;
 
-    public PostResponse(Post post) {
+    public PostResponse(Post post, String writerName, String categoryName, List<String> imageUrls) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.content = post.getContent();
@@ -33,6 +36,8 @@ public class PostResponse {
         this.deletedAt = post.getDeletedAt();
         this.userId = post.getUserId();
         this.postCategoryId = post.getPostCategoryId();
-        this.imageUrl = post.getImageUrl();
+        this.categoryName = categoryName;
+        this.writerName = writerName;
+        this.imageUrls = imageUrls;
     }
 }
