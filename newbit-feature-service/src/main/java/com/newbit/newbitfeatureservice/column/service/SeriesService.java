@@ -190,5 +190,14 @@ public class SeriesService {
                 .map(seriesMapper::toSeriesColumnDto)
                 .toList();
     }
+
+    public List<GetMySeriesListResponseDto> getPublicSeriesList() {
+        List<Series> allSeries = seriesRepository.findAll();
+
+        return allSeries.stream()
+                .filter(series -> !series.getColumns().isEmpty())   // 칼럼 1개 이상 있는 시리즈만
+                .map(seriesMapper::toMySeriesListDto)
+                .toList();
+    }
 }
 
