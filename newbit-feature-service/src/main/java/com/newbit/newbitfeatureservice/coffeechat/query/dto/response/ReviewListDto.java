@@ -23,4 +23,6 @@ public class ReviewListDto {
     private Long userId;
     @Schema(description = "작성자 닉네임")
     private String nickname;
+    @Schema(description = "작성자 프로필사진")
+    private String profileImageUrl;
 }
