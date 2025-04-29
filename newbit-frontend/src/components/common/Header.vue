@@ -4,7 +4,7 @@
       <router-link to="/" class="logo">
         <img src="@/assets/image/logo.png" alt="Newbit Logo" />
       </router-link>
-      <nav class="nav">
+      <nav class="nav text-13px-regular">
         <router-link to="/posts" class="nav-link" active-class="active">게시판</router-link>
         <router-link to="/columns" class="nav-link" active-class="active">칼럼</router-link>
         <router-link to="/coffeechats" class="nav-link" active-class="active">커피챗</router-link>
@@ -17,7 +17,7 @@
     <div class="right">
       <router-link class="shop-button" to="/shop">
         <img src="@/assets/image/diamond-icon.png" alt="Diamond" />
-        <span>상점</span>
+        <span class="text-13px-regular">상점</span>
       </router-link>
 
       <button class="icon-button">
@@ -72,7 +72,6 @@
 
 .nav a {
   margin-right: 20px;
-  font-size: 14px;
   color: black;
   text-decoration: none;
 }
