@@ -33,6 +33,8 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
         String token = authHeader.substring(7); // Bearer 떼고 토큰만 추출
 
+        jwtTokenProvider.validateToken(token);
+
         Long userId = jwtTokenProvider.getUserIdFromJWT(token);
         String authority = jwtTokenProvider.getAuthorityFromJWT(token);
         String username = jwtTokenProvider.getUsernameFromJWT(token);
