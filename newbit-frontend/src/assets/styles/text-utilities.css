@@ -1,0 +1,85 @@
+/* text-utilities.css */
+
+/* === Button === */
+.text-button {
+    font-family: var(--newbit-text-button-font-family), sans-serif;
+    font-weight: var(--newbit-text-button-font-weight);
+    font-size: var(--newbit-text-button-font-size);
+    letter-spacing: var(--newbit-text-button-letter-spacing);
+    line-height: var(--newbit-text-button-line-height);
+    font-style: var(--newbit-text-button-font-style);
+}
+
+/* === Headings === */
+.text-heading1 {
+    font-family: var(--newbit-text-heading1-font-family), sans-serif;
+    font-weight: var(--newbit-text-heading1-font-weight);
+    font-size: var(--newbit-text-heading1-font-size);
+    letter-spacing: var(--newbit-text-heading1-letter-spacing);
+    line-height: var(--newbit-text-heading1-line-height);
+    font-style: var(--newbit-text-heading1-font-style);
+}
+
+.text-heading2 {
+    font-family: var(--newbit-text-heading2-font-family), sans-serif;
+    font-weight: var(--newbit-text-heading2-font-weight);
+    font-size: var(--newbit-text-heading2-font-size);
+    letter-spacing: var(--newbit-text-heading2-letter-spacing);
+    line-height: var(--newbit-text-heading2-line-height);
+    font-style: var(--newbit-text-heading2-font-style);
+}
+
+.text-heading3 {
+    font-family: var(--newbit-text-heading3-font-family), sans-serif;
+    font-weight: var(--newbit-text-heading3-font-weight);
+    font-size: var(--newbit-text-heading3-font-size);
+    letter-spacing: var(--newbit-text-heading3-letter-spacing);
+    line-height: var(--newbit-text-heading3-line-height);
+    font-style: var(--newbit-text-heading3-font-style);
+}
+
+/* === Body === */
+.text-20px-regular {
+    font-family: var(--newbit-text-20px-regular-font-family), sans-serif;
+    font-weight: var(--newbit-text-20px-regular-font-weight);
+    font-size: var(--newbit-text-20px-regular-font-size);
+    letter-spacing: var(--newbit-text-20px-regular-letter-spacing);
+    line-height: var(--newbit-text-20px-regular-line-height);
+    font-style: var(--newbit-text-20px-regular-font-style);
+}
+
+.text-16px-regular {
+    font-family: var(--newbit-text-16px-regular-font-family), sans-serif;
+    font-weight: var(--newbit-text-16px-regular-font-weight);
+    font-size: var(--newbit-text-16px-regular-font-size);
+    letter-spacing: var(--newbit-text-16px-regular-letter-spacing);
+    line-height: var(--newbit-text-16px-regular-line-height);
+    font-style: var(--newbit-text-16px-regular-font-style);
+}
+
+.text-13px-regular {
+    font-family: var(--newbit-text-13px-regular-font-family), sans-serif;
+    font-weight: var(--newbit-text-13px-regular-font-weight);
+    font-size: var(--newbit-text-13px-regular-font-size);
+    letter-spacing: var(--newbit-text-13px-regular-letter-spacing);
+    line-height: var(--newbit-text-13px-regular-line-height);
+    font-style: var(--newbit-text-13px-regular-font-style);
+}
+
+.text-13px-bold {
+    font-family: var(--newbit-text-13px-bold-font-family), sans-serif;
+    font-weight: var(--newbit-text-13px-bold-font-weight);
+    font-size: var(--newbit-text-13px-bold-font-size);
+    letter-spacing: var(--newbit-text-13px-bold-letter-spacing);
+    line-height: var(--newbit-text-13px-bold-line-height);
+    font-style: var(--newbit-text-13px-bold-font-style);
+}
+
+.text-10px-regular {
+    font-family: var(--newbit-text-10px-regular-font-family), sans-serif;
+    font-weight: var(--newbit-text-10px-regular-font-weight);
+    font-size: var(--newbit-text-10px-regular-font-size);
+    letter-spacing: var(--newbit-text-10px-regular-letter-spacing);
+    line-height: var(--newbit-text-10px-regular-line-height);
+    font-style: var(--newbit-text-10px-regular-font-style);
+}
