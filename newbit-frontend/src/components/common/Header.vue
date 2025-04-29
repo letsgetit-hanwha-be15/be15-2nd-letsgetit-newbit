@@ -77,19 +77,18 @@
 }
 
 .nav a:hover {
-  color: #3b82f6; /* 파란색 hover */
+  color: var(--newbitnormal-hover); /* 파란색 hover */
 }
 
-/* 활성화(active) 상태 - 정확히 router-link-exact-active에 걸어야 함 */
 .router-link-exact-active.nav-link {
-  color: #3b82f6;
+  color: var(--newbitnormal-active);
   font-weight: 500;
 }
 
 .divider {
   width: 1px;
   height: 16px;
-  background-color: #d1d5db;
+  background-color: var(--newbitdivider);
   margin: 0 20px;
 }
 
