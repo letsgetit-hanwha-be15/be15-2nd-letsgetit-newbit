@@ -17,13 +17,12 @@
 </template>
 
 <script setup>
-// 별도 스크립트 필요 없음
 </script>
 
 <style scoped>
 .footer {
-  background-color: #2e343b; /* 어두운 회색 */
-  color: #ccc;               /* 밝은 회색 텍스트 */
+  background-color: #2e343b;
+  color: #ccc;
   padding: 48px 32px;
   font-size: 12px;
 }
