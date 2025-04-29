@@ -2,7 +2,7 @@
   <header class="header">
     <div class="left">
       <router-link to="/" class="logo">
-        <img src="../assets/image/logo.png" alt="Newbit Logo" />
+        <img src="@/assets/image/logo.png" alt="Newbit Logo" />
       </router-link>
       <nav class="nav">
         <router-link to="/posts" class="nav-link" active-class="active">게시판</router-link>
@@ -16,21 +16,21 @@
 
     <div class="right">
       <router-link class="shop-button" to="/shop">
-        <img src="../assets/image/diamond-icon.png" alt="Diamond" />
+        <img src="@/assets/image/diamond-icon.png" alt="Diamond" />
         <span>상점</span>
       </router-link>
 
       <button class="icon-button">
-        <img class="chat-icon" src="../assets/image/chat-icon.png" alt="Chat" />
+        <img class="chat-icon" src="@/assets/image/chat-icon.png" alt="Chat" />
       </button>
 
       <button class="icon-button">
-        <img class="notification-icon" src="../assets/image/notification-icon.png" alt="Notifications" />
+        <img class="notification-icon" src="@/assets/image/notification-icon.png" alt="Notifications" />
       </button>
 
       <router-link to="/mypage">
         <button class="profile-button">
-          <img src="../assets/image/profile.png" alt="Profile" />
+          <img src="@/assets/image/profile.png" alt="Profile" />
         </button>
       </router-link>
 
