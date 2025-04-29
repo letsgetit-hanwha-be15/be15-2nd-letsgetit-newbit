@@ -25,7 +25,7 @@ public class Mentor {
 
     private BigDecimal temperature;
 
-    @Column(nullable = false, length = 255)
+    @Column(length = 255)
     private String preferredTime;
 
     private Boolean isActive;
@@ -36,14 +36,44 @@ public class Mentor {
 
     private LocalDateTime updatedAt;
 
+    @Column(length = 255)
+    private String introduction;
+
+    @Column(length = 2048)
+    private String externalLinkUrl;
+
     public static Mentor createDefault(User user) {
         return Mentor.builder()
                 .user(user)
-                .price(500) // 기본 커피챗 가격
+                .price(200) // 기본 커피챗 가격
                 .temperature(BigDecimal.valueOf(36.5)) // 초기 신뢰 온도 (정수로 변경)
                 .isActive(true) // 기본 활성 상태
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public void setPreferredTime(String preferredTime) {
+        this.preferredTime = preferredTime;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void setIntroduction(String introduction) {
+        this.introduction = introduction;
+    }
+
+    public void setExternalLinkUrl(String externalLinkUrl) {
+        this.externalLinkUrl = externalLinkUrl;
     }
 }
