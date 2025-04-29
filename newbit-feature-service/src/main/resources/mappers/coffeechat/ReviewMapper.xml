@@ -7,7 +7,8 @@
         r.rating,
         r.comment,
         r.user_id,
-        u.nickname
+        u.nickname,
+        u.profile_image_url
         FROM review r
         JOIN coffeechat c ON (c.coffeechat_id = r.coffeechat_id)
         JOIN user u ON (r.user_id = u.user_id)
