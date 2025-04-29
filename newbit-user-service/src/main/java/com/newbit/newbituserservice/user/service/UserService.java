@@ -37,7 +37,7 @@ public class UserService {
     // 회원 가입
     @Transactional
     public void registerUser(UserRequestDTO request) {
-        // 중복 회원 체크 로직 등 추가 가능
+        // 중복 회원 체크
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException(ErrorCode.ALREADY_REGISTERED_EMAIL);
         }
@@ -47,19 +47,30 @@ public class UserService {
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new BusinessException(ErrorCode.ALREADY_REGISTERED_PHONENUMBER);
         }
+        if (request.getPhoneNumber() == null || !request.getPhoneNumber().matches("\\d{10,11}")) {
+            throw new BusinessException(ErrorCode.INVALID_PHONE_NUMBER_FORMAT);
+        }
+
         if (userRepository.existsByNickname(request.getNickname())) {
             throw new BusinessException(ErrorCode.ALREADY_REGISTERED_NICKNAME);
         }
-        Job job = jobRepository.findByJobName(request.getJobName())
-                .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
+
         // 회원 가입
         User user = modelMapper.map(request, User.class);
         user.setEncodedPassword(passwordEncoder.encode(request.getPassword()));
-        user.setJobId(job.getJobId());
-        userRepository.save(user);
+
+        // jobName이 null이 아닐 때만 조회 후 세팅
+        if (request.getJobName() != null) {
+            Job job = jobRepository.findByJobName(request.getJobName())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.JOB_NOT_FOUND));
+            user.setJobId(job.getJobId());
+        } else {
+            user.setJobId(null); // 명시적으로 null 세팅 (선택)
+        }
 
         User savedUser = userRepository.save(user);
 
+        // techstackNames가 null이 아니고 비어있지 않을 때만 처리
         if (request.getTechstackNames() != null && !request.getTechstackNames().isEmpty()) {
             for (String techstackName : request.getTechstackNames()) {
                 Techstack techstack = techstackRepository.findByTechstackName(techstackName)
@@ -73,6 +84,7 @@ public class UserService {
             }
         }
     }
+
 
     public UserIdDTO findEmailByNameAndPhone(FindIdDTO findIdDTO) {
         return userRepository.findByUserNameAndPhoneNumber(findIdDTO.getUserName(), findIdDTO.getPhoneNumber())
