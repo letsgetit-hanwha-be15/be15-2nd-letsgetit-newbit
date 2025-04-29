@@ -1,13 +1,13 @@
 <template>
   <footer class="footer">
     <div class="footer-inner">
-      <div class="footer-top">
+      <div class="footer-top text-13px-regular">
         <span>저자 지원 | 고객센터</span>
         <div class="social-icons">
         </div>
       </div>
 
-      <div class="footer-info">
+      <div class="footer-info text-13px-regular">
         (주) 뉴빗 | 대표이사: 스즈메 | 서울특별시 동작구 플레이데이터 3층 (08997) | 02-3424-1234 | 사업자 등록번호: 123-12-12345 |
         <br />
         통신판매업신고: 2025-서울동작-2938 | 이용약관 | 개인정보 처리방침 ⓒ NEWBIT Co., Ltd.
@@ -24,7 +24,6 @@
   background-color: #2e343b;
   color: #ccc;
   padding: 48px 32px;
-  font-size: 12px;
 }
 
 .footer-inner {
