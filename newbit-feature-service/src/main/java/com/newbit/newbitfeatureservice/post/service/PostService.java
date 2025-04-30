@@ -5,6 +5,7 @@ import com.newbit.newbitfeatureservice.client.user.dto.UserDTO;
 import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import com.newbit.newbitfeatureservice.post.entity.Attachment;
 import com.newbit.newbitfeatureservice.post.repository.AttachmentRepository;
+import com.newbit.newbitfeatureservice.purchase.command.domain.PointTypeConstants;
 import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
@@ -49,7 +50,7 @@ public class PostService {
             throw new BusinessException(ErrorCode.POST_CREATION_FAILED);
         }
 
-//        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
+        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
 
         ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(user.getUserId());
         String writerName = response.getData() != null ? response.getData().getNickname() : null;
