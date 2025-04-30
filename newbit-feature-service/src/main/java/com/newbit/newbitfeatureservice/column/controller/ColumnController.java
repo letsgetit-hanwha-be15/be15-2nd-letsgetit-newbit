@@ -42,11 +42,14 @@ public class ColumnController {
         return columnService.getPublicColumnList(page, size);
     }
 
-    @Operation(summary = "멘토 본인 칼럼 목록 조회", description = "멘토가 승인된 본인의 칼럼 목록을 조회합니다.")
+
     @GetMapping("/my")
-    public ApiResponse<List<GetMyColumnListResponseDto>> getMyColumnList(
-            @AuthenticationPrincipal CustomUser customUser
+    @Operation(summary = "멘토 본인 칼럼 목록 조회", description = "멘토가 승인된 본인의 칼럼 목록을 조회합니다.")
+    public ApiResponse<Page<GetMyColumnListResponseDto>> getMyColumnList(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
             ) {
-        return ApiResponse.success(columnService.getMyColumnList(customUser.getUserId()));
+        return ApiResponse.success(columnService.getMyColumnList(customUser.getUserId(), page, size));
     }
 }
