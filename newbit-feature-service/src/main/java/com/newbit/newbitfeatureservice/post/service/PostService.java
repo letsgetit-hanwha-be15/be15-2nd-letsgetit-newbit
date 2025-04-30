@@ -50,7 +50,7 @@ public class PostService {
             throw new BusinessException(ErrorCode.POST_CREATION_FAILED);
         }
 
-        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
+//        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
 
         ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(user.getUserId());
         String writerName = response.getData() != null ? response.getData().getNickname() : null;
@@ -115,8 +115,6 @@ public class PostService {
         Long userId = post.getUserId();
         ApiResponse<UserDTO> userByUserId = userFeignClient.getUserByUserId(userId);
         String writerName = userByUserId.getData() != null ? userByUserId.getData().getNickname() : null;
-
-        // 카테고리명 조회
         String categoryName = post.getPostCategory().getName();
 
         // ✅ 첨부파일(imageUrls) 조회
@@ -370,7 +368,7 @@ public class PostService {
         return postRepository.findByIdAndDeletedAtIsNull(postId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
     }
-    
+
     @Transactional(readOnly = true)
     public String getPostTitle(Long postId) {
         Post post = getPost(postId);
