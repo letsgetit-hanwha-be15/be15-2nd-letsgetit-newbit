@@ -3,6 +3,8 @@ package com.newbit.newbitfeatureservice.post.service;
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
 import com.newbit.newbitfeatureservice.client.user.dto.UserDTO;
 import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
+import com.newbit.newbitfeatureservice.post.entity.Attachment;
+import com.newbit.newbitfeatureservice.post.repository.AttachmentRepository;
 import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
@@ -16,7 +18,6 @@ import com.newbit.newbitfeatureservice.post.entity.Post;
 import com.newbit.newbitfeatureservice.post.repository.CommentRepository;
 import com.newbit.newbitfeatureservice.post.repository.PostRepository;
 import com.newbit.newbitfeatureservice.purchase.command.application.service.PointTransactionCommandService;
-import com.newbit.newbitfeatureservice.purchase.command.domain.PointTypeConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,30 +35,63 @@ public class PostService {
     private final PointTransactionCommandService pointTransactionCommandService;
     private final UserFeignClient userFeignClient;
     private final PostInternalService postInternalService;
+    private final AttachmentRepository attachmentRepository;
 
+    @Transactional
     public PostResponse createPost(PostCreateRequest request, CustomUser user) {
         if (user == null) {
-            throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);  // 사용자 체크
+            throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);
         }
 
-        // 1. 트랜잭션 내에서 게시글 저장
         Post post = postInternalService.createPostInternal(request, user);
 
-        // post가 null일 경우 예외 처리
         if (post == null || post.getId() == null) {
-            throw new BusinessException(ErrorCode.POST_CREATION_FAILED);  // 예외 코드 변경
+            throw new BusinessException(ErrorCode.POST_CREATION_FAILED);
         }
 
-        // 2. 외부 시스템 호출 (트랜잭션 이후)
-        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
+//        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
 
-        return new PostResponse(post);
+        ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(user.getUserId());
+        String writerName = response.getData() != null ? response.getData().getNickname() : null;
+
+        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
+            for (String imageUrl : request.getImageUrls()) {
+                Attachment attachment = Attachment.builder()
+                        .post(post)
+                        .imageUrl(imageUrl)
+                        .build();
+                attachmentRepository.save(attachment);
+            }
+        }
+
+        String categoryName = post.getPostCategory().getName();
+
+        List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
+                .stream()
+                .map(Attachment::getImageUrl)
+                .toList();
+
+        return new PostResponse(post, writerName, categoryName, imageUrls);
     }
+
 
     @Transactional(readOnly = true)
     public List<PostResponse> searchPosts(String keyword) {
         List<Post> posts = postRepository.searchByKeyword(keyword);
-        return posts.stream().map(PostResponse::new).toList();
+        return posts.stream()
+                .map(post -> {
+                    ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
+                    String writerName = response.getData() != null ? response.getData().getNickname() : null;
+                    String categoryName = post.getPostCategory().getName();
+
+                    List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
+                            .stream()
+                            .map(Attachment::getImageUrl)
+                            .toList();
+
+                    return new PostResponse(post, writerName, categoryName, imageUrls);
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -65,16 +99,31 @@ public class PostService {
         Post post = postRepository.findByIdAndDeletedAtIsNull(postId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
 
+        // 댓글 조회
         List<Comment> comments = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
         List<CommentResponse> commentResponses = comments.stream()
-                .map(CommentResponse::new)
+                .map(comment -> {
+                    ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(comment.getUserId());
+                    String writerName = response.getData() != null ? response.getData().getNickname() : null;
+
+                    return new CommentResponse(comment, writerName);
+                })
                 .toList();
 
+        // 작성자 닉네임 조회
         Long userId = post.getUserId();
         ApiResponse<UserDTO> userByUserId = userFeignClient.getUserByUserId(userId);
-        String writerName = userByUserId.getData().getNickname();
+        String writerName = userByUserId.getData() != null ? userByUserId.getData().getNickname() : null;
+
+        // 카테고리명 조회
         String categoryName = post.getPostCategory().getName();
 
+        // ✅ 첨부파일(imageUrls) 조회
+        List<String> imageUrls = attachmentRepository.findByPostId(postId).stream()
+                .map(attachment -> attachment.getImageUrl())
+                .toList();
+
+        // 응답 생성
         return PostDetailResponse.builder()
                 .id(post.getId())
                 .title(post.getTitle())
@@ -85,9 +134,27 @@ public class PostService {
                 .reportCount(post.getReportCount())
                 .isNotice(post.isNotice())
                 .createdAt(post.getCreatedAt())
-                .imageUrls(post.getImageUrls())
+                .imageUrls(imageUrls)
                 .comments(commentResponses)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostResponse> getPostsByCategory(Long categoryId, Pageable pageable) {
+        Page<Post> postPage = postRepository.findByPostCategoryIdAndDeletedAtIsNull(categoryId, pageable);
+
+        return postPage.map(post -> {
+            ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
+            String writerName = response.getData() != null ? response.getData().getNickname() : null;
+            String categoryName = post.getPostCategory().getName();
+
+            List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
+                    .stream()
+                    .map(Attachment::getImageUrl)
+                    .toList();
+
+            return new PostResponse(post, writerName, categoryName, imageUrls);
+        });
     }
 
 
@@ -101,7 +168,17 @@ public class PostService {
         }
 
         post.update(request.getTitle(), request.getContent());
-        return new PostResponse(post);
+
+        ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
+        String writerName = response.getData() != null ? response.getData().getNickname() : null;
+        String categoryName = post.getPostCategory().getName();
+
+        List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
+                .stream()
+                .map(attachment -> attachment.getImageUrl())
+                .toList();
+
+        return new PostResponse(post, writerName, categoryName, imageUrls);
     }
 
     @Transactional
@@ -119,14 +196,36 @@ public class PostService {
     @Transactional(readOnly = true)
     public Page<PostResponse> getPostList(Pageable pageable) {
         Page<Post> postPage = postRepository.findAll(pageable);
-        return postPage.map(PostResponse::new);
+        return postPage.map(post -> {
+            ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
+            String writerName = response.getData() != null ? response.getData().getNickname() : null;
+            String categoryName = post.getPostCategory().getName();
+
+            List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
+                    .stream()
+                    .map(attachment -> attachment.getImageUrl())
+                    .toList();
+
+            return new PostResponse(post, writerName, categoryName, imageUrls);
+        });
     }
 
     @Transactional(readOnly = true)
     public List<PostResponse> getMyPosts(Long userId) {
         List<Post> posts = postRepository.findByUserIdAndDeletedAtIsNull(userId);
         return posts.stream()
-                .map(PostResponse::new)
+                .map(post -> {
+                    ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
+                    String writerName = response.getData() != null ? response.getData().getNickname() : null;
+                    String categoryName = post.getPostCategory().getName();
+
+                    List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
+                            .stream()
+                            .map(attachment -> attachment.getImageUrl())
+                            .toList();
+
+                    return new PostResponse(post, writerName, categoryName, imageUrls);
+                })
                 .toList();
     }
 
@@ -134,7 +233,18 @@ public class PostService {
     public List<PostResponse> getPopularPosts() {
         List<Post> posts = postRepository.findPopularPosts(10);
         return posts.stream()
-                .map(PostResponse::new)
+                .map(post -> {
+                    ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
+                    String writerName = response.getData() != null ? response.getData().getNickname() : null;
+                    String categoryName = post.getPostCategory().getName();
+
+                    List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
+                            .stream()
+                            .map(attachment -> attachment.getImageUrl())
+                            .toList();
+
+                    return new PostResponse(post, writerName, categoryName, imageUrls);
+                })
                 .toList();
     }
 
@@ -158,7 +268,17 @@ public class PostService {
                 .build();
 
         postRepository.save(post);
-        return new PostResponse(post);
+
+        ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(user.getUserId());
+        String writerName = response.getData() != null ? response.getData().getNickname() : null;
+        String categoryName = post.getPostCategory().getName();
+
+        List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
+                .stream()
+                .map(attachment -> attachment.getImageUrl())
+                .toList();
+
+        return new PostResponse(post, writerName, categoryName, imageUrls);
     }
 
     @Transactional
@@ -178,7 +298,17 @@ public class PostService {
         }
 
         post.update(request.getTitle(), request.getContent());
-        return new PostResponse(post);
+
+        ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
+        String writerName = response.getData() != null ? response.getData().getNickname() : null;
+        String categoryName = post.getPostCategory().getName();
+
+        List<String> imageUrls = attachmentRepository.findByPostId(postId)
+                .stream()
+                .map(attachment -> attachment.getImageUrl())
+                .toList();
+
+        return new PostResponse(post, writerName, categoryName, imageUrls);
     }
 
     @Transactional
