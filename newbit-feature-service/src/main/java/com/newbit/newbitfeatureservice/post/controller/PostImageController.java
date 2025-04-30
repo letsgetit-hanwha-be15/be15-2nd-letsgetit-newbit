@@ -1,10 +1,14 @@
 package com.newbit.newbitfeatureservice.post.controller;
 
+import com.newbit.newbitfeatureservice.post.dto.request.PostCreateRequest;
 import com.newbit.newbitfeatureservice.post.service.PostImageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -13,10 +17,10 @@ public class PostImageController {
 
     private final PostImageService postImageService;
 
-    @PostMapping
-    public ResponseEntity<String> uploadImage(@RequestPart("image") MultipartFile file) {
-        String imageUrl = postImageService.uploadImage(file);
-        return ResponseEntity.ok(imageUrl);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<List<String>> uploadImages(@RequestPart("images") List<MultipartFile> files) {
+        List<String> imageUrls = postImageService.uploadImages(files);
+        return ResponseEntity.ok(imageUrls);
     }
 
     @DeleteMapping

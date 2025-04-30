@@ -1,5 +1,8 @@
 package com.newbit.newbitfeatureservice.post.service;
 
+import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
+import com.newbit.newbitfeatureservice.client.user.dto.UserDTO;
+import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.notification.command.application.dto.request.NotificationSendRequest;
@@ -7,7 +10,6 @@ import com.newbit.newbitfeatureservice.notification.command.application.service.
 import com.newbit.newbitfeatureservice.post.dto.request.CommentCreateRequest;
 import com.newbit.newbitfeatureservice.post.dto.response.CommentResponse;
 import com.newbit.newbitfeatureservice.post.entity.Comment;
-import com.newbit.newbitfeatureservice.post.entity.Post;
 import com.newbit.newbitfeatureservice.post.repository.CommentRepository;
 import com.newbit.newbitfeatureservice.post.repository.PostRepository;
 import com.newbit.newbitfeatureservice.purchase.command.application.service.PointTransactionCommandService;
@@ -31,6 +33,8 @@ public class CommentService {
     private final PointTransactionCommandService pointTransactionCommandService;
     private final NotificationCommandService notificationCommandService;
     private final CommentInternalService commentInternalService;
+    private final UserFeignClient userFeignClient;
+
     public CommentResponse createComment(Long postId, CommentCreateRequest request, CustomUser user) {
         // 댓글 저장 및 응답은 트랜잭션 처리
         Comment comment = commentInternalService.saveCommentInternal(postId, request, user);
@@ -50,21 +54,35 @@ public class CommentService {
                 )
         );
 
-        return new CommentResponse(comment);
+        // 작성자 닉네임 조회
+        ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(comment.getUserId());
+        String writerName = response.getData() != null ? response.getData().getNickname() : null;
+
+        return new CommentResponse(comment, writerName);
     }
 
     @Transactional(readOnly = true)
     public List<CommentResponse> getCommentsByPostId(Long postId) {
         List<Comment> comments = commentRepository.findByPostIdAndDeletedAtIsNull(postId);
+
         return comments.stream()
-                .map(CommentResponse::new)
+                .map(comment -> {
+                    ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(comment.getUserId());
+                    String writerName = response.getData() != null ? response.getData().getNickname() : null;
+                    return new CommentResponse(comment, writerName);
+                })
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public Page<CommentResponse> getCommentsByPostId(Long postId, Pageable pageable) {
         Page<Comment> commentPage = commentRepository.findByPostIdAndDeletedAtIsNull(postId, pageable);
-        return commentPage.map(CommentResponse::new);
+
+        return commentPage.map(comment -> {
+            ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(comment.getUserId());
+            String writerName = response.getData() != null ? response.getData().getNickname() : null;
+            return new CommentResponse(comment, writerName);
+        });
     }
 
     @Transactional
