@@ -21,9 +21,11 @@
 
         FROM sale_history sh
         JOIN mentor m ON sh.mentor_id = m.mentor_id
+
         LEFT JOIN `column` c ON sh.service_type = 'COLUMN' AND sh.service_id = c.column_id
+
         LEFT JOIN coffeechat cc ON sh.service_type = 'COFFEECHAT' AND sh.service_id = cc.coffeechat_id
-        LEFT JOIN user u ON sh.service_type = 'COFFEECHAT' AND cc.mentor_id = m.mentor_id AND m.user_id = u.user_id
+        LEFT JOIN user u ON cc.mentee_id = u.user_id
 
         WHERE m.user_id = #{userId}
     </select>
