@@ -85,7 +85,7 @@ public class PostService {
                 .reportCount(post.getReportCount())
                 .isNotice(post.isNotice())
                 .createdAt(post.getCreatedAt())
-                .imageUrl(post.getImageUrl())
+                .imageUrls(post.getImageUrls())
                 .comments(commentResponses)
                 .build();
     }
