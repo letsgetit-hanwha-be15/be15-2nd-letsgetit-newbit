@@ -83,15 +83,15 @@ public class ColumnService {
         return new PageImpl<>(content, pageable, resultPage.getTotalElements());
     }
 
-    public List<GetMyColumnListResponseDto> getMyColumnList(Long userId) {
+    @Transactional(readOnly = true)
+    public Page<GetMyColumnListResponseDto> getMyColumnList(Long userId, int page, int size) {
         Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Column> columnsPage = columnRepository
+                .findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId, pageable);
 
-        List<Column> columns = columnRepository
-                .findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId);
-
-        return columns.stream()
-                .map(columnMapper::toMyColumnListDto)
-                .toList();
+        return columnsPage
+                .map(columnMapper::toMyColumnListDto);
     }
 
     @Transactional(readOnly = true)
