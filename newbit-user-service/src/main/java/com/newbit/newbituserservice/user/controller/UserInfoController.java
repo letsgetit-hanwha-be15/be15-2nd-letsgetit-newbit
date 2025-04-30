@@ -60,7 +60,6 @@ public class UserInfoController {
     }
 
 
-
     @Operation(summary = "회원 탈퇴", description = "비밀번호 확인 후 회원 탈퇴")
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<String>> deleteUser(@RequestBody @Valid DeleteUserRequestDTO request) {
@@ -102,5 +101,24 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success(nickname));
     }
 
+    @Operation(summary = "멘토 커피챗 정보 수정", description = "멘토 커피쳇 정보 수정")
+    @PatchMapping("/me/coffeechat-info")
+    public ResponseEntity<ApiResponse<Void>> updateMentorCoffeechatInfo(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestBody MentorCoffeechatInfoDTO request) {
+
+        userInfoService.updateMentorCoffeechatInfo(request, customUser.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @Operation(summary = "멘토 소개 정보 수정", description = "멘토 소개 정보 수정")
+    @PatchMapping("/me/introduction-info")
+    public ResponseEntity<ApiResponse<Void>> updateMentorIntroductionInfo(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestBody MentorIntroduceInfoDTO request) {
+
+        userInfoService.updateMentorIntroductionInfo(request, customUser.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
 

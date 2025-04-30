@@ -4,15 +4,10 @@ package com.newbit.newbituserservice.user.service;
 import com.newbit.newbituserservice.security.model.CustomUser;
 import com.newbit.newbituserservice.common.exception.BusinessException;
 import com.newbit.newbituserservice.common.exception.ErrorCode;
-import com.newbit.newbituserservice.user.dto.request.DeleteUserRequestDTO;
-import com.newbit.newbituserservice.user.dto.request.UserInfoUpdateRequestDTO;
-import com.newbit.newbituserservice.user.dto.request.UserProfileInfoUpdateRequestDTO;
+import com.newbit.newbituserservice.user.dto.request.*;
 import com.newbit.newbituserservice.user.dto.response.UserDTO;
 import com.newbit.newbituserservice.user.entity.*;
-import com.newbit.newbituserservice.user.repository.JobRepository;
-import com.newbit.newbituserservice.user.repository.TechstackRepository;
-import com.newbit.newbituserservice.user.repository.UserAndTechstackRepository;
-import com.newbit.newbituserservice.user.repository.UserRepository;
+import com.newbit.newbituserservice.user.repository.*;
 import com.newbit.newbituserservice.user.support.PasswordValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.time.LocalDateTime;
 
 
 @Service
@@ -30,6 +27,7 @@ public class UserInfoService {
     private final JobRepository jobRepository;
     private final TechstackRepository techstackRepository;
     private final UserAndTechstackRepository userAndTechstackRepository;
+    private final MentorRepository mentorRepository;
     private final PasswordEncoder passwordEncoder;
 
     public UserDTO getMyInfo(Long userId) {
@@ -123,4 +121,78 @@ public class UserInfoService {
 
         userRepository.delete(user); // 실제 삭제
     }
+
+    @Transactional
+    public void updateMentorCoffeechatInfo(MentorCoffeechatInfoDTO request, Long userId) {
+        Mentor mentor = mentorRepository.findByUser_UserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MENTOR_NOT_FOUND));
+
+        boolean isUpdated = false;
+
+        if (request.getIsActive() == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+        if (!request.getIsActive().equals(mentor.getIsActive())) {
+            mentor.setIsActive(request.getIsActive());
+            isUpdated = true;
+        }
+
+        if (request.getPreferredTime() == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+        if (!request.getPreferredTime().equals(mentor.getPreferredTime())) {
+            mentor.setPreferredTime(request.getPreferredTime());
+            isUpdated = true;
+        }
+
+        Integer price = request.getPrice();
+        if (price == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+        if (price <= 0) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+        if (!price.equals(mentor.getPrice())) {
+            mentor.setPrice(price);
+            isUpdated = true;
+        }
+
+        if (isUpdated) {
+            mentor.setUpdatedAt(LocalDateTime.now());
+        }
+    }
+
+
+    @Transactional
+    public void updateMentorIntroductionInfo(MentorIntroduceInfoDTO request, Long userId) {
+        Mentor mentor = mentorRepository.findByUser_UserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MENTOR_NOT_FOUND));
+
+        boolean isUpdated = false;
+
+
+        if (request.getIntroduction() == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+        if (!request.getIntroduction().equals(mentor.getIntroduction())) {
+            mentor.setIntroduction(request.getIntroduction());
+            isUpdated = true;
+        }
+
+
+        if (request.getExternalLinkUrl() == null) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+        if (!request.getExternalLinkUrl().equals(mentor.getExternalLinkUrl())) {
+            mentor.setExternalLinkUrl(request.getExternalLinkUrl());
+            isUpdated = true;
+        }
+
+        if (isUpdated) {
+            mentor.setUpdatedAt(LocalDateTime.now());
+        }
+    }
+
+
+
 }
