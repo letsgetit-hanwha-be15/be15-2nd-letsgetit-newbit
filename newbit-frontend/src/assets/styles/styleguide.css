@@ -1,0 +1,89 @@
+:root {
+    /* === Colors === */
+    --newbitdark-active: rgba(1, 64, 114, 1);
+    --newbitdark-hover: rgba(2, 86, 152, 1);
+    --newbitdark: rgba(2, 107, 190, 1);
+    --newbitnormal-hover: rgba(3, 129, 228, 1);
+    --newbitnormal-active: rgba(2, 114, 202, 1);
+    --newbitnormal: rgba(3, 143, 253);
+    --newbitlight: rgba(230, 244, 255, 1);
+    --newbitlight-active: rgba(177, 220, 254, 1);
+    --newbitlightmode-active: rgba(235, 238, 242, 1);
+    --newbitlightmode-hover: rgba(242, 244, 247, 1);
+    --newbitlightmode: rgba(249, 250, 251, 1);
+    --newbittext: rgba(0, 0, 0, 1);
+    --newbitbackground: rgba(255, 255, 255, 1);
+    --newbitgray: rgba(160, 160, 160, 1);
+    --newbitlightgray: rgba(244, 244, 244, 1);
+    --newbitdivider: rgba(223, 223, 222, 1);
+
+    /* === Typography === */
+    /* Button */
+    --newbit-text-button-font-family: "Noto Sans KR", Helvetica;
+    --newbit-text-button-font-weight: 700;
+    --newbit-text-button-font-size: 13px;
+    --newbit-text-button-letter-spacing: 0px;
+    --newbit-text-button-line-height: normal;
+    --newbit-text-button-font-style: normal;
+
+    /* Headings */
+    --newbit-text-heading1-font-family: "Noto Sans", Helvetica;
+    --newbit-text-heading1-font-weight: 700;
+    --newbit-text-heading1-font-size: 32px;
+    --newbit-text-heading1-letter-spacing: 0px;
+    --newbit-text-heading1-line-height: normal;
+    --newbit-text-heading1-font-style: normal;
+
+    --newbit-text-heading2-font-family: "Noto Sans", Helvetica;
+    --newbit-text-heading2-font-weight: 700;
+    --newbit-text-heading2-font-size: 24px;
+    --newbit-text-heading2-letter-spacing: 0px;
+    --newbit-text-heading2-line-height: normal;
+    --newbit-text-heading2-font-style: normal;
+
+    --newbit-text-heading3-font-family: "Noto Sans", Helvetica;
+    --newbit-text-heading3-font-weight: 700;
+    --newbit-text-heading3-font-size: 19px;
+    --newbit-text-heading3-letter-spacing: 0px;
+    --newbit-text-heading3-line-height: normal;
+    --newbit-text-heading3-font-style: normal;
+
+    /* Body */
+    --newbit-text-20px-regular-font-family: "Noto Sans", Helvetica;
+    --newbit-text-20px-regular-font-weight: 400;
+    --newbit-text-20px-regular-font-size: 20px;
+    --newbit-text-20px-regular-letter-spacing: 0px;
+    --newbit-text-20px-regular-line-height: normal;
+    --newbit-text-20px-regular-font-style: normal;
+
+    --newbit-text-16px-regular-font-family: "Noto Sans", Helvetica;
+    --newbit-text-16px-regular-font-weight: 400;
+    --newbit-text-16px-regular-font-size: 16px;
+    --newbit-text-16px-regular-letter-spacing: 0px;
+    --newbit-text-16px-regular-line-height: normal;
+    --newbit-text-16px-regular-font-style: normal;
+
+    --newbit-text-13px-regular-font-family: "Noto Sans", Helvetica;
+    --newbit-text-13px-regular-font-weight: 400;
+    --newbit-text-13px-regular-font-size: 13px;
+    --newbit-text-13px-regular-letter-spacing: 0px;
+    --newbit-text-13px-regular-line-height: normal;
+    --newbit-text-13px-regular-font-style: normal;
+
+    --newbit-text-13px-bold-font-family: "Noto Sans", Helvetica;
+    --newbit-text-13px-bold-font-weight: 700;
+    --newbit-text-13px-bold-font-size: 13px;
+    --newbit-text-13px-bold-letter-spacing: 0px;
+    --newbit-text-13px-bold-line-height: normal;
+    --newbit-text-13px-bold-font-style: normal;
+
+    --newbit-text-10px-regular-font-family: "Noto Sans", Helvetica;
+    --newbit-text-10px-regular-font-weight: 400;
+    --newbit-text-10px-regular-font-size: 10px;
+    --newbit-text-10px-regular-letter-spacing: 0px;
+    --newbit-text-10px-regular-line-height: normal;
+    --newbit-text-10px-regular-font-style: normal;
+
+    /* Shadow */
+    --drop-shadow: 12px 12px 24.4px -12px rgba(0, 0, 0, 0.25);
+}

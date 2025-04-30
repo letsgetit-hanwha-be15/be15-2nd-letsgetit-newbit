@@ -5,6 +5,7 @@ import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "post")
@@ -25,8 +26,10 @@ public class Post {
     @Lob
     private String content;
 
+    @ElementCollection
+    @CollectionTable(name = "post_images")
     @Column(name = "image_url")
-    private String imageUrl;
+    private List<String> imageUrls;
 
     @Builder.Default
     @Column(name = "like_count", nullable = false)

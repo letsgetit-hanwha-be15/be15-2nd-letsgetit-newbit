@@ -24,7 +24,7 @@ public class SeriesController {
     private final SeriesService seriesService;
 
     @PostMapping
-    @Operation(summary = "시리즈 생성", description = "기존 칼럼을 묶어 시리즈를 생성합니다.")
+    @Operation(summary = "시리즈 생성", description = "빈 시리즈 또는 칼럼을 선택해 시리즈를 생성합니다.")
     public ApiResponse<CreateSeriesResponseDto> createSeries(
             @RequestBody @Valid CreateSeriesRequestDto dto,
             @AuthenticationPrincipal CustomUser customUser
@@ -74,6 +74,12 @@ public class SeriesController {
             @PathVariable Long seriesId
     ) {
         return ApiResponse.success(seriesService.getSeriesColumns(seriesId));
+    }
+
+    @GetMapping
+    @Operation(summary = "공개된 시리즈 목록 조회", description = "사용자가 볼 수 있는 공개 시리즈 목록을 조회합니다.")
+    public ApiResponse<List<GetMySeriesListResponseDto>> getPublicSeriesList() {
+        return ApiResponse.success(seriesService.getPublicSeriesList());
     }
 
 }

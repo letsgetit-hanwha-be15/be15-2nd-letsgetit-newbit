@@ -23,6 +23,8 @@ public enum ErrorCode {
     INVALID_CURRENT_PASSWORD("10010", "비밀번호가 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
     JOB_NOT_FOUND("10020","존재하지 않는 직종입니다.", HttpStatus.NOT_FOUND),
     TECHSTACK_NOT_FOUND("10021","존재하지 않는 기술스택입니다.",HttpStatus.NOT_FOUND),
+    INVALID_PHONE_NUMBER_FORMAT("10022", "숫자만 입력해주세요.", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT("10024","입력 값이 잘못되었습니다.", HttpStatus.BAD_REQUEST),
     //인증
     JWT_INVALID("10011", "유효하지 않은 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
     JWT_EXPIRED("10012", "만료된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),

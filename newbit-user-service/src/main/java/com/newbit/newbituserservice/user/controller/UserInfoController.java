@@ -2,10 +2,7 @@ package com.newbit.newbituserservice.user.controller;
 
 import com.newbit.newbituserservice.common.dto.ApiResponse;
 import com.newbit.newbituserservice.security.model.CustomUser;
-import com.newbit.newbituserservice.user.dto.request.ChangePasswordRequestDTO;
-import com.newbit.newbituserservice.user.dto.request.DeleteUserRequestDTO;
-import com.newbit.newbituserservice.user.dto.request.MentorListRequestDTO;
-import com.newbit.newbituserservice.user.dto.request.UserInfoUpdateRequestDTO;
+import com.newbit.newbituserservice.user.dto.request.*;
 import com.newbit.newbituserservice.user.dto.response.MentorListResponseDTO;
 import com.newbit.newbituserservice.user.dto.response.MentorProfileDTO;
 import com.newbit.newbituserservice.user.dto.response.OhterUserProfileDTO;
@@ -19,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,20 +38,27 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success(myInfo));
     }
 
-    @Operation(summary = "회원 정보 수정", description = "내 프로필 정보 수정")
+    @Operation(summary = "회원 프로필 정보 수정", description = "내 프로필 정보 수정")
     @PutMapping("/me")
-    public ResponseEntity<ApiResponse<UserDTO>> updateMyInfo(@RequestBody @Valid UserInfoUpdateRequestDTO request
-    , @AuthenticationPrincipal CustomUser customUser) {
-        UserDTO updatedInfo = userInfoService.updateMyInfo(request, customUser.getUserId());
-        return ResponseEntity.ok(ApiResponse.success(updatedInfo));
-    }
+    public ResponseEntity<ApiResponse<Void>> updateMyProfileInfo(
+            @RequestBody @Valid UserProfileInfoUpdateRequestDTO request,
+            @AuthenticationPrincipal CustomUser customUser) {
 
-    @Operation(summary = "비밀번호 변경", description = "비밀번호 수정")
-    @PutMapping("/me/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody ChangePasswordRequestDTO request) {
-        userInfoService.changePassword(request.getCurrentPassword(), request.getNewPassword());
+        userInfoService.updateMyProfileInfo(request, customUser.getUserId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+
+    @Operation(summary = "회원 개인정보 수정", description = "개인 정보 수정")
+    @PutMapping("/me/info")
+    public ResponseEntity<ApiResponse<Void>> updateMyInfo(
+            @RequestBody @Valid UserInfoUpdateRequestDTO request,
+            @AuthenticationPrincipal CustomUser customUser) {
+
+        userInfoService.updateMyInfo(request, customUser.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 
     @Operation(summary = "회원 탈퇴", description = "비밀번호 확인 후 회원 탈퇴")
     @DeleteMapping("/me")
@@ -96,5 +101,24 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success(nickname));
     }
 
+    @Operation(summary = "멘토 커피챗 정보 수정", description = "멘토 커피쳇 정보 수정")
+    @PatchMapping("/me/coffeechat-info")
+    public ResponseEntity<ApiResponse<Void>> updateMentorCoffeechatInfo(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestBody MentorCoffeechatInfoDTO request) {
+
+        userInfoService.updateMentorCoffeechatInfo(request, customUser.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @Operation(summary = "멘토 소개 정보 수정", description = "멘토 소개 정보 수정")
+    @PatchMapping("/me/introduction-info")
+    public ResponseEntity<ApiResponse<Void>> updateMentorIntroductionInfo(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestBody MentorIntroduceInfoDTO request) {
+
+        userInfoService.updateMentorIntroductionInfo(request, customUser.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
 

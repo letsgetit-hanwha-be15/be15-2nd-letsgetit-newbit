@@ -16,4 +16,9 @@ public class NotificationQueryService {
     public List<NotificationResponse> getNotifications(Long userId) {
         return notificationQueryMapper.findAllByUserId(userId);
     }
+
+
+    public List<NotificationResponse> getUnreadNotifications(Long userId) {
+        return notificationQueryMapper.findUnreadByUserId(userId);
+    }
 }

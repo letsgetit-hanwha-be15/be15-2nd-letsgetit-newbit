@@ -41,6 +41,8 @@ public class GatewayJwtTokenProvider {
             throw new BusinessException(ErrorCode.JWT_UNSUPPORTED);
         } catch (IllegalArgumentException e) {
             throw new BusinessException(ErrorCode.JWT_CLAIMS_EMPTY);
+        }catch (JwtException e) {
+            throw new BusinessException(ErrorCode.JWT_INVALID);
         }
     }
 
