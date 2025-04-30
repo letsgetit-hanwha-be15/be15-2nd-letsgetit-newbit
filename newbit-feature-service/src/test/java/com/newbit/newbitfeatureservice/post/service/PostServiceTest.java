@@ -16,6 +16,7 @@ import com.newbit.newbitfeatureservice.post.repository.AttachmentRepository;
 import com.newbit.newbitfeatureservice.post.repository.CommentRepository;
 import com.newbit.newbitfeatureservice.post.repository.PostRepository;
 import com.newbit.newbitfeatureservice.purchase.command.application.service.PointTransactionCommandService;
+import com.newbit.newbitfeatureservice.purchase.command.domain.PointTypeConstants;
 import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,13 +125,15 @@ class PostServiceTest {
         assertThat(response.getTitle()).isEqualTo("이미지 포함 글");
         assertThat(response.getContent()).isEqualTo("이미지가 있는 게시글입니다.");
         assertThat(response.getPostCategoryId()).isEqualTo(1L);
+        assertThat(response.getCategoryName()).isEqualTo("자유게시판"); // ✅ category name 추가 확인
         assertThat(response.isNotice()).isFalse();
         assertThat(response.getWriterName()).isEqualTo("작성자닉네임");
         assertThat(response.getImageUrls()).containsExactly("https://example-bucket.s3.ap-northeast-2.amazonaws.com/posts/test-image.jpg");
 
-        verify(attachmentRepository, times(1)).save(any(Attachment.class));
-    }
+        verify(pointTransactionCommandService, times(1)).givePointByType(user.getUserId(), PointTypeConstants.POSTS, 123L);
 
+        verify(attachmentRepository, times(1)).findByPostId(123L);
+    }
 
 
     @Test
