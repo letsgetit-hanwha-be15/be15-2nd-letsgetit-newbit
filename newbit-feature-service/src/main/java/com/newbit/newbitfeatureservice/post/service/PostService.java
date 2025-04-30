@@ -65,7 +65,7 @@ public class PostService {
             }
         }
 
-        String categoryName = post.getPostCategory() != null ? post.getPostCategory().getName() : "카테고리 없음";
+        String categoryName = post.getPostCategory().getName();
 
         List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
                 .stream()
@@ -115,7 +115,7 @@ public class PostService {
         Long userId = post.getUserId();
         ApiResponse<UserDTO> userByUserId = userFeignClient.getUserByUserId(userId);
         String writerName = userByUserId.getData() != null ? userByUserId.getData().getNickname() : null;
-        String categoryName = post.getPostCategory() != null ? post.getPostCategory().getName() : "카테고리 없음";
+        String categoryName = post.getPostCategory().getName();
 
         // ✅ 첨부파일(imageUrls) 조회
         List<String> imageUrls = attachmentRepository.findByPostId(postId).stream()
@@ -145,7 +145,7 @@ public class PostService {
         return postPage.map(post -> {
             ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
             String writerName = response.getData() != null ? response.getData().getNickname() : null;
-            String categoryName = post.getPostCategory() != null ? post.getPostCategory().getName() : "카테고리 없음";
+            String categoryName = post.getPostCategory().getName();
 
             List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
                     .stream()
@@ -170,7 +170,7 @@ public class PostService {
 
         ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
         String writerName = response.getData() != null ? response.getData().getNickname() : null;
-        String categoryName = post.getPostCategory() != null ? post.getPostCategory().getName() : "카테고리 없음";
+        String categoryName = post.getPostCategory().getName();
 
         List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
                 .stream()
@@ -198,7 +198,7 @@ public class PostService {
         return postPage.map(post -> {
             ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
             String writerName = response.getData() != null ? response.getData().getNickname() : null;
-            String categoryName = post.getPostCategory() != null ? post.getPostCategory().getName() : "카테고리 없음";
+            String categoryName = post.getPostCategory().getName();
 
             List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
                     .stream()
@@ -216,7 +216,7 @@ public class PostService {
                 .map(post -> {
                     ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
                     String writerName = response.getData() != null ? response.getData().getNickname() : null;
-                    String categoryName = post.getPostCategory() != null ? post.getPostCategory().getName() : "카테고리 없음";
+                    String categoryName = post.getPostCategory().getName();
 
                     List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
                             .stream()
@@ -235,7 +235,7 @@ public class PostService {
                 .map(post -> {
                     ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
                     String writerName = response.getData() != null ? response.getData().getNickname() : null;
-                    String categoryName = post.getPostCategory() != null ? post.getPostCategory().getName() : "카테고리 없음";
+                    String categoryName = post.getPostCategory().getName();
 
                     List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
                             .stream()
@@ -270,7 +270,7 @@ public class PostService {
 
         ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(user.getUserId());
         String writerName = response.getData() != null ? response.getData().getNickname() : null;
-        String categoryName = post.getPostCategory() != null ? post.getPostCategory().getName() : "카테고리 없음";
+        String categoryName = post.getPostCategory().getName();
 
         List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
                 .stream()
@@ -300,7 +300,7 @@ public class PostService {
 
         ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
         String writerName = response.getData() != null ? response.getData().getNickname() : null;
-        String categoryName = post.getPostCategory() != null ? post.getPostCategory().getName() : "카테고리 없음";
+        String categoryName = post.getPostCategory().getName();
 
         List<String> imageUrls = attachmentRepository.findByPostId(postId)
                 .stream()
