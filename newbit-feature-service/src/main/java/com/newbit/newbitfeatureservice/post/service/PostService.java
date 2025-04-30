@@ -38,7 +38,6 @@ public class PostService {
     private final PostInternalService postInternalService;
     private final AttachmentRepository attachmentRepository;
 
-    @Transactional
     public PostResponse createPost(PostCreateRequest request, CustomUser user) {
         if (user == null) {
             throw new BusinessException(ErrorCode.ONLY_USER_CAN_CREATE_POST);
@@ -50,20 +49,11 @@ public class PostService {
             throw new BusinessException(ErrorCode.POST_CREATION_FAILED);
         }
 
-//        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
+        pointTransactionCommandService.givePointByType(user.getUserId(), PointTypeConstants.POSTS, post.getId());
 
         ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(user.getUserId());
         String writerName = response.getData() != null ? response.getData().getNickname() : null;
 
-        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
-            for (String imageUrl : request.getImageUrls()) {
-                Attachment attachment = Attachment.builder()
-                        .post(post)
-                        .imageUrl(imageUrl)
-                        .build();
-                attachmentRepository.save(attachment);
-            }
-        }
 
         String categoryName = post.getPostCategory().getName();
 
