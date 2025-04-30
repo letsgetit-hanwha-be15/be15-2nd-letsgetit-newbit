@@ -6,12 +6,13 @@ import { productRoutes } from "@/features/product/router.js";
 import { reportRoutes } from "@/features/report/router.js";
 import { perkRoutes } from "@/features/perk/router.js";
 import DefaultLayout from "@/components/layout/DefaultLayout.vue";
+import {mypageRoutes} from "@/features/mypage/router.js";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: "/",
+      path: '/',
       component: DefaultLayout,
       children: [
         ...mainRoutes,
@@ -22,6 +23,7 @@ const router = createRouter({
         ...perkRoutes,
       ],
     },
+    ...mypageRoutes
   ],
 });
 
