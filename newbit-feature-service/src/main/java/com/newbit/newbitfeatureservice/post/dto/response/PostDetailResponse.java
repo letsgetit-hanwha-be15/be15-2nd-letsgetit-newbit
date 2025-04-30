@@ -23,7 +23,6 @@ public class PostDetailResponse {
     private String categoryName;
     private List<String> imageUrls;
     private List<CommentResponse> comments;
-    private List<String> imageUrls;
 
     public PostDetailResponse(Post post, List<CommentResponse> comments, String writerName, String categoryName) {
         this.id = post.getId();
