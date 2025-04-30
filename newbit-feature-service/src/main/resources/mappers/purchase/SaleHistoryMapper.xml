@@ -3,7 +3,7 @@
 <mapper namespace="com.newbit.newbitfeatureservice.purchase.query.repository.SaleHistoryMapper">
     <select id="findSaleHistories" resultType="com.newbit.newbitfeatureservice.purchase.query.dto.response.SaleHistoryDto">
         SELECT
-        sh.sale_history_id AS settlementHistoryId,
+        sh.sale_history_id AS saleHistoryId,
         sh.is_settled AS isSettled,
         sh.settled_at AS settledAt,
         sh.sale_amount AS saleAmount,
@@ -11,13 +11,23 @@
         sh.service_id AS serviceId,
         sh.created_at AS createdAt,
         sh.updated_at AS updatedAt,
-        sh.mentor_id AS mentorId
-        FROM
-        sale_history sh
-        JOIN
-        mentor m ON sh.mentor_id = m.mentor_id
-        WHERE
-        m.user_id = #{userId}
+        sh.mentor_id AS mentorId,
+
+        CASE
+        WHEN sh.service_type = 'COLUMN' THEN c.title
+        WHEN sh.service_type = 'COFFEECHAT' THEN u.nickname
+        ELSE NULL
+        END AS serviceTitleOrUserNickname
+
+        FROM sale_history sh
+        JOIN mentor m ON sh.mentor_id = m.mentor_id
+
+        LEFT JOIN `column` c ON sh.service_type = 'COLUMN' AND sh.service_id = c.column_id
+
+        LEFT JOIN coffeechat cc ON sh.service_type = 'COFFEECHAT' AND sh.service_id = cc.coffeechat_id
+        LEFT JOIN user u ON cc.mentee_id = u.user_id
+
+        WHERE m.user_id = #{userId}
     </select>
 
     <select id="countSaleHistories" resultType="long">
