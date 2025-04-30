@@ -40,4 +40,11 @@ public class SaleHistoryDto {
 
     @Schema(description = "멘토 ID", example = "2")
     private Long mentorId;
+
+    @Schema(description = "컨텐츠 관련 내용")
+    private String serviceTitleOrUserNickname;
+
+
+
+
 }

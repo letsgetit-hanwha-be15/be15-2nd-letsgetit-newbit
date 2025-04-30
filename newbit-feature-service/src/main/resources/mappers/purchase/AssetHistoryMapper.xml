@@ -3,22 +3,42 @@
 <mapper namespace="com.newbit.newbitfeatureservice.purchase.query.repository.AssetHistoryMapper">
     <select id="findDiamondHistories" resultType="com.newbit.newbitfeatureservice.purchase.query.dto.response.AssetHistoryDto">
         SELECT
-        diamond_history_id AS historyId,
-        service_type AS serviceType,
-        service_id AS serviceId,
-        increase_amount,
-        decrease_amount,
-        balance,
-        created_at
-        FROM diamond_history
-        WHERE user_id = #{userId}
+        dh.diamond_history_id AS historyId,
+        dh.service_type AS serviceType,
+        dh.service_id AS serviceId,
+        dh.increase_amount,
+        dh.decrease_amount,
+        dh.balance,
+        dh.created_at,
+
+        CASE
+        WHEN dh.service_type = 'COLUMN' THEN c.title
+        WHEN dh.service_type = 'COFFEECHAT' THEN u.nickname
+        ELSE NULL
+        END AS serviceTitleOrUserNickname
+
+        FROM diamond_history dh
+
+        LEFT JOIN `column` c
+        ON dh.service_type = 'COLUMN' AND dh.service_id = c.column_id
+
+        LEFT JOIN coffeechat cc
+        ON dh.service_type = 'COFFEECHAT' AND dh.service_id = cc.coffeechat_id
+        LEFT JOIN mentor m
+        ON cc.mentor_id = m.mentor_id
+        LEFT JOIN user u
+        ON m.user_id = u.user_id
+
+        WHERE dh.user_id = #{userId}
+
         <if test="type != null and type.name() == 'INCREASE'">
-            AND increase_amount IS NOT NULL
+            AND dh.increase_amount IS NOT NULL
         </if>
         <if test="type != null and type.name() == 'DECREASE'">
-            AND decrease_amount IS NOT NULL
+            AND dh.decrease_amount IS NOT NULL
         </if>
-        ORDER BY created_at DESC
+
+        ORDER BY dh.created_at DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
