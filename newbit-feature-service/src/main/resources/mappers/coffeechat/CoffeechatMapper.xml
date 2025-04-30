@@ -17,21 +17,26 @@
         JOIN cancel_reason r ON (c.cancel_reason_id = r.cancel_reason_id)
         WHERE coffeechat_id = #{ coffeechatId }
     </select>
-    <select id="selectCoffeechats" resultType="CoffeechatDto">
+    <select id="selectCoffeechats" resultType="CoffeechatListDto">
         SELECT
         c.coffeechat_id,
         c.progress_status,
         c.request_message,
-        c.mentor_id,
-        c.mentee_id,
-        c.confirmed_schedule
+        u.profile_image_url,
+        u.nickname
         FROM coffeechat c
+        <choose>
+            <when test="authority == 'USER'">
+                JOIN mentor m ON (c.mentor_id = m.mentor_id)
+                JOIN user u ON (u.user_id = m.user_id)
+            </when>
+            <when test="authority == 'MENTOR'">
+                JOIN user u ON (u.user_id = c.mentee_id)
+            </when>
+        </choose>
         <where>
-            <if test="mentorId != null">
-                AND c.mentor_id = #{ mentorId }
-            </if>
-            <if test="menteeId != null">
-                AND c.mentee_id = #{ menteeId }
+            <if test="userId != null">
+                AND u.user_id = #{ userId }
             </if>
             <if test="isProgressing != null">
                 AND c.progress_status NOT IN ('COMPLETE', 'CANCEL')
@@ -47,11 +52,8 @@
         SELECT COUNT(*)
         FROM coffeechat c
         <where>
-            <if test="mentorId != null">
-                AND c.mentor_id = #{ mentorId }
-            </if>
-            <if test="menteeId != null">
-                AND c.mentee_id = #{ menteeId }
+            <if test="userId != null">
+                AND u.user_id = #{ userId }
             </if>
             <if test="isProgressing != null">
                 AND c.progress_status NOT IN ('COMPLETE', 'CANCEL')
@@ -76,5 +78,18 @@
         c.coffeechat_id
         FROM coffeechat c
         WHERE DATE(ended_at) = #{ targetDate }
+    </select>
+    <select id="countProgressCoffeechats" resultType="long">
+        SELECT COUNT(*)
+        FROM coffeechat c
+        <where>
+            c.progress_status NOT IN ('COMPLETE', 'CANCEL')
+            <if test="mentorId != null">
+                AND c.mentor_id = #{ mentorId }
+            </if>
+            <if test="menteeId != null">
+                AND c.mentee_id = #{ menteeId }
+            </if>
+        </where>
     </select>
 </mapper>
