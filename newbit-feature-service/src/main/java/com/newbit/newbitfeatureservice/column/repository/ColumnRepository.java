@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public interface ColumnRepository extends JpaRepository<Column, Long> {
 
-    // 공개 칼럼 리스트 조회
+    // 공개 칼럼 리스트 조회 (페이징)
     @Query("""
         SELECT new com.newbit.newbitfeatureservice.column.dto.response.GetColumnListResponseDto(
             c.columnId, c.title, c.thumbnailUrl, c.price, c.likeCount, c.mentorId
@@ -34,7 +34,11 @@ public interface ColumnRepository extends JpaRepository<Column, Long> {
     """)
     Optional<GetColumnDetailResponseDto> findPublicColumnDetailById(@Param("columnId") Long columnId);
 
-    List<Column> findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(Long mentorId);
+    // 멘토가 작성한 공개 칼럼 목록 조회 (페이징 적용)
+    Page<Column> findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(Long mentorId, Pageable pageable);
 
     List<Column> findAllBySeries_SeriesId(Long seriesId);
+
+    // 시리즈에 속한 칼럼 목록 조회 (페이징 적용)
+    Page<Column> findAllBySeries_SeriesId(Long seriesId, Pageable pageable);
 }

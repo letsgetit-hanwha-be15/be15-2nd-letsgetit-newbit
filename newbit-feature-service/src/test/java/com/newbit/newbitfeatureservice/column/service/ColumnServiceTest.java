@@ -29,6 +29,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -223,6 +225,9 @@ class ColumnServiceTest {
         // given
         Long userId = 1L;
         Long mentorId = 10L;
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size);
 
         Column column1 = Column.builder()
                 .columnId(1L)
@@ -245,9 +250,10 @@ class ColumnServiceTest {
                 .build();
 
         List<Column> columns = List.of(column1, column2);
+        Page<Column> columnPage = new PageImpl<>(columns, pageable, columns.size());
 
         when(mentorFeignClient.getMentorIdByUserId(userId)).thenReturn(ApiResponse.success(mentorId));
-        when(columnRepository.findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId)).thenReturn(columns);
+        when(columnRepository.findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(eq(mentorId), any(Pageable.class))).thenReturn(columnPage);
         when(columnMapper.toMyColumnListDto(column1)).thenReturn(
                 GetMyColumnListResponseDto.builder()
                         .columnId(1L)
@@ -268,16 +274,15 @@ class ColumnServiceTest {
         );
 
         // when
-        List<GetMyColumnListResponseDto> result = columnService.getMyColumnList(userId);
+        Page<GetMyColumnListResponseDto> result = columnService.getMyColumnList(userId, page, size);
 
         // then
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getColumnId()).isEqualTo(1L);
-        assertThat(result.get(0).getTitle()).isEqualTo("멘토 칼럼 1");
-        assertThat(result.get(1).getTitle()).isEqualTo("멘토 칼럼 2");
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("멘토 칼럼 1");
+        assertThat(result.getContent().get(1).getTitle()).isEqualTo("멘토 칼럼 2");
 
         verify(mentorFeignClient).getMentorIdByUserId(userId);
-        verify(columnRepository).findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId);
+        verify(columnRepository).findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(eq(mentorId), any(Pageable.class));
         verify(columnMapper).toMyColumnListDto(column1);
         verify(columnMapper).toMyColumnListDto(column2);
     }
