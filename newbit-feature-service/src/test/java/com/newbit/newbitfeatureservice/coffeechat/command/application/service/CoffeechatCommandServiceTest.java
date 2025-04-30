@@ -79,6 +79,7 @@ class CoffeechatCommandServiceTest {
                 2L,
                 List.of(startTime)
         );
+        request.setMenteeId(8L);
 
         // 저장될 엔티티 목업
         Coffeechat saved = Coffeechat.of(
@@ -90,19 +91,8 @@ class CoffeechatCommandServiceTest {
         ReflectionTestUtils.setField(saved, "coffeechatId", 999L);
 
         // 1) 진행중인 커피챗 확인 → 빈 리스트 + 페이징
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class)))
-                .thenReturn(
-                        CoffeechatListResponse.builder()
-                                .coffeechats(new LinkedList<>())
-                                .pagination(
-                                        Pagination.builder()
-                                                .currentPage(1)
-                                                .totalPage(1)
-                                                .totalItems(0)
-                                                .build()
-                                )
-                                .build()
-                );
+        when(coffeechatQueryService.hasProgressCoffeechats(userId, request.getMentorId()))
+                .thenReturn(false);
         // 2) 커피챗 저장
         when(coffeechatRepository.save(any(Coffeechat.class)))
                 .thenReturn(saved);
@@ -145,14 +135,12 @@ class CoffeechatCommandServiceTest {
                 2L,
                 List.of(pastStartDateTime));
 
-        List<CoffeechatDto> coffeechatDtos = new ArrayList<>();
-        coffeechatDtos.add(new CoffeechatDto());
+        ReflectionTestUtils.setField(request,
+                "menteeId",
+                8L);
 
-        CoffeechatListResponse response = CoffeechatListResponse.builder()
-                .coffeechats(coffeechatDtos).build(); // coffeechatQueryservice에서 같은 멘토와 멘티가 현재 진행중인 커피챗이 있을 때, 한 개 이상의 list 반환
-
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class)))
-                .thenReturn(response);
+        when(coffeechatQueryService.hasProgressCoffeechats(8L, 2L))
+                .thenReturn(true);
 
         // when & then
         BusinessException exception = assertThrows(
@@ -180,6 +168,7 @@ class CoffeechatCommandServiceTest {
                 2,
                 2L,
                 List.of(pastStartDateTime));
+        request.setMenteeId(userId);
 
         Coffeechat mockCoffeechat = Coffeechat.of(userId,
                 request.getMentorId(),
@@ -189,11 +178,6 @@ class CoffeechatCommandServiceTest {
         // private 필드인 coffeechatId에 직접 주입
         ReflectionTestUtils.setField(mockCoffeechat, "coffeechatId", 999L);
         when(coffeechatRepository.save(any(Coffeechat.class))).thenReturn(mockCoffeechat);
-
-        // coffeechatQueryService.getCoffeechats 메서드 요청 시, 빈 리스트 반환
-        CoffeechatListResponse coffeechatListResponse = CoffeechatListResponse.builder()
-                .coffeechats(new LinkedList<>()).build();
-        when(coffeechatQueryService.getCoffeechats(any(CoffeechatSearchServiceRequest.class))).thenReturn(coffeechatListResponse);
 
         // when & then
         assertThrows(
@@ -321,6 +305,10 @@ class CoffeechatCommandServiceTest {
         when(coffeechatRepository.findById(coffeechatId)).thenReturn(Optional.of(mockCoffeechat));
         when(requestTimeRepository.findAllByCoffeechatId(coffeechatId)).thenReturn(List.of(requestTime));
         doNothing().when(requestTimeRepository).deleteById(requestTimeId);
+        when(mentorClient.getUserIdByMentorId(any(Long.class)))
+                .thenReturn(ApiResponse.success(2L));
+        when(userClient.getUserByUserId(any(Long.class)))
+                .thenReturn(ApiResponse.success(UserDTO.builder().build()));
 
         // when & then: 예외가 발생하지 않으면 테스트 통과
         assertDoesNotThrow(() -> coffeechatCommandService.rejectCoffeechatTime(coffeechatId));
