@@ -3,6 +3,9 @@ package com.newbit.newbitfeatureservice.column.service;
 import java.util.List;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -168,36 +171,37 @@ public class SeriesService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetMySeriesListResponseDto> getMySeriesList(Long userId) {
+    public Page<GetMySeriesListResponseDto> getMySeriesList(Long userId, int page, int size) {
         Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
-        List<Series> seriesList = seriesRepository.findAllByMentorIdOrderByCreatedAtDesc(mentorId);
-        return seriesList.stream()
-                .map(seriesMapper::toMySeriesListDto)
-                .toList();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Series> seriesPage = seriesRepository.findAllByMentorIdOrderByCreatedAtDesc(mentorId, pageable);
+        return seriesPage
+                .map(seriesMapper::toMySeriesListDto);
     }
 
     @Transactional(readOnly = true)
-    public List<GetSeriesColumnsResponseDto> getSeriesColumns(Long seriesId) {
+    public Page<GetSeriesColumnsResponseDto> getSeriesColumns(Long seriesId, int page, int size) {
         /* 시리즈 존재 여부 확인 */
         Series series = seriesRepository.findById(seriesId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
 
-        /* 시리즈에 속한 칼럼 조회 */
-        List<Column> columns = columnRepository.findAllBySeries_SeriesId(seriesId);
+        Pageable pageable = PageRequest.of(page, size);
+
+        /* 시리즈에 속한 칼럼 페이징 조회 */
+        Page<Column> columnsPage = columnRepository.findAllBySeries_SeriesId(seriesId, pageable);
 
         /* DTO로 변환 후 반환 */
-        return columns.stream()
-                .map(seriesMapper::toSeriesColumnDto)
-                .toList();
+        return columnsPage
+                .map(seriesMapper::toSeriesColumnDto);
     }
 
-    public List<GetMySeriesListResponseDto> getPublicSeriesList() {
-        List<Series> allSeries = seriesRepository.findAll();
+    public Page<GetMySeriesListResponseDto> getPublicSeriesList(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
 
-        return allSeries.stream()
-                .filter(series -> !series.getColumns().isEmpty())   // 칼럼 1개 이상 있는 시리즈만
-                .map(seriesMapper::toMySeriesListDto)
-                .toList();
+        Page<Series> allSeries = seriesRepository.findAllByColumnsIsNotEmpty(pageable);
+
+        return allSeries.map(seriesMapper::toMySeriesListDto);
     }
 }
 

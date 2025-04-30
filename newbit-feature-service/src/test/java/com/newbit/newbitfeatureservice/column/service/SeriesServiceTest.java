@@ -19,6 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -205,6 +208,8 @@ class SeriesServiceTest {
         // given
         Long userId = 1L;
         Long mentorId = 10L;
+        int page = 0;
+        int size = 10;
 
         Series series1 = Series.builder()
                 .seriesId(1L)
@@ -221,9 +226,10 @@ class SeriesServiceTest {
                 .build();
 
         List<Series> seriesList = List.of(series1, series2);
+        Page<Series> seriesPage = new PageImpl<>(seriesList);
 
         when(mentorFeignClient.getMentorIdByUserId(userId)).thenReturn(ApiResponse.success(mentorId));
-        when(seriesRepository.findAllByMentorIdOrderByCreatedAtDesc(mentorId)).thenReturn(seriesList);
+        when(seriesRepository.findAllByMentorIdOrderByCreatedAtDesc(eq(mentorId), any(Pageable.class))).thenReturn(seriesPage);
         when(seriesMapper.toMySeriesListDto(series1)).thenReturn(
                 GetMySeriesListResponseDto.builder()
                         .seriesId(1L)
@@ -242,17 +248,15 @@ class SeriesServiceTest {
         );
 
         // when
-        List<GetMySeriesListResponseDto> result = seriesService.getMySeriesList(userId);
+        Page<GetMySeriesListResponseDto> result = seriesService.getMySeriesList(userId, page, size);
 
         // then
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getSeriesId()).isEqualTo(1L);
-        assertThat(result.get(0).getTitle()).isEqualTo("시리즈 A");
-        assertThat(result.get(1).getSeriesId()).isEqualTo(2L);
-        assertThat(result.get(1).getTitle()).isEqualTo("시리즈 B");
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getSeriesId()).isEqualTo(1L);
+        assertThat(result.getContent().get(1).getTitle()).isEqualTo("시리즈 B");
 
         verify(mentorFeignClient).getMentorIdByUserId(userId);
-        verify(seriesRepository).findAllByMentorIdOrderByCreatedAtDesc(mentorId);
+        verify(seriesRepository).findAllByMentorIdOrderByCreatedAtDesc(eq(mentorId), any(Pageable.class));
         verify(seriesMapper).toMySeriesListDto(series1);
         verify(seriesMapper).toMySeriesListDto(series2);
     }
@@ -262,6 +266,8 @@ class SeriesServiceTest {
     void getColumnsInSeries_success() {
         // given
         Long seriesId = 1L;
+        int page = 0;
+        int size = 10;
 
         Series series = Series.builder()
                 .seriesId(seriesId)
@@ -289,9 +295,10 @@ class SeriesServiceTest {
                 .build();
 
         List<Column> columns = List.of(column1, column2);
+        Page<Column> columnPage = new PageImpl<>(columns);
 
         when(seriesRepository.findById(seriesId)).thenReturn(Optional.of(series));
-        when(columnRepository.findAllBySeries_SeriesId(seriesId)).thenReturn(columns);
+        when(columnRepository.findAllBySeries_SeriesId(eq(seriesId), any(Pageable.class))).thenReturn(columnPage);
 
         when(seriesMapper.toSeriesColumnDto(column1)).thenReturn(
                 GetSeriesColumnsResponseDto.builder()
@@ -318,14 +325,14 @@ class SeriesServiceTest {
         );
 
         // when
-        List<GetSeriesColumnsResponseDto> result = seriesService.getSeriesColumns(seriesId);
+        Page<GetSeriesColumnsResponseDto> result = seriesService.getSeriesColumns(seriesId, page, size);
 
         // then
-        assertThat(result).hasSize(2);
-        assertThat(result.get(0).getColumnId()).isEqualTo(101L);
-        assertThat(result.get(1).getTitle()).isEqualTo("면접 꿀팁");
+        assertThat(result.getContent()).hasSize(2);
+        assertThat(result.getContent().get(0).getColumnId()).isEqualTo(101L);
+        assertThat(result.getContent().get(1).getTitle()).isEqualTo("면접 꿀팁");
 
-        verify(columnRepository).findAllBySeries_SeriesId(seriesId);
+        verify(columnRepository).findAllBySeries_SeriesId(eq(seriesId), any(Pageable.class));
         verify(seriesMapper).toSeriesColumnDto(column1);
         verify(seriesMapper).toSeriesColumnDto(column2);
     }
