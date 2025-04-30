@@ -3,7 +3,7 @@
 </script>
 
 <template>
-<h1>주문 아이템 결과</h1>
+내 리뷰 조회 페이지 입니다.
 </template>
 
 <style scoped>
