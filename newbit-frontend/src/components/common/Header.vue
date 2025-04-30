@@ -8,14 +8,14 @@
         <router-link to="/posts" class="nav-link" active-class="active">게시판</router-link>
         <router-link to="/columns" class="nav-link" active-class="active">칼럼</router-link>
         <router-link to="/coffeechats" class="nav-link" active-class="active">커피챗</router-link>
-        <router-link to="/psychology-tests" class="nav-link" active-class="active">심리 테스트</router-link>
+        <router-link to="/perks" class="nav-link" active-class="active">심리 테스트</router-link>
         <div class="divider" v-if="isAdmin"></div>
         <router-link v-if="isAdmin" to="/admin">Admin</router-link>
       </nav>
     </div>
 
     <div class="right">
-      <router-link class="shop-button" to="/shop">
+      <router-link class="shop-button" to="/products">
         <img src="@/assets/image/diamond-icon.png" alt="Diamond" />
         <span class="text-13px-regular">상점</span>
       </router-link>
