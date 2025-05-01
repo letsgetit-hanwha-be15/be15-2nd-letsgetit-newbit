@@ -1,5 +1,6 @@
 package com.newbit.newbitfeatureservice.column.controller;
 
+import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
 import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import com.newbit.newbitfeatureservice.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.newbitfeatureservice.column.dto.request.UpdateSeriesRequestDto;
@@ -91,4 +92,13 @@ public class SeriesController {
         return ApiResponse.success(seriesService.getPublicSeriesList(page, size));
     }
 
+    @GetMapping("/public-list/search")
+    @Operation(summary = "공개된 시리즈 검색", description = "시리즈 제목 또는 작성자 닉네임으로 공개된 시리즈를 검색합니다.")
+    public ApiResponse<Page<GetMySeriesListResponseDto>> searchPublicSeriesList(
+            @ModelAttribute SearchCondition condition,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.success(seriesService.searchPublicSeriesList(condition, page, size));
+    }
 }
