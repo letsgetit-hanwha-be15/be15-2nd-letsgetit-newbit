@@ -2,9 +2,9 @@
   <div class="dropdown-wrapper" @click.stop="toggleDropdown">
     <img src="@/assets/image/profile.png" alt="Profile" class="profile-button" />
     <div v-if="showDropdown" class="dropdown">
+      <!-- TODO : authStore, 로그인 기능 추가 시 role에 따라서 조건 표시, 닉네임 가져오기 -->
       <div class="nickname">
         <span class="name">레츠기릿</span>
-        <!-- TODO : authStore, 로그인 기능 추가 시 role에 따라서 조건 표시 -->
         <span class="role text-13px-bold">멘토</span>
       </div>
 
@@ -35,6 +35,7 @@
         <li @click="goTo('/mypage/contents?type=posts')">내 콘텐츠</li>
         <li @click="goTo('/mypage/history?type=coffeechat')">커피챗</li>
         <li @click="goTo('/mypage/history?type=point')">활동 내역</li>
+        <!-- TODO : authStore, 로그인 기능 추가 시 role에 따라서 조건 표시 -->
         <li @click="goTo('/mypage/mentor/series')">멘토 활동 관리</li>
         <li @click="goTo('/mypage/account')">설정</li>
         <!-- TODO : 로그아웃 로직 추가 -->
