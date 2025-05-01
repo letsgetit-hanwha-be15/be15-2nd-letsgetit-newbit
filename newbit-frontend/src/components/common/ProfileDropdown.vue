@@ -193,6 +193,10 @@ onBeforeUnmount(() => {
   font-weight: 400;
 }
 
+.menu-list li:hover {
+  background-color: var(--newbitlightgray);
+}
+
 .logout {
   color: red;
   font-weight: 600;
