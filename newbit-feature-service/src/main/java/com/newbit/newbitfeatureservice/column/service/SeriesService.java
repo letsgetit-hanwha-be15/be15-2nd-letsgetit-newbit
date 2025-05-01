@@ -3,6 +3,7 @@ package com.newbit.newbitfeatureservice.column.service;
 import java.util.List;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
+import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -202,6 +203,13 @@ public class SeriesService {
         Page<Series> allSeries = seriesRepository.findAllByColumnsIsNotEmpty(pageable);
 
         return allSeries.map(seriesMapper::toMySeriesListDto);
+    }
+
+    // 시리즈 검색 기능
+    public Page<GetMySeriesListResponseDto> searchPublicSeriesList(SearchCondition condition, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Series> seriesPage = seriesRepository.searchSeriesByKeyword(condition.getKeyword(), pageable);
+        return seriesPage.map(seriesMapper::toMySeriesListDto);
     }
 }
 

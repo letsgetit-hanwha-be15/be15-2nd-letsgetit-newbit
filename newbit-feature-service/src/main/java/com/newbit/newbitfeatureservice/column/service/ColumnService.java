@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
+import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -142,5 +143,11 @@ public class ColumnService {
     public Long getMentorIdByColumnId(Long columnId) {
         Column column = getColumn(columnId);
         return column.getMentorId();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<GetColumnListResponseDto> searchPublicColumns(SearchCondition condition, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return columnRepository.searchPublicColumns(condition.getKeyword(), pageable);
     }
 }

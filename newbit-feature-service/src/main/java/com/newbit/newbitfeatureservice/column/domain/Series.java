@@ -40,6 +40,9 @@ public class Series {
     @jakarta.persistence.Column(name = "mentor_id", nullable = false)
     private Long mentorId;
 
+    @jakarta.persistence.Column(nullable = false)
+    private String mentorNickname;
+
     @OneToMany(mappedBy = "series", cascade = CascadeType.PERSIST)
     private List<Column> columns = new ArrayList<>();
 
