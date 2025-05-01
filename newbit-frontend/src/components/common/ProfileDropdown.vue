@@ -13,13 +13,19 @@
       <hr class="divider" />
 
       <div class="asset-row">
-        <div class="asset" @click="goTo('/mypage/contents?type=posts')">
-          <img src="@/assets/image/profile.png" class="icon" />
-          <span>1230</span>
+        <div class="asset" @click="goTo('/mypage/history?type=point')">
+          <div class="asset-wrapper">
+            <img src="@/assets/image/profile.png" class="icon" />
+            <span>1230</span>
+          </div>
+          <img src="@/assets/image/arrow-icon.png" class="arrow-icon" />
         </div>
-        <div class="asset" @click="goTo('/mypage/contents?type=posts')">
-          <img src="@/assets/image/diamond-icon.png" class="icon" />
-          <span>200</span>
+        <div class="asset" @click="goTo('/mypage/history?type=diamond')">
+          <div class="asset-wrapper">
+            <img src="@/assets/image/diamond-icon.png" class="icon" />
+            <span>200</span>
+          </div>
+          <img src="@/assets/image/arrow-icon.png" class="arrow-icon" />
         </div>
       </div>
 
@@ -133,17 +139,36 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
+
 .asset {
+  display: flex;
+  width: 100px;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.asset-wrapper {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-weight: 600;
-  font-size: 15px;
+}
+
+.asset span {
+  position: relative;
+  top: 1px; /* 숫자를 아래로 1px 내림 */
 }
 
 .icon {
   width: 18px;
   height: 18px;
+}
+
+.arrow-icon {
+  width: 8px;
+  height: 8px;
 }
 
 .divider {
