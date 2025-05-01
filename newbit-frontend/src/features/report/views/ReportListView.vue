@@ -104,7 +104,6 @@ const handlePageChange = (page) => {
 
 const handleAction = ({ reportId, action }) => {
   console.log(`Action ${action} for report ${reportId}`);
-  // 여기에 실제 액션 처리 로직을 추가할 수 있습니다
 };
 </script>
 
@@ -167,15 +166,11 @@ const handleAction = ({ reportId, action }) => {
 
 <style scoped>
 .report-admin-container {
-  /* max-width: 1200px; Remove or adjust if needed */
   margin: 0 auto;
   padding: 32px 16px;
 }
 
 .title {
-  font-family: var(--newbit-text-heading2-font-family);
-  font-weight: var(--newbit-text-heading2-font-weight);
-  font-size: var(--newbit-text-heading2-font-size);
   color: var(--newbittext);
   margin-bottom: 24px;
 }
@@ -191,9 +186,6 @@ const handleAction = ({ reportId, action }) => {
   border: none;
   background: var(--newbitlightmode);
   border-radius: 6px 6px 0 0;
-  font-family: var(--newbit-text-16px-regular-font-family);
-  font-weight: var(--newbit-text-16px-regular-font-weight);
-  font-size: var(--newbit-text-16px-regular-font-size);
   color: var(--newbitgray);
   cursor: pointer;
 }
@@ -211,7 +203,7 @@ const handleAction = ({ reportId, action }) => {
 
 .filters {
   display: flex;
-  flex-wrap: wrap; /* Allow filters to wrap on smaller screens */
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -221,13 +213,10 @@ const handleAction = ({ reportId, action }) => {
   padding: 6px 12px;
   border: 1px solid var(--newbitdivider);
   border-radius: 4px;
-  font-family: var(--newbit-text-13px-regular-font-family);
-  font-weight: var(--newbit-text-13px-regular-font-weight);
-  font-size: var(--newbit-text-13px-regular-font-size);
   color: var(--newbittext);
-  flex-grow: 1; /* Allow items to grow */
-  flex-basis: 150px; /* Set a base width, adjust as needed */
-  min-width: 120px; /* Prevent items from becoming too small */
+  flex-grow: 1;
+  flex-basis: 150px;
+  min-width: 120px;
 }
 
 .filters select {

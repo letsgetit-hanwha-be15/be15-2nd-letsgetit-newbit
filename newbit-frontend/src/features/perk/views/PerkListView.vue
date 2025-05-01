@@ -17,10 +17,10 @@ const perks = [
   },
   {
     id: 2,
-    title: "내 마음의 프리미엄 여행",
+    title: "칼라 테스트",
     price: 100,
     priceLabel: "100포인트",
-    description: "프리미엄 열차를 타고\n내 마음을 찾아 떠나는 여행",
+    description: "색깔로 알아 보는\n나의 성격(노잼)",
     image: colorQuizImg,
     route: "/perks/quiz",
   },

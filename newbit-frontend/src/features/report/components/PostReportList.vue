@@ -115,22 +115,17 @@ const handleAction = (reportId, action) => {
   border: 1px solid #e0e0e0;
   padding: 10px 8px;
   text-align: center;
-  font-family: var(--newbit-text-13px-regular-font-family);
-  font-size: var(--newbit-text-13px-regular-font-size);
 }
 
 .report-table th {
   background: #f8f9fa;
-  font-weight: var(--newbit-text-13px-bold-font-weight);
 }
 
 .status {
   padding: 4px 10px;
   border-radius: 12px;
-  font-size: var(--newbit-text-10px-regular-font-size);
   color: #fff;
   display: inline-block;
-  font-weight: var(--newbit-text-10px-regular-font-weight);
 }
 
 .status.미처리 {
@@ -154,8 +149,6 @@ const handleAction = (reportId, action) => {
   padding: 4px 10px;
   border: none;
   border-radius: 4px;
-  font-size: var(--newbit-text-10px-regular-font-size);
-  font-weight: var(--newbit-text-10px-regular-font-weight);
   cursor: pointer;
   color: #fff;
 }
@@ -185,12 +178,9 @@ const handleAction = (reportId, action) => {
   justify-content: space-between;
   align-items: center;
   margin-top: 16px;
-  font-family: var(--newbit-text-13px-regular-font-family);
-  font-size: var(--newbit-text-13px-regular-font-size);
 }
 
 .pagination b {
-  font-weight: var(--newbit-text-13px-bold-font-weight);
 }
 
 .page-controls {
@@ -205,18 +195,14 @@ const handleAction = (reportId, action) => {
   background: #f5f5f5;
   border-radius: 4px;
   cursor: pointer;
-  font-family: var(--newbit-text-13px-regular-font-family);
-  font-size: var(--newbit-text-13px-regular-font-size);
 }
 
 .page-controls button:hover {
-  /* No change */
 }
 
 .page-controls button.active {
   background: #1976d2;
   color: #fff;
-  font-weight: var(--newbit-text-13px-bold-font-weight);
 }
 
 .page-controls button:disabled {

@@ -16,7 +16,7 @@ import AdminSideBar from "./AdminSideBar.vue";
   display: flex;
   width: 100%;
   min-height: 100%;
-  gap: 0px;
+  gap: 6px;
   background: none;
 }
 .admin-content {
