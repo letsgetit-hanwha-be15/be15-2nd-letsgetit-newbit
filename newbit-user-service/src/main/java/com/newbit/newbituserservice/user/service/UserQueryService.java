@@ -10,7 +10,10 @@ import com.newbit.newbituserservice.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,15 +40,14 @@ public class UserQueryService {
             throw new BusinessException(ErrorCode.USER_INFO_NOT_FOUND);
         }
 
-        List<PostDTO> posts = userMapper.findMentorPosts(mentorId);
-        List<ColumnDTO> columns = userMapper.findMentorColumns(mentorId);
-        List<SeriesDTO> series = userMapper.findMentorSeries(mentorId);
-        List<ReviewDTO> reviews = userMapper.findReviewsByMentorId(mentorId);
+        // techstack 별도 조회
+        List<String> techstacks = userMapper.findMentorTechstacks(mentorId);
+        profile.setTechstackNames(techstacks);
 
-        profile.setPosts(posts);
-        profile.setColumns(columns);
-        profile.setSeries(series);
-        profile.setReviews(reviews);
+        profile.setPosts(userMapper.findMentorPosts(mentorId));
+        profile.setColumns(userMapper.findMentorColumns(mentorId));
+        profile.setSeries(userMapper.findMentorSeries(mentorId));
+        profile.setReviews(userMapper.findReviewsByMentorId(mentorId));
 
         return profile;
     }

@@ -1,7 +1,6 @@
 package com.newbit.newbituserservice.user.dto.response;
 
 import lombok.Data;
-
 import java.util.List;
 
 @Data
@@ -12,9 +11,11 @@ public class MentorProfileDTO {
     private String jobName;
     private Integer temperature;
     private String preferredTime;
-    private String techstackName;
     private Boolean isActive;
     private Integer price;
+    private String introduction;
+    private String externalLinkUrl;
+    private List<String> techstackNames;
 
     private List<PostDTO> posts;
     private List<ColumnDTO> columns;

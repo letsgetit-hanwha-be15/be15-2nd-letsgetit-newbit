@@ -15,15 +15,22 @@
                m.preferred_time  AS preferredTime,
                m.is_active       AS isActive,
                m.price           AS price,
-               GROUP_CONCAT(ts.techstack_name SEPARATOR ', ') AS techstackName
+               m.introduction    AS introduction,
+               m.external_link_url AS externalLinkUrl
         FROM mentor m
                  JOIN user u ON u.user_id = m.user_id
                  LEFT JOIN job j ON u.job_id = j.job_id
-                 LEFT JOIN user_and_techstack ut ON u.user_id = ut.user_id
-                 LEFT JOIN techstack ts ON ut.techstack_id = ts.techstack_id
         WHERE m.mentor_id = #{mentorId}
-        GROUP BY u.user_id, u.user_name, u.nickname, u.profile_image_url, j.job_name,
-                 m.temperature, m.preferred_time, m.is_active, m.price
+    </select>
+
+    <!-- 멘토 기술스택 리스트 (별도 쿼리로 List<String>) -->
+    <select id="findMentorTechstacks" resultType="string">
+        SELECT ts.techstack_name
+        FROM mentor m
+                 JOIN user u ON m.user_id = u.user_id
+                 JOIN user_and_techstack ut ON u.user_id = ut.user_id
+                 JOIN techstack ts ON ut.techstack_id = ts.techstack_id
+        WHERE m.mentor_id = #{mentorId}
     </select>
 
     <!-- 최근 게시글 3개 -->
@@ -81,4 +88,5 @@
         WHERE m.mentor_id = #{mentorId}
         ORDER BY r.created_at DESC
     </select>
+
 </mapper>

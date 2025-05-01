@@ -34,4 +34,7 @@ public class AssetHistoryDto {
 
     @Schema(description = "생성 일시", example = "2025-04-08T14:33:00")
     private LocalDateTime createdAt;
+
+    @Schema(description = "서비스 정보")
+    private String serviceTitleOrUserNickname;
 }
