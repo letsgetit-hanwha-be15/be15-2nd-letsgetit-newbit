@@ -83,7 +83,7 @@ const sidebarSections = computed(() => {
 
 <style scoped>
 .sidebar {
-  width: 250px;
+  width: 214px;
   border: 1px solid var(--newbitnormal);
   border-radius: 8px;
   padding: 24px;
