@@ -4,7 +4,8 @@
     <div v-if="showDropdown" class="dropdown">
       <div class="nickname">
         <span class="name">레츠기릿</span>
-        <span class="role">멘토</span>
+        <!-- TODO : authStore, 로그인 기능 추가 시 role에 따라서 조건 표시 -->
+        <span class="role text-13px-bold">멘토</span>
       </div>
 
       <button class="edit-profile" @click="goTo('/mypage/profile/edit')">프로필 수정</button>
@@ -28,9 +29,9 @@
         <li @click="goTo('/mypage/history?type=point')">활동 내역</li>
         <li @click="goTo('/mypage/mentor/series')">멘토 활동 관리</li>
         <li @click="goTo('/mypage/account')">설정</li>
+        <!-- TODO : 로그아웃 로직 추가 -->
+        <li class="logout" @click="logout">로그아웃</li>
       </ul>
-
-      <div class="logout" @click="logout">로그아웃</div>
     </div>
   </div>
 </template>
@@ -88,11 +89,12 @@ onBeforeUnmount(() => {
 .dropdown {
   position: absolute;
   top: 60px;
-  right: 0;
+  right: 40px;
   width: 260px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background: var(--newbitbackground);
+  border-radius: 4px;
+  border: 1px solid var(--newbitdivider);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   z-index: 1000;
   font-family: "Noto Sans KR", sans-serif;
@@ -108,9 +110,7 @@ onBeforeUnmount(() => {
 }
 
 .nickname .role {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--newbitgray);
+  color: var(--newbitnormal);
 }
 
 .edit-profile {
@@ -118,7 +118,7 @@ onBeforeUnmount(() => {
   padding: 10px;
   border: 1px solid var(--newbitdivider);
   border-radius: 10px;
-  background: white;
+  background: var(--newbitbackground);
   cursor: pointer;
   font-weight: 600;
   font-size: 14px;
@@ -153,14 +153,14 @@ onBeforeUnmount(() => {
 .menu-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 16px;
 }
 
 .menu-list li {
   margin-bottom: 10px;
+  padding: 8px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .logout {
