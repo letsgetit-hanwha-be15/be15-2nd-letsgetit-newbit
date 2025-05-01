@@ -13,11 +13,13 @@
       <hr class="divider" />
 
       <div class="asset-row">
-        <div class="asset">
-          <!--          <img src="/assets/image/coin.svg" class="icon" />1230-->
+        <div class="asset" @click="goTo('/mypage/contents?type=posts')">
+          <img src="@/assets/image/profile.png" class="icon" />
+          <span>1230</span>
         </div>
-        <div class="asset">
-          <img src="@/assets/image/diamond-icon.png" class="icon" />200
+        <div class="asset" @click="goTo('/mypage/contents?type=posts')">
+          <img src="@/assets/image/diamond-icon.png" class="icon" />
+          <span>200</span>
         </div>
       </div>
 
@@ -127,8 +129,8 @@ onBeforeUnmount(() => {
 
 .asset-row {
   display: flex;
-  justify-content: space-between;
   margin-bottom: 16px;
+  cursor: pointer;
 }
 
 .asset {
