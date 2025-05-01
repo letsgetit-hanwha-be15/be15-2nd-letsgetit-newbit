@@ -24,7 +24,7 @@ const columns = ref([
     writer: '오멘토',
     date: '2025.06.13',
     likeCount: 5,
-    thumbnailUrl: '' // 썸네일 없음 → 기본 이미지로 처리됨
+    thumbnailUrl: '' // 썸네일 없음 -> 기본 이미지로 처리됨
   },
   {
     id: 3,
@@ -49,9 +49,9 @@ const handleSearch = () => {
 }
 
 const onClickCreate = () => {
-  // 예: 등록 페이지로 이동하거나 모달 띄우기
+
   console.log('칼럼 등록 버튼 클릭됨')
-  // router.push('/columns/create') 등 가능
+
 }
 </script>
 
