@@ -44,16 +44,14 @@
         />
       </button>
 
-      <router-link to="/mypage">
-        <button class="profile-button">
-          <img src="@/assets/image/profile.png" alt="Profile" />
-        </button>
-      </router-link>
+      <ProfileDropdown />
     </div>
   </header>
 </template>
 
-<script setup></script>
+<script setup>
+import ProfileDropdown from '@/components/common/ProfileDropdown.vue'
+</script>
 
 <style scoped>
 .header {
