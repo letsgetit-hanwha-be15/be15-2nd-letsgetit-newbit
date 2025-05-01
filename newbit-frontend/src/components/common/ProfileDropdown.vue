@@ -16,6 +16,7 @@
         <div class="asset" @click="goTo('/mypage/history?type=point')">
           <div class="asset-wrapper">
             <img src="@/assets/image/profile.png" class="icon" />
+            <!-- TODO : Pinia store에서 가져오는 방식으로 수정 -->
             <span>1230</span>
           </div>
           <img src="@/assets/image/arrow-icon.png" class="arrow-icon" />
@@ -23,6 +24,7 @@
         <div class="asset" @click="goTo('/mypage/history?type=diamond')">
           <div class="asset-wrapper">
             <img src="@/assets/image/diamond-icon.png" class="icon" />
+            <!-- TODO : Pinia store에서 가져오는 방식으로 수정 -->
             <span>200</span>
           </div>
           <img src="@/assets/image/arrow-icon.png" class="arrow-icon" />
