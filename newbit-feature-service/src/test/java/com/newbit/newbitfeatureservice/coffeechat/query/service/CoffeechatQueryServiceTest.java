@@ -105,29 +105,25 @@ class CoffeechatQueryServiceTest {
     void getCoffeechats_멘토() {
         // given
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
-        coffeechatSearchServiceRequest.setMentorId(1L);
+        coffeechatSearchServiceRequest.setUserId(3L);
 
-        CoffeechatDto coffeechat1 = CoffeechatDto.builder()
+        CoffeechatListDto coffeechat1 = CoffeechatListDto.builder()
                 .coffeechatId(1L)
                 .progressStatus(com.newbit.newbitfeatureservice.coffeechat.query.dto.response.ProgressStatus.COFFEECHAT_WAITING)
                 .requestMessage("첫번째 커피챗 신청드립니다.")
-                .confirmedSchedule(LocalDateTime.of(2025, 4, 11, 19, 0))
-                .endedAt(LocalDateTime.of(2025, 4, 11, 19, 30))
-                .mentorId(1L) // 1L
-                .menteeId(1L)
+                .profileImageUrl("https://google.com")
+                .nickname("멘티1")
                 .build();
 
-        CoffeechatDto coffeechat2 = CoffeechatDto.builder()
+        CoffeechatListDto coffeechat2 = CoffeechatListDto.builder()
                 .coffeechatId(2L)
                 .progressStatus(com.newbit.newbitfeatureservice.coffeechat.query.dto.response.ProgressStatus.IN_PROGRESS)
                 .requestMessage("두번째 커피챗도 부탁드립니다.")
-                .confirmedSchedule(LocalDateTime.of(2025, 4, 12, 19, 0))
-                .endedAt(LocalDateTime.of(2025, 4, 12, 19, 30))
-                .mentorId(1L) // 1L
-                .menteeId(2L)
+                .profileImageUrl("https://google.com")
+                .nickname("멘티2")
                 .build();
 
-        List<CoffeechatDto> originalList = Arrays.asList(coffeechat1, coffeechat2);
+        List<CoffeechatListDto> originalList = Arrays.asList(coffeechat1, coffeechat2);
         when(coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest)).thenReturn(originalList);
 
         // when
@@ -149,19 +145,17 @@ class CoffeechatQueryServiceTest {
     void getCoffeechats_멘티() {
         // given
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
-        coffeechatSearchServiceRequest.setMenteeId(1L);
+        coffeechatSearchServiceRequest.setUserId(2L);
 
-        CoffeechatDto coffeechat1 = CoffeechatDto.builder()
+        CoffeechatListDto coffeechat1 = CoffeechatListDto.builder()
                 .coffeechatId(1L)
                 .progressStatus(com.newbit.newbitfeatureservice.coffeechat.query.dto.response.ProgressStatus.COFFEECHAT_WAITING)
                 .requestMessage("첫번째 커피챗 신청드립니다.")
-                .confirmedSchedule(LocalDateTime.of(2025, 4, 11, 19, 0))
-                .endedAt(LocalDateTime.of(2025, 4, 11, 19, 30))
-                .mentorId(1L) // 1L
-                .menteeId(1L)
+                .profileImageUrl("https://google.com")
+                .nickname("멘티1")
                 .build();
 
-        List<CoffeechatDto> originalList = Arrays.asList(coffeechat1);
+        List<CoffeechatListDto> originalList = Arrays.asList(coffeechat1);
         when(coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest)).thenReturn(originalList);
 
         // when
@@ -244,20 +238,19 @@ class CoffeechatQueryServiceTest {
     void getCoffeechats_멘토_요청() {
         // given
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
-        coffeechatSearchServiceRequest.setMentorId(1L);
+        coffeechatSearchServiceRequest.setUserId(3L);
         coffeechatSearchServiceRequest.setProgressStatus(ProgressStatus.IN_PROGRESS);
 
-        CoffeechatDto coffeechat2 = CoffeechatDto.builder()
+        CoffeechatListDto coffeechat2 = CoffeechatListDto.builder()
                 .coffeechatId(2L)
                 .progressStatus(com.newbit.newbitfeatureservice.coffeechat.query.dto.response.ProgressStatus.IN_PROGRESS)
                 .requestMessage("두번째 커피챗도 부탁드립니다.")
-                .confirmedSchedule(LocalDateTime.of(2025, 4, 12, 19, 0))
-                .endedAt(LocalDateTime.of(2025, 4, 12, 19, 30))
-                .mentorId(1L) // 1L
-                .menteeId(2L)
+                .profileImageUrl("https://google.com")
+                .nickname("멘티2")
                 .build();
 
-        List<CoffeechatDto> originalList = Arrays.asList(coffeechat2);
+        List<CoffeechatListDto> originalList = Arrays.asList(coffeechat2);
+
         when(coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest)).thenReturn(originalList);
 
         // when

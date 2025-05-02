@@ -1,5 +1,5 @@
 import { paymentConfig } from "@/config/payment.config";
-import { createApiClient } from "@/config/axios.config";
+import { createApiClient } from "@/api/axios";
 
 const { baseUrl, endpoints } = paymentConfig.api;
 const apiClient = createApiClient(baseUrl);
