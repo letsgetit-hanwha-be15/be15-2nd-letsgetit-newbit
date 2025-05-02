@@ -6,6 +6,9 @@ import AccountEditView from './views/AccountEditView.vue'
 import MyContentsView from './views/MyContentsView.vue'
 import PointHistoryView from './views/PointHistoryView.vue'
 import MyReviewsView from './views/MyReviewsView.vue'
+import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.vue";
+import CoffeechatListView from "@/features/mypage/views/CoffeechatListView.vue";
+import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
 
 export const mypageRoutes = [
     {
@@ -50,6 +53,21 @@ export const mypageRoutes = [
                 path: 'reviews',
                 name: 'MyReviews',
                 component: MyReviewsView,
+            },
+            {
+                path: 'coffeechats',
+                name: 'CoffeechatList',
+                component: CoffeechatListView,
+            },
+            {
+                path: 'coffeechats/:id',
+                name: 'CoffeechatDetail',
+                component: CoffeechatDetailView,
+            },
+            {
+                path: 'coffeechats/:id/review',
+                name: 'ReviewRegister',
+                component: ReviewRegisterView,
             },
         ]
     }
