@@ -20,9 +20,7 @@ public class CoffeechatCreateRequest {
     private final int purchaseQuantity;
     @NotNull
     @Min(value = 1)
-    private final Long mentorId;        
-    @Setter
-    private Long menteeId;
+    private final Long mentorId;
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @Size(max = 3)
