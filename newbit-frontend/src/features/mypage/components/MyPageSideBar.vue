@@ -26,16 +26,16 @@ const sidebarSections = computed(() => {
     {
       title: '커피챗',
       items: [
-        { text: '커피챗 내역', to: '/mypage/history?type=coffeechat' },
+        { text: '커피챗 내역', to: '/mypage/history/coffeechat' },
         { text: '내 리뷰', to: '/mypage/reviews' },
       ]
     },
     {
       title: '활동 내역',
       items: [
-        { text: '포인트 내역', to: '/mypage/history?type=point' },
-        { text: '다이아 내역', to: '/mypage/history?type=diamond' },
-        { text: '결제 내역', to: '/mypage/history?type=payment' },
+        { text: '포인트 내역', to: '/mypage/history/point' },
+        { text: '다이아 내역', to: '/mypage/history/diamond' },
+        { text: '결제 내역', to: '/mypage/history/payment' },
       ]
     },
     {
@@ -52,8 +52,8 @@ const sidebarSections = computed(() => {
         { text: '작성한 칼럼', to: '/mypage/mentor/columns' },
         { text: '내 시리즈 관리', to: '/mypage/mentor/series' },
         { text: '커피챗 관리', to: '/mypage/mentor/coffeechats' },
-        { text: '판매 내역', to: '/mypage/history?type=sale' },
-        { text: '월별 정산 내역', to: '/mypage/history?type=settlement' },
+        { text: '판매 내역', to: '/mypage/history/sale' },
+        { text: '월별 정산 내역', to: '/mypage/history/settlement' },
         { text: '칼럼 요청 내역', to: '/mypage/mentor/column-requests' }
       ]
     }
