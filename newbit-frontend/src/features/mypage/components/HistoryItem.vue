@@ -45,7 +45,7 @@ const showYear = computed(() => {
 })
 
 const formattedAmount = computed(() => {
-  const sign = props.item.amount > 0 ? '+' : '-'
+  const sign = props.item.amount > 0 ? '+' : ''
   return `${sign}${props.item.amount}`
 })
 </script>

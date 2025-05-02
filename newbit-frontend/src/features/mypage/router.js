@@ -9,6 +9,7 @@ import MyReviewsView from './views/MyReviewsView.vue'
 import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.vue";
 import CoffeechatListView from "@/features/mypage/views/CoffeechatListView.vue";
 import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
+import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
 
 export const mypageRoutes = [
     {
@@ -47,7 +48,7 @@ export const mypageRoutes = [
             {
                 path: 'history/diamond',
                 name: 'DiamondHistory',
-                component: PointHistoryView,
+                component: DiamondHistoryView,
             },
             {
                 path: 'reviews',
