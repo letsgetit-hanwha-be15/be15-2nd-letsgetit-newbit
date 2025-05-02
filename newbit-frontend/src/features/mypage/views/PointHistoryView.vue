@@ -32,12 +32,57 @@ const historyItems = ref({
         "decreaseAmount": null,
         "balance": 10,
         "createdAt": "2025-04-27T19:59:03"
-      }
+      },
+      {
+        "historyId": 109,
+        "serviceType": "첫 로그인 적립",
+        "serviceId": null,
+        "increaseAmount": 10,
+        "decreaseAmount": null,
+        "balance": 10,
+        "createdAt": "2025-04-27T19:59:03"
+      },
+      {
+        "historyId": 109,
+        "serviceType": "첫 로그인 적립",
+        "serviceId": null,
+        "increaseAmount": 10,
+        "decreaseAmount": null,
+        "balance": 10,
+        "createdAt": "2025-04-27T19:59:03"
+      },
+      {
+        "historyId": 109,
+        "serviceType": "첫 로그인 적립",
+        "serviceId": null,
+        "increaseAmount": 10,
+        "decreaseAmount": null,
+        "balance": 10,
+        "createdAt": "2025-04-27T19:59:03"
+      },
+      {
+        "historyId": 109,
+        "serviceType": "첫 로그인 적립",
+        "serviceId": null,
+        "increaseAmount": 10,
+        "decreaseAmount": null,
+        "balance": 10,
+        "createdAt": "2025-04-27T19:59:03"
+      },
+      {
+        "historyId": 109,
+        "serviceType": "첫 로그인 적립",
+        "serviceId": null,
+        "increaseAmount": 10,
+        "decreaseAmount": null,
+        "balance": 10,
+        "createdAt": "2025-04-27T19:59:03"
+      },
     ],
     "pagination": {
       "currentPage": 1,
-      "totalPage": 1,
-      "totalItems": 3
+      "totalPage": 2,
+      "totalItems": 13
     }
   },
   "errorCode": null,
