@@ -14,7 +14,7 @@ const mentors = ref([
         "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor1.png",
         "price": 1000,
         "temperature": 75.0,
-        "techstackName": null
+        "techstackName": "HTML"
       },
       {
         "mentorId": 2,
@@ -23,7 +23,7 @@ const mentors = ref([
         "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor2.png",
         "price": 2000,
         "temperature": 60.0,
-        "techstackName": null
+        "techstackName": "Python"
       },
       {
         "mentorId": 3,
@@ -32,7 +32,7 @@ const mentors = ref([
         "profileImageUrl": null,
         "price": 3000,
         "temperature": 90.0,
-        "techstackName": null
+        "techstackName": "Java"
       },
       {
         "mentorId": 4,
@@ -41,7 +41,7 @@ const mentors = ref([
         "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor4.png",
         "price": 1500,
         "temperature": 72.5,
-        "techstackName": null
+        "techstackName": "C"
       },
       {
         "mentorId": 5,
@@ -50,7 +50,7 @@ const mentors = ref([
         "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor5.png",
         "price": 2500,
         "temperature": 85.0,
-        "techstackName": null
+        "techstackName": "Spring Boot"
       },
       {
         "mentorId": 6,
@@ -59,7 +59,7 @@ const mentors = ref([
         "profileImageUrl": null,
         "price": 1800,
         "temperature": 68.0,
-        "techstackName": null
+        "techstackName": "Figma"
       },
       {
         "mentorId": 7,
@@ -68,7 +68,7 @@ const mentors = ref([
         "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor7.png",
         "price": 2100,
         "temperature": 73.0,
-        "techstackName": null
+        "techstackName": "Notion"
       },
       {
         "mentorId": 8,
@@ -77,7 +77,7 @@ const mentors = ref([
         "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor8.png",
         "price": 2700,
         "temperature": 95.0,
-        "techstackName": null
+        "techstackName": "C++"
       },
       {
         "mentorId": 9,
@@ -86,7 +86,7 @@ const mentors = ref([
         "profileImageUrl": null,
         "price": 1300,
         "temperature": 65.5,
-        "techstackName": null
+        "techstackName": "Node.js"
       },
       {
         "mentorId": 10,
@@ -95,7 +95,7 @@ const mentors = ref([
         "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor10.png",
         "price": 2200,
         "temperature": 78.0,
-        "techstackName": null
+        "techstackName": "React"
       },
       {
         "mentorId": 11,
@@ -104,7 +104,7 @@ const mentors = ref([
         "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor11.png",
         "price": 1950,
         "temperature": 66.0,
-        "techstackName": null
+        "techstackName": "REST API"
       },
       {
         "mentorId": 12,
@@ -113,7 +113,7 @@ const mentors = ref([
         "profileImageUrl": null,
         "price": 1600,
         "temperature": 70.5,
-        "techstackName": null
+        "techstackName": "MySQL"
       },
       {
         "mentorId": 13,
@@ -122,10 +122,9 @@ const mentors = ref([
         "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor13.png",
         "price": 2900,
         "temperature": 88.0,
-        "techstackName": null
+        "techstackName": "Linux"
       }
-    ]
-);
+    ]);
 const pagination = reactive({
   currentPage : 1,
   totalPages : 1,
@@ -166,7 +165,7 @@ onMounted(() => fetchMentors());
 
 <template>
   <SearchBar @search="onSearch"/>
-  <MentorList mentors="mentors"/>
+  <MentorList :mentors="mentors"/>
   <PagingBar
       v-bind="pagination"
       @page-changed="fetchMentors"
