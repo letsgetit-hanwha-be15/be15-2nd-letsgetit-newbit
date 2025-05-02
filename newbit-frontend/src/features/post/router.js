@@ -12,5 +12,11 @@ export const postRoutes = [
         name: 'PostByCategory',
         component: PostListView,
         props: true
+    },
+    {
+        path: '/posts/:postId',
+        name: 'PostDetail',
+        component: PostDetailView,
+        props: true
     }
 ]
