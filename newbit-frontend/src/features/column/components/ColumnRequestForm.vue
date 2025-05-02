@@ -6,11 +6,11 @@ import '@toast-ui/editor/dist/toastui-editor.css'
 const props = defineProps({
   seriesList: {
     type: Array,
-    required: true
+    required: true,
   }
 })
 
-const emit = defineEmits(['submit'])
+const emit = defineEmits(['submit', 'cancel'])
 
 const title = ref('')
 const price = ref(null)
@@ -56,6 +56,10 @@ const handleSubmit = () => {
     thumbnail: thumbnailFile.value,
   })
 }
+
+const handleCancel = () => {
+  emit('cancel')
+}
 </script>
 
 <template>
@@ -68,7 +72,7 @@ const handleSubmit = () => {
       <input type="file" @change="onThumbnailChange" />
     </div>
 
-    <!-- 입력 폼 -->
+    <!-- 우측 입력 폼 -->
     <div class="flex-1 space-y-4">
       <input
           v-model="title"
@@ -76,6 +80,8 @@ const handleSubmit = () => {
           placeholder="제목을 입력하세요"
           class="w-full border px-4 py-2 rounded"
       />
+
+      <!-- 가격 + 시리즈 드롭다운 한 줄로 -->
       <div class="flex items-center gap-2">
         <img src="@/assets/image/diamond-icon.png" class="w-5 h-5" />
         <input
@@ -84,22 +90,43 @@ const handleSubmit = () => {
             placeholder="가격"
             class="w-24 border px-3 py-2 rounded"
         />
+
+        <!-- Element Plus 드롭다운 적용 -->
+        <el-select
+            v-model="series"
+            placeholder="시리즈 선택"
+            clearable
+            filterable
+            class="flex-1"
+        >
+          <el-option
+              v-for="s in props.seriesList"
+              :key="s.id"
+              :label="s.name"
+              :value="s.id"
+          />
+        </el-select>
       </div>
-      <select
-          v-model="series"
-          class="w-full border rounded px-4 py-2"
-      >
-        <option disabled value="">시리즈 선택</option>
-        <option v-for="s in props.seriesList" :key="s.id" :value="s.id">{{ s.name }}</option>
-      </select>
+
+
+      <!-- 에디터 -->
       <div ref="editorRef"></div>
 
-      <div class="flex justify-end mt-4">
-        <button @click="handleSubmit" class="bg-blue-500 text-white px-4 py-2 rounded">등록</button>
+      <!-- 버튼 -->
+      <div class="flex justify-end gap-2 mt-4">
+        <button
+            @click="handleCancel"
+            class="bg-[var(--newbitred)] text-white px-4 py-2 rounded"
+        >
+          취소
+        </button>
+        <button
+            @click="handleSubmit"
+            class="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          등록
+        </button>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-</style>
