@@ -39,7 +39,7 @@ const diamondIcon = new URL('@/assets/image/diamond-icon.png', import.meta.url).
       <!-- 좋아요 + 작성자 + 날짜 -->
       <div class="flex items-center gap-3 text-13px-regular text-[var(--newbitgray)]">
         <!-- 하트 버튼 -->
-        <button @click="toggleLike" class="w-5 h-5">
+        <button @click="toggleLike" class="w-5 h-4.5">
           <img :src="isLiked ? heartActive : heartDefault" alt="좋아요 하트" class="w-full h-full" />
         </button>
 
