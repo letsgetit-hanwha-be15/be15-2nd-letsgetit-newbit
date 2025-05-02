@@ -22,6 +22,8 @@ const handleSubmit = (formData) => {
 
   // 성공 알림 표시
   toast.success('등록 요청에 성공했습니다!')
+  // 칼럼 목록으로 이동
+  router.push('/columns')
 
   // TODO: API 연동 후 성공 시 이동 처리
   // await columnApi.submit(formData)
