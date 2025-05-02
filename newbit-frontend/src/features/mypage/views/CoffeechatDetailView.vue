@@ -3,7 +3,7 @@
 </script>
 
 <template>
- 내역 페이지 입니다.
+ 커피챗 상세 조회 페이지
 </template>
 
 <style scoped>

@@ -69,7 +69,7 @@ const heartActive = new URL('@/assets/image/heart-active.png', import.meta.url).
               @click="toggleLike"
               class="flex items-center gap-1 px-3 py-1 w-fit border border-[var(--newbitdivider)] rounded-md text-13px-regular text-[var(--newbittext)] hover:bg-[var(--newbitlightmode-hover)] transition"
           >
-            <img :src="isLiked ? heartActive : heartDefault" class="w-4 h-4" alt="하트" />
+            <img :src="isLiked ? heartActive : heartDefault" class="w-5 h-4.5" alt="하트" />
             <span>{{ column.likeCount }}</span>
           </button>
         </div>
