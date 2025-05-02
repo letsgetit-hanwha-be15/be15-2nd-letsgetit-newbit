@@ -53,7 +53,7 @@ public class CoffeechatCommandService {
     @Transactional
     public Long createCoffeechat(Long userId, CoffeechatCreateRequest request) {
         // 1. 진행중인 커피챗이 존재
-        boolean hasCoffeechat = coffeechatQueryService.hasProgressCoffeechats(request.getMenteeId(), request.getMentorId());
+        boolean hasCoffeechat = coffeechatQueryService.hasProgressCoffeechats(userId, request.getMentorId());
         if (hasCoffeechat) throw new BusinessException(ErrorCode.COFFEECHAT_ALREADY_EXIST);
 
         // 2. 커피챗 등록
