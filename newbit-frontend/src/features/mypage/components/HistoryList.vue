@@ -80,12 +80,21 @@ const filteredHistories = computed(() => {
 
 
 function normalizeItem(item) {
+  let readableType = item.serviceType
+  let readableInfo = item.serviceTitleOrUserNickname
+  if (item.serviceType === 'COFFEECHAT') {
+    readableType = '커피챗 구매'
+    readableInfo = readableInfo.concat('님과의 커피챗')
+  } else if (item.serviceType === 'COLUMN') {
+    readableType = '칼럼 구매'
+  }
+
   return {
-    id: item.historyId,
+    id: item.serviceId,
     createdAt: item.createdAt,
     amount: item.increaseAmount ?? -item.decreaseAmount,
-    serviceType: item.serviceType,
-    relatedInfo: item.serviceTitleOrUserNickname
+    serviceType: readableType,
+    relatedInfo: readableInfo
   }
 }
 </script>

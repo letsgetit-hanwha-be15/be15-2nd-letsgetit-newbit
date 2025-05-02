@@ -10,7 +10,23 @@
     <div class="flex-1 px-4 overflow-hidden">
       <div class="text-black font-semibold truncate">{{ item.serviceType }}</div>
       <div v-if="item.relatedInfo" class="text-gray-400 text-sm truncate">
-        {{ item.relatedInfo }}
+        <router-link
+            v-if="item.serviceType === '커피챗 구매'"
+            :to="`/mypage/coffeechats/${item.id}`"
+            class="hover:underline"
+        >
+          {{ item.relatedInfo }}
+        </router-link>
+        <router-link
+            v-else-if="item.serviceType === '칼럼 구매'"
+            :to="`/columns/${item.id}`"
+            class="hover:underline"
+        >
+          {{ item.relatedInfo }}
+        </router-link>
+        <span v-else>
+      {{ item.relatedInfo }}
+    </span>
       </div>
     </div>
 
