@@ -49,7 +49,7 @@ const historyItems = ref({
 </script>
 
 <template>
-  <div class="w-full mx-auto">
+  <div class="w-full max-w-4xl mx-auto">
     <h2 class="text-heading3 mb-4">포인트 내역</h2>
     <HistoryList
         :histories="historyItems.data.histories"
