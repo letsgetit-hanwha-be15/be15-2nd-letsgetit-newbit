@@ -9,6 +9,6 @@ import java.util.List;
 @Getter
 @Builder
 public class CoffeechatListResponse {
-    private final List<CoffeechatDto> coffeechats;
+    private final List<CoffeechatListDto> coffeechats;
     private final Pagination pagination;
 }

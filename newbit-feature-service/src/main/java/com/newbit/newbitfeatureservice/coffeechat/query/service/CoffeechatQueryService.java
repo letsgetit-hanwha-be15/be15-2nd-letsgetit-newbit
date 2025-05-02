@@ -1,5 +1,6 @@
 package com.newbit.newbitfeatureservice.coffeechat.query.service;
 
+import com.newbit.newbitfeatureservice.coffeechat.query.dto.request.CoffeechatProgressServiceRequest;
 import com.newbit.newbitfeatureservice.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.newbitfeatureservice.coffeechat.query.dto.response.*;
 import com.newbit.newbitfeatureservice.coffeechat.query.mapper.CoffeechatMapper;
@@ -36,7 +37,7 @@ public class CoffeechatQueryService {
     public CoffeechatListResponse getCoffeechats(CoffeechatSearchServiceRequest coffeechatSearchServiceRequest) {
 
         // 필요한 컨텐츠 조회
-        List<CoffeechatDto> coffeechats = coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest);
+        List<CoffeechatListDto> coffeechats = coffeechatMapper.selectCoffeechats(coffeechatSearchServiceRequest);
 
         // 해당 검색 조건으로 총 몇개의 컨텐츠가 있는지 조회 (페이징을 위한 속성 값 계산이 필요)
         long totalItems = coffeechatMapper.countCoffeechats(coffeechatSearchServiceRequest);
@@ -53,6 +54,19 @@ public class CoffeechatQueryService {
                         .totalItems(totalItems)
                         .build())
                 .build();
+    }
+
+    /* 진행중인 커피챗 목록이 있는지 여부 */
+    @Transactional(readOnly = true)
+    public Boolean hasProgressCoffeechats(long menteeId, long mentorId) {
+        CoffeechatProgressServiceRequest request = CoffeechatProgressServiceRequest.builder()
+                .menteeId(menteeId)
+                .mentorId(mentorId)
+                .build();
+
+        long count = coffeechatMapper.countProgressCoffeechats(request);
+
+        return count != 0;
     }
 
     public RequestTimeListResponse getCoffeechatRequestTimes(Long coffeechatId) {
