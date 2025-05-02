@@ -11,14 +11,14 @@
       />
     </div>
 
-    <!-- 페이지네이션 -->
+    <!-- 임시 페이지네이션 -->
     <div
         v-if="pagination"
         class="flex justify-center items-center gap-4 mt-6 text-sm text-gray-700"
     >
       <button
           :disabled="pagination.currentPage === 1"
-          @click="$emit('page-change', pagination.currentPage - 1)"
+          @click="emit('page-change', pagination.currentPage - 1)"
           class="px-3 py-1 border rounded disabled:text-gray-300 disabled:cursor-not-allowed"
       >
         Previous
@@ -26,7 +26,7 @@
       <span>Page {{ pagination.currentPage }} / {{ pagination.totalPage }}</span>
       <button
           :disabled="pagination.currentPage === pagination.totalPage"
-          @click="$emit('page-change', pagination.currentPage + 1)"
+          @click="emit('page-change', pagination.currentPage + 1)"
           class="px-3 py-1 border rounded disabled:text-gray-300 disabled:cursor-not-allowed"
       >
         Next
