@@ -1,11 +1,18 @@
 <script setup>
-
+import Footer from "@/components/common/Footer.vue";
 </script>
 
 <template>
-  <RouterView />
+  <div class="app-layout">
+    <RouterView />
+    <Footer />
+  </div>
 </template>
 
-<style scoped>
-
+<style>
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 </style>

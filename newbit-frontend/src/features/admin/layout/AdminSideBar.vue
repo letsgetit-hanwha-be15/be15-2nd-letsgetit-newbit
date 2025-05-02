@@ -45,8 +45,8 @@
 <style scoped>
 .admin-sidebar {
   background: #fff;
-  border: 2px solid #b3d8fd;
-  border-radius: 20px;
+  border: 1px solid #b3d8fd;
+  border-radius: 5px;
   padding: 32px 24px;
   width: 217px;
   min-height: 600px;

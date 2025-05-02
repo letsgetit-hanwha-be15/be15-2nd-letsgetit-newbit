@@ -14,8 +14,6 @@ import MyPageSideBar from '@/features/mypage/components/MyPageSideBar.vue'
         <router-view />
       </main>
     </div>
-
-    <Footer />
   </div>
 </template>
 

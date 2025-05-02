@@ -2,82 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body,
+#app {
+  height: 100%;
+  min-height: 100%;
+}
+
 * {
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  height: 100%;
-  font-family: var(
-    --newbit-text-16px-regular-font-family,
-    "Noto Sans",
-    sans-serif
-  );
-  font-weight: var(--newbit-text-16px-regular-font-weight, 400);
-  font-size: var(--newbit-text-16px-regular-font-size, 16px);
-  color: var(--newbittext, #000);
-  background-color: var(--newbitbackground, #fff);
-  padding: 0;
-}
-
-a {
-  text-decoration: none;
-}
-
-h1 {
-  font-family: var(--newbit-text-heading1-font-family, "Noto Sans", sans-serif);
-  font-weight: var(--newbit-text-heading1-font-weight, 700);
-  font-size: var(--newbit-text-heading1-font-size, 32px);
-  margin: 0 0 1em 0;
-}
-
-h2 {
-  font-family: var(--newbit-text-heading2-font-family, "Noto Sans", sans-serif);
-  font-weight: var(--newbit-text-heading2-font-weight, 700);
-  font-size: var(--newbit-text-heading2-font-size, 24px);
-  margin: 0 0 0.8em 0;
-}
-
-h3 {
-  font-family: var(--newbit-text-heading3-font-family, "Noto Sans", sans-serif);
-  font-weight: var(--newbit-text-heading3-font-weight, 700);
-  font-size: var(--newbit-text-heading3-font-size, 19px);
-  margin: 0 0 0.6em 0;
-}
-
-p {
-  font-family: var(
-    --newbit-text-16px-regular-font-family,
-    "Noto Sans",
-    sans-serif
-  );
-  font-weight: var(--newbit-text-16px-regular-font-weight, 400);
-  font-size: var(--newbit-text-16px-regular-font-size, 16px);
-  margin: 0 0 1em 0;
-  line-height: 1.6;
-}
-
-input,
-select,
-textarea {
-  font-family: var(
-    --newbit-text-13px-regular-font-family,
-    "Noto Sans",
-    sans-serif
-  );
-  font-size: var(--newbit-text-13px-regular-font-size, 13px);
-  color: var(--newbittext, #000);
-}
-
-button {
-  font-family: var(
-    --newbit-text-button-font-family,
-    "Noto Sans KR",
-    sans-serif
-  );
-  font-weight: var(--newbit-text-button-font-weight, 700);
-  font-size: var(--newbit-text-button-font-size, 13px);
-  cursor: pointer;
 }

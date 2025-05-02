@@ -15,16 +15,17 @@ import AdminSideBar from "./AdminSideBar.vue";
 .admin-layout {
   display: flex;
   width: 100%;
-  min-height: 100%;
+  /* height: 100%; */
   gap: 6px;
   background: none;
 }
+
 .admin-content {
   flex: 1;
   min-width: 0;
   background: #fff;
   border-radius: 15px;
-  padding: 12px 12px;
-  overflow-x: auto;
+  padding: 12px 12px 0 12px;
+  /* min-height: 100vh; */
 }
 </style>
