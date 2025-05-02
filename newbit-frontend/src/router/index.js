@@ -10,6 +10,7 @@ import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 import {mypageRoutes} from "@/features/mypage/router.js";
 import {columnRoutes} from "@/features/column/router.js";
 import {profileRouters} from "@/features/profile/router.js";
+import {postRoutes} from "@/features/post/router.js";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,6 +26,7 @@ const router = createRouter({
         ...productRoutes,
         ...reportRoutes,
         ...perkRoutes,
+        ...postRoutes,
         ...columnRoutes,
         ...profileRouters,
       ],
