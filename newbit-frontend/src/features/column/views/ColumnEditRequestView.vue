@@ -70,6 +70,7 @@ const handleSubmit = () => {
   })
 
   toast.success('수정 요청에 성공했습니다!')
+  router.push('/columns')
 }
 
 // 취소
