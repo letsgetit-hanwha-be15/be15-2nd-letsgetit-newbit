@@ -11,7 +11,7 @@ public class CoffeechatSearchServiceRequest {
     private Integer page = 1;
     private Integer size = 10;
     private Long userId;
-    private Authority authority;
+    private String authority;
     private ProgressStatus progressStatus;
     private Boolean isProgressing;
 

@@ -31,13 +31,19 @@
                 JOIN user u ON (u.user_id = m.user_id)
             </when>
             <when test="authority == 'MENTOR'">
+                JOIN mentor m ON (c.mentor_id = m.mentor_id)
                 JOIN user u ON (u.user_id = c.mentee_id)
             </when>
         </choose>
         <where>
-            <if test="userId != null">
-                AND u.user_id = #{ userId }
-            </if>
+            <choose>
+                <when test="authority == 'MENTOR' and userId != null">
+                    AND m.user_id = #{userId}
+                </when>
+                <when test="authority == 'USER' and userId != null">
+                    AND c.mentee_id = #{userId}
+                </when>
+            </choose>
             <if test="isProgressing != null">
                 AND c.progress_status NOT IN ('COMPLETE', 'CANCEL')
             </if>
@@ -51,10 +57,20 @@
     <select id="countCoffeechats" resultType="long">
         SELECT COUNT(*)
         FROM coffeechat c
+        <choose>
+            <when test="authority == 'MENTOR'">
+                JOIN mentor m ON c.mentor_id = m.mentor_id
+            </when>
+        </choose>
         <where>
-            <if test="userId != null">
-                AND u.user_id = #{ userId }
-            </if>
+            <choose>
+                <when test="authority == 'MENTOR' and userId != null">
+                    AND m.user_id = #{userId}
+                </when>
+                <when test="authority == 'USER' and userId != null">
+                    AND c.mentee_id = #{userId}
+                </when>
+            </choose>
             <if test="isProgressing != null">
                 AND c.progress_status NOT IN ('COMPLETE', 'CANCEL')
             </if>

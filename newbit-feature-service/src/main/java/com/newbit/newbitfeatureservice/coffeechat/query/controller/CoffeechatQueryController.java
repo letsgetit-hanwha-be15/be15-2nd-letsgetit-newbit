@@ -56,7 +56,7 @@ public class CoffeechatQueryController {
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
 
         String auth = customUser.getAuthorities().iterator().next().getAuthority();
-        coffeechatSearchServiceRequest.setAuthority(Authority.valueOf(auth));
+        coffeechatSearchServiceRequest.setAuthority(auth);
         coffeechatSearchServiceRequest.setUserId(userId);
         if(status != null) {
             coffeechatSearchServiceRequest.setProgressStatus(status);
