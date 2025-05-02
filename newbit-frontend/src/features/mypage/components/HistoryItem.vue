@@ -11,14 +11,14 @@
       <div class="text-black font-semibold truncate">{{ item.serviceType }}</div>
       <div v-if="item.relatedInfo" class="text-gray-400 text-sm truncate">
         <router-link
-            v-if="item.serviceType === '커피챗 구매'"
+            v-if="item.serviceType === '커피챗 구매' || item.serviceType === '커피챗 판매'"
             :to="`/mypage/coffeechats/${item.id}`"
             class="hover:underline"
         >
           {{ item.relatedInfo }}
         </router-link>
         <router-link
-            v-else-if="item.serviceType === '칼럼 구매'"
+            v-else-if="item.serviceType === '칼럼 구매' || item.serviceType === '칼럼 판매'"
             :to="`/columns/${item.id}`"
             class="hover:underline"
         >
@@ -31,11 +31,21 @@
     </div>
 
     <!-- 금액 영역 -->
-    <div
-        class="min-w-[64px] text-right font-semibold shrink-0"
-        :class="item.amount > 0 ? 'text-blue-500' : 'text-gray-400'"
-    >
-      {{ formattedAmount }}
+    <div class="flex flex-row justify-center gap-2">
+      <div v-if="type === 'sale'">
+        <div v-if="item.settledAt">
+          {{ dayjs(item.settledAt).format('HH:mm:ss') }}
+        </div>
+        <div v-else class="text-gray-400">
+          정산 미완료
+        </div>
+      </div>
+      <div
+          class="min-w-[64px] text-right font-semibold shrink-0"
+          :class="item.amount > 0 ? 'text-blue-500' : 'text-gray-400'"
+      >
+        {{ formattedAmount }}
+      </div>
     </div>
   </div>
 </template>
@@ -46,7 +56,8 @@ import dayjs from 'dayjs'
 
 const props = defineProps({
   item: Object,
-  prevItem: Object // 전달받은 이전 항목
+  prevItem: Object, // 전달받은 이전 항목
+  type: String
 })
 
 const date = dayjs(props.item.createdAt)
@@ -61,6 +72,10 @@ const showYear = computed(() => {
 })
 
 const formattedAmount = computed(() => {
+  if(props.type === 'sale') {
+    const amount = Number(props.item.amount ?? 0)
+    return `${amount.toLocaleString()}`
+  }
   const sign = props.item.amount > 0 ? '+' : ''
   return `${sign}${props.item.amount}`
 })
