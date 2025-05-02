@@ -7,8 +7,23 @@ import { reportRoutes } from "@/features/report/router.js";
 import { perkRoutes } from "@/features/perk/router.js";
 import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 import {mypageRoutes} from "@/features/mypage/router.js";
-import {postRoutes} from "@/features/post/router.js";
 import {columnRoutes} from "@/features/column/router.js";
+import PostListView from '@/features/post/views/PostListView.vue'
+
+
+export const postRoutes = [
+  {
+    path: '/posts',
+    name: 'PostList',
+    component: PostListView,
+  },
+  {
+    path: '/posts/category/:categoryId',
+    name: 'PostByCategory',
+    component: PostListView,
+    props: true
+  }
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
