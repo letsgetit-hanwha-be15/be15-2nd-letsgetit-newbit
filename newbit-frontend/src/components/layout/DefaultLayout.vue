@@ -7,7 +7,6 @@
       <!-- 여기에 각 페이지(HomePage, LoginPage 등)가 끼워진다 -->
     </main>
 
-    <Footer />
   </div>
 </template>
 

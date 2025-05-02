@@ -1,4 +1,7 @@
 <script setup>
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 const props = defineProps({
   reports: {
     type: Array,
@@ -18,14 +21,12 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["update:currentPage", "action"]);
-
 const handlePageChange = (page) => {
   emit("update:currentPage", page);
 };
 
-const handleAction = (reportId, action) => {
-  emit("action", { reportId, action });
+const navigateToDetail = (reportId) => {
+  router.push(`/admin/comment/${reportId}`);
 };
 </script>
 
@@ -34,39 +35,37 @@ const handleAction = (reportId, action) => {
     <table class="report-table">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>신고 댓글 내용</th>
-          <th>마지막 신고내용</th>
-          <th>신고수</th>
-          <th>마지막 신고 일시</th>
-          <th>상태</th>
-          <th>관리</th>
+          <th class="text-13px-bold">ID</th>
+          <th class="text-13px-bold">신고 댓글 내용</th>
+          <th class="text-13px-bold">마지막 신고내용</th>
+          <th class="text-13px-bold">신고수</th>
+          <th class="text-13px-bold">마지막 신고 일시</th>
+          <th class="text-13px-bold">상태</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="report in reports" :key="report.id">
-          <td>{{ report.id }}</td>
-          <td>{{ report.content }}</td>
-          <td>{{ report.lastContent }}</td>
-          <td>{{ report.count }}</td>
-          <td>{{ report.lastDate }}</td>
+          <td class="text-13px-regular">{{ report.id }}</td>
           <td>
-            <span :class="['status', report.status]">{{ report.status }}</span>
-          </td>
-          <td>
-            <button
-              v-for="action in report.actions"
-              :key="action"
-              :class="['action-btn', action]"
-              @click="handleAction(report.id, action)"
+            <a
+              class="report-content text-13px-regular"
+              @click="navigateToDetail(report.id)"
             >
-              {{ action }}
-            </button>
+              {{ report.content }}
+            </a>
+          </td>
+          <td class="text-13px-regular">{{ report.lastContent }}</td>
+          <td class="text-13px-regular">{{ report.count }}</td>
+          <td class="text-13px-regular">{{ report.lastDate }}</td>
+          <td>
+            <span :class="['status', report.status, 'text-13px-bold']">{{
+              report.status
+            }}</span>
           </td>
         </tr>
       </tbody>
     </table>
-    <div class="pagination">
+    <div class="pagination text-13px-regular">
       <span
         >총 <b>{{ totalReports }}</b
         >건의 댓글 신고가 있습니다.</span
@@ -75,13 +74,14 @@ const handleAction = (reportId, action) => {
         <button
           :disabled="currentPage === 1"
           @click="handlePageChange(currentPage - 1)"
+          class="text-button"
         >
           Previous
         </button>
         <button
           v-for="n in totalPages"
           :key="n"
-          :class="{ active: n === currentPage }"
+          :class="{ active: n === currentPage, 'text-button': true }"
           v-if="n === 1 || n === totalPages || Math.abs(n - currentPage) <= 1"
           @click="handlePageChange(n)"
         >
@@ -91,6 +91,7 @@ const handleAction = (reportId, action) => {
         <button
           :disabled="currentPage === totalPages"
           @click="handlePageChange(currentPage + 1)"
+          class="text-button"
         >
           Next
         </button>
@@ -112,13 +113,14 @@ const handleAction = (reportId, action) => {
 
 .report-table th,
 .report-table td {
-  border: 1px solid #e0e0e0;
-  padding: 10px 8px;
+  border: 1px solid #e9ecef;
+  padding: 12px 16px;
   text-align: center;
 }
 
 .report-table th {
   background: #f8f9fa;
+  font-weight: 600;
 }
 
 .status {
@@ -128,59 +130,11 @@ const handleAction = (reportId, action) => {
   display: inline-block;
 }
 
-.status.미처리 {
-  background: #bdbdbd;
-}
-
-.status.검토중 {
-  background: #42a5f5;
-}
-
-.status.정지됨 {
-  background: #ef5350;
-}
-
-.status.삭제됨 {
-  background: #d32f2f;
-}
-
-.action-btn {
-  margin: 0 2px;
-  padding: 4px 10px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #fff;
-}
-
-.action-btn.무고 {
-  background: #42a5f5;
-}
-
-.action-btn.허위 {
-  background: #42a5f5;
-}
-
-.action-btn.보류 {
-  background: #42a5f5;
-}
-
-.action-btn.삭제 {
-  background: #ef5350;
-}
-
-.action-btn.정지 {
-  background: #d32f2f;
-}
-
 .pagination {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 16px;
-}
-
-.pagination b {
 }
 
 .page-controls {
@@ -197,10 +151,6 @@ const handleAction = (reportId, action) => {
   cursor: pointer;
 }
 
-.page-controls button:hover {
-  /* No change */
-}
-
 .page-controls button.active {
   background: #1976d2;
   color: #fff;
@@ -210,5 +160,15 @@ const handleAction = (reportId, action) => {
   background: #e0e0e0;
   color: #aaa;
   cursor: not-allowed;
+}
+
+.report-content {
+  color: var(--newbittext);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.report-content:hover {
+  color: var(--newbitnormal);
 }
 </style>
