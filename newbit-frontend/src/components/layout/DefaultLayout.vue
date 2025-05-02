@@ -23,7 +23,6 @@ main {
 }
 .content {
   max-width: 1280px;
-  height: 1000px;
   margin: 0 auto;
   min-height: calc(100vh - 120px);
   padding: 20px;
