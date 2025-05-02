@@ -12,7 +12,7 @@
           :class="[
           'px-4 py-2 rounded-full text-13px-regular',
           selectedFilter === label
-            ? 'bg-blue-500 text-white'
+            ? 'bg-[var(--newbitnormal)] text-white'
             : 'bg-gray-100 text-gray-700'
         ]"
       >
@@ -20,7 +20,7 @@
       </button>
     </div>
 
-    <div v-if="type === 'sale'" class="flex flex-row justify-between py-2 text-gray-400 text-sm font-medium border-b">
+    <div v-if="type === 'sale'" class="flex flex-row justify-between py-2 text-[var(--newbitgray)] text-sm font-medium border-b">
       <div class="ps-24">판매 콘텐츠</div>
       <div class="flex flex-row gap-2">
         <div class="text-center">정산 일시</div>
@@ -30,7 +30,7 @@
 
 
     <!-- 리스트 -->
-    <div class="flex flex-col divide-y divide-gray-100">
+    <div class="flex flex-col divide-y divide-[var(--newbitlightgray)]">
       <HistoryItem
           v-for="(item, index) in filteredHistories"
           :key="item.historyId"

@@ -2,14 +2,14 @@
   <div class="flex justify-between items-center py-6 text-sm w-full">
     <!-- 날짜 영역 -->
     <div class="flex flex-col items-end w-[80px] pr-2 shrink-0">
-      <span v-if="showYear" class="text-xs text-gray-400">{{ year }}</span>
-      <span class="text-black font-medium">{{ day }}</span>
+      <span v-if="showYear" class="text-xs text-[var(--newbitgray)]">{{ year }}</span>
+      <span class="font-medium">{{ day }}</span>
     </div>
 
     <!-- 내용 영역 -->
     <div class="flex-1 px-4 overflow-hidden">
-      <div class="text-black font-semibold truncate">{{ item.serviceType }}</div>
-      <div v-if="item.relatedInfo" class="text-gray-400 text-sm truncate">
+      <div class="font-semibold truncate">{{ item.serviceType }}</div>
+      <div v-if="item.relatedInfo" class="text-[var(--newbitgray)] text-sm truncate">
         <router-link
             v-if="item.serviceType === '커피챗 구매' || item.serviceType === '커피챗 판매'"
             :to="`/mypage/coffeechats/${item.id}`"
@@ -36,13 +36,13 @@
         <div v-if="item.settledAt">
           {{ dayjs(item.settledAt).format('HH:mm:ss') }}
         </div>
-        <div v-else class="text-gray-400">
+        <div v-else class="text-[var(--newbitgray)]">
           정산 미완료
         </div>
       </div>
       <div
           class="min-w-[64px] text-right font-semibold shrink-0"
-          :class="item.amount > 0 ? 'text-blue-500' : 'text-gray-400'"
+          :class="item.amount > 0 ? 'text-[var(--newbitnormal)]' : 'text-[var(--newbitgray)]'"
       >
         {{ formattedAmount }}
       </div>
