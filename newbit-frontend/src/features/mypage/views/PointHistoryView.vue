@@ -2,6 +2,7 @@
 import HistoryList from '@/features/mypage/components/HistoryList.vue'
 import {ref} from "vue";
 
+const historyType = 'point'
 const historyItems = ref({
   "success": true,
   "data": {
@@ -94,11 +95,12 @@ const historyItems = ref({
 </script>
 
 <template>
-  <div class="w-full max-w-4xl mx-auto">
+  <div class="w-full max-w-4xl mx-auto p-6">
     <h2 class="text-heading3 mb-4">포인트 내역</h2>
     <HistoryList
         :histories="historyItems.data.histories"
         :pagination="historyItems.data.pagination"
+        :type="historyType"
     />
   </div>
 </template>

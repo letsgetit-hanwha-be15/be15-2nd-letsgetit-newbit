@@ -1,7 +1,10 @@
 <template>
   <div class="w-full max-w-4xl mx-auto">
 
-    <div class="flex gap-2 mb-4">
+    <div
+        v-if="type === 'diamond' || type === 'point'"
+        class="flex gap-2 mb-4"
+    >
       <button
           v-for="label in ['전체', '적립', '사용']"
           :key="label"
@@ -9,7 +12,7 @@
           :class="[
           'px-4 py-2 rounded-full text-13px-regular',
           selectedFilter === label
-            ? 'bg-blue-500 text-white'
+            ? 'bg-[var(--newbitnormal)] text-white'
             : 'bg-gray-100 text-gray-700'
         ]"
       >
@@ -17,14 +20,23 @@
       </button>
     </div>
 
+    <div v-if="type === 'sale'" class="flex flex-row justify-between py-2 text-[var(--newbitgray)] text-sm font-medium border-b">
+      <div class="ps-24">판매 콘텐츠</div>
+      <div class="flex flex-row gap-2">
+        <div class="text-center">정산 일시</div>
+        <div class="text-right min-w-[64px]">판매액(원)</div>
+      </div>
+    </div>
+
 
     <!-- 리스트 -->
-    <div class="flex flex-col divide-y divide-gray-100">
+    <div class="flex flex-col divide-y divide-[var(--newbitlightgray)]">
       <HistoryItem
           v-for="(item, index) in filteredHistories"
           :key="item.historyId"
           :item="normalizeItem(item)"
           :prevItem="index > 0 ? normalizeItem(filteredHistories[index - 1]) : null"
+          :type="type"
       />
     </div>
 
@@ -82,19 +94,31 @@ const filteredHistories = computed(() => {
 function normalizeItem(item) {
   let readableType = item.serviceType
   let readableInfo = item.serviceTitleOrUserNickname
+  let amount = item.saleAmount
   if (item.serviceType === 'COFFEECHAT') {
-    readableType = '커피챗 구매'
+    if(props.type === 'sale')
+      readableType = '커피챗 판매'
+    else if(props.type === 'diamond')
+      readableType = '커피챗 구매'
     readableInfo = readableInfo.concat('님과의 커피챗')
   } else if (item.serviceType === 'COLUMN') {
-    readableType = '칼럼 구매'
+    if(props.type === 'sale')
+      readableType = '칼럼 판매'
+    else if(props.type === 'diamond')
+      readableType = '칼럼 구매'
+  }
+
+  if(props.type === 'point' || props.type === 'diamond') {
+    amount = item.increaseAmount ?? -item.decreaseAmount
   }
 
   return {
     id: item.serviceId,
     createdAt: item.createdAt,
-    amount: item.increaseAmount ?? -item.decreaseAmount,
+    amount: amount,
     serviceType: readableType,
-    relatedInfo: readableInfo
+    relatedInfo: readableInfo,
+    settledAt: item.settledAt,
   }
 }
 </script>
