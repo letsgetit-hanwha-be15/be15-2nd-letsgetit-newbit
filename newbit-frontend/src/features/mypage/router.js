@@ -10,6 +10,7 @@ import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.v
 import CoffeechatListView from "@/features/mypage/views/CoffeechatListView.vue";
 import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
 import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
+import SaleHistoryView from "@/features/mypage/views/SaleHistoryView.vue";
 
 export const mypageRoutes = [
     {
@@ -49,6 +50,11 @@ export const mypageRoutes = [
                 path: 'history/diamond',
                 name: 'DiamondHistory',
                 component: DiamondHistoryView,
+            },
+            {
+                path: 'history/sale',
+                name: 'SaleHistory',
+                component: SaleHistoryView,
             },
             {
                 path: 'reviews',
