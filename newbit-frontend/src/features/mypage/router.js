@@ -4,11 +4,12 @@ import MyProfileEditView from './views/MyProfileEditView.vue'
 import MentorProfileEditView from './views/MentorProfileEditView.vue'
 import AccountEditView from './views/AccountEditView.vue'
 import MyContentsView from './views/MyContentsView.vue'
-import MyHistoryView from './views/MyHistoryView.vue'
+import PointHistoryView from './views/PointHistoryView.vue'
 import MyReviewsView from './views/MyReviewsView.vue'
 import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.vue";
 import CoffeechatListView from "@/features/mypage/views/CoffeechatListView.vue";
 import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
+import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
 
 export const mypageRoutes = [
     {
@@ -40,9 +41,14 @@ export const mypageRoutes = [
                 component: MyContentsView,
             },
             {
-                path: 'history',
-                name: 'MyHistory',
-                component: MyHistoryView,
+                path: 'history/point',
+                name: 'PointHistory',
+                component: PointHistoryView,
+            },
+            {
+                path: 'history/diamond',
+                name: 'DiamondHistory',
+                component: DiamondHistoryView,
             },
             {
                 path: 'reviews',

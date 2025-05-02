@@ -3,7 +3,7 @@
 </script>
 
 <template>
- 내역 페이지 입니다.
+다이아몬드 내역
 </template>
 
 <style scoped>
