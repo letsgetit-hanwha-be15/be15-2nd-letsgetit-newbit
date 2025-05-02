@@ -100,7 +100,7 @@ const submit = () => {
         <div ref="editorContainer"></div>
 
         <div class="flex justify-end gap-2 mt-4">
-          <button class="newbit text-white px-4 py-2 rounded" @click="router.push('/columns')">취소</button>
+          <button class="bg-[var(--newbitred)] text-white px-4 py-2 rounded" @click="router.push('/columns')">취소</button>
           <button class="bg-blue-500 text-white px-4 py-2 rounded" @click="submit">등록</button>
         </div>
       </div>
