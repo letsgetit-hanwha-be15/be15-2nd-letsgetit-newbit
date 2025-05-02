@@ -1,13 +1,30 @@
 <template>
   <div class="w-full max-w-4xl mx-auto">
 
+    <div class="flex gap-2 mb-4">
+      <button
+          v-for="label in ['전체', '적립', '사용']"
+          :key="label"
+          @click="selectedFilter = label"
+          :class="[
+          'px-4 py-2 rounded-full text-13px-regular',
+          selectedFilter === label
+            ? 'bg-blue-500 text-white'
+            : 'bg-gray-100 text-gray-700'
+        ]"
+      >
+        {{ label }}
+      </button>
+    </div>
+
+
     <!-- 리스트 -->
     <div class="flex flex-col divide-y divide-gray-100">
       <HistoryItem
-          v-for="(item, index) in histories"
+          v-for="(item, index) in filteredHistories"
           :key="item.historyId"
           :item="normalizeItem(item)"
-          :prevItem="index > 0 ? normalizeItem(histories[index - 1]) : null"
+          :prevItem="index > 0 ? normalizeItem(filteredHistories[index - 1]) : null"
       />
     </div>
 
@@ -37,6 +54,7 @@
 
 <script setup>
 import HistoryItem from './HistoryItem.vue'
+import {ref, computed} from "vue";
 
 const props = defineProps({
   histories: Array,
@@ -45,6 +63,21 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['page-change'])
+
+
+const selectedFilter = ref('전체') // '전체' | '적립' | '사용'
+
+// 금액 기준 필터링
+const filteredHistories = computed(() => {
+  if (selectedFilter.value === '적립') {
+    return props.histories.filter(h => h.increaseAmount)
+  }
+  if (selectedFilter.value === '사용') {
+    return props.histories.filter(h => h.decreaseAmount)
+  }
+  return props.histories
+})
+
 
 function normalizeItem(item) {
   return {
