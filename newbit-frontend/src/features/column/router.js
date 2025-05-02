@@ -9,5 +9,10 @@ export const columnRoutes = [
         name: "ColumnDetail",
         component: () => import("@/features/column/views/ColumnDetailView.vue"),
         props: true
+    },
+    {
+        path: "/columns/requests",
+        name: "ColumnRequestPage",
+        component: () => import("@/features/column/views/ColumnRequestView.vue")
     }
 ];
