@@ -8,6 +8,8 @@ export const paymentConfig = {
       prod: import.meta.env.VITE_TOSS_PROD_CLIENT_KEY,
     },
   },
+
+  // TODO : 차후 api 폴더에 api.js 파일 생성시 분리하여 이동 필요
   api: {
     baseUrl: import.meta.env.VITE_API_BASE_URL || "/api/v1",
     endpoints: {

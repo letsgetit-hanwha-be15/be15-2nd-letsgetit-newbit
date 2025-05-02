@@ -41,4 +41,21 @@ public interface ColumnRepository extends JpaRepository<Column, Long> {
 
     // 시리즈에 속한 칼럼 목록 조회 (페이징 적용)
     Page<Column> findAllBySeries_SeriesId(Long seriesId, Pageable pageable);
+
+    // 작성자, 제목으로 검색
+    @Query("""
+    SELECT new com.newbit.newbitfeatureservice.column.dto.response.GetColumnListResponseDto(
+        c.columnId, c.title, c.thumbnailUrl, c.price, c.likeCount, c.mentorId
+    )
+    FROM Column c
+    WHERE c.isPublic = true
+    AND (
+        :keyword IS NULL OR
+        LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+        LOWER(c.mentorNickname) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    )
+    ORDER BY c.createdAt DESC
+""")
+    Page<GetColumnListResponseDto> searchPublicColumns(@Param("keyword") String keyword, Pageable pageable);
+
 }

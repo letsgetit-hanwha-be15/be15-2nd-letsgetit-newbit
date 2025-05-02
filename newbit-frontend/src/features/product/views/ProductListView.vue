@@ -30,12 +30,12 @@ const products = [
       "300개의 다이아몬드",
       "프리미엄 프로필 뱃지",
       "3개월 동안 사용 가능",
-      "10% 추가 보너스",
+      "300 포인트 보너스",
     ],
   },
   {
     id: 3,
-    title: "API 연결 안되서 상품 리스트 하드코딩 해놓음 추후 수정 필요",
+    title: "다이아 1000개 프리미엄 패키지지",
     price: 100000,
     priceLabel: "/VAT 포함",
     description: "API 연결 안되서 상품 리스트 하드코딩 해놓음 추후 수정 필요",
@@ -126,6 +126,4 @@ const handlePurchase = (product) => {
   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

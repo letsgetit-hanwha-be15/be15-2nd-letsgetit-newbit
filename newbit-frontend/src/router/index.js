@@ -8,6 +8,7 @@ import { perkRoutes } from "@/features/perk/router.js";
 import DefaultLayout from "@/components/layout/DefaultLayout.vue";
 import {mypageRoutes} from "@/features/mypage/router.js";
 import {postRoutes} from "@/features/post/router.js";
+import {columnRoutes} from "@/features/column/router.js";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +24,7 @@ const router = createRouter({
         ...reportRoutes,
         ...perkRoutes,
         ...postRoutes,
+        ...columnRoutes,
       ],
     },
     ...mypageRoutes
