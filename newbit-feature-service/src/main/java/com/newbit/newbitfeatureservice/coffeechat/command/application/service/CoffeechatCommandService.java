@@ -10,6 +10,7 @@ import com.newbit.newbitfeatureservice.coffeechat.command.domain.repository.Coff
 import com.newbit.newbitfeatureservice.coffeechat.command.application.dto.request.CoffeechatCreateRequest;
 import com.newbit.newbitfeatureservice.coffeechat.command.domain.aggregate.Coffeechat;
 import com.newbit.newbitfeatureservice.coffeechat.command.domain.repository.RequestTimeRepository;
+import com.newbit.newbitfeatureservice.coffeechat.query.dto.request.CoffeechatProgressServiceRequest;
 import com.newbit.newbitfeatureservice.coffeechat.query.dto.request.CoffeechatSearchServiceRequest;
 import com.newbit.newbitfeatureservice.coffeechat.query.dto.response.CoffeechatListResponse;
 import com.newbit.newbitfeatureservice.coffeechat.query.service.CoffeechatQueryService;
@@ -52,12 +53,8 @@ public class CoffeechatCommandService {
     @Transactional
     public Long createCoffeechat(Long userId, CoffeechatCreateRequest request) {
         // 1. 진행중인 커피챗이 존재
-        CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
-        coffeechatSearchServiceRequest.setMenteeId(userId);
-        coffeechatSearchServiceRequest.setMentorId(request.getMentorId());
-        coffeechatSearchServiceRequest.setIsProgressing(true);
-        CoffeechatListResponse coffeechatDtos = coffeechatQueryService.getCoffeechats(coffeechatSearchServiceRequest);
-        if (!coffeechatDtos.getCoffeechats().isEmpty()) throw new BusinessException(ErrorCode.COFFEECHAT_ALREADY_EXIST);
+        boolean hasCoffeechat = coffeechatQueryService.hasProgressCoffeechats(userId, request.getMentorId());
+        if (hasCoffeechat) throw new BusinessException(ErrorCode.COFFEECHAT_ALREADY_EXIST);
 
         // 2. 커피챗 등록
         Coffeechat newCoffeechat = Coffeechat.of(userId, request.getMentorId(), request.getRequestMessage(), request.getPurchaseQuantity());

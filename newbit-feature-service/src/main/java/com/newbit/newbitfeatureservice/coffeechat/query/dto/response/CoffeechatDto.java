@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @Setter
 @ToString
-@Schema(description = "커피챗 DTO")
+@Schema(description = "커피챗 상세 DTO")
 public class CoffeechatDto {
     @Schema(description = "커피챗ID")
     private Long coffeechatId;

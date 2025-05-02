@@ -3,7 +3,7 @@
 </script>
 
 <template>
-<h1>어드민용 사이드바</h1>
+ 커피챗 상세 조회 페이지
 </template>
 
 <style scoped>

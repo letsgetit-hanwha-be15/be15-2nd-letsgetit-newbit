@@ -3,7 +3,7 @@
 </script>
 
 <template>
- 내역 페이지 입니다.
+유저 프로필 상세 조회
 </template>
 
 <style scoped>

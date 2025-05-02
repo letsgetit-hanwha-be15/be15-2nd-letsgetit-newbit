@@ -6,6 +6,6 @@
 내 리뷰 조회 페이지 입니다.
 </template>
 
-<style scoped>
+<st9yle scoped>
 
-</style>
+</st9yle>

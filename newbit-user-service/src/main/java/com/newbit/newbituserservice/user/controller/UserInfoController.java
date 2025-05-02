@@ -75,7 +75,7 @@ public class UserInfoController {
     }
 
     @Operation(summary = "멘토 프로필 조회", description = "멘토의 mentorId를 기반으로 멘토 프로필 및 최근 게시물, 칼럼, 시리즈 3개씩 조회")
-    @GetMapping("/{mentorId}/profile/")
+    @GetMapping("/mentor/{mentorId}/profile")
     public ResponseEntity<ApiResponse<MentorProfileDTO>> getMentorProfile(@PathVariable Long mentorId) {
         MentorProfileDTO profile = userQueryService.getMentorProfile(mentorId);
         return ResponseEntity.ok(ApiResponse.success(profile));
