@@ -1,5 +1,6 @@
 package com.newbit.newbitfeatureservice.column.controller;
 
+import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
 import com.newbit.newbitfeatureservice.column.dto.response.GetColumnListResponseDto;
 import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import com.newbit.newbitfeatureservice.column.dto.response.GetColumnDetailResponseDto;
@@ -42,11 +43,25 @@ public class ColumnController {
         return columnService.getPublicColumnList(page, size);
     }
 
-    @Operation(summary = "멘토 본인 칼럼 목록 조회", description = "멘토가 승인된 본인의 칼럼 목록을 조회합니다.")
+
     @GetMapping("/my")
-    public ApiResponse<List<GetMyColumnListResponseDto>> getMyColumnList(
-            @AuthenticationPrincipal CustomUser customUser
+    @Operation(summary = "멘토 본인 칼럼 목록 조회", description = "멘토가 승인된 본인의 칼럼 목록을 조회합니다.")
+    public ApiResponse<Page<GetMyColumnListResponseDto>> getMyColumnList(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
             ) {
-        return ApiResponse.success(columnService.getMyColumnList(customUser.getUserId()));
+        return ApiResponse.success(columnService.getMyColumnList(customUser.getUserId(), page, size));
     }
+
+    @GetMapping("/public-list/search")
+    @Operation(summary = "공개 칼럼 검색", description = "제목 또는 작성자 닉네임으로 공개된 칼럼을 검색합니다.")
+    public ApiResponse<Page<GetColumnListResponseDto>> searchPublicColumns(
+            @ModelAttribute SearchCondition condition,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.success(columnService.searchPublicColumns(condition, page, size));
+    }
+
 }

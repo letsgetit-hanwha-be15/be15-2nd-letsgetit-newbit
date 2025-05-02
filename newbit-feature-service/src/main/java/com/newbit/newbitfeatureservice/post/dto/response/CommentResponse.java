@@ -15,8 +15,9 @@ public class CommentResponse {
     private final LocalDateTime updatedAt;
     private final Long userId;
     private final Long postId;
+    private final String writerName;
 
-    public CommentResponse(Comment comment) {
+    public CommentResponse(Comment comment, String writerName) {
         this.id = comment.getId();
         this.content = comment.getContent();
         this.reportCount = comment.getReportCount();
@@ -24,5 +25,6 @@ public class CommentResponse {
         this.updatedAt = comment.getUpdatedAt();
         this.userId = comment.getUserId();
         this.postId = comment.getPost().getId();
+        this.writerName = writerName;
     }
 }

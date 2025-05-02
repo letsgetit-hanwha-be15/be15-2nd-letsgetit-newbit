@@ -1,5 +1,6 @@
 package com.newbit.newbitfeatureservice.column.controller;
 
+import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
 import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import com.newbit.newbitfeatureservice.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.newbitfeatureservice.column.dto.request.UpdateSeriesRequestDto;
@@ -10,10 +11,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -62,24 +63,41 @@ public class SeriesController {
 
     @GetMapping("/my")
     @Operation(summary = "본인 시리즈 목록 조회", description = "멘토 본인이 생성한 시리즈 목록을 조회합니다.")
-    public ApiResponse<List<GetMySeriesListResponseDto>> getMySeriesList(
-            @AuthenticationPrincipal CustomUser customUser
+    public ApiResponse<Page<GetMySeriesListResponseDto>> getMySeriesList(
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return ApiResponse.success(seriesService.getMySeriesList(customUser.getUserId()));
+        return ApiResponse.success(seriesService.getMySeriesList(customUser.getUserId(), page, size));
     }
 
     @GetMapping("/{seriesId}/columns")
     @Operation(summary = "시리즈에 포함된 칼럼 목록 조회", description = "해당 시리즈에 포함된 칼럼 목록을 조회합니다.")
-    public ApiResponse<List<GetSeriesColumnsResponseDto>> getSeriesColumns(
-            @PathVariable Long seriesId
+    public ApiResponse<Page<GetSeriesColumnsResponseDto>> getSeriesColumns(
+            @PathVariable Long seriesId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return ApiResponse.success(seriesService.getSeriesColumns(seriesId));
+        return ApiResponse.success(seriesService.getSeriesColumns(seriesId, page, size));
     }
 
     @GetMapping
     @Operation(summary = "공개된 시리즈 목록 조회", description = "사용자가 볼 수 있는 공개 시리즈 목록을 조회합니다.")
-    public ApiResponse<List<GetMySeriesListResponseDto>> getPublicSeriesList() {
-        return ApiResponse.success(seriesService.getPublicSeriesList());
+    public ApiResponse<Page<GetMySeriesListResponseDto>> getPublicSeriesList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        return ApiResponse.success(seriesService.getPublicSeriesList(page, size));
     }
 
+    @GetMapping("/public-list/search")
+    @Operation(summary = "공개된 시리즈 검색", description = "시리즈 제목 또는 작성자 닉네임으로 공개된 시리즈를 검색합니다.")
+    public ApiResponse<Page<GetMySeriesListResponseDto>> searchPublicSeriesList(
+            @ModelAttribute SearchCondition condition,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.success(seriesService.searchPublicSeriesList(condition, page, size));
+    }
 }

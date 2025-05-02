@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
+import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -83,15 +84,15 @@ public class ColumnService {
         return new PageImpl<>(content, pageable, resultPage.getTotalElements());
     }
 
-    public List<GetMyColumnListResponseDto> getMyColumnList(Long userId) {
+    @Transactional(readOnly = true)
+    public Page<GetMyColumnListResponseDto> getMyColumnList(Long userId, int page, int size) {
         Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Column> columnsPage = columnRepository
+                .findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId, pageable);
 
-        List<Column> columns = columnRepository
-                .findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId);
-
-        return columns.stream()
-                .map(columnMapper::toMyColumnListDto)
-                .toList();
+        return columnsPage
+                .map(columnMapper::toMyColumnListDto);
     }
 
     @Transactional(readOnly = true)
@@ -142,5 +143,11 @@ public class ColumnService {
     public Long getMentorIdByColumnId(Long columnId) {
         Column column = getColumn(columnId);
         return column.getMentorId();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<GetColumnListResponseDto> searchPublicColumns(SearchCondition condition, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return columnRepository.searchPublicColumns(condition.getKeyword(), pageable);
     }
 }

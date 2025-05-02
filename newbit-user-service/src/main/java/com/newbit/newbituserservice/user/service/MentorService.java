@@ -20,10 +20,8 @@ public class MentorService {
     private final UserRepository userRepository;
 
     public MentorDTO getMentorInfo(Long mentorId) {
-        Mentor mentor = mentorRepository.findById(mentorId)
+        return mentorRepository.findMentorDTOByMentorId(mentorId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
-
-        return new MentorDTO(mentor.getIsActive(), mentor.getPrice());
     }
 
     @Transactional
