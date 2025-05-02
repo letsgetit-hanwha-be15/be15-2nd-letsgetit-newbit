@@ -4,7 +4,7 @@ import MyProfileEditView from './views/MyProfileEditView.vue'
 import MentorProfileEditView from './views/MentorProfileEditView.vue'
 import AccountEditView from './views/AccountEditView.vue'
 import MyContentsView from './views/MyContentsView.vue'
-import MyHistoryView from './views/MyHistoryView.vue'
+import PointHistoryView from './views/PointHistoryView.vue'
 import MyReviewsView from './views/MyReviewsView.vue'
 
 export const mypageRoutes = [
@@ -37,9 +37,14 @@ export const mypageRoutes = [
                 component: MyContentsView,
             },
             {
-                path: 'history',
-                name: 'MyHistory',
-                component: MyHistoryView,
+                path: 'history/point',
+                name: 'PointHistory',
+                component: PointHistoryView,
+            },
+            {
+                path: 'history/diamond',
+                name: 'DiamondHistory',
+                component: PointHistoryView,
             },
             {
                 path: 'reviews',
