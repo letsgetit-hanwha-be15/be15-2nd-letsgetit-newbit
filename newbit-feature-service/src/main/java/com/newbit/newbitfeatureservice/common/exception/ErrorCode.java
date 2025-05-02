@@ -86,7 +86,7 @@ public enum ErrorCode {
     REQUEST_TIME_NOT_FOUND("30002", "해당 커피챗 시간 요청내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     COFFEECHAT_ALREADY_EXIST("30003", "해당 멘토와의 커피챗이 이미 존재합니다.", HttpStatus.CONFLICT),
     REQUEST_DATE_IN_PAST("30004", "시작 날짜가 오늘보다 이전입니다.", HttpStatus.UNPROCESSABLE_ENTITY),
-    COFFEECHAT_CANCEL_NOT_ALLOWED("30005", "본인의 커피챗만 취소 가능합니다.", HttpStatus.FORBIDDEN),
+    COFFEECHAT_CANCEL_NOT_ALLOWED("30005", "본인이 신청한 커피챗만 취소 가능합니다.", HttpStatus.FORBIDDEN),
     COFFEECHAT_NOT_REFUNDABLE("30006", "커피챗이 환불 가능한 상태가 아닙니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_COFFEECHAT_STATUS_CANCEL("30007", "커피챗이 취소 가능한 상태가 아닙니다.", HttpStatus.BAD_REQUEST),
     //리뷰
