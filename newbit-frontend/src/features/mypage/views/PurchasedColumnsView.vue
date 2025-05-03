@@ -57,8 +57,8 @@ const purchasedColumns = ref({
       />
     </div>
     <PagingBar
-        :currentPage="historyItems.data.pagination.currentPage"
-        :totalPage="historyItems.data.pagination.totalPage"
+        :currentPage="purchasedColumns.data.pagination.currentPage"
+        :totalPage="purchasedColumns.data.pagination.totalPage"
         @page-change="handlePageChange"
     />
   </div>
