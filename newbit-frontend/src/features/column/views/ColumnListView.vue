@@ -50,7 +50,7 @@ const handleSearch = () => {
 
 const onClickCreate = () => {
 
-  console.log('칼럼 등록 버튼 클릭됨')
+  router.push('/columns/requests')
 
 }
 </script>
