@@ -43,7 +43,7 @@ const visiblePages = computed(() => {
 </script>
 
 <template>
-  <div class="flex items-center justify-center gap-2 my-4">
+  <div class="flex items-center justify-center gap-2 my-4 p-10">
     <!-- 이전 페이지 버튼 -->
     <button
         :disabled="currentPage === 1"
