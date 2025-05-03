@@ -7,34 +7,36 @@ const {mentor} = defineProps({
 });
 </script>
 <template>
-      <!-- Mentor Profile Image -->
-      <img
-          :src="mentor.profileImageUrl"
-          :alt="mentor.nickname"
-          class="w-20 h-20 rounded-full mb-4"
-      />
+  <div class="flex flex-col items-center p-6 border rounded-lg shadow-md text-center bg-white">
 
-      <!-- Mentor Name and Role -->
-      <p class="text-lg font-semibold text-gray-800">{{ mentor.nickname }}</p>
-      <p class="text-sm text-gray-500 mb-4">{{ mentor.role }}</p>
+    <!-- Mentor Profile Image -->
+    <img
+        :src="mentor.profileImageUrl"
+        :alt="mentor.nickname"
+        class="w-20 h-20 rounded-full mb-4"
+    />
 
-      <!-- Temperature -->
-      <div class="flex items-center justify-center mb-4">
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 text-yellow-500 mr-1"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-        >
-          <path
-              d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16zm-4-9h8v2H8v-2zm4 3h4v2h-4v-2z"
-          />
-        </svg>
-        <span class="text-sm text-gray-800">{{ mentor.temperature }}°C</span>
-      </div>
+    <!-- Mentor Name and Role -->
+    <p class="text-lg font-semibold text-gray-800">{{ mentor.nickname }}</p>
+    <p class="text-sm text-gray-500 mb-4">{{ mentor.role }}</p>
 
-      <!-- Technology Stack -->
-      <div class="flex flex-wrap gap-2 justify-center mb-4">
+    <!-- Temperature -->
+    <div class="flex items-center justify-center mb-4">
+      <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 text-yellow-500 mr-1"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+      >
+        <path
+            d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 18a8 8 0 110-16 8 8 0 010 16zm-4-9h8v2H8v-2zm4 3h4v2h-4v-2z"
+        />
+      </svg>
+      <span class="text-sm text-gray-800">{{ mentor.temperature }}°C</span>
+    </div>
+
+    <!-- Technology Stack -->
+    <div class="flex flex-wrap gap-2 justify-center mb-4">
         <span
             v-for="tech in mentor.techstackName"
             :key="tech"
@@ -42,12 +44,13 @@ const {mentor} = defineProps({
         >
           {{ tech }}
         </span>
-      </div>
+    </div>
 
-      <!-- Price and Duration -->
-      <div class="text-sm text-gray-500">
-        {{ mentor.price }}💎 ({{ mentor.duration }})
-      </div>
+    <!-- Price and Duration -->
+    <div class="text-sm text-gray-500">
+      {{ mentor.price }}💎 ({{ mentor.duration }})
+    </div>
+  </div>
 </template>
 
 <style scoped>

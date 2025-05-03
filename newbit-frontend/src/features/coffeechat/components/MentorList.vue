@@ -11,15 +11,11 @@ const {mentors} = defineProps({
 </script>
 
 <template>
-  <div class="grid grid-cols-3 gap-6">
-    <div class="flex flex-col items-center p-6 border rounded-lg shadow-md text-center bg-white">
-      <MentorItem
-          v-for="mentor in mentors"
-          :key="mentor.mentorId"
-          :mentor="mentor"
-      />
-    </div>
-  </div>
+  <MentorItem
+      v-for="mentor in mentors"
+      :key="mentor.mentorId"
+      :mentor="mentor"
+  />
 </template>
 
 <style scoped>

@@ -11,7 +11,7 @@ const mentors = ref([
         "mentorId": 1,
         "userName": "김멘토",
         "nickname": "열정멘토",
-        "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor1.png",
+        "profileImageUrl": "/src/assets/image/profile.png",
         "price": 1000,
         "temperature": 75.0,
         "techstackName": "HTML"
@@ -20,7 +20,7 @@ const mentors = ref([
         "mentorId": 2,
         "userName": "이멘토",
         "nickname": "코딩마스터",
-        "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor2.png",
+        "profileImageUrl": "/src/assets/image/profile.png",
         "price": 2000,
         "temperature": 60.0,
         "techstackName": "Python"
@@ -38,7 +38,7 @@ const mentors = ref([
         "mentorId": 4,
         "userName": "박코치",
         "nickname": "디버깅왕",
-        "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor4.png",
+        "profileImageUrl": "/src/assets/image/profile.png",
         "price": 1500,
         "temperature": 72.5,
         "techstackName": "C"
@@ -47,7 +47,7 @@ const mentors = ref([
         "mentorId": 5,
         "userName": "정개발",
         "nickname": "백엔드전문가",
-        "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor5.png",
+        "profileImageUrl": "/src/assets/image/profile.png",
         "price": 2500,
         "temperature": 85.0,
         "techstackName": "Spring Boot"
@@ -65,7 +65,7 @@ const mentors = ref([
         "mentorId": 7,
         "userName": "하PM",
         "nickname": "기획짱",
-        "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor7.png",
+        "profileImageUrl": "/src/assets/image/profile.png",
         "price": 2100,
         "temperature": 73.0,
         "techstackName": "Notion"
@@ -74,7 +74,7 @@ const mentors = ref([
         "mentorId": 8,
         "userName": "조멘토",
         "nickname": "알고리즘박사",
-        "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor8.png",
+        "profileImageUrl": "/src/assets/image/profile.png",
         "price": 2700,
         "temperature": 95.0,
         "techstackName": "C++"
@@ -92,7 +92,7 @@ const mentors = ref([
         "mentorId": 10,
         "userName": "송멘토",
         "nickname": "프론트짱",
-        "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor10.png",
+        "profileImageUrl": "/src/assets/image/profile.png",
         "price": 2200,
         "temperature": 78.0,
         "techstackName": "React"
@@ -101,7 +101,7 @@ const mentors = ref([
         "mentorId": 11,
         "userName": "문개발",
         "nickname": "API마스터",
-        "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor11.png",
+        "profileImageUrl": "/src/assets/image/profile.png",
         "price": 1950,
         "temperature": 66.0,
         "techstackName": "REST API"
@@ -119,7 +119,7 @@ const mentors = ref([
         "mentorId": 13,
         "userName": "오엔지니어",
         "nickname": "서버지킴이",
-        "profileImageUrl": "https://devmentor.s3.ap-northeast-2.amazonaws.com/profile/mentor13.png",
+        "profileImageUrl": "/src/assets/image/profile.png",
         "price": 2900,
         "temperature": 88.0,
         "techstackName": "Linux"
