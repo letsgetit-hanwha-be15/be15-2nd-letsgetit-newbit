@@ -39,28 +39,6 @@
           :type="type"
       />
     </div>
-
-    <!-- 임시 페이지네이션 -->
-    <div
-        v-if="pagination"
-        class="flex justify-center items-center gap-4 mt-6 text-sm text-gray-700"
-    >
-      <button
-          :disabled="pagination.currentPage === 1"
-          @click="$emit('page-change', pagination.currentPage - 1)"
-          class="px-3 py-1 border rounded disabled:text-gray-300 disabled:cursor-not-allowed"
-      >
-        Previous
-      </button>
-      <span>Page {{ pagination.currentPage }} / {{ pagination.totalPage }}</span>
-      <button
-          :disabled="pagination.currentPage === pagination.totalPage"
-          @click="$emit('page-change', pagination.currentPage + 1)"
-          class="px-3 py-1 border rounded disabled:text-gray-300 disabled:cursor-not-allowed"
-      >
-        Next
-      </button>
-    </div>
   </div>
 </template>
 
@@ -71,10 +49,7 @@ import {ref, computed} from "vue";
 const props = defineProps({
   histories: Array,
   type: String, // 'point' or 'diamond'
-  pagination: Object, // currentPage, totalPage, totalItems
 })
-
-const emit = defineEmits(['page-change'])
 
 
 const selectedFilter = ref('전체') // '전체' | '적립' | '사용'
