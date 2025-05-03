@@ -19,39 +19,35 @@ const selectedReportStatus = ref("");
 const postReports = ref([
   {
     id: 1,
-    title: "저한테 바보라고 욕했습니다. 아주 혼쭐을 내주세요.",
-    lastContent: "욕설/비하",
+    title: "바보들에게 하는 수업",
+    lastContent: "저한테 바보라고 욕했습니다. 아주 혼쭐을 내주세요.",
     count: 43,
     lastDate: "2025-04-22 14:30",
     status: "미처리",
-    actions: ["무고", "허위", "보류", "삭제", "정지"],
   },
   {
     id: 2,
-    title: "소리 지르는 nigger, 음악에 미치는 nigger라고 씀",
-    lastContent: "혐오 표현, 차별",
+    title: "소리 지르는 nigger, 음악에 미치는 nigger",
+    lastContent: "혐오 표현, 차별이 있음",
     count: 12,
     lastDate: "2025-04-22 14:30",
     status: "검토중",
-    actions: ["무고", "허위", "보류", "삭제", "정지"],
   },
   {
     id: 3,
-    title: "맛도 좋고 몸에도 좋은 뱀 팝니다. 이거 판매글 아닌가요.",
-    lastContent: "광고, 판매, 스팸",
+    title: "맛도 좋고 몸에도 좋은 뱀 팝니다.",
+    lastContent: "판매글을 올렸습니다.",
     count: 33,
     lastDate: "2025-04-22 14:30",
     status: "정지됨",
-    actions: ["무고", "허위", "보류", "삭제", "정지"],
   },
   {
     id: 4,
-    title: "이 칼럼 쓴 사람 전화번호 010-1234-3942 임 욕 구라고 씀",
-    lastContent: "개인정보 노출, 사생활 침해",
+    title: "이 칼럼 쓴 사람 전화번호 010-1234-3942",
+    lastContent: "개인정보 노출",
     count: 13,
     lastDate: "2025-04-22 14:30",
     status: "삭제됨",
-    actions: ["무고", "허위", "보류", "삭제", "정지"],
   },
 ]);
 
@@ -59,29 +55,26 @@ const commentReports = ref([
   {
     id: 1,
     content: "이런 쓰레기 같은 글은 삭제해야 합니다. 작성자는 바보입니다.",
-    lastContent: "욕설/비하",
+    lastContent: "작성자를 비하하는 발언",
     count: 5,
     lastDate: "2025-04-22 14:30",
     status: "미처리",
-    actions: ["무고", "허위", "보류", "삭제", "정지"],
   },
   {
     id: 2,
     content: "이런 종자들은 다 죽여야 해",
-    lastContent: "혐오 표현, 차별",
+    lastContent: "혐오 표현, 차별입니다. 처벌해야 합니다.",
     count: 8,
     lastDate: "2025-04-22 14:30",
     status: "검토중",
-    actions: ["무고", "허위", "보류", "삭제", "정지"],
   },
   {
     id: 3,
     content: "제가 만든 앱입니다. 다운로드 링크: https://...",
-    lastContent: "광고, 판매, 스팸",
+    lastContent: "광고를 올렸습니다.",
     count: 12,
     lastDate: "2025-04-22 14:30",
     status: "정지됨",
-    actions: ["무고", "허위", "보류", "삭제", "정지"],
   },
 ]);
 
@@ -109,8 +102,8 @@ const handleAction = ({ reportId, action }) => {
 
 <template>
   <div class="report-admin-container">
-    <h1 class="title">신고 관리</h1>
-    <div class="tabs">
+    <h1 class="title text-heading1">신고 관리</h1>
+    <div class="tabs text-heading3">
       <button
         :class="{ active: activeTab === '게시글 신고' }"
         @click="activeTab = '게시글 신고'"
@@ -124,7 +117,7 @@ const handleAction = ({ reportId, action }) => {
         댓글 신고
       </button>
     </div>
-    <div class="filters">
+    <div class="filters text-13px-regular">
       <select v-model="selectedReportType">
         <option value="">신고 유형</option>
         <option v-for="type in reportTypes" :key="type" :value="type">
@@ -140,8 +133,6 @@ const handleAction = ({ reportId, action }) => {
       <input placeholder="작성자 ID" />
       <input placeholder="신고자 ID" />
       <input placeholder="모든 상태" />
-      <input placeholder="시작 날짜" type="date" />
-      <input placeholder="종료 날짜" type="date" />
     </div>
     <PostReportList
       v-if="activeTab === '게시글 신고'"
@@ -188,6 +179,12 @@ const handleAction = ({ reportId, action }) => {
   border-radius: 6px 6px 0 0;
   color: var(--newbitgray);
   cursor: pointer;
+  font-family: var(--newbit-text-heading3-font-family), sans-serif;
+  font-weight: var(--newbit-text-heading3-font-weight);
+  font-size: var(--newbit-text-heading3-font-size);
+  letter-spacing: var(--newbit-text-heading3-letter-spacing);
+  line-height: var(--newbit-text-heading3-line-height);
+  font-style: var(--newbit-text-heading3-font-style);
 }
 
 .tabs button:hover {
@@ -217,6 +214,12 @@ const handleAction = ({ reportId, action }) => {
   flex-grow: 1;
   flex-basis: 150px;
   min-width: 120px;
+  font-family: var(--newbit-text-13px-regular-font-family), sans-serif;
+  font-weight: var(--newbit-text-13px-regular-font-weight);
+  font-size: var(--newbit-text-13px-regular-font-size);
+  letter-spacing: var(--newbit-text-13px-regular-letter-spacing);
+  line-height: var(--newbit-text-13px-regular-line-height);
+  font-style: var(--newbit-text-13px-regular-font-style);
 }
 
 .filters select {

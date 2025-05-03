@@ -7,7 +7,6 @@
       <!-- 여기에 각 페이지(HomePage, LoginPage 등)가 끼워진다 -->
     </main>
 
-    <Footer />
   </div>
 </template>
 
@@ -24,7 +23,6 @@ main {
 }
 .content {
   max-width: 1280px;
-  height: 1000px;
   margin: 0 auto;
   min-height: calc(100vh - 120px);
   padding: 20px;

@@ -3,7 +3,7 @@ import MyPageLayout from "@/components/layout/MyPageLayout.vue"
 import MyProfileEditView from './views/MyProfileEditView.vue'
 import MentorProfileEditView from './views/MentorProfileEditView.vue'
 import AccountEditView from './views/AccountEditView.vue'
-import MyContentsView from './views/MyContentsView.vue'
+import LikedContentsView from './views/LikedContentsView.vue'
 import PointHistoryView from './views/PointHistoryView.vue'
 import MyReviewsView from './views/MyReviewsView.vue'
 import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.vue";
@@ -37,9 +37,9 @@ export const mypageRoutes = [
                 component: AccountEditView,
             },
             {
-                path: 'contents',
-                name: 'MyContents',
-                component: MyContentsView,
+                path: 'contents/like',
+                name: 'LikedContents',
+                component: LikedContentsView,
             },
             {
                 path: 'history/point',
