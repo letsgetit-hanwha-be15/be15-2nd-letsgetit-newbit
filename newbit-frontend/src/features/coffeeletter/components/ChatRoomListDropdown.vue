@@ -2,7 +2,13 @@
   <div v-if="open" class="chatroom-list-modal" ref="modalRef">
     <div class="modal-content">
       <div class="header text-16px-bold">커피레터</div>
-      <div class="chatroom-list">
+      <div v-if="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+      </div>
+      <div v-else-if="chatRooms.length === 0" class="no-rooms">
+        <p>진행 중인 커피레터가 없습니다.</p>
+      </div>
+      <div v-else class="chatroom-list">
         <div
           v-for="room in displayedRooms"
           :key="room.id"
@@ -16,33 +22,25 @@
           />
           <div class="chat-info">
             <div class="top-row">
-              <span class="nickname text-13px-bold">{{ room.nickname }}</span>
-              <span class="date text-10px-regular">{{ room.date }}</span>
+              <span class="nickname text-13px-bold">{{
+                getPartnerName(room)
+              }}</span>
+              <span class="date text-10px-regular">{{
+                formatDate(room.lastMessageTime)
+              }}</span>
             </div>
             <div class="last-message text-13px-regular">
-              {{ room.lastMessage }}
+              {{ room.lastMessageContent || "새로운 채팅방이 생성되었습니다." }}
+              <span v-if="getUnreadCount(room) > 0" class="unread-badge">{{
+                getUnreadCount(room)
+              }}</span>
             </div>
           </div>
         </div>
       </div>
       <div class="view-all-container">
         <button class="view-all-button" @click="viewAllChatrooms">
-          <span>모든 채팅방 보기</span>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M6 12L10 8L6 4"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+          <span>모든 채팅방 목록 ➡️</span>
         </button>
       </div>
     </div>
@@ -52,6 +50,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, inject, watch, computed } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 
 const props = defineProps({
   open: Boolean,
@@ -65,57 +64,127 @@ const emit = defineEmits(["close"]);
 const modalRef = ref(null);
 const activeDropdown = inject("activeDropdown", ref(null));
 const router = useRouter();
+const loading = ref(false);
 
-// activeDropdown이 변경될 때마다 현재 드롭다운 상태 확인
+// TODO: 사용자 정보 auth 적용 후 수정
+const currentUserId = ref(1);
+const isMentor = ref(true);
+
 watch(activeDropdown, (newValue) => {
   if (newValue !== props.dropdownId && props.open) {
     close();
   }
 });
 
-const chatRooms = ref([
-  {
-    id: 1,
-    nickname: "추격자",
-    date: "2025-04-24 18:39",
-    lastMessage: "안녕하세요! 오늘 날씨가 참 아릅답습니다..",
-  },
-  {
-    id: 2,
-    nickname: "스즈메",
-    date: "2025-04-23 09:39",
-    lastMessage: "라라라라더라랄러아아...",
-  },
-  {
-    id: 3,
-    nickname: "양세바리",
-    date: "2025-04-20 08:00",
-    lastMessage: "들어올 땐 맘대로였겠지만 나갈 땐 꼭 나가야 해...",
-  },
-  {
-    id: 4,
-    nickname: "토끼공듀",
-    date: "2025-04-19 10:00",
-    lastMessage: "ㅎㅎㅎㅎ 망겜이 다 그렇죠 뭐 ...",
-  },
-  {
-    id: 5,
-    nickname: "바다라라",
-    date: "2025-04-18 16:25",
-    lastMessage: "모든 것이 꿈이었길 바래...",
-  },
-  {
-    id: 6,
-    nickname: "개발왕",
-    date: "2025-04-17 11:11",
-    lastMessage: "이 코드는 리팩토링이 필요해요. 다음 주에 같이 봐요!",
-  },
-]);
+const chatRooms = ref([]);
 
-// 최대 5개만 표시
 const displayedRooms = computed(() => {
   return chatRooms.value.slice(0, 5);
 });
+
+const fetchChatRooms = async () => {
+  loading.value = true;
+  try {
+    // TODO: 실제 API 구현 시 아래 코드 사용
+    // const response = await axios.get(`/coffeeletter/rooms/user/${currentUserId.value}`);
+    // chatRooms.value = response.data;
+
+    // 테스트용 더미 데이터
+    chatRooms.value = [
+      {
+        id: "1",
+        mentorId: 1,
+        mentorName: "멘토A",
+        menteeId: 2,
+        menteeName: "멘티B",
+        lastMessageContent: "안녕하세요! 커피챗 질문이 있어요.",
+        lastMessageTime: "2025-05-01T14:30:00",
+        status: "ACTIVE",
+        unreadCountMentor: 0,
+        unreadCountMentee: 2,
+      },
+      {
+        id: "2",
+        mentorId: 1,
+        mentorName: "멘토A",
+        menteeId: 3,
+        menteeName: "멘티C",
+        lastMessageContent: "답변 감사합니다! 정말 도움이 많이 됐어요.",
+        lastMessageTime: "2025-04-30T09:15:00",
+        status: "ACTIVE",
+        unreadCountMentor: 1,
+        unreadCountMentee: 0,
+      },
+      {
+        id: "3",
+        mentorId: 4,
+        mentorName: "멘토D",
+        menteeId: 1,
+        menteeName: "멘티A",
+        lastMessageContent: "다음 주에 일정 조율 가능할까요?",
+        lastMessageTime: "2025-04-29T18:20:00",
+        status: "ACTIVE",
+        unreadCountMentor: 0,
+        unreadCountMentee: 0,
+      },
+      {
+        id: "4",
+        mentorId: 1,
+        mentorName: "멘토A",
+        menteeId: 5,
+        menteeName: "멘티E",
+        lastMessageContent: "프로젝트 리뷰 부탁드려요!",
+        lastMessageTime: "2025-04-28T10:45:00",
+        status: "ACTIVE",
+        unreadCountMentor: 3,
+        unreadCountMentee: 0,
+      },
+      {
+        id: "5",
+        mentorId: 6,
+        mentorName: "멘토F",
+        menteeId: 1,
+        menteeName: "멘티A",
+        lastMessageContent: "온라인 미팅 링크 보내드렸습니다!",
+        lastMessageTime: "2025-04-27T16:30:00",
+        status: "ACTIVE",
+        unreadCountMentor: 0,
+        unreadCountMentee: 1,
+      },
+      {
+        id: "6",
+        mentorId: 1,
+        mentorName: "멘토A",
+        menteeId: 7,
+        menteeName: "멘티G",
+        lastMessageContent: "포트폴리오 피드백 감사합니다!",
+        lastMessageTime: "2025-04-26T09:45:00",
+        status: "ACTIVE",
+        unreadCountMentor: 0,
+        unreadCountMentee: 0,
+      },
+    ];
+  } catch (error) {
+    console.error("채팅방 목록 조회 실패:", error);
+    chatRooms.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+const getPartnerName = (room) => {
+  return isCurrentUserMentor(room) ? room.menteeName : room.mentorName;
+};
+
+const isCurrentUserMentor = (room) => {
+  return room.mentorId === currentUserId.value;
+};
+
+const getUnreadCount = (room) => {
+  return isCurrentUserMentor(room)
+    ? room.unreadCountMentor
+    : room.unreadCountMentee;
+};
 
 const close = () => {
   emit("close");
@@ -135,20 +204,61 @@ function handleClickOutside(event) {
 
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
+  if (props.open) {
+    fetchChatRooms();
+  }
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("click", handleClickOutside);
 });
 
+watch(
+  () => props.open,
+  (newValue) => {
+    if (newValue) {
+      fetchChatRooms();
+    }
+  }
+);
+
 const selectRoom = (room) => {
-  // TODO: 채팅방 진입 로직
+  router.push({
+    path: "/coffeeletters/chats",
+    query: { roomId: room.id },
+  });
   close();
 };
 
 const viewAllChatrooms = () => {
   router.push("/coffeeletters/chats");
   close();
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    // 오늘
+    return `${date.getHours().toString().padStart(2, "0")}:${date
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+  } else if (diffDays === 1) {
+    // 어제
+    return "어제";
+  } else if (diffDays < 7) {
+    // 이번 주
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    return `${days[date.getDay()]}요일`;
+  } else {
+    // 그 이전
+    return `${date.getMonth() + 1}/${date.getDate()}`;
+  }
 };
 </script>
 
@@ -269,12 +379,31 @@ const viewAllChatrooms = () => {
 }
 
 .last-message {
+  position: relative;
   color: #666;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 180px;
   line-height: 1.4;
+  padding-right: 24px;
+}
+
+.unread-badge {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #ff4757;
+  color: white;
+  font-size: 10px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
 }
 
 .view-all-container {
@@ -302,5 +431,39 @@ const viewAllChatrooms = () => {
 
 .view-all-button:hover {
   background-color: rgba(59, 130, 246, 0.08);
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--newbitnormal, #3b82f6);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.no-rooms {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  color: #999;
+  font-size: 14px;
 }
 </style>
