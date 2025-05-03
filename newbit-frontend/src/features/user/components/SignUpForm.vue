@@ -167,20 +167,15 @@ function onSubmit() {
   border: 1px solid #ccc;
   border-radius: 6px;
   box-sizing: border-box;
-  color: #333;
   background-color: white;
+  color: rgba(3, 3, 4, 0.54); /* placeholder 느낌 */
 }
-select:invalid {
-  color: #999;
-}
-.select-placeholder:invalid {
-  color: #999;
-}
+
 .select-job {
-  padding: 0 12px; /* Job select 위치 조정 */
+  padding: 0 12px;
 }
 .select-techstack {
-  padding: 0 12px; /* Techstack 기본 유지 */
+  padding: 0 12px;
 }
 .techstack-tags-wrapper {
   width: 417px;
@@ -215,7 +210,7 @@ button {
   width: 417px;
   height: 48px;
   padding: 14px;
-  background-color: #2196f3;
+  background-color: #038FFD;
   color: white;
   font-size: 16px;
   font-weight: bold;
