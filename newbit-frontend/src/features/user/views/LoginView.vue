@@ -15,11 +15,11 @@ const handleLogin = async (formData) => {
 }
 
 const goFindId = () => {
-  router.push('/find-id')
+  router.push('/find/id')
 }
 
 const goFindPassword = () => {
-  router.push('/find-password')
+  router.push('/find/password')
 }
 
 const goSignup = () => {
