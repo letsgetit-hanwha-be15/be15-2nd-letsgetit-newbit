@@ -14,7 +14,7 @@ const allTechstacks = [
 const form = reactive({
   email: '',
   password: '',
-  name: '',
+  userName: '',
   nickname: '',
   job: '',
   techstacks: []
@@ -36,7 +36,7 @@ const isValid = computed(() => {
   return (
       form.email.trim() &&
       form.password.length >= 8 &&
-      form.name &&
+      form.userName &&
       form.nickname
   )
 })
@@ -50,35 +50,40 @@ function onSubmit() {
 </script>
 
 <template>
-  <form class="signup-container" @submit.prevent="onSubmit">
-    <div class="logo">
-      <img src="@/assets/image/logo.png" alt="Newbit 로고" />
-      <h2>회원가입</h2>
+  <form @submit.prevent="onSubmit" class="w-[480px] mx-auto my-[60px] p-10 bg-white rounded-xl box-border">
+    <div class="text-center mb-7">
+      <img src="@/assets/image/logo.png" alt="Newbit 로고" class="w-[195px] h-[72px] mx-auto mb-2" />
+      <h2 class="text-heading2 text-newbittext mt-2">회원가입</h2>
     </div>
 
-    <div class="form-group">
-      <label>아이디(이메일)</label>
-      <input type="email" v-model.trim="form.email" placeholder="Email" required />
+    <div class="mb-5">
+      <label class="block mb-2 text-20px-regular text-newbittext">아이디(이메일)</label>
+      <input type="email" v-model.trim="form.email" placeholder="Email" required
+             class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular" />
     </div>
 
-    <div class="form-group">
-      <label>비밀번호 (영문, 숫자, 특수문자 포함 8자리 이상)</label>
-      <input type="password" v-model="form.password" placeholder="Password" required />
+    <div class="mb-5">
+      <label class="block mb-2 text-20px-regular text-newbittext whitespace-nowrap" >비밀번호 (영문, 숫자, 특수문자 포함 8자리 이상)</label>
+      <input type="password" v-model="form.password" placeholder="Password" required
+             class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular" />
     </div>
 
-    <div class="form-group">
-      <label>이름</label>
-      <input type="text" v-model="form.name" placeholder="Name" required />
+    <div class="mb-5">
+      <label class="block mb-2 text-20px-regular text-newbittext">이름</label>
+      <input type="text" v-model="form.userName" placeholder="Name" required
+             class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular" />
     </div>
 
-    <div class="form-group">
-      <label>닉네임</label>
-      <input type="text" v-model="form.nickname" placeholder="Nickname" required />
+    <div class="mb-5">
+      <label class="block mb-2 text-20px-regular text-newbittext">닉네임</label>
+      <input type="text" v-model="form.nickname" placeholder="Nickname" required
+             class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular" />
     </div>
 
-    <div class="form-group">
-      <label>직종</label>
-      <select v-model="form.job" class="select-placeholder select-job">
+    <div class="mb-5">
+      <label class="block mb-2 text-20px-regular text-newbittext">직종</label>
+      <select v-model="form.job"
+              class="w-full h-[60px] px-3 border border-[#ccc] rounded-md text-[rgba(3,3,4,0.54)] bg-white text-16px-regular">
         <option disabled value="">Job</option>
         <option value="frontend">프론트엔드</option>
         <option value="backend">백엔드</option>
@@ -87,143 +92,31 @@ function onSubmit() {
       </select>
     </div>
 
-    <div class="form-group">
-      <label>기술 스택 (중복 선택 가능)</label>
-      <select @change="onSelectTechstack" class="select-placeholder select-techstack">
+    <div class="mb-5">
+      <label class="block mb-2 text-20px-regular text-newbittext">기술 스택 (중복 선택 가능)</label>
+      <select @change="onSelectTechstack"
+              class="w-full h-[60px] px-3 border border-[#ccc] rounded-md text-[rgba(3,3,4,0.54)] bg-white text-16px-regular">
         <option disabled selected value="">Techstack</option>
         <option v-for="stack in allTechstacks" :key="stack" :value="stack">
           {{ stack.charAt(0).toUpperCase() + stack.slice(1) }}
         </option>
       </select>
 
-      <div class="techstack-tags-wrapper">
-        <div class="techstack-tags">
-          <span
-              v-for="(item, index) in form.techstacks"
-              :key="item"
-              class="tag"
-          >
+      <div class="mt-2 border border-[#ccc] rounded-md bg-white px-3 py-2 min-h-[60px]">
+        <div class="flex flex-wrap">
+          <span v-for="(item, index) in form.techstacks" :key="item"
+                class="bg-[#f1f3f5] text-[#222] rounded px-2 py-1 text-sm font-normal mr-2 mb-2 flex items-center">
             {{ item.charAt(0).toUpperCase() + item.slice(1) }}
-            <span class="remove" @click="removeTechstack(index)">×</span>
+            <span class="ml-2 cursor-pointer font-bold" @click="removeTechstack(index)">×</span>
           </span>
         </div>
       </div>
     </div>
 
-    <button :disabled="!isValid" type="submit">회원 가입</button>
+    <button :disabled="!isValid"
+            type="submit"
+            class="w-full h-[48px] text-white bg-[var(--newbitnormal)] text-button rounded-md mt-4 disabled:opacity-60 disabled:cursor-not-allowed">
+      회원 가입
+    </button>
   </form>
 </template>
-
-<style scoped>
-.signup-container {
-  width: 480px;
-  margin: 60px auto;
-  padding: 40px 32px;
-  background-color: white;
-  border-radius: 12px;
-  box-sizing: border-box;
-  min-height: fit-content;
-}
-.logo {
-  text-align: center;
-  margin-bottom: 28px;
-}
-.logo img {
-  width: 195px;
-  height: 72px;
-  margin: 0 auto 8px;
-  display: block;
-}
-.logo h2 {
-  font-size: 20px;
-  font-weight: bold;
-  margin-top: 8px;
-}
-.form-group {
-  margin-bottom: 20px;
-}
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 20px;
-  font-weight: 500;
-  color: #333;
-}
-.form-group input {
-  width: 417px;
-  height: 60px;
-  padding: 0 16px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-  color: #333;
-  background-color: white;
-}
-.form-group select {
-  width: 417px;
-  height: 60px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-  background-color: white;
-  color: rgba(3, 3, 4, 0.54); /* placeholder 느낌 */
-}
-
-.select-job {
-  padding: 0 12px;
-}
-.select-techstack {
-  padding: 0 12px;
-}
-.techstack-tags-wrapper {
-  width: 417px;
-  margin-top: 10px;
-  padding: 10px;
-  min-height: 60px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-sizing: border-box;
-  background-color: white;
-}
-.techstack-tags {
-  display: flex;
-  flex-wrap: wrap;
-}
-.tag {
-  background-color: #f1f3f5;
-  color: #222;
-  border-radius: 4px;
-  padding: 6px 10px;
-  margin: 4px 4px 0 0;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-}
-.tag .remove {
-  margin-left: 8px;
-  cursor: pointer;
-  font-weight: bold;
-}
-button {
-  width: 417px;
-  height: 48px;
-  padding: 14px;
-  background-color: #038FFD;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-top: 16px;
-}
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-:global(body) {
-  background-color: white;
-}
-</style>
