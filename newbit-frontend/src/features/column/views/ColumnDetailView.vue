@@ -28,10 +28,21 @@ const column = ref({
   2. Notion`
 })
 
+// 좋아요
 const isLiked = ref(false)
 const toggleLike = () => {
   isLiked.value = !isLiked.value
   column.value.likeCount += isLiked.value ? 1 : -1
+}
+
+// 삭제 모달 상태
+const isDeleteModalVisible = ref(false)
+
+// 삭제 확정 시 실행
+const confirmDelete = () => {
+  // TODO: 삭제 요청 API 호출
+  alert('삭제 요청이 전송되었습니다.')
+  isDeleteModalVisible.value = false
 }
 
 // 이미지
@@ -46,7 +57,7 @@ const goToEdit = () => {
 
 // 삭제 모달 열기 (추후 구현)
 const handleDelete = () => {
-  alert('삭제 모달은 아직 구현되지 않았습니다.')
+  isDeleteModalVisible.value = true
 }
 </script>
 
@@ -100,6 +111,26 @@ const handleDelete = () => {
     <div v-if="isMentor" class="flex justify-end gap-2 mt-6">
       <button @click="goToEdit" class="bg-blue-500 text-white px-4 py-2 rounded">수정</button>
       <button @click="handleDelete" class="bg-[var(--newbitred)] text-white px-4 py-2 rounded">삭제</button>
+    </div>
+
+    <!-- 삭제 모달 -->
+    <div v-if="isDeleteModalVisible" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg w-[380px] text-center shadow-lg">
+        <h2 class="text-heading4 mb-3">칼럼 삭제</h2>
+        <p class="text-14px-regular text-[var(--newbitgray)] mb-5">
+          해당 컨텐츠에 대해 삭제 요청을 보내시겠습니까?
+        </p>
+        <div class="flex justify-end gap-2">
+          <button @click="isDeleteModalVisible = false"
+                  class="bg-[var(--newbitred)] text-white px-4 py-2 rounded">
+            아니요
+          </button>
+          <button @click="confirmDelete"
+                  class="bg-blue-500 text-white px-4 py-2 rounded">
+            네
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
