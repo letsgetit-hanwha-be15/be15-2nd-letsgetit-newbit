@@ -1,7 +1,8 @@
+<!-- ReportModal.vue -->
 <template>
   <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-50" @click.self="close">
     <div class="bg-white rounded-xl p-6 w-[400px] text-left shadow">
-      <h2 class="text-xl font-bold mb-4">게시글 신고</h2>
+      <h2 class="text-xl font-bold mb-4">{{ title }}</h2>
 
       <!-- 신고 유형 선택 -->
       <select v-model="selectedReason" class="w-full border rounded px-3 py-2 mb-4">
@@ -34,6 +35,13 @@
 
 <script setup>
 import { ref } from 'vue'
+
+const props = defineProps({
+  title: {
+    type: String,
+    default: '신고'
+  }
+})
 
 const emit = defineEmits(['close', 'submit'])
 

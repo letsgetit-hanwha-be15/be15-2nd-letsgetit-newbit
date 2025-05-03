@@ -2,9 +2,49 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import ReportModal from '@/features/post/components/ReportModal.vue'
+import { useRouter } from 'vue-router'
+import DeleteConfirmModal from '@/features/post/components/DeleteConfirmModal.vue'
 
 const reportType = ref('') // 'post' or 'comment'
 const reportedId = ref(null)
+const router = useRouter()
+const isDeleteModalOpen = ref(false)
+const isCommentDeleteModalOpen = ref(false)
+const commentToDeleteId = ref(null)
+
+const openCommentDeleteModal = (commentId) => {
+  commentToDeleteId.value = commentId
+  isCommentDeleteModalOpen.value = true
+}
+
+const closeCommentDeleteModal = () => {
+  isCommentDeleteModalOpen.value = false
+}
+
+const confirmCommentDelete = () => {
+  comments.value = comments.value.filter(comment => comment.id !== commentToDeleteId.value)
+  isCommentDeleteModalOpen.value = false
+  alert('댓글이 삭제되었습니다.')
+}
+
+const openDeleteModal = () => {
+  isDeleteModalOpen.value = true
+}
+
+const closeDeleteModal = () => {
+  isDeleteModalOpen.value = false
+}
+
+const confirmDelete = async () => {
+  try {
+    await fetch(`/api/posts/${post.value.id}`, { method: 'DELETE' })
+    alert('삭제되었습니다.')
+    router.push('/posts')
+  } catch (e) {
+    alert('삭제 실패')
+  }
+  isDeleteModalOpen.value = false
+}
 
 const openPostReportModal = () => {
   reportType.value = 'post'
@@ -16,6 +56,11 @@ const openCommentReportModal = (commentId) => {
   reportType.value = 'comment'
   reportedId.value = commentId
   isReportModalOpen.value = true
+}
+
+
+const goToEdit = () => {
+  router.push(`/posts/${post.value.id}/edit`)
 }
 
 
@@ -122,13 +167,24 @@ onMounted(fetchPostDetail)
   <section class="p-8 max-w-3xl mx-auto pb-40">
     <div v-if="post">
       <div class="flex justify-end gap-2 mb-2">
-        <button class="bg-blue-400 text-white px-3 py-1 rounded text-sm">수정</button>
-        <button class="bg-red-500 text-white px-3 py-1 rounded text-sm">삭제</button>
+        <button
+            @click="goToEdit"
+            class="bg-blue-400 text-white px-3 py-1 rounded text-sm"
+        >
+          수정
+        </button>
+        <button
+            @click="openDeleteModal"
+            class="bg-red-500 text-white px-3 py-1 rounded text-sm"
+        >
+          삭제
+        </button>
       </div>
 
       <div class="flex justify-between items-start mb-1">
         <h1 class="text-2xl font-bold">{{ post.title }}</h1>
       </div>
+
 
       <div class="flex justify-between items-center mb-4">
         <div class="flex items-center gap-2">
@@ -172,7 +228,7 @@ onMounted(fetchPostDetail)
               <!-- 삭제 버튼 -->
               <button
                   class="bg-red-400 text-white text-xs px-3 py-1 rounded"
-                  @click="comments.value = comments.value.filter(comment => comment.id !== c.id)"
+                  @click="openCommentDeleteModal(c.id)"
               >
                 삭제
               </button>
@@ -215,8 +271,23 @@ onMounted(fetchPostDetail)
 
       <ReportModal
           v-if="isReportModalOpen"
+          :title="reportType === 'post' ? '게시글 신고' : '댓글 신고'"
           @close="closeReportModal"
           @submit="handleReportSubmit"
+      />
+      <DeleteConfirmModal
+          v-if="isDeleteModalOpen"
+          title="게시글 삭제"
+          message="게시글을 삭제하시겠습니까?"
+          @close="closeDeleteModal"
+          @confirm="confirmDelete"
+      />
+      <DeleteConfirmModal
+          v-if="isCommentDeleteModalOpen"
+          title="댓글 삭제"
+          message="댓글을 삭제하시겠습니까?"
+          @close="closeCommentDeleteModal"
+          @confirm="confirmCommentDelete"
       /> </div>
   </section>
 </template>
