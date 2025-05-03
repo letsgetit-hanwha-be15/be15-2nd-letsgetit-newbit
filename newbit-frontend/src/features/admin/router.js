@@ -49,4 +49,10 @@ export const adminRoutes = [
     name: "ReportDashboard",
     component: () => import("@/features/admin/views/ReportDashboardView.vue"),
   },
+  {
+    path: '/admin/columns/:columnId',
+    name: 'AdminColumnDetail',
+    component: () => import('@/features/admin/views/ColumnApprovalDetailView.vue'),
+    meta: { requiresAuth: true, role: 'admin' }  // 권한 체크 시
+  }
 ];
