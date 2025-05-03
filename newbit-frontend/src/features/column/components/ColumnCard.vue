@@ -11,7 +11,7 @@ const props = defineProps({
 
 const purchasedDate = computed(() => {
   return props.column.purchasedAt
-      ? dayjs(props.column.purchasedAt).format('YYYY.MM.DD')
+      ? dayjs(props.column.purchasedAt).format('YYYY.MM.DD  HH:mm')
       : ''
 })
 
@@ -57,8 +57,8 @@ const diamondIcon = new URL('@/assets/image/diamond-icon.png', import.meta.url).
         <!-- 작성자 · 작성일 -->
         <span v-if="column.writer">{{ column.writer }} | 작성일 {{ column.date }}</span>
         <div class="flex flex-col gap-2">
-          <span v-if="column.purchasedAt">구매일 {{ purchasedDate }}</span>
-          <span v-if="column.price">구매가격 {{ column.price }}</span>
+          <span v-if="column.purchasedAt">구매일시  {{ purchasedDate }}</span>
+          <span v-if="column.price">구매가격  {{ column.price }}</span>
         </div>
       </div>
     </div>
