@@ -76,6 +76,11 @@ export const mypageRoutes = [
                 name: 'ReviewRegister',
                 component: ReviewRegisterView,
             },
+            {
+                path: '/mypage/mentor/column-requests',
+                name: 'ColumnRequestHistoryView',
+                component: () => import('@/features/mypage/views/ColumnRequestHistoryView.vue')
+            }
         ]
     }
 ]
