@@ -78,7 +78,7 @@ export const mypageRoutes = [
                 component: ReviewRegisterView,
             },
             {
-                path: '/contents/purchased-columns',
+                path: 'contents/purchased-columns',
                 name: 'PurchasedColumns',
                 component: PurchasedColumnsView,
             },
