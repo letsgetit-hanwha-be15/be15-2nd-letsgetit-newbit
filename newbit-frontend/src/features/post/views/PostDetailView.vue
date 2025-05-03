@@ -268,6 +268,7 @@ onMounted(fetchPostDetail)
 
       <ReportModal
           v-if="isReportModalOpen"
+          :title="reportType === 'post' ? '게시글 신고' : '댓글 신고'"
           @close="closeReportModal"
           @submit="handleReportSubmit"
       />
