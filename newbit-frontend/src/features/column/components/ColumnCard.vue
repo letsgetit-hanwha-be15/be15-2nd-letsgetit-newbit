@@ -33,7 +33,7 @@ const diamondIcon = new URL('@/assets/image/diamond-icon.png', import.meta.url).
       <!-- 다이아 -->
       <div class="flex items-center gap-1 text-13px-regular text-[var(--newbitdark)] mb-4">
         <img :src="diamondIcon" alt="다이아" class="w-4 h-4" />
-        <span>{{ column.likeCount }}</span>
+        <span>{{ column.diamondCount }}</span>
       </div>
 
       <!-- 좋아요 + 작성자 + 날짜 -->
