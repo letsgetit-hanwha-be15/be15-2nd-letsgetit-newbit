@@ -11,6 +11,7 @@ import CoffeechatListView from "@/features/mypage/views/CoffeechatListView.vue";
 import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
 import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
 import SaleHistoryView from "@/features/mypage/views/SaleHistoryView.vue";
+import PurchasedColumnsView from "@/features/mypage/views/PurchasedColumnsView.vue";
 
 export const mypageRoutes = [
     {
@@ -75,6 +76,11 @@ export const mypageRoutes = [
                 path: 'coffeechats/:id/review',
                 name: 'ReviewRegister',
                 component: ReviewRegisterView,
+            },
+            {
+                path: 'contents/purchased-columns',
+                name: 'PurchasedColumns',
+                component: PurchasedColumnsView,
             },
             {
                 path: '/mypage/mentor/column-requests',
