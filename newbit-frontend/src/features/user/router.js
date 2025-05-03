@@ -13,5 +13,10 @@ export const userRoutes = [
         path: '/find/id',
         name: 'FindId',
         component: () => import('@/features/user/views/FindIdView.vue')
+    },
+    {
+        path: '/find/password',
+        name: 'FindPassword',
+        component: () => import('@/features/user/views/FindPasswordView.vue')
     }
 ];
