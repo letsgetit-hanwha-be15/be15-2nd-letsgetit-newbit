@@ -4,15 +4,11 @@ import { ref } from 'vue'
 
 const emit = defineEmits(['search'])
 const searchKeyword = ref('')
-const router = useRouter()
 
 const handleSearch = () => {
   emit('search', searchKeyword.value)
 }
 
-const goToCreate = () => {
-  router.push('/posts/write')
-}
 </script>
 
 <template>
@@ -31,11 +27,6 @@ const goToCreate = () => {
         검색
       </button>
     </div>
-    <button
-        @click="goToCreate"
-        class="border border-gray-300 text-sm px-4 py-2 rounded ml-4"
-    >
-      글 작성
-    </button>
+
   </div>
 </template>

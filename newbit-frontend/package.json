@@ -11,9 +11,11 @@
   "dependencies": {
     "@heroicons/vue": "^2.0.18",
     "@toast-ui/editor": "^3.2.2",
+    "@toast-ui/editor-plugin-code-syntax-highlight": "^3.1.0",
     "axios": "^1.9.0",
     "dayjs": "^1.11.13",
     "element-plus": "^2.9.9",
+    "highlight.js": "^11.11.1",
     "pinia": "^3.0.1",
     "vue": "^3.5.13",
     "vue-multiselect": "^3.2.0",

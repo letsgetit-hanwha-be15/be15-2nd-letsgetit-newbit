@@ -1,0 +1,124 @@
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import Editor from '@toast-ui/editor'
+import '@toast-ui/editor/dist/toastui-editor.css'
+
+const route = useRoute()
+const router = useRouter()
+
+const postId = route.params.postId
+const title = ref('')
+const file = ref(null)
+const editorRef = ref(null)
+let toastEditor = null
+
+const handleFileChange = (e) => {
+  file.value = e.target.files[0]
+}
+
+const submitEdit = async () => {
+  const content = toastEditor?.getMarkdown()
+
+  if (!title.value.trim() || !content.trim()) {
+    alert('제목과 내용을 입력해주세요.')
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('title', title.value)
+  formData.append('content', content)
+  if (file.value) formData.append('file', file.value)
+
+  try {
+    await fetch(`/api/posts/${postId}`, {
+      method: 'PUT',
+      body: formData
+    })
+    alert('게시글이 수정되었습니다.')
+    router.push(`/posts/${postId}`)
+  } catch (e) {
+    alert('게시글 수정 실패')
+  }
+}
+
+const fetchPostData = async () => {
+  // 실제 API 요청으로 변경
+  const data = {
+    title: '기존 게시글 제목',
+    content: '기존 게시글 내용입니다.',
+    fileName: '기존파일.jpg'
+  }
+
+  title.value = data.title
+  if (toastEditor) {
+    toastEditor.setMarkdown(data.content)
+  }
+}
+
+onMounted(() => {
+  toastEditor = new Editor({
+    el: editorRef.value,
+    height: '400px',
+    initialEditType: 'markdown',
+    previewStyle: 'vertical',
+    usageStatistics: false
+  })
+  fetchPostData()
+})
+
+onBeforeUnmount(() => {
+  toastEditor?.destroy()
+})
+</script>
+
+<template>
+  <section class="max-w-3xl mx-auto px-6 py-4 space-y-6">
+    <button
+        @click="$router.back()"
+        class="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm"
+    >
+      <span class="mr-1">←</span> 목록으로
+    </button>
+
+    <input
+        v-model="title"
+        type="text"
+        placeholder="제목을 입력하세요"
+        class="w-full border px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-1 focus:ring-blue-500"
+    />
+
+    <div class="flex gap-2">
+      <input
+          type="text"
+          :value="file?.name || '첨부파일'"
+          class="flex-1 border px-4 py-3 rounded-lg text-sm bg-white text-gray-800 cursor-default"
+          readonly
+      />
+      <label
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm cursor-pointer flex items-center"
+      >
+        찾아보기
+        <input type="file" class="hidden" @change="handleFileChange" />
+      </label>
+    </div>
+
+    <!-- Toast UI 에디터 영역 -->
+    <div ref="editorRef" />
+
+    <div class="flex justify-end gap-2 mt-4">
+      <button
+          @click="$router.back()"
+          class="bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded"
+      >
+        취소
+      </button>
+      <button
+          @click="submitEdit"
+          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+      >
+        수정
+      </button>
+    </div>
+  </section>
+</template>
