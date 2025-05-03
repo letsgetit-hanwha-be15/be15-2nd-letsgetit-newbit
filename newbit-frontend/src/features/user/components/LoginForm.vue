@@ -20,26 +20,48 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <div class="login-wrapper">
-    <div class="login-container">
-      <div class="logo-section">
-        <img src="@/assets/image/logo.png" alt="Newbit Logo" class="logo-img" />
-        <p class="login-title">로그인</p>
+  <div class="flex min-h-screen bg-white pt-[100px]">
+    <div class="w-[480px] mx-auto p-10 bg-white rounded-xl box-border">
+      <!-- 로고 및 타이틀 -->
+      <div class="text-center mb-7">
+        <img src="@/assets/image/logo.png" alt="Newbit Logo" class="w-[195px] h-[72px] mx-auto mb-2" />
+        <p class="text-[20px] text-newbittext font-semibold">로그인</p>
       </div>
 
-      <div class="form-group">
-        <label for="email">아이디(이메일)</label>
-        <input id="email" v-model="email" type="email" placeholder="Email" />
+      <!-- 이메일 입력 -->
+      <div class="mb-5">
+        <label for="email" class="block mb-2 text-20px-regular text-newbittext">아이디(이메일)</label>
+        <input
+            id="email"
+            v-model="email"
+            type="email"
+            placeholder="Email"
+            class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-[rgba(3,3,4,0.54)] text-16px-regular"
+        />
       </div>
 
-      <div class="form-group">
-        <label for="password">비밀번호</label>
-        <input id="password" v-model="password" type="password" placeholder="Password" />
+      <!-- 비밀번호 입력 -->
+      <div class="mb-5">
+        <label for="password" class="block mb-2 text-20px-regular text-newbittext">비밀번호</label>
+        <input
+            id="password"
+            v-model="password"
+            type="password"
+            placeholder="Password"
+            class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-[rgba(3,3,4,0.54)] text-16px-regular"
+        />
       </div>
 
-      <button @click.prevent="onSubmit" class="login-btn">로그인</button>
+      <!-- 로그인 버튼 -->
+      <button
+          @click.prevent="onSubmit"
+          class="w-full h-[48px] bg-[var(--newbitnormal)] text-white text-button rounded-md mb-5 hover:bg-[var(--newbitnormal-hover)]"
+      >
+        로그인
+      </button>
 
-      <div class="footer-links">
+      <!-- 하단 링크 -->
+      <div class="flex justify-between text-[16px] text-[rgba(3,3,4,0.54)] underline">
         <a @click.prevent="emit('goFindId')" href="#">아이디(이메일)찾기</a>
         <a @click.prevent="emit('goFindPassword')" href="#">비밀번호 찾기</a>
         <a @click.prevent="emit('goSignup')" href="#">회원가입</a>
@@ -47,83 +69,3 @@ const onSubmit = () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* 스타일은 네가 마지막에 준 그대로 유지함 */
-.login-wrapper {
-  display: flex;
-  min-height: 100vh;
-  background-color: #fff;
-  padding-top: 100px;
-}
-.login-container {
-  width: 480px;
-  padding: 40px 32px;
-  background-color: white;
-  border-radius: 12px;
-  box-sizing: border-box;
-}
-.logo-section {
-  text-align: center;
-  margin-bottom: 28px;
-}
-.logo-img {
-  width: 195px;
-  height: 72px;
-  margin: 0 auto 8px;
-  display: block;
-}
-.login-title {
-  font-size: 20px;
-  color: #000000;
-  font-weight: 600;
-}
-.form-group {
-  margin-bottom: 20px;
-}
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 20px;
-  font-weight: 500;
-  color: #000000;
-}
-.form-group input {
-  width: 417px;
-  height: 60px;
-  padding: 0 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
-  box-sizing: border-box;
-  color: rgba(3, 3, 4, 0.54);
-}
-.login-btn {
-  width: 417px;
-  height: 48px;
-  padding: 14px;
-  background-color: #038FFD;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-bottom: 18px;
-}
-.login-btn:hover {
-  background-color: #0277d8;
-}
-.footer-links {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-}
-.footer-links a {
-  color: rgba(3, 3, 4, 0.54);
-  text-decoration: underline;
-}
-.footer-links a:hover {
-  text-decoration: underline;
-}
-</style>
