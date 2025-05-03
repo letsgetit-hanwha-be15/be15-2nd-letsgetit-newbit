@@ -58,9 +58,11 @@ const openCommentReportModal = (commentId) => {
   isReportModalOpen.value = true
 }
 
+
 const goToEdit = () => {
   router.push(`/posts/${post.value.id}/edit`)
 }
+
 
 const route = useRoute()
 const postId = route.params.postId
@@ -182,6 +184,7 @@ onMounted(fetchPostDetail)
       <div class="flex justify-between items-start mb-1">
         <h1 class="text-2xl font-bold">{{ post.title }}</h1>
       </div>
+
 
       <div class="flex justify-between items-center mb-4">
         <div class="flex items-center gap-2">
