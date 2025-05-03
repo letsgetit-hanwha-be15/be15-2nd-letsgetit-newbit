@@ -1,6 +1,12 @@
 <script setup>
 import {ref} from 'vue';
 import ColumnCard from "@/features/column/components/ColumnCard.vue";
+import PagingBar from "@/components/common/PagingBar.vue";
+
+const handlePageChange = (page) => {
+  // API 호출 or emit
+  console.log('이동할 페이지:', page)
+}
 
 const purchasedColumns = ref({
   "success": true,
@@ -50,6 +56,11 @@ const purchasedColumns = ref({
           :column="column"
       />
     </div>
+    <PagingBar
+        :currentPage="historyItems.data.pagination.currentPage"
+        :totalPage="historyItems.data.pagination.totalPage"
+        @page-change="handlePageChange"
+    />
   </div>
 </template>
 
