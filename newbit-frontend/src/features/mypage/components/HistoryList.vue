@@ -27,6 +27,13 @@
         <div class="text-right min-w-[64px]">판매액(원)</div>
       </div>
     </div>
+    <div v-if="type === 'settlement'" class="flex flex-row justify-between py-2 text-[var(--newbitgray)] text-sm font-medium border-b">
+      <div class="ps-24">정산 내역</div>
+      <div class="flex flex-row gap-2">
+        <div class="text-center">정산 일시</div>
+        <div class="text-right min-w-[64px]">정산액(원)</div>
+      </div>
+    </div>
 
 
     <!-- 리스트 -->
@@ -85,6 +92,8 @@ function normalizeItem(item) {
 
   if(props.type === 'point' || props.type === 'diamond') {
     amount = item.increaseAmount ?? -item.decreaseAmount
+  } else if(props.type === 'settlement') {
+    amount = item.settlementAmount
   }
 
   return {
@@ -94,6 +103,7 @@ function normalizeItem(item) {
     serviceType: readableType,
     relatedInfo: readableInfo,
     settledAt: item.settledAt,
+    settlementMonth : item.settlementMonth,
   }
 }
 </script>

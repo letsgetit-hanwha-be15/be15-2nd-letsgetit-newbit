@@ -26,13 +26,16 @@
         </router-link>
         <span v-else>
       {{ item.relatedInfo }}
-    </span>
+      </span>
+      </div>
+      <div v-else-if="type === 'settlement'" class="text-13px-bold">
+        {{ item.settlementMonth }}월 정기정산
       </div>
     </div>
 
     <!-- 금액 영역 -->
     <div class="flex flex-row justify-center gap-2">
-      <div v-if="type === 'sale'">
+      <div v-if="type === 'sale'|| type === 'settlement'">
         <div v-if="item.settledAt">
           {{ dayjs(item.settledAt).format('HH:mm:ss') }}
         </div>
@@ -72,7 +75,7 @@ const showYear = computed(() => {
 })
 
 const formattedAmount = computed(() => {
-  if(props.type === 'sale') {
+  if(props.type === 'sale' || props.type === 'settlement') {
     const amount = Number(props.item.amount ?? 0)
     return `${amount.toLocaleString()}`
   }
