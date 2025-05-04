@@ -139,7 +139,7 @@ const handleImageUpload = (event) => {
 
     <button
         type="submit"
-        class="w-full py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600"
+        class="w-full py-3 bg-[var(--newbitnormal)] text-white rounded-xl hover:bg-[var(--newbitnormal-hover)]"
     >
       프로필 수정
     </button>

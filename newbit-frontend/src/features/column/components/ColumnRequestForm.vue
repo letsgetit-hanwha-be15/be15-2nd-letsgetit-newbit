@@ -51,10 +51,14 @@ onMounted(() => {
 
 const onThumbnailChange = (e) => {
   const file = e.target.files[0]
-  if (file) {
-    thumbnailFile.value = file
-    thumbnailPreview.value = URL.createObjectURL(file)
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = () => {
+    thumbnailFile.value = reader.result // base64 문자열 저장
+    thumbnailPreview.value = reader.result
   }
+  reader.readAsDataURL(file)
 }
 
 const handleSubmit = () => {
@@ -63,7 +67,7 @@ const handleSubmit = () => {
     price: price.value,
     seriesId: series.value,
     content: content.value,
-    thumbnail: thumbnailFile.value
+    thumbnail: thumbnailFile.value  // base64 문자열
   })
 }
 
