@@ -13,7 +13,7 @@
         u.profile_image_url AS profileImageUrl,
         m.price,
         m.temperature,
-        ts.techstack_name AS techstackName
+        GROUP_CONCAT(ts.techstack_name) AS techstackName
         FROM mentor m
         JOIN user u ON m.user_id = u.user_id
         LEFT JOIN user_and_techstack ut ON u.user_id = ut.user_id
@@ -26,6 +26,7 @@
                 AND u.user_name LIKE CONCAT('%', #{userName}, '%')
             </if>
         </where>
+        GROUP BY m.mentor_id
         <choose>
             <when test="coffeechatPrice != null and coffeechatPrice != ''">
                 ORDER BY m.price ${coffeechatPrice}
@@ -37,7 +38,24 @@
                 ORDER BY m.created_at DESC
             </otherwise>
         </choose>
-        LIMIT #{size} OFFSET #{page}
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
+
+
+    <select id="countMentors" resultType="long">
+        SELECT COUNT(DISTINCT m.mentor_id)
+        FROM mentor m
+        JOIN user u ON m.user_id = u.user_id
+        LEFT JOIN user_and_techstack ut ON u.user_id = ut.user_id
+        LEFT JOIN techstack ts ON ut.techstack_id = ts.techstack_id
+        <where>
+            <if test="techstackName != null and techstackName != ''">
+                AND ts.techstack_name = #{techstackName}
+            </if>
+            <if test="userName != null and userName != ''">
+                AND u.user_name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+        </where>
+    </select>
 </mapper>
