@@ -18,7 +18,8 @@ const form = reactive({
   nickname: '',
   phoneNumber: '',
   job: '',
-  techstacks: []
+  techstacks: [],
+  profileImgUrl: '@/assets/image/default-profile.png' // ✅ 디폴트 프로필 이미지 설정
 })
 
 function onSelectTechstack(event) {
@@ -50,12 +51,13 @@ function onSubmit() {
     phoneNumber: form.phoneNumber,
     userName: form.userName,
     nickname: form.nickname,
-    profileImgUrl: null,
-    jobName: form.job || null, // '' → null
-    techstackNames: form.techstacks.length ? form.techstacks : null // [] → null
+    profileImgUrl: form.profileImgUrl, // ✅ 전달
+    jobName: form.job || null,
+    techstackNames: form.techstacks.length ? form.techstacks : null
   })
 }
 </script>
+
 
 <template>
   <form @submit.prevent="onSubmit" class="w-[480px] mx-auto my-[60px] p-10 bg-white rounded-xl box-border">
