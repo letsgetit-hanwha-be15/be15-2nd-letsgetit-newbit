@@ -142,6 +142,35 @@ public class TossPaymentApiClient {
                 TossPaymentApiDto.PaymentResponse.class
         );
     }
+
+    public TossPaymentApiDto.RefundResponse requestPaymentCancel(
+            String paymentKey, 
+            String cancelReason, 
+            Long cancelAmount,
+            RefundReceiveAccount refundReceiveAccount) {
+        
+        TossPaymentApiDto.PaymentCancelRequest request = TossPaymentApiDto.PaymentCancelRequest.builder()
+                .cancelReason(cancelReason)
+                .cancelAmount(cancelAmount)
+                .refundReceiveAccount(refundReceiveAccount)
+                .build();
+                
+        String idempotencyKey = UUID.randomUUID().toString();
+        
+        HttpHeaders headers = createAuthHeaders();
+        headers.set("Idempotency-Key", idempotencyKey);
+        
+        HttpEntity<TossPaymentApiDto.PaymentCancelRequest> entity = new HttpEntity<>(request, headers);
+        
+        log.info("결제 취소 요청: paymentKey={}, cancelReason={}, idempotencyKey={}", 
+                 paymentKey, request.getCancelReason(), idempotencyKey);
+        
+        return restTemplate.postForObject(
+                apiUrl + "/v1/payments/" + paymentKey + "/cancel",
+                entity,
+                TossPaymentApiDto.RefundResponse.class
+        );
+    }
     
     private HttpHeaders createAuthHeaders() {
         HttpHeaders headers = new HttpHeaders();

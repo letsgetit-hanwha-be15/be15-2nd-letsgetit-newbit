@@ -1,11 +1,11 @@
 export const coffeechatRoutes = [
     {
-        path: '/coffeechats',
+        path: '/mentors',
         name: 'CoffeechatMain',
         component: () => import('@/features/coffeechat/views/CoffeechatMainView.vue')
     },
     {
-        path: '/coffeechats/register',
+        path: '/mentors/:id/coffeechat-register',
         name: 'CoffeechatRegister',
         component: () => import('@/features/coffeechat/views/CoffeechatRegisterView.vue')
     }
