@@ -30,12 +30,20 @@ const handleCreate = async (payload) => {
 </script>
 
 <template>
-  <h1 class="border-b border-[var(--newbitdivider)] m-2 p-2">커피챗 신청</h1>
-  <RegisterCoffeechatForm
-      :submitLabel="'등록'"
-      @submit="handleCreate"
-  />
-  <div v-if="error" class="--error">{{ error }}</div>
+  <div class="flex flex-wrap gap-4 justify-between">
+    <div class="w-[65%]">
+      <h1 class="border-b border-[var(--newbitdivider)] m-2 p-2">커피챗 신청</h1>
+      <RegisterCoffeechatForm
+          :submitLabel="'등록'"
+          @submit="handleCreate"
+      />
+      <div v-if="error" class="--error">{{ error }}</div>
+    </div>
+    <div class="w-[25%] border rounded  m-2 p-2">
+      <!-- todo : 멘토 프로필 컴포넌트 끼워넣기 -->
+      멘토 프로필
+    </div>
+  </div>
 </template>
 
 <style scoped>
