@@ -9,4 +9,14 @@ export const userRoutes = [
         name: 'Login',
         component: () => import('@/features/user/views/LoginView.vue')
     },
+    {
+        path: '/find/id',
+        name: 'FindId',
+        component: () => import('@/features/user/views/FindIdView.vue')
+    },
+    {
+        path: '/find/password',
+        name: 'FindPassword',
+        component: () => import('@/features/user/views/FindPasswordView.vue')
+    }
 ];

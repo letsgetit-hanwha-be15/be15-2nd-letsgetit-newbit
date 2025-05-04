@@ -42,7 +42,7 @@ const sidebarSections = computed(() => {
       items: [
         { text: '작성한 게시글', to: '/mypage/contents?type=posts' },
         { text: '좋아요한 콘텐츠', to: '/mypage/contents/like' },
-        { text: '구매한 칼럼', to: '/mypage/contents?type=purchased-columns' },
+        { text: '구매한 칼럼', to: '/mypage/contents/purchased-columns' },
         { text: '구독한 시리즈', to: '/mypage/contents?type=subscribed-series' },
       ],
     },

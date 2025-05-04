@@ -1,17 +1,15 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import LoginForm from '@/features/user/components/LoginForm.vue'
+import FindPasswordForm from '@/features/user/components/FindPasswordForm.vue'
 
 const router = useRouter()
 
-const handleLogin = async (formData) => {
-  console.log('로그인 시도:', formData)
+const handleFindPassword = async (formData) => {
+  console.log('비밀번호 찾기 요청:', formData)
 
-  // 실제 로그인 로직이 들어갈 위치 (예: API 호출)
-  // const response = await loginApi(formData)
+  // 실제 API 호출이 들어갈 수 있음
+  // const response = await api.findPassword(formData)
   // if (response.success) { ... }
-
-  router.push('/') // 로그인 성공 시 루트로 이동
 }
 
 const goFindId = () => {
@@ -19,7 +17,7 @@ const goFindId = () => {
 }
 
 const goFindPassword = () => {
-  router.push('/find/password')
+  // 현재 페이지라 이동 없음
 }
 
 const goSignup = () => {
@@ -29,8 +27,8 @@ const goSignup = () => {
 
 <template>
   <div class="min-h-screen flex items-center justify-center">
-    <LoginForm
-        @submit="handleLogin"
+    <FindPasswordForm
+        @submit="handleFindPassword"
         @goFindId="goFindId"
         @goFindPassword="goFindPassword"
         @goSignup="goSignup"
@@ -39,5 +37,5 @@ const goSignup = () => {
 </template>
 
 <style scoped>
-/* 필요 시 추가 스타일링 */
+/* 필요 시 스타일 추가 */
 </style>

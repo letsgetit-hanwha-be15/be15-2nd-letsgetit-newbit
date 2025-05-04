@@ -15,7 +15,7 @@ const columns = ref([
     title: '스펙업 절대 없는 위기 대응 전략',
     writer: '김멘토',
     date: '2025.07.02',
-    likeCount: 10,
+    diamondCount: 10,
     thumbnailUrl: 'https://via.placeholder.com/300x180'
   },
   {
@@ -23,7 +23,7 @@ const columns = ref([
     title: '팀장 없어도 굴러가는 시스템 만들기',
     writer: '오멘토',
     date: '2025.06.13',
-    likeCount: 5,
+    diamondCount: 5,
     thumbnailUrl: '' // 썸네일 없음 -> 기본 이미지로 처리됨
   },
   {
@@ -31,7 +31,7 @@ const columns = ref([
     title: '일의 맥락을 발견하는 5가지 방법',
     writer: '윤멘티',
     date: '2025.04.08',
-    likeCount: 5,
+    diamondCount: 5,
     thumbnailUrl: ''
   }
 ])
@@ -50,7 +50,7 @@ const handleSearch = () => {
 
 const onClickCreate = () => {
 
-  console.log('칼럼 등록 버튼 클릭됨')
+  router.push('/columns/requests')
 
 }
 </script>

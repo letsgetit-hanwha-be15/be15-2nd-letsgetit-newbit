@@ -1,7 +1,14 @@
 <script setup>
 import HistoryList from '@/features/mypage/components/HistoryList.vue'
 import {ref} from "vue";
+import PagingBar from "@/components/common/PagingBar.vue";
 const historyType = 'diamond'
+
+const handlePageChange = (page) => {
+  // API 호출 or emit
+  console.log('이동할 페이지:', page)
+}
+
 const historyItems = ref({
       "success": true,
       "data": {
@@ -49,6 +56,11 @@ const historyItems = ref({
         :histories="historyItems.data.histories"
         :pagination="historyItems.data.pagination"
         :type = "historyType"
+    />
+    <PagingBar
+        :currentPage="historyItems.data.pagination.currentPage"
+        :totalPage="historyItems.data.pagination.totalPage"
+        @page-change="handlePageChange"
     />
   </div>
 </template>
