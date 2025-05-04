@@ -17,7 +17,7 @@ const handleCreate = async (payload) => {
   // try{
   //   const resp = await createCoffeechat(payload);
   //   console.log(resp);
-    const coffeechatId = 1; //resp.data.data.CoffeechatId;
+  const coffeechatId = 1; //resp.data.data.CoffeechatId;
   //   await router.push(`/coffeechats/${coffeechatId}`)
   // } catch (e) {
   //   console.log('커피챗 등록 실패', e);
@@ -30,15 +30,13 @@ const handleCreate = async (payload) => {
 </script>
 
 <template>
-<h1>커피챗 신청</h1>
+  <h1 class="border-b border-[var(--newbitdivider)] m-2 p-2">커피챗 신청</h1>
   <RegisterCoffeechatForm
-  :submitLabel="'등록'"
-  @submit="handleCreate"
+      :submitLabel="'등록'"
+      @submit="handleCreate"
   />
   <div v-if="error" class="--error">{{ error }}</div>
 </template>
 
 <style scoped>
-h1 { margin:10px; padding:10px; border-bottom:1px solid #000; }
-.error { color: red; margin-top: 10px; }
 </style>

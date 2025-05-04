@@ -1,7 +1,8 @@
 <script setup>
 
 import {computed, ref, watch} from "vue";
-import {useRoute} from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
+import {useToast} from "vue-toastification";
 
 const {submitLabel} = defineProps({
   submitLabel: {type: String, default: '등록'}
@@ -9,8 +10,10 @@ const {submitLabel} = defineProps({
 
 const emit = defineEmits(['submit']);
 const route = useRoute();
+const router = useRouter();
 const newTime = ref('');
 const duration = ref(30);
+const toast =  useToast();
 
 const formData = ref({
   requestMessage: '',
@@ -60,48 +63,68 @@ const isFormValid = computed(() => {
 function submitForm() {
   emit('submit', {payload: formData.value});
 }
+
+function cancelRegister() {
+  toast.info('커피챗 취소되었습니다');
+  router.push(`/profile/mentor/${route.params.id}`);
+}
 </script>
 
 <template>
-  <div>
-    <p>커피챗 진행 시간</p>
-    <label>
-      <input type="number" id="duration" name="duration" value="30" min="30" step="30" class="w-60"
-             v-model="duration">
-      분
-    </label>
-  </div>
-  <div>
-    <p>커피챗 요청 시간(시작시간)</p>
-    <input type="datetime-local" v-model="newTime"/>
-    <button @click="addTime" class="ml-2 text-button" :disabled="formData.requestTimes.length >= 3">
-      추가
-    </button>
+  <div class="space-y-12 border rounded mx-2 my-5 p-4">
+    <div class="space-y-4">
+      <div>커피챗 진행 시간</div>
+      <label class="block">
+        <input type="number" id="duration" name="duration" value="30" min="30" step="30" class="border w-13 p-1 ml-2"
+               v-model="duration">
+        분
+      </label>
+    </div>
+    <div class="space-y-4">
+      <div>커피챗 요청 시간(시작시간)</div>
+      <input class="ml-2 border p-1" type="datetime-local" v-model="newTime"/>
+      <button @click="addTime"
+              class="ml-2 rounded-md px-3 py-1 text-button text-[var(--newbitlight-active)] bg-[var(--newbitnormal)]"
+              :disabled="formData.requestTimes.length >= 3">
+        추가
+      </button>
 
-    <ul>
-      <li v-for="(time, index) in (formData.requestTimes || [])"
-          :key="index"
-          class="flex items-center">
-        {{ formatTime(time) }}
-        <button @click="removeTime(index)"
-                class="flex items-center justify-center ml-2 w-4 h-4 rounded-full bg-[var(--newbitred)] text-button">
-          -
-        </button>
-      </li>
-    </ul>
+      <ul class="ml-2 text-13px-regular">
+        <li v-for="(time, index) in (formData.requestTimes || [])"
+            :key="index"
+            class="flex items-center p-1">
+          • {{ formatTime(time) }}
+          <button @click="removeTime(index)"
+                  class="flex items-center justify-center ml-2 px-3 py-0.5 rounded-md bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
+            삭제
+          </button>
+        </li>
+      </ul>
+    </div>
+    <div class="space-y-4">
+      <label for="request-message">요청 메시지</label>
+      <textarea
+          id="request-message"
+          v-model="formData.requestMessage"
+          rows="4"
+          placeholder="요청 내용을 입력하세요"
+          class="w-full border rounded p-2"
+      />
+    </div>
+    <div class="flex flex-wrap gap-2 justify-end">
+      <button type="submit"
+              class="ml-2 rounded-md px-3 py-1 text-button text-[var(--newbitlight)] bg-[var(--newbitnormal)]"
+              :disabled="!isFormValid"
+              @click="submitForm">
+        {{ submitLabel }}
+      </button>
+      <button type="button"
+              @click="cancelRegister"
+              class="flex items-center justify-center ml-2 px-3 py-0.5 rounded-md bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
+        취소
+      </button>
+    </div>
   </div>
-  <div>
-    <label for="request-message">요청 메시지</label>
-    <textarea
-        id="request-message"
-        v-model="formData.requestMessage"
-        rows="4"
-        placeholder="요청 내용을 입력하세요"
-        class="w-full border rounded p-2"
-    />
-  </div>
-  <button type="submit" class="text-button" :disabled="!isFormValid" @click="submitForm">{{ submitLabel }}</button>
-  <!--  <button type="button" class="text-button">{{ cancelLabel }}</button>-->
 </template>
 
 <style scoped>
