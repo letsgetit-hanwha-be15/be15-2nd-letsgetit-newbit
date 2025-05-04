@@ -48,6 +48,7 @@ public class PaymentCommandService {
                         orderName
                 ));
                 
+        payment.setPaymentMethod(paymentMethod);
         payment.approve(paymentKey, LocalDateTime.now(), receiptUrl);
         
         Payment updatedPayment = paymentRepository.save(payment);
@@ -108,7 +109,7 @@ public class PaymentCommandService {
     public void createOrder(CreateOrderRequest request) {
         Payment payment = Payment.createPayment(
             request.getAmount(),
-            PaymentMethod.CARD,
+            null,
             request.getUserId(),
             request.getOrderId(),
             request.getOrderName()
