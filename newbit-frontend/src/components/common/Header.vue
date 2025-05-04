@@ -11,7 +11,7 @@
         <router-link to="/columns" class="nav-link" active-class="active"
           >칼럼</router-link
         >
-        <router-link to="/coffeechats" class="nav-link" active-class="active"
+        <router-link to="/mentors" class="nav-link" active-class="active"
           >커피챗</router-link
         >
         <router-link to="/perks" class="nav-link" active-class="active"
