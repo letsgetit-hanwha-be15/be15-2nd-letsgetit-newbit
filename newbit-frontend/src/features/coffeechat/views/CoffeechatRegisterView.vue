@@ -25,7 +25,7 @@ const handleCreate = async (payload) => {
   // }
   toast.success('커피챗 요청 등록 완료했습니다')
   isSubmitting.value = false;
-  await router.push(`/coffeechats/${coffeechatId}`)
+  await router.push(`/mypage/coffeechats/${coffeechatId}`)
 }
 </script>
 
