@@ -13,6 +13,7 @@ import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
 import SaleHistoryView from "@/features/mypage/views/SaleHistoryView.vue";
 import PurchasedColumnsView from "@/features/mypage/views/PurchasedColumnsView.vue";
 import AccountDeleteView from "@/features/mypage/views/AccountDeleteView.vue";
+import MonthlySettlementHistoryView from "@/features/mypage/views/MonthlySettlementHistoryView.vue";
 
 export const mypageRoutes = [
     {
@@ -57,6 +58,11 @@ export const mypageRoutes = [
                 path: 'history/sale',
                 name: 'SaleHistory',
                 component: SaleHistoryView,
+            },
+            {
+                path: 'history/settlement',
+                name: 'MonthlySettlementHistory',
+                component: MonthlySettlementHistoryView,
             },
             {
                 path: 'reviews',
