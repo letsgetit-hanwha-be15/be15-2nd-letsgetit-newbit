@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import api from "@/api/axios";
 import { paymentApi } from "@/api/payment";
@@ -16,22 +16,45 @@ const paymentConfirmed = ref(false);
 const errorMessage = ref("");
 const receiptUrl = ref("");
 
+let blockPopState = false;
+
 onMounted(async () => {
   paymentKey.value = route.query.paymentKey || "";
   orderId.value = route.query.orderId || "";
   amount.value = route.query.amount || "";
   orderName.value = "";
-  console.log("[SuccessView] 쿼리 orderName:", route.query.orderName);
-  console.log("[SuccessView] 쿼리 orderId:", route.query.orderId);
-  console.log("[SuccessView] 쿼리 amount:", route.query.amount);
-  if (!orderName.value) {
-    console.warn(
-      "[SuccessView] orderName이 비어 있습니다. 쿼리 파라미터를 확인하세요."
-    );
+
+  if (!paymentKey.value || !orderId.value || !amount.value) {
+    router.replace("/products");
+    return;
   }
-  if (paymentKey.value && orderId.value && amount.value) {
-    await confirmPayment();
-  }
+
+  const handlePopState = (e) => {
+    if (isConfirming.value) {
+      history.pushState(null, "", location.href);
+    }
+  };
+  window.addEventListener("popstate", handlePopState);
+
+  const preventEvent = (e) => {
+    if (isConfirming.value) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  };
+  window.addEventListener("keydown", preventEvent, true);
+  window.addEventListener("mousedown", preventEvent, true);
+  window.addEventListener("touchstart", preventEvent, true);
+
+  await confirmPayment();
+
+  onUnmounted(() => {
+    window.removeEventListener("popstate", handlePopState);
+    window.removeEventListener("keydown", preventEvent, true);
+    window.removeEventListener("mousedown", preventEvent, true);
+    window.removeEventListener("touchstart", preventEvent, true);
+  });
 });
 
 const confirmPayment = async () => {
@@ -45,22 +68,14 @@ const confirmPayment = async () => {
       orderId: orderId.value,
       amount: amount.value,
     });
-    console.log("[SuccessView] 결제 승인 응답:", response.data);
     if (response.status === 200) {
       paymentConfirmed.value = true;
       orderName.value = response.data.orderName || route.query.orderName || "";
       receiptUrl.value = response.data.receipt?.url || "";
-      if (!orderName.value) {
-        console.warn("[SuccessView] 결제 승인 응답에 orderName이 없습니다.");
-      }
-      if (!receiptUrl.value) {
-        console.warn("[SuccessView] 결제 승인 응답에 receipt.url이 없습니다.");
-      }
     } else {
       errorMessage.value = "결제 승인 처리 중 오류가 발생했습니다.";
     }
   } catch (error) {
-    console.error("결제 승인 오류:", error);
     errorMessage.value =
       error.response?.data?.message || "결제 승인 처리 중 오류가 발생했습니다.";
   } finally {
@@ -76,8 +91,11 @@ const goToHome = () => {
 <template>
   <div class="success-container">
     <div v-if="isConfirming" class="loading">
-      <h2>결제 승인 처리 중...</h2>
-      <div class="spinner"></div>
+      <div class="backdrop"></div>
+      <div class="spinner-center">
+        <h2>결제 승인 처리 중...</h2>
+        <div class="spinner"></div>
+      </div>
     </div>
 
     <div v-else-if="paymentConfirmed" class="success">
@@ -126,10 +144,49 @@ const goToHome = () => {
   padding: 32px;
   text-align: center;
   border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
   background: #fff;
 }
 
+.backdrop {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: all;
+}
+.spinner-center {
+  position: fixed;
+  z-index: 1100;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3182f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 20px 0;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 .success-icon {
   width: 80px;
   height: 80px;
@@ -209,31 +266,6 @@ const goToHome = () => {
 .home-button:hover,
 .retry-button:hover {
   background-color: #1c64f2;
-}
-.loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3182f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 20px 0;
-}
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-.error {
-  color: #dc3545;
 }
 .retry-button {
   margin-right: 0;

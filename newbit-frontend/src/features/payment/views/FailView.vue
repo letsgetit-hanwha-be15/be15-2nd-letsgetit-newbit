@@ -10,14 +10,14 @@ const errorMessage = ref("");
 const orderId = ref("");
 
 onMounted(() => {
-  // URL 쿼리 파라미터에서 오류 정보 가져오기
+  router.replace("/products");
+
   errorCode.value = route.query.code || "";
   errorMessage.value = route.query.message || "알 수 없는 오류가 발생했습니다.";
   orderId.value = route.query.orderId || "";
 });
 
 const retryPayment = () => {
-  // 결제 페이지로 다시 이동
   router.push({
     path: "/payments",
     query: {

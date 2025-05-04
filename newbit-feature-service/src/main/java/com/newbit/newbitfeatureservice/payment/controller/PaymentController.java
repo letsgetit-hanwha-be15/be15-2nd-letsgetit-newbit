@@ -108,10 +108,9 @@ public class PaymentController extends AbstractApiController {
                 
                 PaymentMethod paymentMethod;
                 try {
-                    paymentMethod = PaymentMethod.valueOf(
-                        ((String) responseJson.get("method")).toUpperCase()
-                    );
-                } catch (IllegalArgumentException e) {
+                    paymentMethod = PaymentMethod.fromTossMethod((String) responseJson.get("method"));
+                    if (paymentMethod == null) paymentMethod = PaymentMethod.CARD;
+                } catch (Exception e) {
                     paymentMethod = PaymentMethod.CARD;
                 }
 
