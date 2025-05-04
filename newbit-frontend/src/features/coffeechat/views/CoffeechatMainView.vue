@@ -29,7 +29,7 @@ const originalMentors = ref([
     "mentorId": 3,
     "userName": "멘토",
     "nickname": "mentor",
-    "profileImageUrl": null,
+    "profileImageUrl": "/src/assets/image/profile-mentee.png",
     "price": 3000,
     "temperature": 90.0,
     "techstackName": "Java"
@@ -56,7 +56,7 @@ const originalMentors = ref([
     "mentorId": 6,
     "userName": "최디자이너",
     "nickname": "UX마스터",
-    "profileImageUrl": null,
+    "profileImageUrl": "/src/assets/image/profile-mentee.png",
     "price": 1800,
     "temperature": 68.0,
     "techstackName": "Figma"
@@ -83,7 +83,7 @@ const originalMentors = ref([
     "mentorId": 9,
     "userName": "윤코치",
     "nickname": "풀스택꿈나무",
-    "profileImageUrl": null,
+    "profileImageUrl": "/src/assets/image/profile-mentee.png",
     "price": 1300,
     "temperature": 65.5,
     "techstackName": "Node.js"
@@ -110,7 +110,7 @@ const originalMentors = ref([
     "mentorId": 12,
     "userName": "서멘토",
     "nickname": "DB장인",
-    "profileImageUrl": null,
+    "profileImageUrl": "/src/assets/image/profile-mentee.png",
     "price": 1600,
     "temperature": 70.5,
     "techstackName": "MySQL"
