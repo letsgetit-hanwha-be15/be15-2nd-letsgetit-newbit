@@ -1,5 +1,7 @@
 import { ref } from "vue";
 import { getPaymentConfig } from "@/config/payment.config";
+import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
+import { ANONYMOUS } from "@tosspayments/tosspayments-sdk";
 
 export function usePayment({ onSuccess, onError }) {
   const config = getPaymentConfig();
@@ -7,6 +9,7 @@ export function usePayment({ onSuccess, onError }) {
   const tossPayments = ref(null);
   const isReady = ref(false);
   const isLoading = ref(false);
+  const paymentWidget = ref(null);
 
   const initPayment = async () => {
     if (isLoading.value) return;
@@ -14,35 +17,13 @@ export function usePayment({ onSuccess, onError }) {
     try {
       isLoading.value = true;
 
-      if (!window.TossPayments) {
-        const script = document.createElement("script");
-        script.src = config.toss.scriptUrl;
-
-        script.onload = () => {
-          initializeTossPayments();
-        };
-
-        script.onerror = (error) => {
-          onError?.(new Error("결제 시스템을 로드하는데 실패했습니다."));
-        };
-
-        document.head.appendChild(script);
-      } else {
-        initializeTossPayments();
-      }
-    } catch (error) {
-      onError?.(error);
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  const initializeTossPayments = () => {
-    try {
-      tossPayments.value = window.TossPayments(clientKey.value);
+      // npm 패키지로 로드
+      tossPayments.value = await loadTossPayments(clientKey.value);
       isReady.value = true;
     } catch (error) {
       onError?.(new Error("결제 시스템 초기화에 실패했습니다."));
+    } finally {
+      isLoading.value = false;
     }
   };
 
@@ -66,6 +47,7 @@ export function usePayment({ onSuccess, onError }) {
       validatePaymentData(paymentData);
 
       const response = await tossPayments.value.requestPayment({
+        method: "CARD",
         ...paymentData,
         successUrl: `${window.location.origin}${config.urls.success}`,
         failUrl: `${window.location.origin}${config.urls.fail}`,
@@ -78,10 +60,82 @@ export function usePayment({ onSuccess, onError }) {
     }
   };
 
+  const initPaymentWidget = async (customerKey = ANONYMOUS) => {
+    if (!isReady.value) {
+      throw new Error(
+        "결제 시스템이 초기화되지 않았습니다. initPayment를 먼저 호출해주세요."
+      );
+    }
+
+    try {
+      paymentWidget.value = tossPayments.value.widgets({ customerKey });
+      return paymentWidget.value;
+    } catch (error) {
+      onError?.(error);
+      return null;
+    }
+  };
+
+  const setPaymentAmount = async (amount) => {
+    if (!paymentWidget.value) {
+      throw new Error("결제 위젯이 초기화되지 않았습니다.");
+    }
+
+    try {
+      await paymentWidget.value.setAmount({
+        currency: "KRW",
+        value: amount,
+      });
+    } catch (error) {
+      onError?.(error);
+    }
+  };
+
+  const renderPaymentMethods = async (selector, variantKey = "DEFAULT") => {
+    if (!paymentWidget.value) {
+      throw new Error("결제 위젯이 초기화되지 않았습니다.");
+    }
+
+    try {
+      return await paymentWidget.value.renderPaymentMethods({
+        selector,
+        variantKey,
+      });
+    } catch (error) {
+      onError?.(error);
+      return null;
+    }
+  };
+
+  const requestPaymentWithWidget = async (paymentData) => {
+    if (!paymentWidget.value) {
+      throw new Error("결제 위젯이 초기화되지 않았습니다.");
+    }
+
+    try {
+      validatePaymentData(paymentData);
+
+      await paymentWidget.value.requestPayment({
+        orderId: paymentData.orderId,
+        orderName: paymentData.orderName,
+        customerEmail: paymentData.customerEmail,
+        customerName: paymentData.customerName,
+        successUrl: `${window.location.origin}${config.urls.success}`,
+        failUrl: `${window.location.origin}${config.urls.fail}`,
+      });
+    } catch (error) {
+      onError?.(error);
+    }
+  };
+
   return {
     isReady,
     isLoading,
     initPayment,
     requestPayment,
+    initPaymentWidget,
+    setPaymentAmount,
+    renderPaymentMethods,
+    requestPaymentWithWidget,
   };
 }

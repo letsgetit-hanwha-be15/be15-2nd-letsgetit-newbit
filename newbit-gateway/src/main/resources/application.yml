@@ -11,13 +11,25 @@ spring:
           predicates:
             - Path=/api/v1/user/**
           filters:
-            - RewritePath=/api/v1/user/(?<segment>.*), /$\{segment}
+            - RewritePath=/api/v1/user/(?<segment>.*), /${segment}
         - id: feature-service
           uri: lb://newbit-feature-service
           predicates:
             - Path=/api/v1/feature/**
           filters:
-            - RewritePath=/api/v1/feature/(?<segment>.*), /$\{segment}
+            - RewritePath=/api/v1/feature/(?<segment>.*), /${segment}
+      globalcors:
+        corsConfigurations:
+          "[/**]":
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
   config:
     import: classpath:/bootstrap.yml
 eureka:

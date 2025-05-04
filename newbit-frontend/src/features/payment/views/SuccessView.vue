@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import axios from "axios";
+import api from "@/api/axios";
+import { paymentApi } from "@/api/payment";
 
 const route = useRoute();
 const router = useRouter();
@@ -29,7 +30,7 @@ const confirmPayment = async () => {
   isConfirming.value = true;
 
   try {
-    const response = await axios.post("http://localhost:8000/api/v1/payments/confirm", {
+    const response = await api.post(paymentApi.endpoints.confirm, {
       paymentKey: paymentKey.value,
       orderId: orderId.value,
       amount: amount.value,

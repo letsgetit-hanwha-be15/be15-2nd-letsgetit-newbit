@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import api from "@/api/axios";
+import { paymentApi } from "@/api/payment";
 
 const route = useRoute();
 const router = useRouter();
