@@ -59,7 +59,7 @@ const submitIntroduce = () => {
 <template>
   <div class="space-y-8">
     <div class="flex gap-6">
-      <!-- 왼쪽: 기본 정보 (예시로만 구성) -->
+      <!-- 왼쪽: 기본 정보 api 호출 수정시 변경해야함 -->
       <div class="w-1/3 border rounded-lg p-6 flex flex-col items-center">
         <img src="@/assets/image/profile.png" class="w-32 h-32 rounded-full object-cover" />
         <h2 class="text-xl font-bold mt-4 flex items-center gap-1">
