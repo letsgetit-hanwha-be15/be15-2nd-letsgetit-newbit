@@ -33,11 +33,12 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
     private final NotificationCommandService notificationCommandService;
     private final DiamondTransactionCommandService diamondTransactionCommandService;
 
-    public RefundCommandService(PaymentRepository paymentRepository,
-                                RefundRepository refundRepository,
-                                TossPaymentApiClient tossPaymentApiClient,
-                                NotificationCommandService notificationCommandService,
-                                DiamondTransactionCommandService diamondTransactionCommandService
+    public RefundCommandService(
+        PaymentRepository paymentRepository,
+        RefundRepository refundRepository,
+        TossPaymentApiClient tossPaymentApiClient,
+        NotificationCommandService notificationCommandService,
+        DiamondTransactionCommandService diamondTransactionCommandService
     ) {
         super(paymentRepository, tossPaymentApiClient);
         this.refundRepository = refundRepository;
@@ -141,6 +142,47 @@ public class RefundCommandService extends AbstractPaymentService<PaymentRefundRe
         processRefundNotificationAndDiamonds(payment, savedRefund);
         
         return createRefundResponse(savedRefund);
+    }
+
+    @Transactional
+    public PaymentRefundResponse cancelPaymentByKey(String paymentKey, String reason) {
+        Payment payment = paymentRepository.findByPaymentKey(paymentKey)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+                
+        if (payment.getPaymentStatus() == PaymentStatus.CANCELED) {
+            throw new BusinessException(ErrorCode.ALREADY_CANCELED_PAYMENT);
+        }
+        
+        try {
+            TossPaymentApiDto.RefundResponse refundResponse = tossPaymentApiClient.requestPaymentCancel(
+                    paymentKey, reason, null, null);
+            
+            payment.cancel();
+            Payment updatedPayment = paymentRepository.save(payment);
+            
+            Refund refund = Refund.createRefund(
+                    updatedPayment, 
+                    updatedPayment.getAmount(), 
+                    reason,
+                    refundResponse.getRefundKey(),
+                    false
+            );
+            
+            Refund savedRefund = refundRepository.save(refund);
+            
+            return PaymentRefundResponse.builder()
+                    .refundId(savedRefund.getRefundId())
+                    .paymentId(updatedPayment.getPaymentId())
+                    .amount(savedRefund.getAmount())
+                    .reason(savedRefund.getReason())
+                    .refundKey(savedRefund.getRefundKey())
+                    .refundedAt(savedRefund.getRefundedAt())
+                    .build();
+                    
+        } catch (Exception e) {
+            log.error("결제 취소 요청 실패: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.PAYMENT_CANCEL_FAILED);
+        }
     }
     
     private Refund createRefundEntity(Payment payment, BigDecimal amount, String reason, TossPaymentApiDto.PaymentResponse response) {
