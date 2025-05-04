@@ -67,7 +67,7 @@ const submitIntroduce = () => {
           <span>👑</span>
         </h2>
         <p class="text-sm text-gray-500">백엔드 개발자</p>
-        <p class="text-sm mt-2">온도 100번</p>
+        <p class="text-sm mt-2">온도 <span>100</span></p>
         <button
             @click="router.push({ name: 'MyProfileEdit' })"
             class="mt-4 bg-[var(--newbitnormal)] text-white px-4 py-2 rounded"

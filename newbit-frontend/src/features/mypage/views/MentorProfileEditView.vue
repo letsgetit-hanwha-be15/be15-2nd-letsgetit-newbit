@@ -10,17 +10,17 @@ const successMessage = ref('');
 const showModal = ref(false);
 
 onMounted(async () => {
-  try {
-    const [coffeechatRes, introduceRes] = await Promise.all([
-      axios.get('/api/mentor/coffeechat'),
-      axios.get('/api/mentor/introduce')
-    ]);
-    coffeechatData.value = coffeechatRes.data;
-    introduceData.value = introduceRes.data;
-  } catch (e) {
-    errorMessage.value = '멘토 정보 불러오기 실패';
-    showModal.value = true;
-  }
+  // try {
+  //   const [coffeechatRes, introduceRes] = await Promise.all([
+  //     axios.get('/api/mentor/coffeechat'),
+  //     axios.get('/api/mentor/introduce')
+  //   ]);
+  //   coffeechatData.value = coffeechatRes.data;
+  //   introduceData.value = introduceRes.data;
+  // } catch (e) {
+  //   errorMessage.value = '멘토 정보 불러오기 실패';
+  //   showModal.value = true;
+  // }
 });
 
 const submitCoffeechat = async (data) => {
