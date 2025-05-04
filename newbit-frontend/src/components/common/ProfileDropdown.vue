@@ -1,6 +1,10 @@
 <template>
   <div class="dropdown-wrapper" @click.stop="toggleDropdown">
-    <img src="@/assets/image/profile.png" alt="Profile" class="profile-button" />
+    <img
+      src="@/assets/image/profile.png"
+      alt="Profile"
+      class="profile-button"
+    />
     <div v-if="showDropdown" class="dropdown">
       <!-- TODO : authStore, 로그인 기능 추가 시 role에 따라서 조건 표시, 닉네임 가져오기 -->
       <div class="nickname">
@@ -8,7 +12,9 @@
         <span class="role text-13px-bold">멘토</span>
       </div>
 
-      <button class="edit-profile" @click="goTo('/mypage/profile/edit')">프로필 수정</button>
+      <button class="edit-profile" @click="goTo('/mypage/profile/edit')">
+        프로필 수정
+      </button>
 
       <hr class="divider" />
 
@@ -48,43 +54,72 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onBeforeUnmount, inject, watch } from "vue";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
-const showDropdown = ref(false)
+const props = defineProps({
+  dropdownId: {
+    type: String,
+    required: true,
+  },
+});
+
+const emit = defineEmits(["dropdown-opened"]);
+const router = useRouter();
+const showDropdown = ref(false);
+const activeDropdown = inject("activeDropdown", ref(null));
+
+// activeDropdown이 변경될 때마다 현재 드롭다운 상태 확인
+watch(activeDropdown, (newValue) => {
+  if (newValue !== props.dropdownId) {
+    showDropdown.value = false;
+  }
+});
 
 const toggleDropdown = () => {
-  showDropdown.value = !showDropdown.value
-}
+  const newState = !showDropdown.value;
+  showDropdown.value = newState;
+
+  if (newState) {
+    emit("dropdown-opened", props.dropdownId);
+  } else {
+    activeDropdown.value = null;
+  }
+};
 
 const closeDropdown = () => {
-  showDropdown.value = false
-}
+  showDropdown.value = false;
+  if (activeDropdown.value === props.dropdownId) {
+    activeDropdown.value = null;
+  }
+};
 
 const goTo = (path) => {
-  router.push(path)
-  closeDropdown()
-}
+  router.push(path);
+  closeDropdown();
+};
 
 const logout = () => {
-  closeDropdown()
-  router.push('/')
-}
+  closeDropdown();
+  router.push("/");
+};
 
 function handleClickOutside(event) {
-  if (!event.target.closest('.dropdown-wrapper')) {
-    closeDropdown()
+  if (
+    !event.target.closest(".dropdown-wrapper") &&
+    !event.target.closest(".chatroom-dropdown-wrapper")
+  ) {
+    closeDropdown();
   }
 }
 
 onMounted(() => {
-  window.addEventListener('click', handleClickOutside)
-})
+  window.addEventListener("click", handleClickOutside);
+});
 
 onBeforeUnmount(() => {
-  window.removeEventListener('click', handleClickOutside)
-})
+  window.removeEventListener("click", handleClickOutside);
+});
 </script>
 
 <style scoped>
@@ -141,7 +176,6 @@ onBeforeUnmount(() => {
   margin-bottom: 16px;
   cursor: pointer;
 }
-
 
 .asset {
   display: flex;

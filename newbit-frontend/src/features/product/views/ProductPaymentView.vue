@@ -15,6 +15,7 @@ const orderId = `ORDER-${Date.now()}`;
 const amount = Number(route.query.amount) || 0;
 const orderName = route.query.orderName || "";
 const customerKey = `CUSTOMER-${route.query.userId || "guest"}`;
+const userId = Number(route.query.userId) || 9;
 
 onMounted(() => {
   if (!amount || !orderName) {
@@ -28,7 +29,7 @@ const handlePaymentSuccess = async (result) => {
     await paymentService.verifyPayment(result.paymentKey, orderId, amount);
     router.push({
       path: "/payments/success",
-      query: { orderId },
+      query: { orderId, orderName },
     });
   } catch (error) {
     handlePaymentError(error);
@@ -97,6 +98,7 @@ const goToList = () => {
         :amount="amount"
         :orderName="orderName"
         :customerKey="customerKey"
+        :userId="userId"
         @success="handlePaymentSuccess"
         @error="handlePaymentError"
       />
@@ -105,7 +107,6 @@ const goToList = () => {
 </template>
 
 <style scoped>
-
 .space-x-4 > * + * {
   margin-left: 1rem;
 }

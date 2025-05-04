@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class PaymentCancelRequest {
     private Long paymentId;
+    private String paymentKey;
     private String reason;
     private BigDecimal cancelAmount;
     private RefundReceiveAccount refundReceiveAccount;

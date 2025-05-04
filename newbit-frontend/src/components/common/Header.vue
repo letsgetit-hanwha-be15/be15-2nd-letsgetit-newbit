@@ -11,7 +11,7 @@
         <router-link to="/columns" class="nav-link" active-class="active"
           >칼럼</router-link
         >
-        <router-link to="/coffeechats" class="nav-link" active-class="active"
+        <router-link to="/mentors" class="nav-link" active-class="active"
           >커피챗</router-link
         >
         <router-link to="/perks" class="nav-link" active-class="active"
@@ -32,9 +32,21 @@
         <span class="text-13px-regular">상점</span>
       </router-link>
 
-      <button class="icon-button">
-        <img class="chat-icon" src="@/assets/image/chat-icon.png" alt="Chat" />
-      </button>
+      <div class="chatroom-dropdown-wrapper" ref="chatroomWrapper">
+        <button class="icon-button" @click="toggleChatModal">
+          <img
+            class="chat-icon"
+            src="@/assets/image/chat-icon.png"
+            alt="Chat"
+          />
+        </button>
+        <ChatRoomListModal
+          v-if="showChatModal"
+          :open="showChatModal"
+          @close="showChatModal = false"
+          :dropdown-id="'chat'"
+        />
+      </div>
 
       <button class="icon-button">
         <img
@@ -44,13 +56,43 @@
         />
       </button>
 
-      <ProfileDropdown />
+      <ProfileDropdown
+        :dropdown-id="'profile'"
+        @dropdown-opened="handleDropdownOpened"
+      />
     </div>
   </header>
 </template>
 
 <script setup>
-import ProfileDropdown from '@/components/common/ProfileDropdown.vue'
+import { ref, provide } from "vue";
+import ProfileDropdown from "@/components/common/ProfileDropdown.vue";
+import ChatRoomListModal from "@/features/coffeeletter/components/ChatRoomListDropdown.vue";
+
+const showChatModal = ref(false);
+const activeDropdown = ref(null);
+
+provide("activeDropdown", activeDropdown);
+
+const handleDropdownOpened = (id) => {
+  if (id === "profile" && showChatModal.value) {
+    showChatModal.value = false;
+  }
+  activeDropdown.value = id;
+};
+
+const toggleChatModal = () => {
+  if (activeDropdown.value === "profile") {
+    activeDropdown.value = null;
+  }
+
+  showChatModal.value = !showChatModal.value;
+  if (showChatModal.value) {
+    activeDropdown.value = "chat";
+  } else {
+    activeDropdown.value = null;
+  }
+};
 </script>
 
 <style scoped>
@@ -63,6 +105,8 @@ import ProfileDropdown from '@/components/common/ProfileDropdown.vue'
   padding: 0 120px;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 10;
 }
 
 .left {
@@ -150,6 +194,8 @@ import ProfileDropdown from '@/components/common/ProfileDropdown.vue'
 .chat-icon {
   width: 20px;
   height: 20px;
+  position: relative;
+  top: 3px;
 }
 
 .profile-button {

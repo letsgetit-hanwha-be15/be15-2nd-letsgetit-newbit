@@ -30,9 +30,9 @@ const onPageChanged = (page) => currentPage.value = page
 // 전체 게시글 (카테고리 포함)
 const originalPosts = ref([
   { id: 1, title: '[필독] Newbit 게시판 이용 안내', writerNickname: '관리자', categoryId: 1, createdAt: '2025.05.01', likeCount: 365, serialNumber: '공지사항', isNotice: true },
-  { id: 2, title: '저녁 메뉴 추천 받습니다.', writerNickname: '안산 김기홍', categoryId: 1, createdAt: '2025.05.01', likeCount: 0, serialNumber: 1013 },
+  { id: 2, title: '생산성을 높여주는 개발 툴 추천 리스트', writerNickname: '일산 김기홍', categoryId: 3, createdAt: '2025.05.01', likeCount: 2, serialNumber: 1013 },
   { id: 3, title: '아스날 챔스 우승 축하드립니다. 감사합니다', writerNickname: '서산 김기홍', categoryId: 2, createdAt: '2025.05.01', likeCount: 884, serialNumber: 1012 },
-  { id: 4, title: '이직 준비중입니다.', writerNickname: '일산 김기홍', categoryId: 3, createdAt: '2025.05.01', likeCount: 2, serialNumber: 1011 },
+  { id: 4, title:  '저녁 메뉴 추천 받습니다.', writerNickname: '안산 김기홍', categoryId: 1, createdAt: '2025.05.01', likeCount: 0, serialNumber: 1011 },
   { id: 5, title: '오늘 근로자의 날입니다', writerNickname: '부산 김기홍', categoryId: 4, createdAt: '2025.05.01', likeCount: 1, serialNumber: 1010 },
   { id: 6, title: '오버워치 1대1 신청 받습니다.', writerNickname: '마산 김기홍', categoryId: 1, createdAt: '2025.05.01', likeCount: 0, serialNumber: 1009 },
   { id: 7, title: '루미큐브 한판 하실분', writerNickname: '군산 김기홍', categoryId: 2, createdAt: '2025.05.01', likeCount: 0, serialNumber: 1008 },
@@ -81,6 +81,14 @@ const totalItems = 100
 
     <!-- 오른쪽 콘텐츠 -->
     <section class="flex-1 p-6">
+      <div class="text-right mb-4">
+        <button
+            @click="$router.push('/posts/create')"
+            class="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          글 작성
+        </button>
+      </div>
       <PostSearchBar @search="onSearch" />
       <SortTabs :selected="sortOption" @change="onSortChanged" />
       <PostTable :posts="posts" />

@@ -3,7 +3,7 @@ import MyPageLayout from "@/components/layout/MyPageLayout.vue"
 import MyProfileEditView from './views/MyProfileEditView.vue'
 import MentorProfileEditView from './views/MentorProfileEditView.vue'
 import AccountEditView from './views/AccountEditView.vue'
-import MyContentsView from './views/MyContentsView.vue'
+import LikedContentsView from './views/LikedContentsView.vue'
 import PointHistoryView from './views/PointHistoryView.vue'
 import MyReviewsView from './views/MyReviewsView.vue'
 import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.vue";
@@ -11,6 +11,8 @@ import CoffeechatListView from "@/features/mypage/views/CoffeechatListView.vue";
 import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
 import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
 import SaleHistoryView from "@/features/mypage/views/SaleHistoryView.vue";
+import PurchasedColumnsView from "@/features/mypage/views/PurchasedColumnsView.vue";
+import AccountDeleteView from "@/features/mypage/views/AccountDeleteView.vue";
 
 export const mypageRoutes = [
     {
@@ -37,9 +39,9 @@ export const mypageRoutes = [
                 component: AccountEditView,
             },
             {
-                path: 'contents',
-                name: 'MyContents',
-                component: MyContentsView,
+                path: 'contents/like',
+                name: 'LikedContents',
+                component: LikedContentsView,
             },
             {
                 path: 'history/point',
@@ -76,6 +78,21 @@ export const mypageRoutes = [
                 name: 'ReviewRegister',
                 component: ReviewRegisterView,
             },
+            {
+                path: 'contents/purchased-columns',
+                name: 'PurchasedColumns',
+                component: PurchasedColumnsView,
+            },
+            {
+                path: 'account/delete',
+                name: 'AccountDelete',
+                component: AccountDeleteView,
+            },
+            {
+                path: '/mypage/mentor/column-requests',
+                name: 'ColumnRequestHistoryView',
+                component: () => import('@/features/mypage/views/ColumnRequestHistoryView.vue')
+            }
         ]
     }
 ]

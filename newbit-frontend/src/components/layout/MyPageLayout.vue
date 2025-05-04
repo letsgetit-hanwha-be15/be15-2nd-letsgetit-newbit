@@ -1,6 +1,5 @@
 <script setup>
 import Header from '@/components/common/Header.vue'
-import Footer from '@/components/common/Footer.vue'
 import MyPageSideBar from '@/features/mypage/components/MyPageSideBar.vue'
 </script>
 
@@ -14,7 +13,5 @@ import MyPageSideBar from '@/features/mypage/components/MyPageSideBar.vue'
         <router-view />
       </main>
     </div>
-
-    <Footer />
   </div>
 </template>

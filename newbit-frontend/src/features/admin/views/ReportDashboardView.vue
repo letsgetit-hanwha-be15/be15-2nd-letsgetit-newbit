@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  내 콘텐츠 페이지 입니다.
+<h1>관리자 대시보드 뷰</h1>
 </template>
 
 <style scoped>
