@@ -8,6 +8,10 @@ const searchKeyword = ref('')
 const isSubmitting = ref(false)
 const error = ref(null)
 
+const goToSeries = () => {
+  router.push('/series')
+}
+
 // 테스트용 더미 데이터 (API 연동 전)
 const columns = ref([
   {
@@ -59,10 +63,17 @@ const onClickCreate = () => {
   <section class="px-6 py-8">
     <!-- 탭 -->
     <div class="flex gap-6 mb-6 border-b border-[var(--newbitdivider)] text-13px-regular">
-      <span class="pb-2 border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold cursor-pointer">
-        칼럼
-      </span>
-      <span class="pb-2 text-[var(--newbitgray)] cursor-pointer">시리즈</span>
+  <span
+      class="pb-2 border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold cursor-pointer"
+  >
+    칼럼
+  </span>
+      <span
+          class="pb-2 text-[var(--newbitgray)] cursor-pointer"
+          @click="goToSeries"
+      >
+    시리즈
+  </span>
     </div>
 
     <!-- 검색 + 등록 버튼 -->
