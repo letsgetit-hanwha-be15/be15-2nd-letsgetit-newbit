@@ -56,6 +56,10 @@ const handleSearch = () => {
 const handlePageChange = (page) => {
   currentPage.value = page
 }
+
+const onClickCreate = () => {
+  router.push('/series/create')   // 구현 예정
+}
 </script>
 
 <template>
@@ -95,6 +99,12 @@ const handlePageChange = (page) => {
           검색
         </button>
       </div>
+      <button
+          @click="onClickCreate"
+          class="bg-[var(--newbitnormal)] text-white px-4 py-2 rounded text-13px-bold ml-4 whitespace-nowrap"
+      >
+        시리즈 발행
+      </button>
     </div>
 
     <!-- 시리즈 카드 리스트 -->

@@ -56,9 +56,7 @@ const handleSearch = () => {
 }
 
 const onClickCreate = () => {
-
   router.push('/columns/requests')
-
 }
 
 const handlePageChange = (page) => {
