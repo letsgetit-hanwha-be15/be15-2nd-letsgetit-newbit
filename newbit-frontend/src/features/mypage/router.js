@@ -5,7 +5,6 @@ import MentorProfileEditView from './views/MentorProfileEditView.vue'
 import AccountEditView from './views/AccountEditView.vue'
 import LikedContentsView from './views/LikedContentsView.vue'
 import PointHistoryView from './views/PointHistoryView.vue'
-import MyReviewsView from './views/MyReviewsView.vue'
 import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.vue";
 import CoffeechatListView from "@/features/mypage/views/CoffeechatListView.vue";
 import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
@@ -79,22 +78,17 @@ export const mypageRoutes = [
                 component: MonthlySettlementHistoryView,
             },
             {
-                path: 'reviews',
-                name: 'MyReviews',
-                component: MyReviewsView,
-            },
-            {
-                path: 'coffeechats',
+                path: 'history/coffeechats',
                 name: 'CoffeechatList',
                 component: CoffeechatListView,
             },
             {
-                path: 'coffeechats/:id',
+                path: 'history/coffeechats/:id',
                 name: 'CoffeechatDetail',
                 component: CoffeechatDetailView,
             },
             {
-                path: 'coffeechats/:id/review',
+                path: 'history/coffeechats/:id/review',
                 name: 'ReviewRegister',
                 component: ReviewRegisterView,
             },
