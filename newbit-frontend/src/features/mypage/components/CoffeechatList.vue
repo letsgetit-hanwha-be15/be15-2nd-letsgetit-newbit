@@ -8,15 +8,16 @@ const {coffeechats} = defineProps({
     required: true
   }
 })
-console.log(coffeechats)
 </script>
 
 <template>
-  <CoffeechatItem
-    v-for="coffeechat in coffeechats"
-    :key="coffeechat.coffeechatId"
-    :coffeechat="coffeechat"
-  />
+  <div>
+    <CoffeechatItem
+        v-for="coffeechat in coffeechats"
+        :key="coffeechat.coffeechatId"
+        :coffeechat="coffeechat"
+    />
+  </div>
 </template>
 
 <style scoped>

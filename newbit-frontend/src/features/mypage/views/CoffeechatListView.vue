@@ -11,9 +11,9 @@ const statuses = [
   '커피챗대기',
   '이용완료',
   '취소/환불'
-]
+];
 
-const selectedStatus = ref('전체')
+const selectedStatus = ref('전체');
 const originalCoffeechats = ref([
   {
     "coffeechatId": 13,
@@ -25,6 +25,7 @@ const originalCoffeechats = ref([
   {
     "coffeechatId": 6,
     "progressStatus": "COMPLETE",
+    // "requestMessage": "CS 기초 상담 부탁드립니다.",
     "requestMessage": "CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.",
     "profileImageUrl": "/src/assets/image/profile-mentee.png",
     "nickname": "백엔드꿈나무"
@@ -39,18 +40,31 @@ const originalCoffeechats = ref([
 ]);
 
 // 프론트용 구현 시작
+
+const statusMap = {
+  IN_PROGRESS: '승인대기',
+  PAYMENT_WAITING: '결제대기',
+  COFFEECHAT_WAITING: '커피챗대기',
+  COMPLETE: '이용완료',
+  CANCEL: '취소/환불',
+};
+
+function getStatusText(status) {
+  return statusMap[status] || '알 수 없음'
+}
+
 const coffeechats = computed(() => {
   let filtered = originalCoffeechats.value;
 
-  if (selectedStatus.value === '전체') return originalCoffeechats
-  return filtered.filter(chat => chat.progressStatus === selectedStatus.value)
+  if (selectedStatus.value === '전체') return filtered
+  return filtered.filter(chat => getStatusText(chat.progressStatus) === selectedStatus.value) || null
 })
 
 // 프론트용 구현 끝
 </script>
 
 <template>
-  <div class="p-6">
+  <div class="p-6 w-screen">
     <h1 class="text-heading1">커피챗 내역</h1>
     <div class="flex flex-wrap gap-2 mb-6">
       <button
@@ -72,7 +86,7 @@ const coffeechats = computed(() => {
         {{ status }}
       </button>
     </div>
-    <CoffeechatList :coffeechats="coffeechats.value"/>
+    <CoffeechatList :coffeechats="coffeechats"/>
 <!--    <PagingBar
         v-bind="pagination"
         @page-changed="fetchCoffeechats"
