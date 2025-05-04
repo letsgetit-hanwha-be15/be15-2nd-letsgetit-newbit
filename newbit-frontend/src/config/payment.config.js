@@ -1,9 +1,7 @@
 export const paymentConfig = {
   toss: {
     clientKey: {
-      test:
-        import.meta.env.VITE_TOSS_TEST_CLIENT_KEY ||
-        "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm", // TODO : .env 파일 없는 사람을 위해 하드코딩 배포 후 삭제 필요요
+      test: import.meta.env.VITE_TOSS_TEST_CLIENT_KEY,
       prod: import.meta.env.VITE_TOSS_PROD_CLIENT_KEY,
     },
   },
