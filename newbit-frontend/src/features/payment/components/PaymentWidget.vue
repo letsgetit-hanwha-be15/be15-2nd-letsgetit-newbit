@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, onUnmounted } from "vue";
 import { usePayment } from "../composables/usePayment";
+import { paymentService } from "../services/paymentService";
 
 const props = defineProps({
   orderId: {
@@ -17,6 +18,10 @@ const props = defineProps({
   },
   customerKey: {
     type: String,
+    required: true,
+  },
+  userId: {
+    type: Number,
     required: true,
   },
 });
@@ -42,26 +47,20 @@ const setupPaymentWidget = async () => {
   if (!isReady.value) return;
 
   try {
-    // 결제 위젯 초기화 - 백엔드에서 처리할 수 있도록 CUSTOMER- 접두사 추가
     const formattedCustomerKey = `CUSTOMER-${props.customerKey}`;
     const widget = await initPaymentWidget(formattedCustomerKey);
 
-    // 금액 설정
     await setPaymentAmount(props.amount);
 
-    // 결제 수단 UI 렌더링
     paymentMethodWidget.value = await renderPaymentMethods("#payment-method");
 
-    // 약관 UI 렌더링
     const agreementWidget = await widget.renderAgreement({
       selector: "#agreement",
     });
 
-    // 약관 동의 상태 감시
     agreementWidget.on("agreementStatusChange", (status) => {
       isAgreementValid.value = !!status.agreedRequiredTerms;
     });
-    // 디폴트 false 보장
     isAgreementValid.value = false;
   } catch (error) {
     emit("error", error);
@@ -74,20 +73,28 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  // 위젯 정리 (필요한 경우)
   if (paymentMethodWidget.value) {
     paymentMethodWidget.value.destroy();
   }
 });
 
-const handlePayment = () => {
-  requestPaymentWithWidget({
-    orderId: props.orderId,
-    orderName: props.orderName,
-    amount: props.amount,
-    customerName: "고객명",
-    // customerKey는 결제 요청에 포함하지 않음
-  });
+const handlePayment = async () => {
+  try {
+    await paymentService.saveOrder({
+      orderId: props.orderId,
+      userId: props.userId,
+      orderName: props.orderName,
+      amount: props.amount,
+    });
+    requestPaymentWithWidget({
+      orderId: props.orderId,
+      orderName: props.orderName,
+      amount: props.amount,
+      customerName: "고객명",
+    });
+  } catch (error) {
+    emit("error", error);
+  }
 };
 </script>
 

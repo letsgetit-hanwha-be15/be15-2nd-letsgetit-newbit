@@ -17,7 +17,6 @@ export function usePayment({ onSuccess, onError }) {
     try {
       isLoading.value = true;
 
-      // npm 패키지로 로드
       tossPayments.value = await loadTossPayments(clientKey.value);
       isReady.value = true;
     } catch (error) {

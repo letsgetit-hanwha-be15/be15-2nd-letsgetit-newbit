@@ -143,4 +143,9 @@ export const paymentService = {
   getRefundQueryDetail: async (refundId) => {
     return api.get(`${paymentApi.endpoints.refundQueryDetail}/${refundId}`);
   },
+
+  // 주문 정보 저장
+  saveOrder: async (orderData) => {
+    return api.post(paymentApi.endpoints.order, orderData);
+  },
 };

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import com.newbit.newbitfeatureservice.payment.command.application.dto.request.PaymentCancelRequest;
+import com.newbit.newbitfeatureservice.payment.command.application.dto.request.CreateOrderRequest;
 import com.newbit.newbitfeatureservice.payment.command.application.dto.response.PaymentApproveResponse;
 import com.newbit.newbitfeatureservice.payment.command.application.dto.response.PaymentRefundResponse;
 import com.newbit.newbitfeatureservice.payment.command.application.service.PaymentCommandService;
@@ -113,11 +114,10 @@ public class PaymentController extends AbstractApiController {
                 } catch (IllegalArgumentException e) {
                     paymentMethod = PaymentMethod.CARD;
                 }
-                
-                Long userId = Long.parseLong(
-                    ((String) responseJson.get("customerKey")).replace("CUSTOMER-", "")
-                );
-                
+
+                com.newbit.newbitfeatureservice.payment.command.domain.aggregate.Payment payment = paymentCommandService.findByOrderId(confirmedOrderId);
+                Long userId = payment.getUserId();
+
                 paymentCommandService.processPaymentSuccess(
                     confirmedPaymentKey, 
                     confirmedOrderId, 
@@ -176,5 +176,15 @@ public class PaymentController extends AbstractApiController {
         
         PaymentApproveResponse response = paymentCommandService.getPaymentByOrderId(orderId);
         return successResponse(response);
+    }
+
+    @Operation(
+        summary = "주문 생성",
+        description = "결제 전에 주문 정보를 저장합니다."
+    )
+    @PostMapping("/order")
+    public ResponseEntity<ApiResponse<String>> createOrder(@RequestBody CreateOrderRequest request) {
+        paymentCommandService.createOrder(request);
+        return successResponse(request.getOrderId());
     }
 } 

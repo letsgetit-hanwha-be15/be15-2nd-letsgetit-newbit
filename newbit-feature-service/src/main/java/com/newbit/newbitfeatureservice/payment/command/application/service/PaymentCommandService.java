@@ -4,6 +4,7 @@ import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.newbitfeatureservice.notification.command.application.service.NotificationCommandService;
+import com.newbit.newbitfeatureservice.payment.command.application.dto.request.CreateOrderRequest;
 import com.newbit.newbitfeatureservice.payment.command.domain.aggregate.Payment;
 import com.newbit.newbitfeatureservice.payment.command.domain.aggregate.PaymentMethod;
 import com.newbit.newbitfeatureservice.payment.command.domain.repository.PaymentRepository;
@@ -96,5 +97,22 @@ public class PaymentCommandService {
                 .approvedAt(payment.getApprovedAt())
                 .receiptUrl(payment.getReceiptUrl())
                 .build();
+    }
+
+    public Payment findByOrderId(String orderId) {
+        return paymentRepository.findByOrderId(orderId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.PAYMENT_NOT_FOUND));
+    }
+
+    @Transactional
+    public void createOrder(CreateOrderRequest request) {
+        Payment payment = Payment.createPayment(
+            request.getAmount(),
+            PaymentMethod.CARD,
+            request.getUserId(),
+            request.getOrderId(),
+            request.getOrderName()
+        );
+        paymentRepository.save(payment);
     }
 } 

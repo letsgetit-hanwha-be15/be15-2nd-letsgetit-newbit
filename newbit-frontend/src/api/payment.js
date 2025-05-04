@@ -1,6 +1,7 @@
 export const paymentApi = {
   endpoints: {
     // 결제 관련
+    order: "feature/payments/order", // 주문 정보 저장
     confirm: "feature/payments/confirm", // 결제 승인(토스)
     cancel: "feature/payments/cancel", // 결제 취소(키 기반)
     status: "feature/payments", // 결제 상태 조회(주문번호 기반)
