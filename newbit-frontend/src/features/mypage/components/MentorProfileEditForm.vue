@@ -70,7 +70,7 @@ const submitIntroduce = () => {
         <p class="text-sm mt-2">온도 100번</p>
         <button
             @click="router.push({ name: 'MyProfileEdit' })"
-            class="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+            class="mt-4 bg-[var(--newbitnormal)] text-white px-4 py-2 rounded"
         >
           프로필 수정
         </button>
@@ -108,7 +108,7 @@ const submitIntroduce = () => {
           </div>
         </div>
         <div class="flex justify-end">
-          <button @click="submitCoffeechat" class="bg-blue-500 text-white px-4 py-2 rounded">수정</button>
+          <button @click="submitCoffeechat" class="bg-[var(--newbitnormal)] text-white px-4 py-2 rounded">수정</button>
         </div>
       </div>
     </div>
@@ -123,7 +123,7 @@ const submitIntroduce = () => {
         <input v-model="externalLinkUrl" class="w-full border rounded px-3 py-2 mb-4" />
       </div>
       <div class="flex justify-end">
-        <button @click="submitIntroduce" class="bg-blue-500 text-white px-4 py-2 rounded">수정</button>
+        <button @click="submitIntroduce" class="bg-[var(--newbitnormal)] text-white px-4 py-2 rounded">수정</button>
       </div>
     </div>
   </div>
