@@ -29,3 +29,6 @@ export const createApiClient = (baseURL) => {
 
   return client;
 };
+
+const api = createApiClient(import.meta.env.VITE_API_BASE_URL);
+export default api;
