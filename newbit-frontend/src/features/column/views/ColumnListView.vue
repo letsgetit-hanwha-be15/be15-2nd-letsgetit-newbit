@@ -2,10 +2,13 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ColumnCard from '@/features/column/components/ColumnCard.vue'
+import PagingBar from "@/components/common/PagingBar.vue";
 
 const router = useRouter()
 const searchKeyword = ref('')
 const isSubmitting = ref(false)
+const currentPage = ref(1)
+const totalPage = 3
 const error = ref(null)
 
 const goToSeries = () => {
@@ -57,6 +60,11 @@ const onClickCreate = () => {
   router.push('/columns/requests')
 
 }
+
+const handlePageChange = (page) => {
+  currentPage.value = page
+}
+
 </script>
 
 <template>
@@ -110,13 +118,11 @@ const onClickCreate = () => {
     </div>
 
     <!-- 페이지네이션 -->
-    <div class="flex justify-center gap-2 mt-10 text-13px-regular text-[var(--newbitgray)]">
-      <span class="cursor-pointer">← Previous</span>
-      <span class="font-bold text-[var(--newbitnormal)]">1</span>
-      <span class="cursor-pointer">2</span>
-      <span class="cursor-pointer">3</span>
-      <span class="cursor-pointer">Next →</span>
-    </div>
+    <PagingBar
+        :currentPage="currentPage"
+        :totalPage="totalPage"
+        @page-change="handlePageChange"
+    />
 
     <!-- 에러 메시지 -->
     <div v-if="error" class="text-red-500 mt-4">{{ error }}</div>
