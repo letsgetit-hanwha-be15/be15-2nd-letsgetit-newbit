@@ -177,16 +177,17 @@ const handleCreate = () => {
 
 /* 썸네일 업로더 박스 */
 .thumbnail-uploader {
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 16 / 9;
   border: 1px dashed var(--newbitdivider);
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: var(--newbitlightmode);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
   overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 /* 썸네일 이미지 미리보기 */
@@ -194,7 +195,8 @@ const handleCreate = () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 6px;
+  object-position: center;
+  border-radius: 8px;
 }
 
 /* 썸네일 업로드 전 placeholder 스타일 */
