@@ -1,7 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import SeriesCard from '@/features/column/components/SeriesCard.vue'
 import PagingBar from '@/components/common/PagingBar.vue'
+
+const router = useRouter()
 
 const searchKeyword = ref('')
 const currentPage = ref(1)
@@ -37,6 +40,15 @@ const filteredSeries = computed(() =>
     )
 )
 
+const goToSeries = () => {
+  if (router.currentRoute.value.path === '/series') {
+    // 같은 경로일 경우에도 강제로 다시 push
+    router.replace({ path: '/series', query: { refresh: Date.now() } })
+  } else {
+    router.push('/series')
+  }
+}
+
 const handleSearch = () => {
   console.log('검색:', searchKeyword.value)
 }
@@ -50,8 +62,21 @@ const handlePageChange = (page) => {
   <section class="px-6 py-8 max-w-[1100px] mx-auto">
     <!-- 탭 -->
     <div class="flex gap-6 mb-6 border-b border-[var(--newbitdivider)] text-13px-regular">
-      <span class="pb-2 text-[var(--newbitgray)] cursor-pointer">칼럼</span>
-      <span class="pb-2 border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold cursor-pointer">시리즈</span>
+      <router-link
+          to="/columns"
+          class="pb-2 cursor-pointer"
+          :class="$route.path === '/columns' ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold' : 'text-[var(--newbitgray)]'"
+      >
+        칼럼
+      </router-link>
+
+      <span
+          @click="goToSeries"
+          class="pb-2 cursor-pointer"
+          :class="$route.path.startsWith('/series') ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold' : 'text-[var(--newbitgray)]'"
+      >
+      시리즈
+    </span>
     </div>
 
     <!-- 검색 -->
