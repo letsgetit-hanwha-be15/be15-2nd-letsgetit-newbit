@@ -57,7 +57,7 @@ const submitIntroduce = async (data) => {
 
     <p v-if="successMessage" class="text-green-600 text-sm">{{ successMessage }}</p>
 
-    <!-- 에러 모달 -->
+    <!-- 임시 에러 모달 -->
     <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
         <p class="text-lg font-semibold mb-4">{{ errorMessage }}</p>
