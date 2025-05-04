@@ -39,16 +39,6 @@ const filteredSeries = computed(() =>
         isMyPage || series.columnCount > 0
     )
 )
-
-const goToSeries = () => {
-  if (router.currentRoute.value.path === '/series') {
-    // 같은 경로일 경우에도 강제로 다시 push
-    router.replace({ path: '/series', query: { refresh: Date.now() } })
-  } else {
-    router.push('/series')
-  }
-}
-
 const handleSearch = () => {
   console.log('검색:', searchKeyword.value)
 }
@@ -74,13 +64,13 @@ const onClickCreate = () => {
         칼럼
       </router-link>
 
-      <span
-          @click="goToSeries"
+      <router-link
+          to="/series"
           class="pb-2 cursor-pointer"
           :class="$route.path.startsWith('/series') ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold' : 'text-[var(--newbitgray)]'"
       >
-      시리즈
-    </span>
+        시리즈
+      </router-link>
     </div>
 
     <!-- 검색 -->
