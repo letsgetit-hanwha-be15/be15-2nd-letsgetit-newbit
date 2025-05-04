@@ -13,6 +13,11 @@ import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
 import SaleHistoryView from "@/features/mypage/views/SaleHistoryView.vue";
 import PurchasedColumnsView from "@/features/mypage/views/PurchasedColumnsView.vue";
 import AccountDeleteView from "@/features/mypage/views/AccountDeleteView.vue";
+import MonthlySettlementHistoryView from "@/features/mypage/views/MonthlySettlementHistoryView.vue";
+import MyPostsView from "@/features/mypage/views/MyPostsView.vue";
+import SubscribedSeriesView from "@/features/mypage/views/SubscribedSeriesView.vue";
+import MyColumnsView from "@/features/mypage/views/MyColumnsView.vue";
+import MySeriesView from "@/features/mypage/views/MySeriesView.vue";
 
 export const mypageRoutes = [
     {
@@ -32,6 +37,16 @@ export const mypageRoutes = [
                 path: 'mentor/edit',
                 name: 'MentorProfileEdit',
                 component: MentorProfileEditView,
+            },
+            {
+                path: 'mentor/columns',
+                name: 'MyColumns',
+                component: MyColumnsView,
+            },
+            {
+                path: 'mentor/series',
+                name: 'MySeries',
+                component: MySeriesView,
             },
             {
                 path: 'account',
@@ -59,6 +74,11 @@ export const mypageRoutes = [
                 component: SaleHistoryView,
             },
             {
+                path: 'history/settlement',
+                name: 'MonthlySettlementHistory',
+                component: MonthlySettlementHistoryView,
+            },
+            {
                 path: 'reviews',
                 name: 'MyReviews',
                 component: MyReviewsView,
@@ -82,6 +102,16 @@ export const mypageRoutes = [
                 path: 'contents/purchased-columns',
                 name: 'PurchasedColumns',
                 component: PurchasedColumnsView,
+            },
+            {
+                path: 'contents/posts',
+                name: 'MyPosts',
+                component: MyPostsView,
+            },
+            {
+                path: 'contents/subscribe',
+                name: 'SubscribedSeries',
+                component: SubscribedSeriesView,
             },
             {
                 path: 'account/delete',

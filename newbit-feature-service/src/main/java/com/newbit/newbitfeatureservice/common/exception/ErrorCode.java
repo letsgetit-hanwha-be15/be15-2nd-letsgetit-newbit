@@ -126,11 +126,12 @@ public enum ErrorCode {
     VIRTUAL_ACCOUNT_ISSUANCE_FAILED("61008", "가상계좌 발급에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     PAYMENT_REFUND_NOT_FOUND("61009", "환불 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     PAYMENT_CANNOT_BE_CANCELLED("61010", "결제를 취소할 수 없는 상태입니다.", HttpStatus.BAD_REQUEST),
-    PAYMENT_NOT_PARTIAL_CANCELABLE("61011", "부분 취소가 불가능한 결제입니다.", HttpStatus.BAD_REQUEST),
-    REFUND_AMOUNT_EXCEEDS_BALANCE("61012", "환불 금액이 잔액을 초과합니다.", HttpStatus.BAD_REQUEST),
-    PAYMENT_CANCEL_FAILED("61013", "결제 취소 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    PAYMENT_NOT_VIRTUAL_ACCOUNT("61014", "가상계좌 결제가 아닙니다.", HttpStatus.BAD_REQUEST),
-    PAYMENT_REFUND_ACCOUNT_REQUIRED("61015", "가상계좌 환불을 위해서는 환불 계좌 정보가 필요합니다.", HttpStatus.BAD_REQUEST),
+    ALREADY_CANCELED_PAYMENT("61011", "이미 취소된 건입니다.", HttpStatus.CONFLICT),
+    PAYMENT_NOT_PARTIAL_CANCELABLE("61012", "부분 취소가 불가능한 결제입니다.", HttpStatus.BAD_REQUEST),
+    REFUND_AMOUNT_EXCEEDS_BALANCE("61013", "환불 금액이 잔액을 초과합니다.", HttpStatus.BAD_REQUEST),
+    PAYMENT_CANCEL_FAILED("61014", "결제 취소 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    PAYMENT_NOT_VIRTUAL_ACCOUNT("61015", "가상계좌 결제가 아닙니다.", HttpStatus.BAD_REQUEST),
+    PAYMENT_REFUND_ACCOUNT_REQUIRED("61016", "가상계좌 환불을 위해서는 환불 계좌 정보가 필요합니다.", HttpStatus.BAD_REQUEST),
 
     /*--------------- 정산 ------------------*/
     SETTLEMENT_NOT_FOUND("62001", "정산 내역을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),

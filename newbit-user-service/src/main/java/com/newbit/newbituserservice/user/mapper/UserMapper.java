@@ -20,4 +20,6 @@ public interface UserMapper {
     List<MentorListResponseDTO> findMentors(MentorListRequestDTO request);
 
     List<String> findMentorTechstacks(Long mentorId);
+
+    long countMentors(MentorListRequestDTO request);
 }
