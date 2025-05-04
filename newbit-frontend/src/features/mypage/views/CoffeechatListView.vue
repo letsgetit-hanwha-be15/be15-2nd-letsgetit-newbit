@@ -14,30 +14,47 @@ const statuses = [
 ];
 
 const selectedStatus = ref('전체');
-const originalCoffeechats = ref([
-  {
-    "coffeechatId": 13,
-    "progressStatus": "IN_PROGRESS",
-    "requestMessage": "안녕하세요 신입입니다.",
-    "profileImageUrl": "/src/assets/image/profile-mentee.png",
-    "nickname": "mentee"
+const originalCoffeechats = ref({
+  "success": true,
+  "data": {
+    "coffeechats": [
+      {
+        "coffeechatId": 13,
+        "progressStatus": "IN_PROGRESS",
+        "requestMessage": "안녕하세요 신입입니다.",
+        "profileImageUrl": "/src/assets/image/profile-mentee.png",
+        "nickname": "mentee"
+      },
+      {
+        "coffeechatId": 6,
+        "progressStatus": "COMPLETE",
+        "requestMessage": "CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.",
+        "profileImageUrl": "/src/assets/image/profile-mentee.png",
+        "nickname": "백엔드꿈나무"
+      },
+      {
+        "coffeechatId": 3,
+        "progressStatus": "CANCEL",
+        "requestMessage": "커피챗 신청합니다.",
+        "profileImageUrl": "/src/assets/image/profile-mentee.png",
+        "nickname": "코린이"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPage": 1,
+      "totalItems": 3
+    }
   },
-  {
-    "coffeechatId": 6,
-    "progressStatus": "COMPLETE",
-    // "requestMessage": "CS 기초 상담 부탁드립니다.",
-    "requestMessage": "CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.",
-    "profileImageUrl": "/src/assets/image/profile-mentee.png",
-    "nickname": "백엔드꿈나무"
-  },
-  {
-    "coffeechatId": 3,
-    "progressStatus": "CANCEL",
-    "requestMessage": "커피챗 신청합니다.",
-    "profileImageUrl": "/src/assets/image/profile-mentee.png",
-    "nickname": "코린이"
-  }
-]);
+  "errorCode": null,
+  "message": null,
+  "timestamp": "2025-05-04T22:55:16.9462967"
+});
+
+const fetchCoffeechats = (page = 1) => {
+  // API 호출 or emit
+  console.log('이동할 페이지: ', page)
+}
 
 // 프론트용 구현 시작
 
@@ -54,7 +71,7 @@ function getStatusText(status) {
 }
 
 const coffeechats = computed(() => {
-  let filtered = originalCoffeechats.value;
+  let filtered = originalCoffeechats.value.data.coffeechats;
 
   if (selectedStatus.value === '전체') return filtered
   return filtered.filter(chat => getStatusText(chat.progressStatus) === selectedStatus.value) || null
@@ -86,11 +103,14 @@ const coffeechats = computed(() => {
         {{ status }}
       </button>
     </div>
-    <CoffeechatList :coffeechats="coffeechats"/>
-<!--    <PagingBar
-        v-bind="pagination"
+    <CoffeechatList
+        :coffeechats="coffeechats"
+        :pagination="originalCoffeechats.data.pagination"/>
+    <PagingBar
+        :currentPage="originalCoffeechats.data.pagination.currentPage"
+        :totalPage="originalCoffeechats.data.pagination.totalPage"
         @page-changed="fetchCoffeechats"
-    />-->
+    />
   </div>
 
 </template>
