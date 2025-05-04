@@ -42,7 +42,7 @@ const submitUpdateRequest = () => {
 
 <template>
   <div class="w-full max-w-4xl mx-auto">
-    <h2 class="text-heading3 mb-4">회원 정보 수정</h2>
+    <h2 class="text-heading3 mb-4">프로필 수정</h2>
     <div class="flex items-center justify-center">
       <div class="w-full px-36 py-24 border rounded-lg shadow-sm">
         <form @submit.prevent="handleSubmit" class="space-y-6 flex flex-col items-center justify-center">
