@@ -16,6 +16,7 @@ const form = reactive({
   password: '',
   userName: '',
   nickname: '',
+  phoneNumber: '',
   job: '',
   techstacks: []
 })
@@ -37,14 +38,21 @@ const isValid = computed(() => {
       form.email.trim() &&
       form.password.length >= 8 &&
       form.userName &&
-      form.nickname
+      form.nickname &&
+      /^\d{10,11}$/.test(form.phoneNumber)
   )
 })
 
 function onSubmit() {
   emit('submit', {
-    ...form,
-    techstacks: form.techstacks
+    email: form.email,
+    password: form.password,
+    phoneNumber: form.phoneNumber,
+    userName: form.userName,
+    nickname: form.nickname,
+    profileImgUrl: null,
+    jobName: form.job || null, // '' → null
+    techstackNames: form.techstacks.length ? form.techstacks : null // [] → null
   })
 }
 </script>
@@ -63,8 +71,17 @@ function onSubmit() {
     </div>
 
     <div class="mb-5">
-      <label class="block mb-2 text-20px-regular text-newbittext whitespace-nowrap" >비밀번호 (영문, 숫자, 특수문자 포함 8자리 이상)</label>
+      <label class="block mb-2 text-20px-regular text-newbittext whitespace-nowrap">
+        비밀번호 (영문, 숫자, 특수문자 포함 8자리 이상)
+      </label>
       <input type="password" v-model="form.password" placeholder="Password" required
+             class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular" />
+    </div>
+
+    <div class="mb-5">
+      <label class="block mb-2 text-20px-regular text-newbittext">전화번호</label>
+      <input type="tel" v-model="form.phoneNumber" placeholder="01012345678" required
+             maxlength="11" pattern="\d{10,11}" title="숫자만 입력 (10~11자리)"
              class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular" />
     </div>
 
