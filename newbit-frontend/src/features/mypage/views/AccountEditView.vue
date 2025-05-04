@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import {onMounted, ref} from 'vue';
 
 const phoneNumber = ref('010-1234-5678');
 const currentPassword = ref('');
