@@ -4,11 +4,6 @@ import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import com.newbit.newbitfeatureservice.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.newbitfeatureservice.notification.command.application.service.NotificationCommandService;
-import com.newbit.newbitfeatureservice.payment.command.application.dto.TossPaymentApiDto;
-import com.newbit.newbitfeatureservice.payment.command.application.dto.request.PaymentApproveRequest;
-import com.newbit.newbitfeatureservice.payment.command.application.dto.request.PaymentPrepareRequest;
-import com.newbit.newbitfeatureservice.payment.command.application.dto.response.PaymentApproveResponse;
-import com.newbit.newbitfeatureservice.payment.command.application.dto.response.PaymentPrepareResponse;
 import com.newbit.newbitfeatureservice.payment.command.domain.aggregate.Payment;
 import com.newbit.newbitfeatureservice.payment.command.domain.aggregate.PaymentMethod;
 import com.newbit.newbitfeatureservice.payment.command.domain.repository.PaymentRepository;
@@ -18,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
