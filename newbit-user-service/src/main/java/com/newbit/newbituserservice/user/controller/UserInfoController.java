@@ -3,10 +3,7 @@ package com.newbit.newbituserservice.user.controller;
 import com.newbit.newbituserservice.common.dto.ApiResponse;
 import com.newbit.newbituserservice.security.model.CustomUser;
 import com.newbit.newbituserservice.user.dto.request.*;
-import com.newbit.newbituserservice.user.dto.response.MentorListResponseDTO;
-import com.newbit.newbituserservice.user.dto.response.MentorProfileDTO;
-import com.newbit.newbituserservice.user.dto.response.OhterUserProfileDTO;
-import com.newbit.newbituserservice.user.dto.response.UserDTO;
+import com.newbit.newbituserservice.user.dto.response.*;
 import com.newbit.newbituserservice.user.service.UserInfoService;
 import com.newbit.newbituserservice.user.service.UserQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -83,10 +80,11 @@ public class UserInfoController {
 
     @Operation(summary = "멘토 목록 조회", description = "조건에 따라 멘토 목록을 조회합니다.")
     @GetMapping("/mentors")
-    public ResponseEntity<ApiResponse<List<MentorListResponseDTO>>> getMentors(MentorListRequestDTO request) {
-        List<MentorListResponseDTO> mentors = userQueryService.getMentors(request);
-        return ResponseEntity.ok(ApiResponse.success(mentors));
+    public ResponseEntity<ApiResponse<MentorListResponseWrapper>> getMentors(MentorListRequestDTO request) {
+        MentorListResponseWrapper response = userQueryService.getMentors(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
+
 
 
     @GetMapping("/{userId}/email")
