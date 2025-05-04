@@ -16,6 +16,7 @@ const displayThumbnail = computed(() =>
         : fallbackImg
 )
 
+// 구독 toggle 함수 (임시)
 const toggleSubscription = () => {
   props.series.subscribed = !props.series.subscribed
 }
@@ -26,6 +27,7 @@ const toggleSubscription = () => {
     <div class="relative rounded overflow-hidden mb-2">
       <img
           :src="displayThumbnail"
+          @error="(e) => (e.target.src = fallbackImg)"
           alt="시리즈 썸네일"
           class="w-full h-[180px] object-cover rounded"
       />
