@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 // import { useUserStore } from '@/stores/userStore';
-import { getMentorById } from '@/api/mentor.js';
+import { getMentorById, patchMentorCoffeechatInfo, patchMentorIntroduction } from '@/api/mentor.js';
 import axios from 'axios';
+import { useToast } from 'vue-toastification'
 import MentorProfileEditForm from '@/features/mypage/components/MentorProfileEditForm.vue';
 
-// 상태 변수
+
+const toast = useToast()
 const profileData = ref({});
 const coffeechatData = ref({});
 const introduceData = ref({});
@@ -15,16 +17,13 @@ const showModal = ref(false);
 
 // const userStore = useUserStore();
 
-// 멘토 정보 불러오기
 onMounted(async () => {
   try {
-    // const mentorId = userStore.mentorId;
-    const mentorId = 2;
+    const mentorId = 2; // const mentorId = userStore.mentorId;
     if (!mentorId) throw new Error('mentorId 없음');
 
     const response = await getMentorById(mentorId);
     const data = response.data?.data;
-    console.log(data);
 
     profileData.value = {
       profileImageUrl: data.profileImageUrl,
@@ -49,10 +48,9 @@ onMounted(async () => {
   }
 });
 
-// 각 정보 수정 핸들러
 const submitProfile = async (data) => {
   try {
-    await axios.put('/api/mentor/profile', data);
+    await axios.put('/api/mentor/profile', data); // 수정 시 필요시 별도 API 분리 가능
     successMessage.value = '프로필 정보가 수정되었습니다.';
   } catch (e) {
     errorMessage.value = '프로필 정보 수정 실패';
@@ -62,8 +60,9 @@ const submitProfile = async (data) => {
 
 const submitCoffeechat = async (data) => {
   try {
-    await axios.put('/api/mentor/coffeechat', data);
+    await patchMentorCoffeechatInfo(data);
     successMessage.value = '커피챗 정보가 수정되었습니다.';
+    toast.success('커피챗 정보가 수정되었습니다.')
   } catch (e) {
     errorMessage.value = '커피챗 정보 수정 실패';
     showModal.value = true;
@@ -72,8 +71,9 @@ const submitCoffeechat = async (data) => {
 
 const submitIntroduce = async (data) => {
   try {
-    await axios.put('/api/mentor/introduce', data);
+    await patchMentorIntroduction(data);
     successMessage.value = '소개 정보가 수정되었습니다.';
+    toast.success('소개 정보가 수정되었습니다.')
   } catch (e) {
     errorMessage.value = '소개 정보 수정 실패';
     showModal.value = true;
@@ -94,11 +94,10 @@ const submitIntroduce = async (data) => {
         @updateIntroduce="submitIntroduce"
     />
 
-    <p v-if="successMessage" class="text-green-600 text-sm mt-4">
+    <p v-if="successMessage" class="text-[var(--newbitnormal)] text-sm mt-4">
       {{ successMessage }}
     </p>
 
-    <!-- 에러 모달 -->
     <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
         <p class="text-lg font-semibold mb-4">{{ errorMessage }}</p>
