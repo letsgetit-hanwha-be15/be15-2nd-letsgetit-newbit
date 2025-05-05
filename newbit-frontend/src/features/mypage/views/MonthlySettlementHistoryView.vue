@@ -1,56 +1,59 @@
 <script setup>
-import HistoryList from '@/features/mypage/components/HistoryList.vue'
-import {ref} from "vue";
-import PagingBar from "@/components/common/PagingBar.vue";
+import { ref, onMounted } from 'vue';
+import HistoryList from '@/features/mypage/components/HistoryList.vue';
+import PagingBar from '@/components/common/PagingBar.vue';
+import { fetchSettlementHistory } from '@/api/history.js';
+
+const historyItems = ref(null);
+const historyType = 'settlement';
+const isLoading = ref(false);
+const error = ref(null);
+
+const loadSettlementHistory = async (page = 1) => {
+  isLoading.value = true;
+  error.value = null;
+  try {
+    const { histories, pagination } = await fetchSettlementHistory(page);
+    historyItems.value = {
+      histories,
+      pagination
+    };
+  } catch (e) {
+    error.value = '정산 내역을 불러오는 데 실패했습니다.';
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 const handlePageChange = (page) => {
-  // API 호출 or emit
-  console.log('이동할 페이지:', page)
-}
+  loadSettlementHistory(page);
+};
 
-const historyType = 'settlement'
-const historyItems = ref({
-      "success": true,
-      "data": {
-        "settlements": [
-          {
-            "settlementId": 1,
-            "settlementYear": 2024,
-            "settlementMonth": 3,
-            "settlementAmount": 100000.00,
-            "settledAt": "2025-05-04T18:35:14"
-          }
-        ],
-        "pagination": {
-          "currentPage": 1,
-          "totalPage": 1,
-          "totalItems": 1
-        }
-      },
-      "errorCode": null,
-      "message": null,
-      "timestamp": "2025-05-04T18:35:53.859715"
-    }
-)
-
-
+onMounted(() => {
+  loadSettlementHistory();
+});
 </script>
 
 <template>
   <div class="w-full max-w-4xl mx-auto p-6">
-    <h2 class="text-heading3 mb-6">월별 정산 내역</h2>
-    <HistoryList
-        :histories="historyItems.data.settlements"
-        :pagination="historyItems.data.pagination"
-        :type="historyType"
-    />
-    <PagingBar
-        :currentPage="historyItems.data.pagination.currentPage"
-        :totalPage="historyItems.data.pagination.totalPage"
-        @page-change="handlePageChange"
-    />
+    <h2 class="text-heading3 mb-4">월별 정산 내역</h2>
+
+    <div v-if="isLoading">로딩 중...</div>
+    <div v-else-if="error" class="text-red-500">{{ error }}</div>
+    <div v-else-if="historyItems && historyItems.histories.length > 0
+">
+      <HistoryList
+          :histories="historyItems.histories"
+          :pagination="historyItems.pagination"
+          :type="historyType"
+      />
+      <PagingBar
+          :currentPage="historyItems.pagination.currentPage"
+          :totalPage="historyItems.pagination.totalPage"
+          @page-change="handlePageChange"
+      />
+    </div>
+    <div v-else class="text-gray-400">정산 내역이 없습니다.</div>
   </div>
 </template>
 
-<style scoped>
-</style>
