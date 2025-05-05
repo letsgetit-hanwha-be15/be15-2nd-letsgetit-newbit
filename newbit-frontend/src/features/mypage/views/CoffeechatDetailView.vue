@@ -3,10 +3,11 @@
 import {computed, ref} from "vue";
 import profileImage from '@/assets/image/default-profile.png'
 import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vue";
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
 
-const route = useRoute()
+const route = useRoute();
+const router = useRouter();
 const coffeechatId = ref(Number(route.params.id))
 
 // 프론트용 페이지
@@ -157,10 +158,6 @@ const coffeechat = computed(() => {
 
 // 프론트용 끝
 
-function cancelRegister() {
-  // 멘티 커피챗 취소 확인 모달 띄우기
-}
-
 const statusMap = {
   IN_PROGRESS: '승인대기',
   PAYMENT_WAITING: '결제대기',
@@ -170,8 +167,10 @@ const statusMap = {
 }
 
 function getStatusText(status) {
-  console.log(status)
   return statusMap[status] || '알 수 없음'
+}
+function cancelRegister() {
+  router.push(`/mypage/history/coffeechats/${coffeechatId.value}/cancel`);
 }
 
 </script>
