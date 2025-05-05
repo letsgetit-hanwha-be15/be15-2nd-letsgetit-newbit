@@ -20,7 +20,7 @@ function getStatusText(status) {
 </script>
 
 <template>
-  <router-link :to="`/mypage/coffeechats/${coffeechat.coffeechatId}`" class="hover:underline">
+  <router-link :to="`/mypage/history/coffeechats/${coffeechat.coffeechatId}`" class="hover:underline">
     <div class="flex items-center w-full px-4 py-5 border-b border-gray-200">
       <!-- 프로필 이미지 -->
       <img

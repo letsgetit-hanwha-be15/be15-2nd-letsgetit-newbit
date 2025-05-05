@@ -17,6 +17,7 @@ import MyPostsView from "@/features/mypage/views/MyPostsView.vue";
 import SubscribedSeriesView from "@/features/mypage/views/SubscribedSeriesView.vue";
 import MyColumnsView from "@/features/mypage/views/MyColumnsView.vue";
 import MySeriesView from "@/features/mypage/views/MySeriesView.vue";
+import CoffeechatListMentorView from "@/features/mypage/views/CoffeechatListMentorView.vue";
 
 export const mypageRoutes = [
     {
@@ -79,12 +80,12 @@ export const mypageRoutes = [
             },
             {
                 path: 'history/coffeechats',
-                name: 'CoffeechatList',
+                name: 'CoffeechatListMentee',
                 component: CoffeechatListMenteeView,
             },
             {
                 path: 'mentor/coffeechats',
-                name: 'CoffeechatList',
+                name: 'CoffeechatListMentor',
                 component: CoffeechatListMentorView,
             },
             {
