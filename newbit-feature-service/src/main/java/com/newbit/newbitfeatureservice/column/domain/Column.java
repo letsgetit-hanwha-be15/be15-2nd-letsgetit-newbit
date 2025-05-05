@@ -56,9 +56,6 @@ public class Column {
     @jakarta.persistence.Column(name = "mentor_id")
     private Long mentorId;
 
-    @jakarta.persistence.Column(nullable = false)
-    private String mentorNickname;
-
     @ManyToOne
     @JoinColumn(name = "series_id")
     private Series series;
