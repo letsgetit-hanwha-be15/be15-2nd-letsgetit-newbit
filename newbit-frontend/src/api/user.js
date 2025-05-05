@@ -5,3 +5,13 @@ import api from './axios.js'
 export function SignUpUser(data) {
     return api.post('/user/users/signup', data);
 }
+
+/* 2. 직무 목록 조회 */
+export function FetchJobList() {
+    return api.get('/user/jobs');
+}
+
+/* 3. 기술 스택 목록 조회 */
+export function FetchTechstackList() {
+    return api.get('/user/techstacks');
+}
