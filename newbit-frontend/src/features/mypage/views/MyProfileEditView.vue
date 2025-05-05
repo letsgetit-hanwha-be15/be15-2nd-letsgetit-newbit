@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { FetchJobList, FetchTechstackList } from '@/api/user';
 import api from '@/api/axios';
 import MyProfileEditForm from '@/features/mypage/components/MyProfileEditForm.vue';
+import { useToast } from 'vue-toastification'
 
 const profile = ref({});
 const jobOptions = ref([]);
@@ -11,13 +12,15 @@ const showModal = ref(false);
 const pendingRequest = ref(false);
 const error = ref('');
 const formData = ref(null);
+const toast = useToast();
+
 
 onMounted(async () => {
   try {
     const [jobRes, techRes, profileRes] = await Promise.all([
       FetchJobList(),
       FetchTechstackList(),
-      api.get('/user/users/me') // ✅ 프로필 불러오기 API
+      api.get('/user/users/me') //
     ]);
 
     if (jobRes.data.success) {
@@ -45,10 +48,10 @@ const onFormSubmit = (data) => {
 const confirmSubmit = async () => {
   try {
     pendingRequest.value = true;
-    await api.put('/user/users/me', formData.value); // ✅ 실제 수정 API 호출
-    alert('프로필이 수정되었습니다.');
+    await api.put('/user/users/me', formData.value); //
+    toast.success('프로필이 수정되었습니다.')
   } catch (e) {
-    alert('수정 실패');
+    toast.error('프로필 수정 실패')
     console.error(e);
   } finally {
     pendingRequest.value = false;
