@@ -1,17 +1,19 @@
 <script setup>
-import {onMounted, ref} from 'vue';
-import {getUserInfo} from "@/api/user.js";
+import { onMounted, ref } from 'vue';
+import { getUserInfo, putUserInfo } from "@/api/user.js"; // ✅ 추가
 
-const phoneNumber = ref('010-1234-5678');
+const phoneNumber = ref('');
 const currentPassword = ref('');
 const newPassword = ref('');
+const confirmNewPassword = ref('');
 const showModal = ref(false);
 const errorMessage = ref('');
+const successMessage = ref('');
 
-//회원 정보 조회
+// 회원 정보 조회
 onMounted(async () => {
   try {
-    const response = await getUserInfo(); // 예시: 로그인된 사용자 정보
+    const response = await getUserInfo();
     phoneNumber.value = response.data.data.phoneNumber;
   } catch (error) {
     errorMessage.value = '계정 정보를 불러오지 못했습니다.';
@@ -21,8 +23,8 @@ onMounted(async () => {
 const handleSubmit = () => {
   errorMessage.value = '';
 
-  if (currentPassword.value !== newPassword.value) {
-    errorMessage.value = '새 비밀번호가 현재 비밀번호와 일치하지 않습니다.';
+  if (confirmNewPassword.value !== newPassword.value) {
+    errorMessage.value = '비밀번호가 일치하지 않습니다.';
     return;
   }
 
@@ -34,10 +36,32 @@ const handleSubmit = () => {
   showModal.value = true;
 };
 
-const submitUpdateRequest = () => {
-  // 실제 요청 처리
-  alert(`전화번호: ${phoneNumber.value}\n비밀번호 변경됨`);
-  showModal.value = false;
+const submitUpdateRequest = async () => {
+  try {
+    const payload = {
+      phoneNumber: phoneNumber.value,
+      currentPassword: currentPassword.value,
+      newPassword: newPassword.value || undefined,
+    };
+
+    const response = await putUserInfo(payload);
+
+    if (response.data?.success) {
+      successMessage.value = '회원 정보가 변경되었습니다.';
+      errorMessage.value = '';
+    } else {
+      errorMessage.value = response.data?.message || '수정에 실패했습니다.';
+      successMessage.value = '';
+    }
+  } catch (error) {
+    if (error.response?.data?.message) {
+      errorMessage.value = error.response.data.message;
+    } else {
+      errorMessage.value = '요청 중 오류가 발생했습니다.';
+    }
+  } finally {
+    showModal.value = false;
+  }
 };
 </script>
 
@@ -83,6 +107,18 @@ const submitUpdateRequest = () => {
             />
           </div>
 
+          <!-- 새 비밀번호 확인 -->
+          <div class="w-full flex flex-col items-center justify-center">
+            <label for="confirmNewPassword" class="block text-sm text-16px-regular mb-4 w-3/5">새 비밀번호 확인</label>
+            <input
+                id="confirmNewPassword"
+                type="password"
+                v-model="confirmNewPassword"
+                placeholder="새 비밀번호 확인"
+                class="w-3/5 px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
+
           <!-- 오류 메시지 -->
           <p v-if="errorMessage" class="text-red-500 text-sm w-3/5 text-left">{{ errorMessage }}</p>
 
@@ -93,6 +129,12 @@ const submitUpdateRequest = () => {
           >
             저장하기
           </button>
+          <p
+              v-if="successMessage"
+              class="text-blue-500 text-sm w-3/5 text-left mt-2"
+          >
+            {{ successMessage }}
+          </p>
         </form>
       </div>
     </div>
