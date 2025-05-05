@@ -48,11 +48,17 @@
         />
       </div>
 
-      <button class="icon-button">
+      <button class="icon-button relative" @click="toggleNotification">
         <img
-          class="notification-icon"
-          src="@/assets/image/notification-icon.png"
-          alt="Notifications"
+            class="notification-icon"
+            src="@/assets/image/notification-icon.png"
+            alt="Notifications"
+        />
+        <NotificationDropdown
+            v-if="showNotification"
+            :open="showNotification"
+            @close="showNotification = false"
+            :dropdown-id="'notification'"
         />
       </button>
 
@@ -68,24 +74,27 @@
 import { ref, provide } from "vue";
 import ProfileDropdown from "@/components/common/ProfileDropdown.vue";
 import ChatRoomListModal from "@/features/coffeeletter/components/ChatRoomListDropdown.vue";
+import NotificationDropdown from "@/features/notification/components/NotificationDropdown.vue";
 
 const showChatModal = ref(false);
+const showNotification = ref(false);
 const activeDropdown = ref(null);
 
 provide("activeDropdown", activeDropdown);
 
+
 const handleDropdownOpened = (id) => {
   if (id === "profile" && showChatModal.value) {
     showChatModal.value = false;
+    showNotification.value = false;
   }
   activeDropdown.value = id;
 };
 
 const toggleChatModal = () => {
-  if (activeDropdown.value === "profile") {
+  if (activeDropdown.value === "profile" || activeDropdown.value === "notification") {
     activeDropdown.value = null;
   }
-
   showChatModal.value = !showChatModal.value;
   if (showChatModal.value) {
     activeDropdown.value = "chat";
@@ -93,6 +102,19 @@ const toggleChatModal = () => {
     activeDropdown.value = null;
   }
 };
+
+const toggleNotification = () => {
+  if (activeDropdown.value === "profile" || activeDropdown.value === "chat") {
+    activeDropdown.value = null;
+  }
+  showNotification.value = !showNotification.value;
+  if (showNotification.value) {
+    activeDropdown.value = "notification";
+  } else {
+    activeDropdown.value = null;
+  }
+}
+
 </script>
 
 <style scoped>
