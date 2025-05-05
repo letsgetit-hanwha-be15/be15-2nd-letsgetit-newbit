@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {useToast} from "vue-toastification";
+import dayjs from 'dayjs'
 
 const router = useRouter();
 const route = useRoute();
@@ -79,6 +80,16 @@ function goCoffeeLetter() {
   // todo : 커피챗 아이디로 커피레터 아이디 조회
   const coffeeLetterId = 1
   router.push(`/coffeeletter/${coffeeLetterId}`)
+}
+
+const isAfterEndedAt = computed(() => {
+  const endedAt = coffeechat.value?.endedAt;
+  if (!endedAt) return false;
+  return dayjs().isAfter(dayjs(endedAt));
+});
+
+function closeCoffeechat() {
+  // todo : 멘토가 커피챗 종료 확정
 }
 </script>
 
@@ -162,12 +173,21 @@ function goCoffeeLetter() {
           </div>
         </div>
       </template>
-      <!-- 멘토가 커피레터 입장     -->
       <template v-if="coffeechat.progressStatus === 'COFFEECHAT_WAITING'">
+        <!-- 멘토가 커피레터 입장     -->
         <button v-if="isMentor"
                 @click="goCoffeeLetter"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
           커피레터 입장
+        </button>
+        <!-- 멘토가 커피챗 종료 확정     -->
+        <button v-if="isMentor"
+                @click="closeCoffeechat"
+                :disabled="!isAfterEndedAt"
+                class="ml-2 rounded-md px-4 py-2 text-button
+                 bg-[var(--newbitnormal)] text-[var(--newbitlight)] text-button
+                 disabled:opacity-50">
+          커피챗 종료 확정
         </button>
       </template>
     </div>
