@@ -65,7 +65,8 @@ const handleUpdate = () => {
     title: form.value.title,
     description: form.value.description,
     thumbnailFile: form.value.thumbnailFile,
-    columnIds: selectedColumnIds.value.length === 0 ? null : selectedColumnIds.value
+    columnIds: selectedColumnIds.value.length === 0 ? null : selectedColumnIds.value,
+    mentorNickname: props.series.mentorNickname
   }
 
   emit('update', payload)
