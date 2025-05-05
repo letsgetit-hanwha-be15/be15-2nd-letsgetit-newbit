@@ -1,5 +1,6 @@
 <script setup>
 import {onMounted, ref} from 'vue';
+import {getUserInfo} from "@/api/user.js";
 
 const phoneNumber = ref('010-1234-5678');
 const currentPassword = ref('');
@@ -7,11 +8,11 @@ const newPassword = ref('');
 const showModal = ref(false);
 const errorMessage = ref('');
 
-//회원 정보 조회 예시
+//회원 정보 조회
 onMounted(async () => {
   try {
-    const response = await axios.get('/api/user/me'); // 예시: 로그인된 사용자 정보
-    phoneNumber.value = response.data.phoneNumber;
+    const response = await getUserInfo(); // 예시: 로그인된 사용자 정보
+    phoneNumber.value = response.data.data.phoneNumber;
   } catch (error) {
     errorMessage.value = '계정 정보를 불러오지 못했습니다.';
   }
