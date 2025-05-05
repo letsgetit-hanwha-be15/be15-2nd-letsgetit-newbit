@@ -123,13 +123,6 @@ const navigateToDetail = (reportId) => {
   font-weight: 600;
 }
 
-.status {
-  padding: 4px 10px;
-  border-radius: 12px;
-  color: #fff;
-  display: inline-block;
-}
-
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -163,12 +156,12 @@ const navigateToDetail = (reportId) => {
 }
 
 .report-content {
-  color: var(--newbittext);
+  color: #000000;
   text-decoration: underline;
   cursor: pointer;
 }
 
 .report-content:hover {
-  color: var(--newbitnormal);
+  color: #038ffd;
 }
 </style>

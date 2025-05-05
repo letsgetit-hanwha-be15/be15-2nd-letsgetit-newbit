@@ -1,6 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import axios from "axios";
+import { useRouter } from "vue-router";
+import { fetchChatRoomsByUser } from "@/api/coffeeletter";
+import webSocketService from "@/features/coffeeletter/services/websocket";
+import ChatRoomListDropdown from "./ChatRoomListDropdown.vue";
 
 const props = defineProps({
   onSelectRoom: {
@@ -14,119 +17,51 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["select-room"]);
+const router = useRouter();
 
 // TODO: 사용자 정보 auth 적용 후 수정
-const currentUserId = ref(1);
+const currentUserId = ref(3);
 const isMentor = ref(true);
 
-const chatRooms = ref([]);
-const searchKeyword = ref("");
+const rooms = ref([]);
+const searchQuery = ref("");
 const loading = ref(false);
 
 const filteredRooms = computed(() => {
-  if (!searchKeyword.value.trim()) return chatRooms.value;
+  if (!searchQuery.value.trim()) return rooms.value;
 
-  return chatRooms.value.filter((room) => {
+  return rooms.value.filter((room) => {
     const partnerName = isCurrentUserMentor(room)
       ? room.menteeName
       : room.mentorName;
-    return partnerName
+    return (partnerName ?? "")
       .toLowerCase()
-      .includes(searchKeyword.value.toLowerCase());
+      .includes(searchQuery.value.toLowerCase());
   });
 });
 
 const selectRoom = (roomId) => {
-  console.log("채팅방 리스트에서 선택됨:", roomId);
   emit("select-room", roomId);
 };
 
-// 채팅방 목록 조회
-const fetchChatRooms = async () => {
+const fetchRooms = async () => {
   loading.value = true;
   try {
-    // TODO: 실제 API 구현 시 아래 코드 사용
-    // const response = await axios.get(`/coffeeletter/rooms/user/${currentUserId.value}`);
-    // chatRooms.value = response.data;
+    const response = await fetchChatRoomsByUser(currentUserId.value);
+    rooms.value = response.data;
 
-    // 테스트용 더미 데이터
-    chatRooms.value = [
-      {
-        id: "1",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 2,
-        menteeName: "멘티B",
-        lastMessageContent: "안녕하세요! 커피챗 질문이 있어요.",
-        lastMessageTime: "2025-05-01T14:30:00",
-        status: "ACTIVE",
-        unreadCountMentor: 0,
-        unreadCountMentee: 2,
-      },
-      {
-        id: "2",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 3,
-        menteeName: "멘티C",
-        lastMessageContent: "답변 감사합니다! 정말 도움이 많이 됐어요.",
-        lastMessageTime: "2025-04-30T09:15:00",
-        status: "ACTIVE",
-        unreadCountMentor: 1,
-        unreadCountMentee: 0,
-      },
-      {
-        id: "3",
-        mentorId: 4,
-        mentorName: "멘토D",
-        menteeId: 1,
-        menteeName: "멘티A",
-        lastMessageContent: "다음 주에 일정 조율 가능할까요?",
-        lastMessageTime: "2025-04-29T18:20:00",
-        status: "ACTIVE",
-        unreadCountMentor: 0,
-        unreadCountMentee: 0,
-      },
-      {
-        id: "4",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 5,
-        menteeName: "멘티E",
-        lastMessageContent: "프로젝트 리뷰 부탁드려요!",
-        lastMessageTime: "2025-04-28T10:45:00",
-        status: "ACTIVE",
-        unreadCountMentor: 3,
-        unreadCountMentee: 0,
-      },
-      {
-        id: "5",
-        mentorId: 6,
-        mentorName: "멘토F",
-        menteeId: 1,
-        menteeName: "멘티A",
-        lastMessageContent: "온라인 미팅 링크 보내드렸습니다!",
-        lastMessageTime: "2025-04-27T16:30:00",
-        status: "ACTIVE",
-        unreadCountMentor: 0,
-        unreadCountMentee: 1,
-      },
-      {
-        id: "6",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 7,
-        menteeName: "멘티G",
-        lastMessageContent: "포트폴리오 피드백 감사합니다!",
-        lastMessageTime: "2025-04-26T09:45:00",
-        status: "ACTIVE",
-        unreadCountMentor: 0,
-        unreadCountMentee: 0,
-      },
-    ];
+    rooms.value.sort((a, b) => {
+      const timeA = a.lastMessageTime
+        ? new Date(a.lastMessageTime).getTime()
+        : 0;
+      const timeB = b.lastMessageTime
+        ? new Date(b.lastMessageTime).getTime()
+        : 0;
+      return timeB - timeA;
+    });
   } catch (error) {
     console.error("채팅방 목록 조회 실패:", error);
-    chatRooms.value = [];
+    rooms.value = [];
   } finally {
     loading.value = false;
   }
@@ -151,9 +86,18 @@ const formatDate = (dateStr) => {
 
   const date = new Date(dateStr);
   const now = new Date();
-  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-  if (diffDays === 0) {
+  if (diffMinutes < 1) {
+    return "방금 전";
+  } else if (diffMinutes < 60) {
+    return `${diffMinutes}분 전`;
+  } else if (diffHours < 24) {
+    return `${diffHours}시간 전`;
+  } else if (diffDays === 0) {
     // 오늘
     return `${date.getHours().toString().padStart(2, "0")}:${date
       .getMinutes()
@@ -172,6 +116,51 @@ const formatDate = (dateStr) => {
   }
 };
 
+const getProfileImage = (room) => {
+  const defaultImage = "/src/assets/image/profile.png";
+  if (isCurrentUserMentor(room)) {
+    return room.menteeProfileImageUrl || defaultImage;
+  } else {
+    return room.mentorProfileImageUrl || defaultImage;
+  }
+};
+
+const setupWebSocket = () => {
+  webSocketService.connect({
+    userId: currentUserId.value,
+    onRoomListUpdate: (updatedRoom) => {
+      console.log("채팅방 목록 업데이트:", updatedRoom);
+      const index = rooms.value.findIndex((room) => room.id === updatedRoom.id);
+      if (index !== -1) {
+        rooms.value[index] = updatedRoom;
+      } else {
+        rooms.value.unshift(updatedRoom);
+      }
+      rooms.value.sort((a, b) => {
+        const timeA = a.lastMessageTime
+          ? new Date(a.lastMessageTime).getTime()
+          : 0;
+        const timeB = b.lastMessageTime
+          ? new Date(b.lastMessageTime).getTime()
+          : 0;
+        return timeB - timeA;
+      });
+    },
+    onUserEvent: (event) => {
+      console.log("사용자 이벤트 수신:", event);
+      if (event.type === "READ_UPDATE" || event.type === "NEW_MESSAGE") {
+        fetchRooms();
+      }
+    },
+    onConnected: () => {
+      console.log("채팅방 목록 WebSocket 연결됨");
+    },
+    onError: (error) => {
+      console.error("WebSocket 오류:", error);
+    },
+  });
+};
+
 watch(
   () => props.selectedRoomId,
   (newValue, oldValue) => {
@@ -181,28 +170,33 @@ watch(
       "->",
       newValue
     );
+
+    if (newValue) {
+      const selectedRoom = rooms.value.find((room) => room.id === newValue);
+      if (selectedRoom) {
+        if (isCurrentUserMentor(selectedRoom)) {
+          selectedRoom.unreadCountMentor = 0;
+        } else {
+          selectedRoom.unreadCountMentee = 0;
+        }
+      }
+    }
   }
 );
 
 onMounted(() => {
-  fetchChatRooms();
+  fetchRooms();
+  setupWebSocket();
   console.log(
     "ChatRoomList 마운트됨, 초기 selectedRoomId:",
     props.selectedRoomId
   );
 });
 
-// TODO: 채팅방 목록 웹소켓 설정 추가한 후 삭제 예정
-let refreshInterval;
-onMounted(() => {
-  refreshInterval = setInterval(() => {
-    fetchChatRooms();
-  }, 5 * 60 * 1000);
-});
-
 onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
+  if (webSocketService.isConnected()) {
+    webSocketService.unsubscribe("/topic/rooms");
+    webSocketService.unsubscribe(`/user/${currentUserId.value}/queue/events`);
   }
 });
 </script>
@@ -215,7 +209,7 @@ onUnmounted(() => {
     <div class="chatroom-search">
       <input
         type="text"
-        v-model="searchKeyword"
+        v-model="searchQuery"
         placeholder="채팅방 검색"
         class="search-input"
       />
@@ -223,8 +217,9 @@ onUnmounted(() => {
     <div v-if="loading" class="loading-container">
       <div class="loading-spinner"></div>
     </div>
-    <div v-else-if="chatRooms.length === 0" class="no-rooms">
+    <div v-else-if="rooms.length === 0" class="no-rooms">
       <p>진행 중인 커피레터가 없습니다.</p>
+      <p class="no-rooms-sub">새로운 대화를 시작해보세요!</p>
     </div>
     <div v-else class="chatroom-list">
       <div
@@ -235,9 +230,13 @@ onUnmounted(() => {
         @click="selectRoom(room.id)"
       >
         <div class="profile-image">
-          <img src="@/assets/image/profile.png" alt="프로필" />
+          <img
+            :src="getProfileImage(room)"
+            :alt="getPartnerName(room)"
+            class="profile-img"
+          />
           <div v-if="getUnreadCount(room) > 0" class="unread-badge">
-            {{ getUnreadCount(room) }}
+            {{ getUnreadCount(room) > 99 ? "99+" : getUnreadCount(room) }}
           </div>
         </div>
         <div class="room-info">
@@ -246,9 +245,22 @@ onUnmounted(() => {
             <span class="time">{{ formatDate(room.lastMessageTime) }}</span>
           </div>
           <div class="room-bottom">
-            <p class="last-message">
+            <p
+              class="last-message"
+              :class="{ unread: getUnreadCount(room) > 0 }"
+            >
               {{ room.lastMessageContent || "새로운 채팅방이 개설되었습니다." }}
             </p>
+            <div
+              v-if="room.status !== 'ACTIVE'"
+              class="status-badge"
+              :class="{
+                inactive: room.status === 'INACTIVE',
+                cancelled: room.status === 'CANCELED',
+              }"
+            >
+              {{ room.status === "INACTIVE" ? "종료됨" : "취소됨" }}
+            </div>
           </div>
         </div>
       </div>
@@ -336,6 +348,7 @@ onUnmounted(() => {
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
+  border: 1px solid #f0f0f0;
 }
 
 .unread-badge {
@@ -352,6 +365,8 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   padding: 0 5px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
 }
 
 .room-info {
@@ -376,6 +391,12 @@ onUnmounted(() => {
   color: #999;
 }
 
+.room-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .last-message {
   font-size: 13px;
   color: #666;
@@ -383,15 +404,49 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0;
+  max-width: 75%;
+}
+
+.last-message.unread {
+  font-weight: 600;
+  color: #333;
+}
+
+.status-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: white;
+  margin-left: 8px;
+}
+
+.status-badge.inactive {
+  background-color: #9ca3af;
+}
+
+.status-badge.cancelled {
+  background-color: #ef4444;
 }
 
 .no-rooms {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 200px;
   color: #999;
-  font-size: 14px;
+  text-align: center;
+}
+
+.no-rooms p {
+  margin: 0;
+  padding: 4px 0;
+}
+
+.no-rooms-sub {
+  font-size: 13px;
+  margin-top: 8px;
+  color: #999;
 }
 
 .loading-container {

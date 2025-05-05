@@ -2,14 +2,21 @@
 import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
+import {
+  fetchRoomInfo as fetchRoomInfoApi,
+  fetchMessagesByRoom,
+  sendMessage as sendMessageApi,
+  markAsRead as markAsReadApi,
+} from "@/api/coffeeletter";
+
+const DEFAULT_ROOM_ID = "67fca09d6632d00f31d416bc";
 
 const route = useRoute();
-const roomId = computed(() => route.params.id);
+const roomId = computed(() => route.params.id || DEFAULT_ROOM_ID);
 
-const currentUserId = ref(1); // 임시 사용자 ID
+const currentUserId = ref(9); // 임시 사용자 ID
 const isMentor = ref(true); // 임시 멘토 여부
 
-// 상태 관리
 const messages = ref([]);
 const newMessage = ref("");
 const chatMessagesContainer = ref(null);
@@ -21,22 +28,10 @@ const roomInfo = ref({
   menteeId: null,
 });
 
-// 채팅방 정보 조회
 const fetchRoomInfo = async () => {
   try {
-    // 실제 API 구현 시 아래 코드 사용
-    // const response = await axios.get(`/coffeeletter/rooms/${roomId.value}`);
-    // const room = response.data;
-
-    // 테스트용 더미 데이터
-    const room = {
-      id: roomId.value,
-      mentorId: 1,
-      mentorName: "멘토A",
-      menteeId: 2,
-      menteeName: "멘티B",
-      status: "ACTIVE",
-    };
+    const response = await fetchRoomInfoApi(roomId.value);
+    const room = response.data;
 
     roomInfo.value = {
       id: room.id,
@@ -53,55 +48,8 @@ const fetchRoomInfo = async () => {
 // 메시지 목록 조회
 const fetchMessages = async () => {
   try {
-    // 실제 API 구현 시 아래 코드 사용
-    // const response = await axios.get(`/coffeeletter/messages/${roomId.value}`);
-    // messages.value = response.data;
-
-    // 테스트용 더미 데이터
-    messages.value = [
-      {
-        id: "101",
-        roomId: roomId.value,
-        senderId: 2,
-        senderName: "멘티B",
-        content: "안녕하세요! 커피챗 질문이 있어요.",
-        timestamp: "2025-05-01T14:30:00",
-        readByMentor: true,
-        readByMentee: true,
-      },
-      {
-        id: "102",
-        roomId: roomId.value,
-        senderId: 1,
-        senderName: "멘토A",
-        content: "안녕하세요! 어떤 질문이신가요?",
-        timestamp: "2025-05-01T14:31:00",
-        readByMentor: true,
-        readByMentee: true,
-      },
-      {
-        id: "103",
-        roomId: roomId.value,
-        senderId: 2,
-        senderName: "멘티B",
-        content:
-          "프론트엔드 개발자로 커리어를 시작하려고 하는데, 어떤 기술 스택을 먼저 배우면 좋을까요?",
-        timestamp: "2025-05-01T14:33:00",
-        readByMentor: true,
-        readByMentee: true,
-      },
-      {
-        id: "104",
-        roomId: roomId.value,
-        senderId: 1,
-        senderName: "멘토A",
-        content:
-          "기본적으로 HTML, CSS, JavaScript는 필수입니다. 이후 React나 Vue.js 같은 프레임워크를 학습하시면 좋을 것 같아요.",
-        timestamp: "2025-05-01T14:35:00",
-        readByMentor: true,
-        readByMentee: false,
-      },
-    ];
+    const response = await fetchMessagesByRoom(roomId.value);
+    messages.value = response.data;
   } catch (error) {
     console.error("메시지 목록 조회 실패:", error);
   }
@@ -116,20 +64,15 @@ const sendMessage = async () => {
     senderId: currentUserId.value,
     senderName: isMentor.value ? "멘토A" : "멘티A",
     content: newMessage.value,
+    type: "CHAT",
     timestamp: new Date().toISOString(),
     readByMentor: isMentor.value,
     readByMentee: !isMentor.value,
   };
 
   try {
-    // 실제 API 구현 시 아래 코드 사용
-    // await axios.post('/coffeeletter/messages', messageData);
-
-    // 테스트용: 메시지 목록에 직접 추가
-    const newMessageObj = {
-      id: `msg-${Date.now()}`,
-      ...messageData,
-    };
+    const response = await sendMessageApi(messageData);
+    const newMessageObj = response.data;
 
     messages.value.push(newMessageObj);
     newMessage.value = "";
@@ -141,13 +84,10 @@ const sendMessage = async () => {
   }
 };
 
-// 읽음 처리
 const markAsRead = async () => {
   try {
-    // 실제 API 구현 시 아래 코드 사용
-    // await axios.post(`/coffeeletter/messages/${roomId.value}/mark-as-read/${currentUserId.value}`);
+    await markAsReadApi(roomId.value, currentUserId.value);
 
-    // 테스트용: 상태 직접 변경
     messages.value.forEach((msg) => {
       if (isMentor.value) {
         msg.readByMentor = true;
