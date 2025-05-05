@@ -12,20 +12,28 @@ const emit = defineEmits(['submit']);
 const nickname = ref('');
 const profileImageUrl = ref('@/assets/image/profile.png');
 const jobName = ref('');
-const techstackNames = ref([]); // ["Java", "Spring", ...]
+const techstackNames = ref([]);
 const selectedStack = ref('');
 const errorMessage = ref('');
 const fileInput = ref(null);
 
 // 초기 데이터 바인딩
 watch(
-    () => props.initialProfile,
-    (profile) => {
+    [() => props.initialProfile, () => props.jobOptions],
+    ([profile, jobs]) => {
       if (profile) {
         nickname.value = profile.nickname || '';
         profileImageUrl.value = profile.profileImageUrl || '';
-        jobName.value = profile.jobName || '';
+        //TODO: 기술스택 조회 추가 후 초기값 바인딩
         techstackNames.value = profile.techstackNames ? [...profile.techstackNames] : [];
+
+        // jobId가 있고 jobOptions가 로드된 경우 매핑
+        if (profile.jobId && jobs?.length) {
+          const matched = jobs.find(job => String(job.jobId) === String(profile.jobId));
+          jobName.value = matched?.jobName || '';
+        } else {
+          jobName.value = '';
+        }
       }
     },
     { immediate: true }
