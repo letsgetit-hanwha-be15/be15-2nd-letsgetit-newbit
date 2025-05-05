@@ -5,9 +5,8 @@ import MentorProfileEditView from './views/MentorProfileEditView.vue'
 import AccountEditView from './views/AccountEditView.vue'
 import LikedContentsView from './views/LikedContentsView.vue'
 import PointHistoryView from './views/PointHistoryView.vue'
-import MyReviewsView from './views/MyReviewsView.vue'
-import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.vue";
-import CoffeechatListView from "@/features/mypage/views/CoffeechatListView.vue";
+import CoffeechatDetailMenteeView from "@/features/mypage/views/CoffeechatDetailMenteeView.vue";
+import CoffeechatListMenteeView from "@/features/mypage/views/CoffeechatListMenteeView.vue";
 import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
 import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
 import SaleHistoryView from "@/features/mypage/views/SaleHistoryView.vue";
@@ -18,6 +17,9 @@ import MyPostsView from "@/features/mypage/views/MyPostsView.vue";
 import SubscribedSeriesView from "@/features/mypage/views/SubscribedSeriesView.vue";
 import MyColumnsView from "@/features/mypage/views/MyColumnsView.vue";
 import MySeriesView from "@/features/mypage/views/MySeriesView.vue";
+import CoffeechatListMentorView from "@/features/mypage/views/CoffeechatListMentorView.vue";
+import CoffeechatCancelView from "@/features/mypage/views/CoffeechatCancelView.vue";
+import CoffeechatDetailMentorView from "@/features/mypage/views/CoffeechatDetailMentorView.vue";
 
 export const mypageRoutes = [
     {
@@ -79,24 +81,34 @@ export const mypageRoutes = [
                 component: MonthlySettlementHistoryView,
             },
             {
-                path: 'reviews',
-                name: 'MyReviews',
-                component: MyReviewsView,
+                path: 'history/coffeechats',
+                name: 'CoffeechatListMentee',
+                component: CoffeechatListMenteeView,
             },
             {
-                path: 'coffeechats',
-                name: 'CoffeechatList',
-                component: CoffeechatListView,
+                path: 'mentor/coffeechats',
+                name: 'CoffeechatListMentor',
+                component: CoffeechatListMentorView,
             },
             {
-                path: 'coffeechats/:id',
+                path: 'history/coffeechats/:id',
                 name: 'CoffeechatDetail',
-                component: CoffeechatDetailView,
+                component: CoffeechatDetailMenteeView,
             },
             {
-                path: 'coffeechats/:id/review',
+                path: 'mentor/coffeechats/:id',
+                name: 'CoffeechatDetail',
+                component: CoffeechatDetailMentorView,
+            },
+            {
+                path: 'history/coffeechats/:id/review',
                 name: 'ReviewRegister',
                 component: ReviewRegisterView,
+            },
+            {
+                path: 'history/coffeechats/:id/cancel',
+                name: 'ReviewRegister',
+                component: CoffeechatCancelView,
             },
             {
                 path: 'contents/purchased-columns',

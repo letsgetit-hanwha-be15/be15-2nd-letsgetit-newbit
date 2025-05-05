@@ -64,7 +64,7 @@ const sidebarSections = computed(() => {
         { text: '포인트 내역', to: '/mypage/history/point' },
         { text: '다이아 내역', to: '/mypage/history/diamond' },
         { text: '결제 내역', to: '/mypage/history/payment' },
-        { text: '커피챗 내역', to: '/mypage/history/coffeechat' },
+        { text: '커피챗 내역', to: '/mypage/history/coffeechats' },
       ],
     },
     {
