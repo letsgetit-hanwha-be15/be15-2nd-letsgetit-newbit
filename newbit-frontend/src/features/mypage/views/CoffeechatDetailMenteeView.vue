@@ -237,7 +237,7 @@ function registerReview() {
       />
       <!-- 버튼들 -->
       <div class="flex flex-wrap gap-2 justify-end pb-10">
-        <button v-if="coffeechat.progressStatus === 'COFFEECHAT_WAITING'"
+        <button v-if="coffeechat.progressStatus !== 'IN_PROGRESS' && coffeechat.progressStatus !== 'PAYMENT_WAITING' && coffeechat.progressStatus !== 'CANCEL'"
                 @click="goCoffeeLetter"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
           커피레터 입장
@@ -259,7 +259,9 @@ function registerReview() {
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
           다이아 결제
         </button>
-        <button type="button"
+        <button
+            v-if="coffeechat.progressStatus !== 'CANCEL' && coffeechat.progressStatus !== 'COMPLETE'"
+            type="button"
                 @click="cancelRegister"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
           취소
