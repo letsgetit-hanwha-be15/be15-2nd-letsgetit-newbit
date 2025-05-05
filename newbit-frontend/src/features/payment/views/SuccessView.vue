@@ -24,8 +24,6 @@ const closeReceiptModal = () => {
   receiptModalOpen.value = false;
 };
 
-let blockPopState = false;
-
 onMounted(async () => {
   paymentKey.value = route.query.paymentKey || "";
   orderId.value = route.query.orderId || "";
@@ -42,8 +40,6 @@ onMounted(async () => {
       history.pushState(null, "", location.href);
     }
   };
-  window.addEventListener("popstate", handlePopState);
-
   const preventEvent = (e) => {
     if (isConfirming.value) {
       e.preventDefault();
@@ -51,6 +47,8 @@ onMounted(async () => {
       return false;
     }
   };
+
+  window.addEventListener("popstate", handlePopState);
   window.addEventListener("keydown", preventEvent, true);
   window.addEventListener("mousedown", preventEvent, true);
   window.addEventListener("touchstart", preventEvent, true);
@@ -70,6 +68,12 @@ const confirmPayment = async () => {
 
   isConfirming.value = true;
 
+  const confirmTimeout = setTimeout(() => {
+    if (isConfirming.value) {
+      isConfirming.value = false;
+    }
+  }, 7000);
+
   try {
     const response = await api.post(paymentApi.endpoints.confirm, {
       paymentKey: paymentKey.value,
@@ -88,6 +92,7 @@ const confirmPayment = async () => {
       error.response?.data?.message || "결제 승인 처리 중 오류가 발생했습니다.";
   } finally {
     isConfirming.value = false;
+    clearTimeout(confirmTimeout);
   }
 };
 
