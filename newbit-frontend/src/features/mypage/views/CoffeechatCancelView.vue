@@ -76,7 +76,7 @@ const user = ref({
     </div>
     <div class="mb-4 space-y-2">
       <div class="text-16px-regular">환불 정책 안내</div>
-      <div class="text-13px-regular">커피챗 시작 하루 전 취소할 경우, 환불은 불가합니다.</div>
+      <div class="text-13px-regular ml-2">커피챗 시작 하루 전 취소할 경우, 환불은 불가합니다.</div>
     </div>
     <div class="flex flex-wrap gap-2 justify-end pb-10">
       <button type="button"
