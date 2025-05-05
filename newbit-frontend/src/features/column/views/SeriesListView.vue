@@ -1,17 +1,19 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import SeriesCard from '@/features/column/components/SeriesCard.vue'
 import PagingBar from '@/components/common/PagingBar.vue'
+import SeriesCreateModal from '@/features/column/components/SeriesCreateModal.vue'
 
-const router = useRouter()
-
+// 상태
 const searchKeyword = ref('')
 const currentPage = ref(1)
 const totalPage = 3
+const isCreateModalOpen = ref(false)
 
 const isMyPage = false // TODO: 로그인한 유저의 멘토 여부 확인 후 수정
 
+// 임시 시리즈 목록
 const allSeries = ref([
   {
     id: 1,
@@ -28,27 +30,34 @@ const allSeries = ref([
     columnCount: 3,
     thumbnailUrl: '',
     subscribed: false
-  },
+  }
 ])
 
+// 검색 + 공개 조건 필터링
 const filteredSeries = computed(() =>
-    allSeries.value.filter(series =>
-        series.title.includes(searchKeyword.value) ||
-        series.mentorNickname.includes(searchKeyword.value)
-    ).filter(series =>
-        isMyPage || series.columnCount > 0
-    )
+    allSeries.value
+        .filter(s =>
+            s.title.includes(searchKeyword.value) || s.mentorNickname.includes(searchKeyword.value)
+        )
+        .filter(s => isMyPage || s.columnCount > 0)
 )
+
+// 이벤트 핸들러
 const handleSearch = () => {
-  console.log('검색:', searchKeyword.value)
+  console.log('검색어:', searchKeyword.value)
 }
 
 const handlePageChange = (page) => {
   currentPage.value = page
 }
 
-const onClickCreate = () => {
-  router.push('/series/create')   // 구현 예정
+const openCreateModal = () => {
+  isCreateModalOpen.value = true
+}
+
+const handleCreateSeries = (payload) => {
+  console.log('생성된 시리즈:', payload)
+  // TODO: API 호출 및 리스트 갱신
 }
 </script>
 
@@ -59,21 +68,24 @@ const onClickCreate = () => {
       <router-link
           to="/columns"
           class="pb-2 cursor-pointer"
-          :class="$route.path === '/columns' ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold' : 'text-[var(--newbitgray)]'"
+          :class="$route.path === '/columns'
+          ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold'
+          : 'text-[var(--newbitgray)]'"
       >
         칼럼
       </router-link>
-
       <router-link
           to="/series"
           class="pb-2 cursor-pointer"
-          :class="$route.path.startsWith('/series') ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold' : 'text-[var(--newbitgray)]'"
+          :class="$route.path.startsWith('/series')
+          ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold'
+          : 'text-[var(--newbitgray)]'"
       >
         시리즈
       </router-link>
     </div>
 
-    <!-- 검색 -->
+    <!-- 검색창 + 발행 버튼 -->
     <div class="flex justify-between items-center mb-6">
       <div class="flex gap-2 flex-1">
         <input
@@ -90,14 +102,14 @@ const onClickCreate = () => {
         </button>
       </div>
       <button
-          @click="onClickCreate"
+          @click="openCreateModal"
           class="bg-[var(--newbitnormal)] text-white px-4 py-2 rounded text-13px-bold ml-4 whitespace-nowrap"
       >
         시리즈 발행
       </button>
     </div>
 
-    <!-- 시리즈 카드 리스트 -->
+    <!-- 카드 리스트 -->
     <div class="grid grid-cols-3 gap-6">
       <SeriesCard
           v-for="series in filteredSeries"
@@ -111,6 +123,12 @@ const onClickCreate = () => {
         :currentPage="currentPage"
         :totalPage="totalPage"
         @page-change="handlePageChange"
+    />
+
+    <!-- 발행 모달 -->
+    <SeriesCreateModal
+        v-model:modelValue="isCreateModalOpen"
+        @create="handleCreateSeries"
     />
   </section>
 </template>

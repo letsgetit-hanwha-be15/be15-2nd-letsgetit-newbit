@@ -2,6 +2,7 @@
 import { onMounted, ref, onUnmounted, computed } from "vue";
 import { usePayment } from "../composables/usePayment";
 import { paymentService } from "../services/paymentService";
+import { useRouter } from "vue-router";
 
 const props = defineProps({
   orderId: {
@@ -33,9 +34,10 @@ const isAgreementValid = ref(false);
 const isWidgetLoading = ref(true);
 const isWidgetVisible = ref(false);
 
+const router = useRouter();
+
 const {
   isReady,
-  isLoading,
   initPayment,
   initPaymentWidget,
   setPaymentAmount,
@@ -43,7 +45,32 @@ const {
   requestPaymentWithWidget,
 } = usePayment({
   onSuccess: (result) => emit("success", result),
-  onError: (error) => emit("error", error),
+  // TODO : 결제 위젯 에러 발생시 에러 캐치하려고 했으나 위젯이 iframe 으로 렌더링되어 캐치 불가능한 문제 발생(추정)
+  // Toss payments위젯 내부 문제인지 아닌지 자세한 원인 파악 필요, 차후에 우선적으로 해결
+  onError: (error) => {
+    console.log("[PaymentWidget][onError] 결제 위젯 에러 발생:", error);
+    setTimeout(() => {
+      if (
+        // 결제 위젯 초기화 오류 발생시 위젯 초기화 함수 호출(소용 없음)
+        paymentMethodWidget.value &&
+        typeof paymentMethodWidget.value.destroy === "function"
+      ) {
+        paymentMethodWidget.value.destroy();
+      }
+      const el = document.getElementById("payment-method");
+      if (el) el.innerHTML = "";
+      const dimmer = document.getElementById(
+        "__tosspayments_payment-gateway_dimmer__"
+      );
+      if (dimmer) dimmer.remove();
+      const iframe = document.getElementById(
+        "__tosspayments_payment-gateway_iframe__"
+      );
+      if (iframe) iframe.remove();
+      router.replace("/products");
+    }, 2000);
+    emit("error", error);
+  },
 });
 
 const setupPaymentWidget = async () => {

@@ -9,6 +9,8 @@ import com.newbit.newbitfeatureservice.like.dto.response.LikedPostResponse;
 import com.newbit.newbitfeatureservice.like.entity.Like;
 import com.newbit.newbitfeatureservice.like.repository.LikeRepository;
 import com.newbit.newbitfeatureservice.post.service.PostService;
+import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
+import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LikeQueryService 테스트")
@@ -40,6 +43,9 @@ class LikeQueryServiceTest {
     
     @Mock
     private PostService postService;
+
+    @Mock
+    private UserFeignClient userFeignClient;
 
     @InjectMocks
     private LikeQueryService likeQueryService;
@@ -145,13 +151,19 @@ class LikeQueryServiceTest {
             when(postService.getPostTitle(postId + 1)).thenReturn("제목2");
             when(postService.getWriterIdByPostId(postId)).thenReturn(userId);
             when(postService.getWriterIdByPostId(postId + 1)).thenReturn(userId);
+            // 작성자 닉네임 stub
+            when(userFeignClient.getNicknameByUserId(userId)).thenReturn(ApiResponse.success("홍길동"));
+            // 게시글 좋아요 수 stub
+            when(postService.getPostLikeCount(postId)).thenReturn(12);
+            when(postService.getPostLikeCount(postId + 1)).thenReturn(8);
             
             // When
             LikedPostListResponse response = likeQueryService.getLikedPostsByUser(userId, pageable);
             
             // Then
             assertNotNull(response);
-            assertEquals(2, response.getLikedPosts().size());
+            List<LikedPostResponse> posts = response.getLikedPosts();
+            assertEquals(2, posts.size());
             
             Pagination pagination = response.getPagination();
             assertNotNull(pagination);
@@ -159,17 +171,21 @@ class LikeQueryServiceTest {
             assertEquals(1, pagination.getTotalPage());
             assertEquals(2, pagination.getTotalItems());
             
-            LikedPostResponse firstPost = response.getLikedPosts().get(0);
+            LikedPostResponse firstPost = posts.get(0);
             assertEquals(1L, firstPost.getLikeId());
             assertEquals(postId, firstPost.getPostId());
             assertEquals("제목1", firstPost.getPostTitle());
             assertEquals(userId, firstPost.getAuthorId());
+            assertEquals("홍길동", firstPost.getAuthorNickname());
+            assertEquals(12, firstPost.getLikeCount());
             assertEquals(now, firstPost.getLikedAt());
             
-            LikedPostResponse secondPost = response.getLikedPosts().get(1);
+            LikedPostResponse secondPost = posts.get(1);
             assertEquals(2L, secondPost.getLikeId());
             assertEquals(postId + 1, secondPost.getPostId());
             assertEquals("제목2", secondPost.getPostTitle());
+            assertEquals("홍길동", secondPost.getAuthorNickname());
+            assertEquals(8, secondPost.getLikeCount());
         }
     }
     
@@ -197,13 +213,26 @@ class LikeQueryServiceTest {
             when(columnService.getMentorIdByColumnId(columnId)).thenReturn(1L);
             when(columnService.getMentorIdByColumnId(columnId + 1)).thenReturn(1L);
             when(columnService.getUserIdByMentorId(1L)).thenReturn(userId);
+            // 작성자 닉네임 stub
+            when(userFeignClient.getNicknameByUserId(userId)).thenReturn(ApiResponse.success("홍길동"));
+            
+            // 칼럼 엔티티 mock 객체 반환만 stub
+            com.newbit.newbitfeatureservice.column.domain.Column mockColumn1 = mock(com.newbit.newbitfeatureservice.column.domain.Column.class);
+            com.newbit.newbitfeatureservice.column.domain.Column mockColumn2 = mock(com.newbit.newbitfeatureservice.column.domain.Column.class);
+            when(columnService.getColumn(columnId)).thenReturn(mockColumn1);
+            when(columnService.getColumn(columnId + 1)).thenReturn(mockColumn2);
+            when(mockColumn1.getThumbnailUrl()).thenReturn("thumbnail1.jpg");
+            when(mockColumn2.getThumbnailUrl()).thenReturn("thumbnail2.jpg");
+            when(mockColumn1.getPrice()).thenReturn(1000);
+            when(mockColumn2.getPrice()).thenReturn(2000);
             
             // When
             LikedColumnListResponse response = likeQueryService.getLikedColumnsByUser(userId, pageable);
             
             // Then
             assertNotNull(response);
-            assertEquals(2, response.getLikedColumns().size());
+            List<LikedColumnResponse> columns = response.getLikedColumns();
+            assertEquals(2, columns.size());
             
             Pagination pagination = response.getPagination();
             assertNotNull(pagination);
@@ -211,21 +240,28 @@ class LikeQueryServiceTest {
             assertEquals(1, pagination.getTotalPage());
             assertEquals(2, pagination.getTotalItems());
             
-            LikedColumnResponse firstColumn = response.getLikedColumns().get(0);
+            LikedColumnResponse firstColumn = columns.get(0);
             assertEquals(1L, firstColumn.getLikeId());
             assertEquals(columnId, firstColumn.getColumnId());
             assertEquals("칼럼1", firstColumn.getColumnTitle());
             assertEquals(userId, firstColumn.getAuthorId());
+            assertEquals("홍길동", firstColumn.getAuthorNickname());
+            assertEquals("thumbnail1.jpg", firstColumn.getThumbnailUrl());
+            assertEquals(1000, firstColumn.getPrice());
             assertEquals(now, firstColumn.getLikedAt());
             
-            LikedColumnResponse secondColumn = response.getLikedColumns().get(1);
+            LikedColumnResponse secondColumn = columns.get(1);
             assertEquals(2L, secondColumn.getLikeId());
             assertEquals(columnId + 1, secondColumn.getColumnId());
             assertEquals("칼럼2", secondColumn.getColumnTitle());
+            assertEquals("홍길동", secondColumn.getAuthorNickname());
+            assertEquals("thumbnail2.jpg", secondColumn.getThumbnailUrl());
+            assertEquals(2000, secondColumn.getPrice());
         }
     }
     
     private Like createPostLike(Long id, Long postId, Long userId, LocalDateTime createdAt) {
+        // userId는 항상 2L로 고정되어 있음 (테스트 목적)
         Like like = Like.builder()
                 .id(id)
                 .postId(postId)
@@ -237,6 +273,7 @@ class LikeQueryServiceTest {
     }
     
     private Like createColumnLike(Long id, Long columnId, Long userId, LocalDateTime createdAt) {
+        // userId는 항상 2L로 고정되어 있음 (테스트 목적)
         Like like = Like.builder()
                 .id(id)
                 .columnId(columnId)

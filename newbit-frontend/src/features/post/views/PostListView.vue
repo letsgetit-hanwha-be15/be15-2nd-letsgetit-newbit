@@ -5,7 +5,7 @@ import CategorySidebar from '../components/CategorySidebar.vue'
 import SortTabs from '../components/SortTabs.vue'
 import PostSearchBar from '../components/PostSearchBar.vue'
 import PostTable from '../components/PostTable.vue'
-import PagingBar from '../components/PagingBar.vue'
+import PagingBar from '@/components/common/PagingBar.vue'
 
 // 1. 라우트에서 categoryId 읽기
 const route = useRoute()
@@ -43,7 +43,11 @@ const originalPosts = ref([
 
 // 3. 검색 + 정렬 + 카테고리 필터 적용
 const posts = computed(() => {
-  let filtered = originalPosts.value
+  // 공지사항은 항상 보여줌
+  const notices = originalPosts.value.filter(post => post.isNotice)
+
+  // 일반 게시글만 필터링
+  let filtered = originalPosts.value.filter(post => !post.isNotice)
 
   if (selectedCategoryId.value !== null) {
     filtered = filtered.filter(post => post.categoryId === selectedCategoryId.value)
@@ -55,10 +59,7 @@ const posts = computed(() => {
           post.writerNickname.includes(searchKeyword.value)
   )
 
-  const notices = filtered.filter(post => post.isNotice)
-  const normals = filtered.filter(post => !post.isNotice)
-
-  const sorted = [...normals].sort((a, b) => {
+  const sorted = [...filtered].sort((a, b) => {
     if (sortOption.value === 'popular') {
       return b.likeCount - a.likeCount
     }
@@ -73,13 +74,9 @@ const totalItems = 100
 </script>
 
 <template>
-  <div class="flex">
-    <!-- 왼쪽 카테고리 -->
-    <CategorySidebar
-        :selectedId="selectedCategoryId"
-    />
+  <div class="flex max-w-screen-lg mx-auto px-4 gap-6">
+    <CategorySidebar />
 
-    <!-- 오른쪽 콘텐츠 -->
     <section class="flex-1 p-6">
       <div class="text-right mb-4">
         <button
@@ -94,10 +91,12 @@ const totalItems = 100
       <PostTable :posts="posts" />
       <PagingBar
           :currentPage="currentPage"
-          :totalPages="totalPages"
+          :totalPage="totalPages"
           :totalItems="totalItems"
-          @page-changed="onPageChanged"
+          @page-change="onPageChanged"
       />
+
+
     </section>
   </div>
 </template>
