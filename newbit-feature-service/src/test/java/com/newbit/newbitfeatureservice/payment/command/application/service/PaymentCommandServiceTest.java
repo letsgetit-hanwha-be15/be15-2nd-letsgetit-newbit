@@ -90,9 +90,7 @@ class PaymentCommandServiceTest {
     @Test
     @DisplayName("결제 상세 조회 - 성공")
     void getPayment_success() {
-        payment.updatePaymentKey("test-payment-key");
-        payment.approve(LocalDateTime.now());
-        payment.updateReceiptUrl("https://receipt.url");
+        payment.approve("test-payment-key", LocalDateTime.now(), "https://receipt.url");
         setPaymentId(payment, 1L);
         when(paymentRepository.findById(anyLong())).thenReturn(Optional.of(payment));
         var response = paymentCommandService.getPayment(1L);
@@ -107,8 +105,7 @@ class PaymentCommandServiceTest {
     @Test
     @DisplayName("주문 ID로 결제 상세 조회 - 성공")
     void getPaymentByOrderId_success() {
-        payment.updatePaymentKey("test-payment-key");
-        payment.approve(LocalDateTime.now());
+        payment.approve("test-payment-key", LocalDateTime.now(), null);
         setPaymentId(payment, 1L);
         when(paymentRepository.findByOrderId(anyString())).thenReturn(Optional.of(payment));
         var response = paymentCommandService.getPaymentByOrderId("test-order-id");
