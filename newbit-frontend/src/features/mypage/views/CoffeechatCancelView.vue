@@ -64,7 +64,7 @@ const user = ref({
   <div class="w-full space-y-8 p-5 border rounded">
     <!-- 라디오 버튼 -->
     <div class="mb-4 space-y-2">
-      <p class="text-16px-regular font-medium text-gray-700">커피챗 취소 취소 사유</p>
+      <p class="text-16px-regular font-medium text-gray-700">커피챗 취소 사유</p>
       <div v-for="(label, key) in statusMap" :key="key" class="flex items-center gap-2 ml-2">
         <input type="radio"
                :id="`reason-${key}`"
