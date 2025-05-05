@@ -19,6 +19,7 @@ const showModal = ref(false);
 
 onMounted(async () => {
   try {
+    //TODO: store에서 mentorId 가져오기
     const mentorId = 2; // const mentorId = userStore.mentorId;
     if (!mentorId) throw new Error('mentorId 없음');
 
