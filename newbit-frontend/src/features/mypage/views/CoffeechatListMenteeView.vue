@@ -14,36 +14,51 @@ const statuses = [
 ];
 
 const selectedStatus = ref('전체');
+
 const originalCoffeechats = ref({
   "success": true,
   "data": {
     "coffeechats": [
       {
-        "coffeechatId": 13,
+        "coffeechatId": 1,
         "progressStatus": "IN_PROGRESS",
         "requestMessage": "안녕하세요 신입입니다.",
         "profileImageUrl": "/src/assets/image/profile-mentee.png",
         "nickname": "mentee"
       },
       {
-        "coffeechatId": 6,
-        "progressStatus": "COMPLETE",
+        "coffeechatId": 2,
+        "progressStatus": "PAYMENT_WAITING",
         "requestMessage": "CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.CS 기초 상담 부탁드립니다.",
         "profileImageUrl": "/src/assets/image/profile-mentee.png",
         "nickname": "백엔드꿈나무"
       },
       {
         "coffeechatId": 3,
+        "progressStatus": "COFFEECHAT_WAITING",
+        "requestMessage": "커피챗 신청합니다.",
+        "profileImageUrl": "/src/assets/image/profile-mentee.png",
+        "nickname": "코린이"
+      },
+      {
+        "coffeechatId": 4,
+        "progressStatus": "COMPLETE",
+        "requestMessage": "커피챗 신청합니다.",
+        "profileImageUrl": "/src/assets/image/profile-mentee.png",
+        "nickname": "코린이"
+      },
+      {
+        "coffeechatId": 5,
         "progressStatus": "CANCEL",
         "requestMessage": "커피챗 신청합니다.",
         "profileImageUrl": "/src/assets/image/profile-mentee.png",
         "nickname": "코린이"
-      }
+      },
     ],
     "pagination": {
       "currentPage": 1,
       "totalPage": 1,
-      "totalItems": 3
+      "totalItems": 5
     }
   },
   "errorCode": null,
@@ -105,7 +120,9 @@ const coffeechats = computed(() => {
     </div>
     <CoffeechatList
         :coffeechats="coffeechats"
-        :pagination="originalCoffeechats.data.pagination"/>
+        :pagination="originalCoffeechats.data.pagination"
+        :isMentor="false"
+    />
     <PagingBar
         :currentPage="originalCoffeechats.data.pagination.currentPage"
         :totalPage="originalCoffeechats.data.pagination.totalPage"

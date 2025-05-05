@@ -193,7 +193,7 @@ function cancelRegister() {
       <div class="flex flex-wrap gap-2 justify-end pb-10">
         <button type="button"
                 @click="cancelRegister"
-                class="ml-2 rounded-md px-3 py-1 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
+                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
           취소
         </button>
       </div>
@@ -202,7 +202,6 @@ function cancelRegister() {
   <div class="flex justify-end">
     <div class="w-fit">
       <MentorProfileCard
-          :isMyProfile=false
           :profileImageUrl="user.profileImageUrl"
           :nickname="user.nickname"
           :jobName="user.jobName"
