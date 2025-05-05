@@ -5,6 +5,8 @@ import profileImage from '@/assets/image/default-profile.png'
 import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vue";
 import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
+import UserProfileCard from "@/features/mypage/components/UserProfileCard.vue";
+import UserProfileSideBar from "@/features/profile/components/UserProfileSideBar.vue";
 
 const route = useRoute();
 const coffeechatId = ref(Number(route.params.id))
@@ -192,17 +194,10 @@ function getStatusText(status) {
   </div>
   <div class="flex justify-end">
     <div class="w-fit">
-      <MentorProfileCard
-          :isMyProfile=false
+      <UserProfileCard
           :profileImageUrl="user.profileImageUrl"
           :nickname="user.nickname"
           :jobName="user.jobName"
-          :temperature="user.temperature"
-          :price="user.price"
-          :preferredTime="user.preferredTime"
-          :externalLinkUrl="user.externalLinkUrl"
-          :introduction="user.introduction"
-          :isActive="user.isActive"
       />
     </div>
   </div>

@@ -202,7 +202,6 @@ function cancelRegister() {
   <div class="flex justify-end">
     <div class="w-fit">
       <MentorProfileCard
-          :isMyProfile=false
           :profileImageUrl="user.profileImageUrl"
           :nickname="user.nickname"
           :jobName="user.jobName"
