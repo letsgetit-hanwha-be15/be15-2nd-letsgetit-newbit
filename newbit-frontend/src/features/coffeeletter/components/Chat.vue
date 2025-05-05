@@ -184,38 +184,17 @@ const sendNewMessage = async () => {
   };
 
   try {
-    console.log("메시지 전송 시도:", messageData);
+    const response = await sendMessage(messageData);
+    const sentMessage = response.data;
 
-    // 웹소켓 연결 상태 확인
     if (!websocketService.isConnected()) {
-      console.log("웹소켓 연결이 없어 재연결 시도...");
-      await new Promise((resolve) => {
-        websocketService.connect({
-          roomId: getCurrentRoomId(),
-          onConnected: () => {
-            console.log("재연결 성공");
-            resolve();
-          },
-          onError: (err) => {
-            console.error("재연결 실패:", err);
-            resolve(); // 실패해도 계속 진행
-          },
-        });
-      });
+      messages.value.push(sentMessage);
+      scrollToBottom();
     }
 
-    // 웹소켓으로 메시지 전송
-    const sent = websocketService.sendMessage(messageData);
-
-    if (sent) {
-      console.log("메시지 전송 성공");
-      newMessage.value = "";
-    } else {
-      console.error("메시지 전송 실패 - 웹소켓 서비스에서 false 반환");
-      error.value = "메시지 전송에 실패했습니다. 다시 시도해주세요.";
-    }
+    newMessage.value = "";
   } catch (err) {
-    console.error("메시지 전송 처리 중 오류 발생:", err);
+    console.error("메시지 전송 실패:", err);
     error.value = "메시지 전송에 실패했습니다. 다시 시도해주세요.";
   }
 };
@@ -323,16 +302,12 @@ const statusText = computed(() => {
   }
 });
 
-const setupWebSocket = async () => {
+const setupWebSocket = () => {
   if (!getCurrentRoomId()) return;
 
-  console.log("웹소켓 연결 설정 시작 - 채팅방 ID:", getCurrentRoomId());
-
-  // 개선된 콜백 함수
-  const callbacks = {
+  websocketService.connect({
     roomId: getCurrentRoomId(),
     onNewMessage: (message) => {
-      console.log("웹소켓을 통해 새 메시지 수신:", message);
       if (message.type === "CHAT" || message.type === "SYSTEM") {
         const isDuplicate = messages.value.some(
           (m) =>
@@ -348,46 +323,15 @@ const setupWebSocket = async () => {
           scrollToBottom();
         }
       } else if (message.type === "READ_RECEIPT") {
-        console.log("읽음 확인 메시지 수신:", message);
       }
     },
-    onConnected: () => {
-      console.log("채팅방 웹소켓 연결 성공 - 채팅방 ID:", getCurrentRoomId());
-
-      // 연결 성공 시 추가 작업 (필요한 경우)
-      console.log("채팅방 구독 중...");
-    },
+    onConnected: () => {},
     onError: (error) => {
-      console.error("웹소켓 연결 오류:", error);
+      console.error("WebSocket 연결 오류:", error);
       error.value =
         "채팅 서버 연결에 문제가 발생했습니다. 페이지를 새로고침 해주세요.";
     },
-  };
-
-  try {
-    // 3번 재시도까지 허용
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      console.log(`웹소켓 연결 시도 ${attempt}/3...`);
-
-      // 연결 시도
-      const client = await websocketService.connect(callbacks);
-
-      if (client && websocketService.isConnected()) {
-        console.log("웹소켓 연결 성공!");
-        return;
-      }
-
-      // 실패 시 잠시 대기 후 재시도
-      if (attempt < 3) {
-        console.log(`연결 실패, ${attempt + 1}번째 시도 전 3초 대기...`);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-      }
-    }
-
-    console.error("웹소켓 연결이 3번의 시도 후에도 실패했습니다.");
-  } catch (err) {
-    console.error("웹소켓 연결 시도 중 에러:", err);
-  }
+  });
 };
 
 watch(
@@ -400,7 +344,7 @@ watch(
       }
 
       await fetchRoomData();
-      await setupWebSocket();
+      setupWebSocket();
     } else {
       messages.value = [];
       roomInfo.value = {
@@ -431,10 +375,10 @@ const handleScroll = () => {
   scrollToLoadMoreVisible.value = scrollTop > 50 && hasMore.value;
 };
 
-onMounted(async () => {
+onMounted(() => {
   if (getCurrentRoomId()) {
-    await fetchRoomData();
-    await setupWebSocket();
+    fetchRoomData();
+    setupWebSocket();
 
     if (chatMessagesContainer.value) {
       chatMessagesContainer.value.addEventListener("scroll", handleScroll);

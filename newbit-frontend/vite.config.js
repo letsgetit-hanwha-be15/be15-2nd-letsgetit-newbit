@@ -14,17 +14,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api/v1": {
+      "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,
         ws: true,
-        secure: false,
-      },
-      "/api/v1/feature/ws": {
-        target: "http://localhost:8000",
-        changeOrigin: true,
-        ws: true,
-        secure: false,
       },
     },
   },
