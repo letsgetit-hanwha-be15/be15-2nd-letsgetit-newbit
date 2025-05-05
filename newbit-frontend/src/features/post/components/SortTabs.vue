@@ -17,7 +17,7 @@ const setTab = (tab) => {
         : 'text-gray-600 cursor-pointer'"
         @click="setTab('latest')"
     >
-      전체
+      최신
     </span>
     <span
         :class="selected === 'popular'
