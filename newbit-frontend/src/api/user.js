@@ -2,7 +2,7 @@
 import api from './axios.js'
 
 // 테스트용 임시 토큰
-const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiYXV0aG9yaXR5IjoiVVNFUiIsInVzZXJJZCI6MTIsImlhdCI6MTc0NjQ1OTY4NSwiZXhwIjoxNzQ2NDYxNDg1fQ.G8x87QggENeVumWTsmpxIGZEVZ8LwZIap6845c2bKz9HFzSTBXF1BOaJKABxzhviG6Of_ZWbFlr6SZJMiL2KXw'
+const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiYXV0aG9yaXR5IjoiTUVOVE9SIiwidXNlcklkIjoxMiwiaWF0IjoxNzQ2NDY1Njg5LCJleHAiOjE3NDY0Njc0ODl9.Q7GfPgiNB7G7SaQUw12WUqid4bs2oPktS1ALRBoBe-rY_d47HAX-eYNEjf1n-060fDPbE_U1UM4BhOxYReroTQ'
 
 /* 1. 회원 가입 */
 export function SignUpUser(data) {
