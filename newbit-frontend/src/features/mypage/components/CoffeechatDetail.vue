@@ -135,7 +135,7 @@ function closeCoffeechat() {
       <div class="ml-2 mt-2 min-h-20 rounded border p-1">{{ coffeechat.requestMessage }}</div>
     </div>
     <!-- 필요 다이아   -->
-    <div v-if="!isMentor">
+    <div v-if="!isMentor && coffeechat.progressStatus === 'PAYMENT_WAITING'">
       <div class="text-heading3" >필요 다이아</div>
       <div class="ml-2 mt-2 text-16px-regular">{{ diamondCount }} 개</div>
     </div>
