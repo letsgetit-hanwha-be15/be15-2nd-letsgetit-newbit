@@ -4,8 +4,8 @@
       <h2 class="text-lg font-bold mb-4">{{ title }}</h2>
       <p class="text-sm mb-6">{{ message }}</p>
       <div class="flex justify-center gap-4">
-        <button @click="emit('close')" class="bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded">아니요</button>
-        <button @click="emit('confirm')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">네</button>
+        <button @click="emit('close')" class="bg-[var(--newbitred)] text-white px-4 py-2 rounded">아니요</button>
+        <button @click="emit('confirm')" class="bg-blue-500 text-white px-4 py-2 rounded">네</button>
       </div>
     </div>
   </div>

@@ -30,11 +30,23 @@ public class CoffeeLetterRoomDTO {
     @Schema(description = "멘토 이름")
     private String mentorName;
     
+    @Schema(description = "멘토 프로필 이미지 URL")
+    private String mentorProfileImageUrl;
+    
+    @Schema(description = "멘토 닉네임")
+    private String mentorNickname;
+    
     @Schema(description = "멘티 ID")
     private Long menteeId;
     
     @Schema(description = "멘티 이름")
     private String menteeName;
+    
+    @Schema(description = "멘티 프로필 이미지 URL")
+    private String menteeProfileImageUrl;
+    
+    @Schema(description = "멘티 닉네임")
+    private String menteeNickname;
     
     @Schema(description = "채팅방 생성 시간")
     private LocalDateTime createdAt;

@@ -12,8 +12,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import webSocketService from "@/features/coffeeletter/services/websocket";
 import ChatRoomList from "@/features/coffeeletter/components/ChatRoomList.vue";
 import Chat from "@/features/coffeeletter/components/Chat.vue";
 
@@ -22,39 +23,50 @@ const router = useRouter();
 
 const selectedRoomId = ref(null);
 
-onMounted(() => {
-  console.log("현재 라우트 쿼리:", route.query);
-  if (route.query.roomId) {
-    console.log(
-      "아 대체 왜 안 돼? URL에서 가져온 roomId: ",
-      route.query.roomId
-    );
-    selectedRoomId.value = route.query.roomId;
-  }
-});
+// TODO: 사용자 정보 auth 적용 후 수정
+const currentUserId = ref(5);
 
+// 쿼리 파라미터 roomId 변화를 감지해서 selectedRoomId를 갱신
 watch(
   () => route.query.roomId,
   (newRoomId) => {
-    console.log("쿼리 파라미터 변경:", newRoomId);
     if (newRoomId) {
       selectedRoomId.value = newRoomId;
     }
-  }
+  },
+  { immediate: true }
 );
 
-watch(selectedRoomId, (newId) => {
-  console.log("선택된 채팅방 ID 변경:", newId);
+const setupGlobalWebSocket = () => {
+  webSocketService.connect({
+    userId: currentUserId.value,
+    onUserEvent: (event) => {
+      console.log("전역 사용자 이벤트 수신:", event);
+    },
+    onConnected: () => {
+      console.log("전역 WebSocket 연결 성공");
+    },
+    onError: (error) => {
+      console.error("전역 WebSocket 연결 오류:", error);
+    },
+  });
+};
+
+onMounted(() => {
+  setupGlobalWebSocket();
 });
 
 const selectRoom = (roomId) => {
-  console.log("채팅방 선택:", roomId);
   selectedRoomId.value = roomId;
 
   router.replace({
     query: { roomId: roomId },
   });
 };
+
+onUnmounted(() => {
+  webSocketService.unsubscribe(`/user/${currentUserId.value}/queue/events`);
+});
 </script>
 
 <style scoped>

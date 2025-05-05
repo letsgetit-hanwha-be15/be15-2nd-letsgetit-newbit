@@ -125,13 +125,6 @@ const navigateToDetail = (reportId) => {
   font-weight: 600;
 }
 
-.status {
-  padding: 4px 10px;
-  border-radius: 12px;
-  color: #fff;
-  display: inline-block;
-}
-
 .pagination {
   display: flex;
   justify-content: space-between;

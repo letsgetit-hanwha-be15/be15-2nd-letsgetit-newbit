@@ -78,14 +78,6 @@ const totalItems = 100
     <CategorySidebar />
 
     <section class="flex-1 p-6">
-      <div class="text-right mb-4">
-        <button
-            @click="$router.push('/posts/create')"
-            class="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          글 작성
-        </button>
-      </div>
       <PostSearchBar @search="onSearch" />
       <SortTabs :selected="sortOption" @change="onSortChanged" />
       <PostTable :posts="posts" />
