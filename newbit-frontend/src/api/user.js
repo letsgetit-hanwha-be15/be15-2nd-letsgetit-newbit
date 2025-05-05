@@ -15,3 +15,8 @@ export function FetchJobList() {
 export function FetchTechstackList() {
     return api.get('/user/techstacks');
 }
+
+/* 4. 아이디 찾기 */
+export function FindId(data) {
+    return api.post('/user/users/find-id', data);
+}
