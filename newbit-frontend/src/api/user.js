@@ -1,6 +1,8 @@
 /* user 관련 api 호출 */
 import api from './axios.js'
 
+const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiYXV0aG9yaXR5IjoiVVNFUiIsInVzZXJJZCI6MTIsImlhdCI6MTc0NjQ1OTY4NSwiZXhwIjoxNzQ2NDYxNDg1fQ.G8x87QggENeVumWTsmpxIGZEVZ8LwZIap6845c2bKz9HFzSTBXF1BOaJKABxzhviG6Of_ZWbFlr6SZJMiL2KXw'
+
 /* 1. 회원 가입 */
 export function SignUpUser(data) {
     return api.post('/user/users/signup', data);
@@ -15,3 +17,12 @@ export function FetchJobList() {
 export function FetchTechstackList() {
     return api.get('/user/techstacks');
 }
+
+export const deleteUser = (data) => {
+    return api.delete('/user/users/me', {
+        headers: {
+            Authorization: `Bearer ${token}`
+        },
+        data: data
+    });
+};
