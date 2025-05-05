@@ -24,12 +24,12 @@ export function FindId(data) {
     return api.post('/user/users/find-id', data);
 }
 
-/* 4. 비밀번호 찾기 */
+/* 5. 비밀번호 찾기 */
 export function FindPassword(data) {
     return api.post('/user/users/find-password', data);
 }
 
-/* 5. 회원 탈퇴 */
+/* 6. 회원 탈퇴 */
 export const deleteUser = (data) => {
     return api.delete('/user/users/me', {
         headers: {
@@ -40,8 +40,7 @@ export const deleteUser = (data) => {
 };
 
 
-const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiYXV0aG9yaXR5IjoiTUVOVE9SIiwidXNlcklkIjoxMSwiaWF0IjoxNzQ2NDUwNjc1LCJleHAiOjE3NDY0NTI0NzV9.j4i-ZSNksxJvDFoNrhtV2S8PZWgu9693Yw8eiI7MXGBz3Sd-HHucvjfqBRkc4dc76aRdxOrwdZHWOOHhxgvbIQ'
-/* 2. 회원 정보 조회 */
+/* 7. 회원 정보 조회 */
 export function getUserInfo(data) {
     return api.get('/user/users/me', {
         headers: {
@@ -50,7 +49,7 @@ export function getUserInfo(data) {
     });
 }
 
-/* 3. 회원 정보 수정 */
+/* 8. 회원 정보 수정 */
 export function putUserInfo(data) {
     return api.put('/user/users/me/info', data, {
         headers: {
