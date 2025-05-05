@@ -210,8 +210,14 @@ function goCoffeeLetter() {
 }
 
 function confirmPurchase() {
+  // todo : 멘토가 커피챗 종료 했는지 확인 -> DTO 변경
   // todo : 멘티가 구매를 확정하는 api 호출
   toast.success('구매 확정되었습니다.');
+}
+
+function registerReview() {
+  router.push({ name: 'ReviewRegister', params: { id: coffeechatId.value } })
+
 }
 
 </script>
@@ -241,6 +247,12 @@ function confirmPurchase() {
                 @click="confirmPurchase"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
           구매 확정
+        </button>
+        <button v-if="coffeechat.progressStatus === 'COMPLETE'"
+                :disabled
+                @click="registerReview"
+                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
+          리뷰 작성
         </button>
         <button v-if="coffeechat.progressStatus === 'PAYMENT_WAITING'"
                 @click="openPaymentModal"

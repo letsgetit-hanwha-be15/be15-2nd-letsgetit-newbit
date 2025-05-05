@@ -107,7 +107,7 @@ export const mypageRoutes = [
             },
             {
                 path: 'history/coffeechats/:id/cancel',
-                name: 'ReviewRegister',
+                name: 'CoffeechatCancel',
                 component: CoffeechatCancelView,
             },
             {
