@@ -78,3 +78,26 @@ export const fetchSaleHistory = async (page = 1) => {
     }
 };
 
+export const fetchSettlementHistory = async (page = 1) => {
+    try {
+        // const token = localStorage.getItem('accessToken'); // 또는 Pinia, Vuex에서 가져오기
+        const response = await api.get('/feature/settlements/my', {
+            params: { page },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (response.data?.success) {
+            return {
+                histories: response.data.data.settlements,
+                pagination: response.data.data.pagination
+            };
+        } else {
+            throw new Error('응답 형식 오류');
+        }
+    } catch (error) {
+        console.error('정산 내역 조회 실패:', error);
+        throw error;
+    }
+};
