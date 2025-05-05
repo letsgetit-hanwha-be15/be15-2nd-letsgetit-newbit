@@ -1,8 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { FetchJobList, FetchTechstackList } from '@/api/user'; // ✅ 실제 API 호출 함수 import
-import api from '@/api/axios'; // 공통 axios 인스턴스
+import { FetchJobList, FetchTechstackList } from '@/api/user';
+import api from '@/api/axios';
 import MyProfileEditForm from '@/features/mypage/components/MyProfileEditForm.vue';
+import { useToast } from 'vue-toastification'
 
 const profile = ref({});
 const jobOptions = ref([]);
@@ -11,13 +12,15 @@ const showModal = ref(false);
 const pendingRequest = ref(false);
 const error = ref('');
 const formData = ref(null);
+const toast = useToast();
+
 
 onMounted(async () => {
   try {
     const [jobRes, techRes, profileRes] = await Promise.all([
       FetchJobList(),
       FetchTechstackList(),
-      // api.get('/user/users/me') // ✅ 프로필 불러오기
+      api.get('/user/users/me') //
     ]);
 
     if (jobRes.data.success) {
@@ -45,10 +48,10 @@ const onFormSubmit = (data) => {
 const confirmSubmit = async () => {
   try {
     pendingRequest.value = true;
-    await api.put('/user/users/me/profile', formData.value); // ✅ 실제 API 경로로 수정
-    alert('프로필이 수정되었습니다.');
+    await api.put('/user/users/me', formData.value); //
+    toast.success('프로필이 수정되었습니다.')
   } catch (e) {
-    alert('수정 실패');
+    toast.error('프로필 수정 실패')
     console.error(e);
   } finally {
     pendingRequest.value = false;
@@ -60,6 +63,9 @@ const confirmSubmit = async () => {
 <template>
   <div class="w-full max-w-4xl mx-auto">
     <h2 class="text-heading3 mb-4">회원 정보 수정</h2>
+
+    <div v-if="error" class="text-red-500 text-sm mb-4">{{ error }}</div>
+
     <div class="w-full px-36 py-24 border rounded-lg shadow-sm">
       <MyProfileEditForm
           :initialProfile="profile"
@@ -77,14 +83,14 @@ const confirmSubmit = async () => {
           <button
               @click="confirmSubmit"
               :disabled="pendingRequest"
-              class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
           >
             확인
           </button>
           <button
               @click="showModal = false"
               :disabled="pendingRequest"
-              class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+              class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 disabled:opacity-50"
           >
             취소
           </button>
