@@ -1,396 +1,246 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from "vue";
-import axios from "axios";
+import {
+  ref,
+  computed,
+  onMounted,
+  onUnmounted,
+  nextTick,
+  watch,
+  onBeforeUnmount,
+} from "vue";
+import {
+  fetchRoomInfo,
+  fetchMessagesByRoomPaging,
+  sendMessage,
+  markAsRead,
+} from "@/api/coffeeletter";
+import websocketService from "@/features/coffeeletter/services/websocket";
+import { useIntersectionObserver } from "@vueuse/core";
+
+// TODO; 사용자 정보 auth 적용 후 수정 ( 테스트용 하드 코딩)
+const DEFAULT_ROOM_ID = "67fca09d6632d00f31d416bc";
+const currentUserId = 3;
+const isMentor = true;
 
 const props = defineProps({
   roomId: {
     type: String,
-    required: true,
+    required: false,
+    default: DEFAULT_ROOM_ID,
   },
 });
-
-// TODO; 사용자 정보  auth 적용 후 수정정
-const currentUserId = ref(1);
-const isMentor = ref(true);
 
 const messages = ref([]);
 const newMessage = ref("");
 const chatMessagesContainer = ref(null);
+const loadMoreTrigger = ref(null);
 const roomInfo = ref({
   id: "",
   partnerName: "",
+  partnerProfileImageUrl: "",
   status: "",
   mentorId: null,
   menteeId: null,
 });
 const loading = ref(false);
+const initialLoading = ref(true);
+const loadingOlderMessages = ref(false);
+const error = ref(null);
+const historyScrollPosition = ref(null);
 
-const fetchRoomInfo = async () => {
-  if (!props.roomId) return;
+const page = ref(0);
+const size = ref(30);
+const hasMore = ref(true);
+const isFirstLoad = ref(true);
+const scrollToLoadMoreVisible = ref(true);
+
+const allowSendMessage = ref(true);
+
+const { stop: stopObserver } = useIntersectionObserver(
+  loadMoreTrigger,
+  ([{ isIntersecting }]) => {
+    if (isIntersecting && hasMore.value && !loadingOlderMessages.value) {
+      loadOlderMessages();
+    }
+  },
+  { threshold: 0.5 }
+);
+
+const getCurrentRoomId = () => {
+  return props.roomId || DEFAULT_ROOM_ID;
+};
+
+const fetchRoomData = async () => {
+  if (!getCurrentRoomId()) return;
 
   loading.value = true;
+  initialLoading.value = true;
+  error.value = null;
+
   try {
-    // 실제 API 구현 시 아래 코드 사용
-    // const response = await axios.get(`/coffeeletter/rooms/${props.roomId}`);
-    // const room = response.data;
-
-    // 테스트용 더미 데이터 - 각 채팅방별 다른 정보
-    const dummyRooms = {
-      1: {
-        id: "1",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 2,
-        menteeName: "멘티B",
-        status: "ACTIVE",
-      },
-      2: {
-        id: "2",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 3,
-        menteeName: "멘티C",
-        status: "ACTIVE",
-      },
-      3: {
-        id: "3",
-        mentorId: 4,
-        mentorName: "멘토D",
-        menteeId: 1,
-        menteeName: "멘티A",
-        status: "ACTIVE",
-      },
-      4: {
-        id: "4",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 5,
-        menteeName: "멘티E",
-        status: "ACTIVE",
-      },
-      5: {
-        id: "5",
-        mentorId: 6,
-        mentorName: "멘토F",
-        menteeId: 1,
-        menteeName: "멘티A",
-        status: "ACTIVE",
-      },
-      6: {
-        id: "6",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 7,
-        menteeName: "멘티G",
-        status: "ACTIVE",
-      },
-    };
-
-    const room = dummyRooms[props.roomId] || {
-      id: props.roomId,
-      mentorId: 1,
-      mentorName: "멘토A",
-      menteeId: 2,
-      menteeName: "멘티B",
-      status: "ACTIVE",
-    };
+    const response = await fetchRoomInfo(getCurrentRoomId());
+    const room = response.data;
 
     roomInfo.value = {
       id: room.id,
-      partnerName: isMentor.value ? room.menteeName : room.mentorName,
+      partnerName: isMentor
+        ? room.menteeName || room.menteeNickname
+        : room.mentorName || room.mentorNickname,
+      partnerProfileImageUrl: isMentor
+        ? room.menteeProfileImageUrl
+        : room.mentorProfileImageUrl,
       status: room.status,
       mentorId: room.mentorId,
       menteeId: room.menteeId,
     };
 
-    console.log(`채팅방 ${props.roomId} 정보 로드됨:`, roomInfo.value);
-  } catch (error) {
-    console.error("채팅방 정보 조회 실패:", error);
+    page.value = 0;
+    hasMore.value = true;
+    isFirstLoad.value = true;
+    messages.value = [];
+    await loadMessages(true);
+  } catch (err) {
+    console.error("채팅방 정보 조회 실패:", err);
+    error.value = "채팅방 정보를 불러오는데 실패했습니다.";
   } finally {
     loading.value = false;
+    initialLoading.value = false;
   }
 };
 
-const fetchMessages = async () => {
-  if (!props.roomId) return;
+const loadMessages = async (reset = false) => {
+  if (!getCurrentRoomId() || loadingOlderMessages.value) return;
 
-  loading.value = true;
   try {
-    // 실제 API 구현 시 아래 코드 사용
-    // const response = await axios.get(`/coffeeletter/messages/${props.roomId}`);
-    // messages.value = response.data;
+    loadingOlderMessages.value = true;
 
-    // 테스트용 더미 데이터 - 각 채팅방별 다른 메시지
-    const dummyMessages = {
-      1: [
-        {
-          id: "101",
-          roomId: "1",
-          senderId: 2,
-          senderName: "멘티B",
-          content: "안녕하세요! 커피챗 질문이 있어요.",
-          timestamp: "2025-05-01T14:30:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "102",
-          roomId: "1",
-          senderId: 1,
-          senderName: "멘토A",
-          content: "안녕하세요! 어떤 질문이신가요?",
-          timestamp: "2025-05-01T14:31:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "103",
-          roomId: "1",
-          senderId: 2,
-          senderName: "멘티B",
-          content:
-            "프론트엔드 개발자로 커리어를 시작하려고 하는데, 어떤 기술 스택을 먼저 배우면 좋을까요?",
-          timestamp: "2025-05-01T14:33:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "104",
-          roomId: "1",
-          senderId: 1,
-          senderName: "멘토A",
-          content:
-            "기본적으로 HTML, CSS, JavaScript는 필수입니다. 이후 React나 Vue.js 같은 프레임워크를 학습하시면 좋을 것 같아요.",
-          timestamp: "2025-05-01T14:35:00",
-          readByMentor: true,
-          readByMentee: false,
-        },
-      ],
-      2: [
-        {
-          id: "201",
-          roomId: "2",
-          senderId: 3,
-          senderName: "멘티C",
-          content: "지난 번 조언 정말 도움이 많이 되었습니다!",
-          timestamp: "2025-04-30T09:10:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "202",
-          roomId: "2",
-          senderId: 1,
-          senderName: "멘토A",
-          content:
-            "도움이 되었다니 다행이네요. 추가 질문이 있으시면 언제든지 물어보세요.",
-          timestamp: "2025-04-30T09:12:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "203",
-          roomId: "2",
-          senderId: 3,
-          senderName: "멘티C",
-          content: "답변 감사합니다! 정말 도움이 많이 됐어요.",
-          timestamp: "2025-04-30T09:15:00",
-          readByMentor: false,
-          readByMentee: true,
-        },
-      ],
-      3: [
-        {
-          id: "301",
-          roomId: "3",
-          senderId: 1,
-          senderName: "멘티A",
-          content: "다음 주에 커피챗 일정 조율 가능할까요?",
-          timestamp: "2025-04-29T18:15:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "302",
-          roomId: "3",
-          senderId: 4,
-          senderName: "멘토D",
-          content: "네, 가능합니다. 수요일 오후 어떠세요?",
-          timestamp: "2025-04-29T18:18:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "303",
-          roomId: "3",
-          senderId: 1,
-          senderName: "멘티A",
-          content: "다음 주에 일정 조율 가능할까요?",
-          timestamp: "2025-04-29T18:20:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-      ],
-      4: [
-        {
-          id: "401",
-          roomId: "4",
-          senderId: 5,
-          senderName: "멘티E",
-          content: "프로젝트 리뷰 부탁드려요!",
-          timestamp: "2025-04-28T10:40:00",
-          readByMentor: false,
-          readByMentee: true,
-        },
-        {
-          id: "402",
-          roomId: "4",
-          senderId: 1,
-          senderName: "멘토A",
-          content: "네, 깃허브 링크 공유해 주시면 리뷰해 드리겠습니다.",
-          timestamp: "2025-04-28T10:42:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "403",
-          roomId: "4",
-          senderId: 5,
-          senderName: "멘티E",
-          content: "https://github.com/menteeE/project 여기 있습니다!",
-          timestamp: "2025-04-28T10:45:00",
-          readByMentor: false,
-          readByMentee: true,
-        },
-      ],
-      5: [
-        {
-          id: "501",
-          roomId: "5",
-          senderId: 6,
-          senderName: "멘토F",
-          content: "다음 주 화상 미팅 준비되셨나요?",
-          timestamp: "2025-04-27T16:20:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "502",
-          roomId: "5",
-          senderId: 1,
-          senderName: "멘티A",
-          content: "네, 준비 완료했습니다!",
-          timestamp: "2025-04-27T16:25:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "503",
-          roomId: "5",
-          senderId: 6,
-          senderName: "멘토F",
-          content: "온라인 미팅 링크 보내드렸습니다!",
-          timestamp: "2025-04-27T16:30:00",
-          readByMentor: true,
-          readByMentee: false,
-        },
-      ],
-      6: [
-        {
-          id: "601",
-          roomId: "6",
-          senderId: 7,
-          senderName: "멘티G",
-          content: "포트폴리오 피드백 감사합니다!",
-          timestamp: "2025-04-26T09:40:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-        {
-          id: "602",
-          roomId: "6",
-          senderId: 1,
-          senderName: "멘토A",
-          content: "별말씀을요. 궁금한 점 있으면 언제든 물어보세요.",
-          timestamp: "2025-04-26T09:45:00",
-          readByMentor: true,
-          readByMentee: true,
-        },
-      ],
-    };
+    if (!reset && messages.value.length > 0) {
+      historyScrollPosition.value = chatMessagesContainer.value.scrollHeight;
+    }
 
-    messages.value = dummyMessages[props.roomId] || [];
-    console.log(`채팅방 ${props.roomId}의 메시지 로드됨:`, messages.value);
-  } catch (error) {
-    console.error("메시지 목록 조회 실패:", error);
+    const response = await fetchMessagesByRoomPaging(
+      getCurrentRoomId(),
+      page.value,
+      size.value,
+      "DESC"
+    );
+
+    const data = response.data;
+    const content = data.content || [];
+
+    if (reset) {
+      messages.value = [...content.reverse()];
+      scrollToBottom();
+    } else {
+      messages.value = [...content.reverse(), ...messages.value];
+
+      nextTick(() => {
+        if (chatMessagesContainer.value && historyScrollPosition.value) {
+          const newScrollPos =
+            chatMessagesContainer.value.scrollHeight -
+            historyScrollPosition.value;
+          chatMessagesContainer.value.scrollTop = newScrollPos;
+          historyScrollPosition.value = null;
+        }
+      });
+    }
+
+    hasMore.value = !data.last;
+    scrollToLoadMoreVisible.value = hasMore.value;
+
+    if (isFirstLoad.value) {
+      scrollToBottom();
+      isFirstLoad.value = false;
+    }
+
+    await markMessagesAsRead();
+  } catch (err) {
+    console.error("메시지 목록 조회 실패:", err);
+    error.value = "메시지 목록을 불러오는데 실패했습니다.";
   } finally {
-    loading.value = false;
-    markAsRead();
+    loadingOlderMessages.value = false;
   }
 };
 
-const sendMessage = async () => {
-  if (!newMessage.value.trim() || !props.roomId) return;
+const loadOlderMessages = async () => {
+  if (!hasMore.value || loadingOlderMessages.value) return;
+  page.value += 1;
+  await loadMessages(false);
+};
+
+const sendNewMessage = async () => {
+  if (!allowSendMessage.value) return;
+  if (!newMessage.value.trim() || !getCurrentRoomId()) return;
 
   const messageData = {
-    roomId: props.roomId,
-    senderId: currentUserId.value,
-    senderName: isMentor.value ? "멘토A" : "멘티A",
+    roomId: getCurrentRoomId(),
+    senderId: currentUserId,
+    senderName: isMentor ? "김멘토스" : "박멘티코어",
     content: newMessage.value,
+    type: "CHAT",
     timestamp: new Date().toISOString(),
-    readByMentor: isMentor.value,
-    readByMentee: !isMentor.value,
+    readByMentor: isMentor,
+    readByMentee: !isMentor,
   };
 
   try {
-    // 실제 API 구현 시 아래 코드 사용
-    // await axios.post("/coffeeletter/messages", messageData);
+    console.log("메시지 전송 시도:", messageData);
 
-    // 테스트용: 메시지 목록에 직접 추가
-    const newMessageObj = {
-      id: `msg-${Date.now()}`,
-      ...messageData,
-    };
+    // 웹소켓 연결 상태 확인
+    if (!websocketService.isConnected()) {
+      console.log("웹소켓 연결이 없어 재연결 시도...");
+      await new Promise((resolve) => {
+        websocketService.connect({
+          roomId: getCurrentRoomId(),
+          onConnected: () => {
+            console.log("재연결 성공");
+            resolve();
+          },
+          onError: (err) => {
+            console.error("재연결 실패:", err);
+            resolve(); // 실패해도 계속 진행
+          },
+        });
+      });
+    }
 
-    messages.value.push(newMessageObj);
-    newMessage.value = "";
+    // 웹소켓으로 메시지 전송
+    const sent = websocketService.sendMessage(messageData);
 
-    await nextTick();
-    scrollToBottom();
-  } catch (error) {
-    console.error("메시지 전송 실패:", error);
+    if (sent) {
+      console.log("메시지 전송 성공");
+      newMessage.value = "";
+    } else {
+      console.error("메시지 전송 실패 - 웹소켓 서비스에서 false 반환");
+      error.value = "메시지 전송에 실패했습니다. 다시 시도해주세요.";
+    }
+  } catch (err) {
+    console.error("메시지 전송 처리 중 오류 발생:", err);
+    error.value = "메시지 전송에 실패했습니다. 다시 시도해주세요.";
   }
 };
 
-const markAsRead = async () => {
-  if (!props.roomId) return;
+const markMessagesAsRead = async () => {
+  if (!getCurrentRoomId()) return;
 
   try {
-    // 실제 API 구현 시 아래 코드 사용
-    // await axios.post(`/coffeeletter/messages/${props.roomId}/mark-as-read/${currentUserId.value}`);
-
-    // 테스트용: 상태 직접 변경
-    messages.value.forEach((msg) => {
-      if (isMentor.value) {
-        msg.readByMentor = true;
-      } else {
-        msg.readByMentee = true;
-      }
-    });
-  } catch (error) {
-    console.error("읽음 처리 실패:", error);
+    await markAsRead(getCurrentRoomId(), currentUserId);
+  } catch (err) {
+    console.error("메시지 읽음 처리 실패:", err);
   }
 };
 
 const scrollToBottom = () => {
-  if (chatMessagesContainer.value) {
-    chatMessagesContainer.value.scrollTop =
-      chatMessagesContainer.value.scrollHeight;
-  }
+  nextTick(() => {
+    if (chatMessagesContainer.value) {
+      chatMessagesContainer.value.scrollTop =
+        chatMessagesContainer.value.scrollHeight;
+    }
+  });
 };
 
 const isMyMessage = (message) => {
-  return message.senderId === currentUserId.value;
+  return message.senderId === currentUserId;
 };
 
 const formatTime = (dateStr) => {
@@ -402,6 +252,61 @@ const formatTime = (dateStr) => {
     .toString()
     .padStart(2, "0")}`;
 };
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+
+  const date = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) {
+    return "오늘";
+  }
+
+  if (date.toDateString() === yesterday.toDateString()) {
+    return "어제";
+  }
+
+  return `${date.getFullYear()}.${(date.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}.${date.getDate().toString().padStart(2, "0")}`;
+};
+
+const groupedMessages = computed(() => {
+  const groups = [];
+  let currentGroup = null;
+  let lastDate = null;
+
+  messages.value.forEach((message, index) => {
+    const messageDate = new Date(message.timestamp).toDateString();
+
+    if (lastDate !== messageDate) {
+      if (lastDate !== null) {
+        groups.push({ type: "date", date: message.timestamp });
+      }
+      lastDate = messageDate;
+    }
+
+    const prevMessage = index > 0 ? messages.value[index - 1] : null;
+    const timeDiff = prevMessage
+      ? new Date(message.timestamp) - new Date(prevMessage.timestamp)
+      : Infinity;
+    const isSameSender = prevMessage
+      ? prevMessage.senderId === message.senderId
+      : false;
+
+    if (!isSameSender || timeDiff > 300000 || !currentGroup) {
+      currentGroup = { type: "messages", messages: [message] };
+      groups.push(currentGroup);
+    } else {
+      currentGroup.messages.push(message);
+    }
+  });
+
+  return groups;
+});
 
 const statusText = computed(() => {
   if (!roomInfo.value.status) return "";
@@ -418,58 +323,133 @@ const statusText = computed(() => {
   }
 });
 
-onMounted(async () => {
-  if (props.roomId) {
-    await fetchRoomInfo();
-    await fetchMessages();
-    nextTick(() => {
-      scrollToBottom();
-    });
-  }
-});
+const setupWebSocket = async () => {
+  if (!getCurrentRoomId()) return;
 
-watch(messages, () => {
-  nextTick(() => {
-    scrollToBottom();
-  });
-});
+  console.log("웹소켓 연결 설정 시작 - 채팅방 ID:", getCurrentRoomId());
+
+  // 개선된 콜백 함수
+  const callbacks = {
+    roomId: getCurrentRoomId(),
+    onNewMessage: (message) => {
+      console.log("웹소켓을 통해 새 메시지 수신:", message);
+      if (message.type === "CHAT" || message.type === "SYSTEM") {
+        const isDuplicate = messages.value.some(
+          (m) =>
+            m.id === message.id ||
+            (m.senderId === message.senderId &&
+              m.content === message.content &&
+              m.timestamp === message.timestamp)
+        );
+
+        if (!isDuplicate) {
+          messages.value.push(message);
+          markMessagesAsRead();
+          scrollToBottom();
+        }
+      } else if (message.type === "READ_RECEIPT") {
+        console.log("읽음 확인 메시지 수신:", message);
+      }
+    },
+    onConnected: () => {
+      console.log("채팅방 웹소켓 연결 성공 - 채팅방 ID:", getCurrentRoomId());
+
+      // 연결 성공 시 추가 작업 (필요한 경우)
+      console.log("채팅방 구독 중...");
+    },
+    onError: (error) => {
+      console.error("웹소켓 연결 오류:", error);
+      error.value =
+        "채팅 서버 연결에 문제가 발생했습니다. 페이지를 새로고침 해주세요.";
+    },
+  };
+
+  try {
+    // 3번 재시도까지 허용
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      console.log(`웹소켓 연결 시도 ${attempt}/3...`);
+
+      // 연결 시도
+      const client = await websocketService.connect(callbacks);
+
+      if (client && websocketService.isConnected()) {
+        console.log("웹소켓 연결 성공!");
+        return;
+      }
+
+      // 실패 시 잠시 대기 후 재시도
+      if (attempt < 3) {
+        console.log(`연결 실패, ${attempt + 1}번째 시도 전 3초 대기...`);
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+      }
+    }
+
+    console.error("웹소켓 연결이 3번의 시도 후에도 실패했습니다.");
+  } catch (err) {
+    console.error("웹소켓 연결 시도 중 에러:", err);
+  }
+};
 
 watch(
-  () => props.roomId,
-  async () => {
-    if (props.roomId) {
-      await fetchRoomInfo();
-      await fetchMessages();
-      nextTick(() => {
-        scrollToBottom();
-      });
+  () => getCurrentRoomId(),
+  async (newRoomId, oldRoomId) => {
+    if (newRoomId) {
+      if (oldRoomId && oldRoomId !== newRoomId) {
+        websocketService.unsubscribe(`/topic/chat/room/${oldRoomId}`);
+        websocketService.unsubscribe(`/topic/chat/${oldRoomId}`);
+      }
+
+      await fetchRoomData();
+      await setupWebSocket();
     } else {
       messages.value = [];
       roomInfo.value = {
         id: "",
         partnerName: "",
+        partnerProfileImageUrl: "",
         status: "",
         mentorId: null,
         menteeId: null,
       };
+
+      if (oldRoomId) {
+        websocketService.unsubscribe(`/topic/chat/room/${oldRoomId}`);
+        websocketService.unsubscribe(`/topic/chat/${oldRoomId}`);
+      }
+      page.value = 0;
+      hasMore.value = true;
     }
-  }
+  },
+  { immediate: true }
 );
 
-let refreshInterval;
-onMounted(() => {
-  if (props.roomId) {
-    refreshInterval = setInterval(() => {
-      if (props.roomId) {
-        fetchMessages();
-      }
-    }, 30 * 1000);
+const handleScroll = () => {
+  if (!chatMessagesContainer.value) return;
+
+  const { scrollTop } = chatMessagesContainer.value;
+
+  scrollToLoadMoreVisible.value = scrollTop > 50 && hasMore.value;
+};
+
+onMounted(async () => {
+  if (getCurrentRoomId()) {
+    await fetchRoomData();
+    await setupWebSocket();
+
+    if (chatMessagesContainer.value) {
+      chatMessagesContainer.value.addEventListener("scroll", handleScroll);
+    }
   }
 });
 
-onUnmounted(() => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval);
+onBeforeUnmount(() => {
+  stopObserver();
+  if (chatMessagesContainer.value) {
+    chatMessagesContainer.value.removeEventListener("scroll", handleScroll);
+  }
+  if (getCurrentRoomId()) {
+    websocketService.unsubscribe(`/topic/chat/room/${getCurrentRoomId()}`);
+    websocketService.unsubscribe(`/topic/chat/${getCurrentRoomId()}`);
   }
 });
 </script>
@@ -491,82 +471,177 @@ onUnmounted(() => {
         <div class="chat-header">
           <div class="chat-header-left">
             <img
-              src="@/assets/image/profile.png"
-              alt="프로필"
+              :src="
+                roomInfo.partnerProfileImageUrl ||
+                '/src/assets/image/profile.png'
+              "
+              :alt="roomInfo.partnerName"
               class="profile-img"
             />
             <div class="chat-header-info">
               <span class="chat-nickname">{{ roomInfo.partnerName }}</span>
-              <span class="chat-status">{{ statusText }}</span>
+              <span
+                class="chat-status"
+                :class="{ 'status-inactive': roomInfo.status !== 'ACTIVE' }"
+                >{{ statusText }}</span
+              >
             </div>
           </div>
         </div>
 
-        <div v-if="loading && messages.length === 0" class="loading-container">
+        <div v-if="initialLoading" class="loading-container">
           <div class="loading-spinner"></div>
         </div>
         <div v-else class="chat-messages" ref="chatMessagesContainer">
-          <transition-group name="message" tag="div" class="messages-container">
+          <!-- 무한 스크롤 트리거 -->
+          <div
+            v-if="hasMore"
+            ref="loadMoreTrigger"
+            class="infinite-scroll-trigger"
+          >
             <div
-              v-for="message in messages"
-              :key="message.id"
-              class="message-wrapper"
+              v-if="loadingOlderMessages"
+              class="loading-spinner-small"
+            ></div>
+          </div>
+
+          <!-- 이전 메시지 로드 버튼 -->
+          <div
+            v-if="hasMore && scrollToLoadMoreVisible"
+            class="load-more-container"
+          >
+            <button
+              @click="loadOlderMessages"
+              class="load-more-button"
+              :disabled="loadingOlderMessages"
             >
-              <div
-                class="message"
-                :class="{
-                  'my-message': isMyMessage(message),
-                  'other-message': !isMyMessage(message),
-                }"
-              >
-                <div class="message-content">{{ message.content }}</div>
-                <div class="message-time">
-                  {{ formatTime(message.timestamp) }}
-                </div>
+              <div v-if="loadingOlderMessages" class="loading-dots">
+                <span></span><span></span><span></span>
               </div>
-            </div>
-          </transition-group>
+              <span v-else>이전 메시지 불러오기</span>
+            </button>
+          </div>
+
           <div v-if="messages.length === 0" class="no-messages">
             <p>대화를 시작해보세요!</p>
+          </div>
+
+          <div v-else class="messages-container">
+            <template v-for="(group, index) in groupedMessages" :key="index">
+              <!-- 날짜 구분선 -->
+              <div v-if="group.type === 'date'" class="date-divider">
+                <span>{{ formatDate(group.date) }}</span>
+              </div>
+
+              <!-- 메시지 그룹 -->
+              <div
+                v-else-if="group.type === 'messages'"
+                class="message-group"
+                :class="{
+                  'my-message-group': isMyMessage(group.messages[0]),
+                  'other-message-group': !isMyMessage(group.messages[0]),
+                }"
+              >
+                <div
+                  class="message-sender"
+                  v-if="!isMyMessage(group.messages[0])"
+                >
+                  <img
+                    :src="
+                      roomInfo.partnerProfileImageUrl ||
+                      '/src/assets/image/profile.png'
+                    "
+                    :alt="roomInfo.partnerName"
+                    class="message-avatar"
+                  />
+                </div>
+                <div class="message-content-group">
+                  <div
+                    class="message-sender-name"
+                    v-if="!isMyMessage(group.messages[0])"
+                  >
+                    {{ roomInfo.partnerName }}
+                  </div>
+                  <div
+                    v-for="(message, msgIndex) in group.messages"
+                    :key="message.id"
+                    class="message"
+                    :class="{
+                      'my-message': isMyMessage(message),
+                      'other-message': !isMyMessage(message),
+                      'first-message': msgIndex === 0,
+                      'last-message': msgIndex === group.messages.length - 1,
+                    }"
+                  >
+                    <div class="message-bubble">{{ message.content }}</div>
+                    <div
+                      class="message-time"
+                      v-if="msgIndex === group.messages.length - 1"
+                    >
+                      {{ formatTime(message.timestamp) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
 
         <div class="chat-input-container">
-          <input
-            type="text"
-            v-model="newMessage"
-            placeholder="메시지를 입력하세요"
-            class="chat-input"
-            @keyup.enter="sendMessage"
-          />
-          <button
-            @click="sendMessage"
-            class="send-button"
-            :disabled="!newMessage.trim()"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+          <div class="chat-input-wrapper">
+            <input
+              type="text"
+              v-model="newMessage"
+              placeholder="메시지를 입력하세요"
+              class="chat-input"
+              @keyup.enter="sendNewMessage"
+              :disabled="
+                allowSendMessage ? false : roomInfo.status !== 'ACTIVE'
+              "
+            />
+            <button
+              @click="sendNewMessage"
+              class="send-button"
+              :disabled="
+                allowSendMessage
+                  ? !newMessage.trim()
+                  : !newMessage.trim() || roomInfo.status !== 'ACTIVE'
+              "
+              aria-label="메시지 보내기"
             >
-              <path
-                d="M22 2L11 13"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M22 2L15 22L11 13L2 9L22 2Z"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </button>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M22 2L11 13"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M22 2L15 22L11 13L2 9L22 2Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+          <div
+            v-if="!allowSendMessage && roomInfo.status !== 'ACTIVE'"
+            class="chat-disabled-message"
+          >
+            이 대화는 {{ statusText }} 상태입니다.
+          </div>
+          <div v-else-if="!allowSendMessage" class="chat-disabled-message">
+            임의로 채팅 입력이 비활성화되어 있습니다.
+          </div>
         </div>
       </div>
     </transition>
@@ -578,9 +653,11 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: white;
+  background: #f8fafc;
   height: 100%;
   overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .chat-content-wrapper {
@@ -589,21 +666,17 @@ onUnmounted(() => {
   height: 100%;
 }
 
-.messages-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 .chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  border-bottom: 1px solid var(--newbitdivider, #ececec);
-  background-color: white;
-  height: 70px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  height: 72px;
   box-sizing: border-box;
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.03);
+  border-radius: 12px 12px 0 0;
 }
 
 .chat-header-left {
@@ -616,6 +689,8 @@ onUnmounted(() => {
   height: 40px;
   border-radius: 50%;
   margin-right: 12px;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
 }
 
 .chat-header-info {
@@ -626,34 +701,98 @@ onUnmounted(() => {
 .chat-nickname {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: #222;
 }
 
 .chat-status {
   font-size: 12px;
-  color: var(--newbitnormal, #3b82f6);
+  color: #60a5fa;
+  margin-top: 2px;
+  padding: 2px 8px;
+  background-color: rgba(96, 165, 250, 0.1);
+  border-radius: 10px;
+  display: inline-block;
+}
+
+.status-inactive {
+  color: #9ca3af;
+  background-color: rgba(156, 163, 175, 0.1);
 }
 
 .chat-messages {
   flex: 1;
-  padding: 20px 24px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  background-color: #f8f9fb;
+  background: transparent;
+  padding: 24px;
+  gap: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
 }
 
-.message-wrapper {
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 6px;
+}
+
+.messages-container {
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  overflow-y: visible;
+}
+
+.message-group {
+  display: flex;
+  margin-bottom: 24px;
+}
+
+.my-message-group {
+  flex-direction: row-reverse;
+}
+
+.other-message-group {
+  flex-direction: row;
+}
+
+.message-sender {
+  margin-right: 8px;
+  align-self: flex-start;
+}
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.message-content-group {
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+  gap: 8px;
+}
+
+.message-sender-name {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
 }
 
 .message {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  max-width: 70%;
-  margin-bottom: 2px;
+  margin-bottom: 8px;
 }
 
 .my-message {
@@ -664,70 +803,137 @@ onUnmounted(() => {
   align-self: flex-start;
 }
 
-.message-content {
+.message-bubble {
   padding: 12px 16px;
   border-radius: 18px;
   font-size: 14px;
   line-height: 1.5;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   word-break: break-word;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
-.my-message .message-content {
-  background-color: var(--newbitnormal, #3b82f6);
-  color: white;
-  border-bottom-right-radius: 4px;
+.my-message .message-bubble {
+  background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+  color: #fff;
+  border-top-right-radius: 4px;
 }
 
-.other-message .message-content {
-  background-color: white;
-  border-bottom-left-radius: 4px;
+.other-message .message-bubble {
+  background: #fff;
+  border-top-left-radius: 4px;
+  color: #222;
+}
+
+.first-message.my-message .message-bubble {
+  border-top-right-radius: 18px;
+}
+
+.first-message.other-message .message-bubble {
+  border-top-left-radius: 18px;
+}
+
+.last-message.my-message .message-bubble {
+  border-bottom-right-radius: 18px;
+}
+
+.last-message.other-message .message-bubble {
+  border-bottom-left-radius: 18px;
 }
 
 .message-time {
   font-size: 11px;
-  color: #999;
+  color: #9ca3af;
   margin-top: 4px;
-}
-
-.my-message .message-time {
   align-self: flex-end;
 }
 
+.my-message .message-time {
+  margin-right: 4px;
+}
+
 .other-message .message-time {
-  align-self: flex-start;
+  margin-left: 4px;
+}
+
+.date-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.date-divider::before,
+.date-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.date-divider::before {
+  margin-right: 16px;
+}
+
+.date-divider::after {
+  margin-left: 16px;
+}
+
+.date-divider span {
+  padding: 0 10px;
+  background: #f8fafc;
+  border-radius: 10px;
 }
 
 .no-messages {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 200px;
-  color: #999;
+  height: 180px;
+  color: #9ca3af;
   font-size: 14px;
+  font-style: italic;
 }
 
 .chat-input-container {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   padding: 16px 24px;
-  border-top: 1px solid var(--newbitdivider, #ececec);
-  background-color: white;
-  min-height: 70px;
+  border-top: 1px solid #e5e7eb;
+  background: #fff;
+  min-height: 76px;
   box-sizing: border-box;
+  box-shadow: 0 -2px 8px 0 rgba(0, 0, 0, 0.03);
+  border-radius: 0 0 12px 12px;
+}
+
+.chat-input-wrapper {
+  display: flex;
+  align-items: center;
 }
 
 .chat-input {
   flex: 1;
-  padding: 12px 16px;
-  border: 1px solid var(--newbitdivider, #ececec);
+  padding: 12px 18px;
+  border: 1px solid #e5e7eb;
   border-radius: 24px;
   font-size: 14px;
   outline: none;
+  background: #f8fafc;
+  transition: border 0.2s, box-shadow 0.2s;
 }
 
 .chat-input:focus {
-  border-color: var(--newbitnormal, #3b82f6);
+  border-color: #60a5fa;
+  box-shadow: 0 2px 8px 0 rgba(96, 165, 250, 0.13);
+}
+
+.chat-input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  color: #9ca3af;
 }
 
 .send-button {
@@ -739,19 +945,23 @@ onUnmounted(() => {
   margin-left: 12px;
   border: none;
   border-radius: 50%;
-  background-color: var(--newbitnormal, #3b82f6);
+  background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
   color: white;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px 0 rgba(96, 165, 250, 0.13);
 }
 
 .send-button:hover:not(:disabled) {
-  background-color: #2563eb;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px 0 rgba(96, 165, 250, 0.18);
 }
 
 .send-button:disabled {
-  background-color: #a0c0f8;
+  background: #e5e7eb;
   cursor: not-allowed;
+  color: #9ca3af;
+  box-shadow: none;
 }
 
 .empty-chat {
@@ -759,20 +969,24 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f8f9fb;
+  background: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .empty-chat-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #999;
+  color: #9ca3af;
+  padding: 40px;
+  text-align: center;
 }
 
 .empty-chat-icon {
-  width: 64px;
-  height: 64px;
-  opacity: 0.5;
+  width: 56px;
+  height: 56px;
+  opacity: 0.6;
   margin-bottom: 16px;
 }
 
@@ -784,12 +998,107 @@ onUnmounted(() => {
 }
 
 .loading-spinner {
-  width: 30px;
-  height: 30px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid var(--newbitnormal, #3b82f6);
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(96, 165, 250, 0.2);
+  border-top: 3px solid #60a5fa;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+}
+
+.loading-spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(96, 165, 250, 0.2);
+  border-top: 2px solid #60a5fa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 8px auto;
+}
+
+.infinite-scroll-trigger {
+  padding: 8px;
+  text-align: center;
+}
+
+.load-more-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.load-more-button {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  min-height: 36px;
+}
+
+.load-more-button:hover:not(:disabled) {
+  background-color: #f9fafb;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.load-more-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.loading-dots span {
+  width: 6px;
+  height: 6px;
+  background-color: #6b7280;
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.chat-disabled-message {
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 
 @keyframes spin {
@@ -808,26 +1117,11 @@ onUnmounted(() => {
 
 .fade-enter-from {
   opacity: 0;
-  transform: translateX(10px);
+  transform: translateY(10px);
 }
 
 .fade-leave-to {
   opacity: 0;
-  transform: translateX(-10px);
-}
-
-.message-enter-active {
-  transition: all 0.3s ease;
-}
-.message-leave-active {
-  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
-}
-.message-enter-from {
-  transform: translateY(20px);
-  opacity: 0;
-}
-.message-leave-to {
-  transform: translateY(-20px);
-  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>
