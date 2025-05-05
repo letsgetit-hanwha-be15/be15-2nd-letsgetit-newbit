@@ -169,10 +169,21 @@ class SubscriptionServiceTest {
         
         Subscription sub1 = createSubscription(userId, seriesId1);
         Subscription sub2 = createSubscription(userId, seriesId2);
+        // SeriesService에서 seriesId로 Series mock 반환
+        Series mockSeries1 = mock(Series.class);
+        when(mockSeries1.getSeriesId()).thenReturn(seriesId1);
+        when(mockSeries1.getThumbnailUrl()).thenReturn("https://example.com/series1.jpg");
+        when(mockSeries1.getTitle()).thenReturn("시리즈1");
+        when(mockSeries1.getMentorNickname()).thenReturn("멘토홍길동");
+        Series mockSeries2 = mock(Series.class);
+        when(mockSeries2.getSeriesId()).thenReturn(seriesId2);
+        when(mockSeries2.getThumbnailUrl()).thenReturn("https://example.com/series2.jpg");
+        when(mockSeries2.getTitle()).thenReturn("시리즈2");
+        when(mockSeries2.getMentorNickname()).thenReturn("멘토이몽룡");
+        when(seriesService.getSeries(seriesId1)).thenReturn(mockSeries1);
+        when(seriesService.getSeries(seriesId2)).thenReturn(mockSeries2);
         
-        List<Subscription> subscriptions = Arrays.asList(sub1, sub2);
-        
-        when(subscriptionRepository.findByUserId(userId)).thenReturn(subscriptions);
+        when(subscriptionRepository.findByUserId(userId)).thenReturn(Arrays.asList(sub1, sub2));
         
         // When
         List<SubscriptionResponse> responses = subscriptionService.getUserSubscriptions(userId);

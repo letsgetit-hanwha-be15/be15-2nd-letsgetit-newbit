@@ -24,6 +24,15 @@ public class LikedColumnResponse {
     @Schema(description = "작성자 ID", example = "15")
     private Long authorId;
 
+    @Schema(description = "작성자 닉네임", example = "개발자도토리")
+    private String authorNickname;
+
+    @Schema(description = "칼럼 썸네일 URL", example = "https://example.com/image.jpg")
+    private String thumbnailUrl;
+
+    @Schema(description = "칼럼 가격", example = "1000")
+    private Integer price;
+
     @Schema(description = "좋아요 생성 시간", example = "2023-08-15T14:30:15")
     private LocalDateTime likedAt;
 } 
