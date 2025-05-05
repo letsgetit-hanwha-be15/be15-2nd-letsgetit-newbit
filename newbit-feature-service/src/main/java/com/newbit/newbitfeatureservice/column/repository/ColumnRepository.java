@@ -51,11 +51,10 @@ public interface ColumnRepository extends JpaRepository<Column, Long> {
     WHERE c.isPublic = true
     AND (
         :keyword IS NULL OR
-        LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-        LOWER(c.mentorNickname) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
     )
     ORDER BY c.createdAt DESC
 """)
-    Page<GetColumnListResponseDto> searchPublicColumns(@Param("keyword") String keyword, Pageable pageable);
+    Page<GetColumnListResponseDto> searchPublicColumnsByTitle(@Param("keyword") String keyword, Pageable pageable);
 
 }

@@ -1,5 +1,6 @@
 package com.newbit.newbitfeatureservice.column.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
@@ -148,6 +149,30 @@ public class ColumnService {
     @Transactional(readOnly = true)
     public Page<GetColumnListResponseDto> searchPublicColumns(SearchCondition condition, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return columnRepository.searchPublicColumns(condition.getKeyword(), pageable);
+        String keyword = condition.getKeyword();
+
+        Page<GetColumnListResponseDto> resultPage = columnRepository.searchPublicColumnsByTitle(keyword, pageable);
+        List<GetColumnListResponseDto> content = resultPage.getContent();
+
+        List<GetColumnListResponseDto> filtered = new ArrayList<>();
+
+        for (GetColumnListResponseDto dto : content) {
+            try {
+                Long mentorId = dto.getMentorId();
+                Long userId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
+                String nickname = userFeignClient.getNicknameByUserId(userId).getData();
+                dto.setMentorNickname(nickname);
+
+                // keyword로 mentorNickname도 필터링
+                if (keyword == null || nickname.toLowerCase().contains(keyword.toLowerCase()) || dto.getTitle().toLowerCase().contains(keyword.toLowerCase())) {
+                    filtered.add(dto);
+                }
+
+            } catch (Exception e) {
+                log.warn("닉네임 조회 실패 mentorId={}", dto.getMentorId(), e);
+            }
+        }
+
+        return new PageImpl<>(filtered, pageable, filtered.size());
     }
 }
