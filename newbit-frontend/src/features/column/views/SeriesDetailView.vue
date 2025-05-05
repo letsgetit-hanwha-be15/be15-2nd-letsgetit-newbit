@@ -2,26 +2,31 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import SeriesEditModal from '@/features/column/components/SeriesEditModal.vue'
+import ColumnCard from '@/features/column/components/ColumnCard.vue'
 
-// 현재 로그인 유저가 이 시리즈의 멘토인지 여부 (임시)
-const isMentor = ref(false)
-
+const isMentor = ref(true) // 실제로는 로그인 사용자와 비교해서 설정
 const route = useRoute()
 const seriesId = route.params.id
 
-// 시리즈 상세 정보 및 칼럼 목록
 const series = ref(null)
 const columns = ref([])
-
 const isEditModalOpen = ref(false)
+
 const openEditModal = () => {
   isEditModalOpen.value = true
 }
 
+const fallbackImg = new URL('@/assets/image/product-skeleton.png', import.meta.url).href
+
+const displayThumbnail = computed(() =>
+    series.value?.thumbnailUrl?.trim() !== ''
+        ? series.value.thumbnailUrl
+        : fallbackImg
+)
+
 const fetchSeriesDetail = async () => {
-  // TODO: 실제 API 연동
   series.value = {
-    id: 1,
+    id: Number(seriesId),
     title: 'AI 시대에 내 몸값을 높여줄 5가지 습관',
     description: '시리즈 설명 예시입니다',
     thumbnailUrl: '',
@@ -34,13 +39,21 @@ const fetchSeriesDetail = async () => {
     {
       id: 1,
       title: '스펙의 전례 없는 위기 대응 전략',
+      mentorNickname: '김멘토',
       date: '2025.04.02',
       likeCount: 10,
       diamondCount: 10,
-      thumbnailUrl: 'https://example.com/thumb1.jpg',
-      writer: '김멘토'
+      thumbnailUrl: '', // fallback 처리
     },
-    // 더미 데이터 계속
+    {
+      id: 2,
+      title: '팀 없이도 굴러가는 시스템 만들기',
+      mentorNickname: '김멘토',
+      date: '2025.04.10',
+      likeCount: 8,
+      diamondCount: 5,
+      thumbnailUrl: '',
+    }
   ]
 }
 
@@ -49,21 +62,21 @@ onMounted(fetchSeriesDetail)
 
 <template>
   <section class="max-w-[1000px] mx-auto px-6 py-10">
-    <!-- 상단 시리즈 정보 -->
+    <!-- 시리즈 정보 -->
     <div class="flex gap-6 items-start mb-10">
       <img
-          :src="series?.thumbnailUrl || '/default.jpg'"
-          class="w-[300px] h-[180px] object-cover rounded"
+          :src="series?.thumbnailUrl || fallbackImg"
+          @error="(e) => e.target.src = fallbackImg"
           alt="시리즈 썸네일"
+          class="w-[300px] h-[180px] object-cover rounded-lg"
       />
       <div class="flex-1">
         <h1 class="text-heading2 mb-2">{{ series?.title }}</h1>
-        <p class="text-14px-regular text-[var(--newbitgray)] mb-3">
-          {{ series?.description }}
+        <p class="text-14px-regular text-[var(--newbitgray)] mb-3">{{ series?.description }}</p>
+        <p class="text-13px-regular mb-4">
+          {{ series?.columnCount }}개의 칼럼 | {{ series?.mentorNickname }}
         </p>
-        <p class="text-13px-regular mb-4">{{ series?.columnCount }}개의 칼럼 | {{ series?.mentorNickname }}</p>
 
-        <!-- 멘토/사용자 버튼 -->
         <button
             v-if="isMentor"
             @click="openEditModal"
@@ -82,32 +95,20 @@ onMounted(fetchSeriesDetail)
       </div>
     </div>
 
-    <!-- 칼럼 리스트 -->
+    <!-- 칼럼 카드 리스트 -->
     <div class="space-y-6">
-      <div
+      <ColumnCard
           v-for="column in columns"
           :key="column.id"
-          class="flex items-start justify-between p-5 border rounded shadow-sm"
-      >
-        <div class="flex-1 pr-4">
-          <h2 class="text-heading3 mb-2">{{ column.title }}</h2>
-          <p class="text-13px-regular text-[var(--newbitgray)]">
-            ♥ {{ column.likeCount }} | 💎 {{ column.diamondCount }} | 작성일 {{ column.date }}
-          </p>
-        </div>
-        <img
-            :src="column.thumbnailUrl || '/default.jpg'"
-            class="w-[180px] h-[120px] object-cover rounded"
-            alt="칼럼 썸네일"
-        />
-      </div>
+          :column="column"
+      />
     </div>
 
     <!-- 시리즈 수정 모달 -->
     <SeriesEditModal
-        v-model:visible="isEditModalOpen"
+        v-model="isEditModalOpen"
         :series="series"
-        @edit="(updated) => series = updated"
+        @update="(updated) => (series = updated)"
     />
   </section>
 </template>
