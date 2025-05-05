@@ -20,3 +20,8 @@ export function FetchTechstackList() {
 export function FindId(data) {
     return api.post('/user/users/find-id', data);
 }
+
+/* 4. 비밀번호 찾기 */
+export function FindPassword(data) {
+    return api.post('/user/users/find-password', data);
+}
