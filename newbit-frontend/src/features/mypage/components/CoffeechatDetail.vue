@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {useToast} from "vue-toastification";
 
@@ -27,16 +27,25 @@ function formatTime(datetimeString) {
   return datetimeString.replace('T', ' ')
 }
 
-const selectedRequestTimeId = ref(null)
+const selectedRequestTimeId = ref(null);
+const isConfirmModalOpen = ref(false);
 
-const approveRequest = () => {
+function approveRequest () {
   if (selectedRequestTimeId.value === null) {
     alert('시간을 선택해주세요.')
     return
   }
+  isConfirmModalOpen.value = true;
+}
 
-  // 실제 승인 로직 실행 (emit 또는 API 요청 등)
+function closeApproveModal() {
+  isConfirmModalOpen.value = false;
+}
+
+function confirmCoffeechat () {
   console.log('승인된 requestTimeId:', selectedRequestTimeId.value)
+  // todo : 커피챗 승인 API 호출
+  router.push(`/mypage/mentor/coffeechats/${coffeechatId}`);
 }
 
 function cancelRequest() {
@@ -44,6 +53,23 @@ function cancelRequest() {
   toast.info('취소되었습니다.')
   router.push(`/mypage/mentor/coffeechats/${coffeechatId}`);
 }
+
+const formatFullTime = (startTimeStr, endTimeStr) => {
+  const start = new Date(startTimeStr)
+  const end = new Date(endTimeStr)
+
+  const pad = (n) => n.toString().padStart(2, '0')
+
+  const date = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`
+  const startTime = `${pad(start.getHours())}:${pad(start.getMinutes())}`
+  const endTime = `${pad(end.getHours())}:${pad(end.getMinutes())}`
+
+  return `${date} ${startTime} ~ ${endTime}`
+}
+
+const selectedRequestTime = computed(() =>
+    requestTimes.find(rt => rt.requestTimeId === selectedRequestTimeId.value)
+)
 </script>
 
 <template>
@@ -89,7 +115,25 @@ function cancelRequest() {
         취소
       </button>
     </div>
-
+    <!-- 커피챗 승인 모달 -->
+    <div v-if="isConfirmModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-[var(--newbitbackground)] rounded-lg p-6 w-[400px] shadow-lg">
+        <h2 class="text-heading3 mb-4">커피챗 승인</h2>
+        <p class="mb-6 text-13px-regular">
+          {{ formatFullTime(selectedRequestTime.startTime, selectedRequestTime.endTime) }} 승인하시겠습니까?
+        </p>
+        <div class="flex justify-end gap-2">
+          <button @click="closeApproveModal"
+                  class="bg-[var(--newbitred)] text-[var(--newbitlight)] px-4 py-1 rounded-md font-semibold">
+            아니요
+          </button>
+          <button @click="confirmCoffeechat"
+                  class="bg-[var(--newbitnormal)] text-[var(--newbitlight)] px-4 py-1 rounded-md font-semibold">
+            네
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
