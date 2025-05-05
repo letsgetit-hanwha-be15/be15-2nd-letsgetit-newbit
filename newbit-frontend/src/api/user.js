@@ -7,10 +7,19 @@ export function SignUpUser(data) {
 }
 
 
-const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiYXV0aG9yaXR5IjoiTUVOVE9SIiwidXNlcklkIjoxMSwiaWF0IjoxNzQ2NDQzMTU1LCJleHAiOjE3NDY0NDQ5NTV9.eF9IbsNCrvXoL6bZ2uVCJVe6-7Wy-QC3HtbmOMSyiJXq2YfB82v_mr-nw2hO64qHB_ReEnE5CrB-UBQRoDCnIg'
+const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiYXV0aG9yaXR5IjoiTUVOVE9SIiwidXNlcklkIjoxMSwiaWF0IjoxNzQ2NDUwNjc1LCJleHAiOjE3NDY0NTI0NzV9.j4i-ZSNksxJvDFoNrhtV2S8PZWgu9693Yw8eiI7MXGBz3Sd-HHucvjfqBRkc4dc76aRdxOrwdZHWOOHhxgvbIQ'
 /* 2. 회원 정보 조회 */
 export function getUserInfo(data) {
     return api.get('/user/users/me', {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+}
+
+/* 3. 회원 정보 수정 */
+export function putUserInfo(data) {
+    return api.put('/user/users/me/info', data, {
         headers: {
             Authorization: `Bearer ${token}`
         }
