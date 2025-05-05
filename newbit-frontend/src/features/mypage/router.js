@@ -19,6 +19,7 @@ import MyColumnsView from "@/features/mypage/views/MyColumnsView.vue";
 import MySeriesView from "@/features/mypage/views/MySeriesView.vue";
 import CoffeechatListMentorView from "@/features/mypage/views/CoffeechatListMentorView.vue";
 import CoffeechatCancelView from "@/features/mypage/views/CoffeechatCancelView.vue";
+import CoffeechatDetailMentorView from "@/features/mypage/views/CoffeechatDetailMentorView.vue";
 
 export const mypageRoutes = [
     {

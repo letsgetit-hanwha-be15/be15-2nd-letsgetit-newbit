@@ -7,7 +7,6 @@ import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
 
 const route = useRoute();
-const router = useRouter();
 const coffeechatId = ref(Number(route.params.id))
 
 // 프론트용 페이지
@@ -169,9 +168,6 @@ const statusMap = {
 function getStatusText(status) {
   return statusMap[status] || '알 수 없음'
 }
-function cancelRegister() {
-  router.push(`/mypage/history/coffeechats/${coffeechatId.value}/cancel`);
-}
 
 </script>
 
@@ -188,15 +184,10 @@ function cancelRegister() {
           v-if="coffeechat.progressStatus === 'IN_PROGRESS'"
           :coffeechat="coffeechat"
           :requestTimes="requestTimes.requestTimes"
+          :isMentor=true
       />
       <!-- 버튼들 -->
-      <div class="flex flex-wrap gap-2 justify-end pb-10">
-        <button type="button"
-                @click="cancelRegister"
-                class="ml-2 rounded-md px-3 py-1 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
-          취소
-        </button>
-      </div>
+
     </div>
   </div>
   <div class="flex justify-end">
