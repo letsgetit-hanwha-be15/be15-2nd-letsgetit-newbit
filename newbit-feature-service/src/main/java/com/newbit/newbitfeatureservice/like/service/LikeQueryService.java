@@ -2,6 +2,7 @@ package com.newbit.newbitfeatureservice.like.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import com.newbit.newbitfeatureservice.like.dto.response.LikedPostResponse;
 import com.newbit.newbitfeatureservice.like.entity.Like;
 import com.newbit.newbitfeatureservice.like.repository.LikeRepository;
 import com.newbit.newbitfeatureservice.post.service.PostService;
+import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,7 @@ public class LikeQueryService {
     private final LikeRepository likeRepository;
     private final PostService postService;
     private final ColumnService columnService;
+    private final UserFeignClient userFeignClient;
     
     @Transactional(readOnly = true)
     public boolean isPostLiked(Long postId, Long userId) {
@@ -101,17 +104,31 @@ public class LikeQueryService {
             .map(like -> {
                 try {
                     Long postId = like.getPostId();
-                    
+
                     postService.getReportCountByPostId(postId);
-                    
+
                     String postTitle = postService.getPostTitle(postId);
                     Long authorId = postService.getWriterIdByPostId(postId);
-                    
+
+                    String authorNickname = null;
+                    try {
+                        var nicknameResp = userFeignClient.getNicknameByUserId(authorId);
+                        if (nicknameResp != null && nicknameResp.getData() != null) {
+                            authorNickname = nicknameResp.getData();
+                        }
+                    } catch (Exception e) {
+                        log.warn("게시글 닉네임 조회 실패: userId={}, 오류={}", authorId, e.getMessage());
+                    }
+
+                    int likeCount = postService.getPostLikeCount(postId);
+
                     return LikedPostResponse.builder()
                         .likeId(like.getId())
                         .postId(postId)
                         .postTitle(postTitle)
                         .authorId(authorId)
+                        .authorNickname(authorNickname)
+                        .likeCount(likeCount)
                         .likedAt(like.getCreatedAt())
                         .build();
                 } catch (Exception e) {
@@ -119,7 +136,7 @@ public class LikeQueryService {
                     return null;
                 }
             })
-            .filter(response -> response != null)
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
     
@@ -131,19 +148,34 @@ public class LikeQueryService {
                     
                     String columnTitle = columnService.getColumnTitle(columnId);
                     Long mentorId = columnService.getMentorIdByColumnId(columnId);
-                    
                     if (mentorId == null) {
                         log.warn("칼럼의 멘토 정보가 없음: columnId={}", columnId);
                         return null;
                     }
-                    
                     Long authorId = columnService.getUserIdByMentorId(mentorId);
-                    
+
+                    var column = columnService.getColumn(columnId);
+                    String thumbnailUrl = column.getThumbnailUrl();
+                    Integer price = column.getPrice();
+
+                    String authorNickname = null;
+                    try {
+                        var nicknameResp = userFeignClient.getNicknameByUserId(authorId);
+                        if (nicknameResp != null && nicknameResp.getData() != null) {
+                            authorNickname = nicknameResp.getData();
+                        }
+                    } catch (Exception e) {
+                        log.warn("닉네임 조회 실패: userId={}, 오류={}", authorId, e.getMessage());
+                    }
+
                     return LikedColumnResponse.builder()
                         .likeId(like.getId())
                         .columnId(columnId)
                         .columnTitle(columnTitle)
                         .authorId(authorId)
+                        .authorNickname(authorNickname)
+                        .thumbnailUrl(thumbnailUrl)
+                        .price(price)
                         .likedAt(like.getCreatedAt())
                         .build();
                 } catch (Exception e) {
@@ -151,7 +183,7 @@ public class LikeQueryService {
                     return null;
                 }
             })
-            .filter(response -> response != null)
+            .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
     

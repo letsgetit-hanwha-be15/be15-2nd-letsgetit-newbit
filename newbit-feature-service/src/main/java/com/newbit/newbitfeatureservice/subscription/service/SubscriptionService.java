@@ -3,6 +3,7 @@ package com.newbit.newbitfeatureservice.subscription.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.newbit.newbitfeatureservice.column.domain.Series;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,7 +65,21 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public List<SubscriptionResponse> getUserSubscriptions(Long userId) {
         return subscriptionRepository.findByUserId(userId).stream()
-                .map(SubscriptionResponse::from)
+                .map(subscription -> {
+                    Series series = seriesService.getSeries(subscription.getSeriesId());
+                    int columnCount = seriesService.getColumnCountBySeriesId(series.getSeriesId());
+                    return SubscriptionResponse.builder()
+                            .seriesId(subscription.getSeriesId())
+                            .userId(subscription.getUserId())
+                            .subscribed(true)
+                            .createdAt(subscription.getCreatedAt())
+                            .updatedAt(subscription.getUpdatedAt())
+                            .thumbnailUrl(series.getThumbnailUrl())
+                            .seriesTitle(series.getTitle())
+                            .mentorNickname(series.getMentorNickname())
+                            .columnCount(columnCount)
+                            .build();
+                })
                 .toList();
     }
     

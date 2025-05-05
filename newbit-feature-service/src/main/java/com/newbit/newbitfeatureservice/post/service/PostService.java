@@ -365,4 +365,10 @@ public class PostService {
         return post.getTitle();
     }
 
+    @Transactional(readOnly = true)
+    public int getPostLikeCount(Long postId) {
+        Post post = getPost(postId);
+        return post.getLikeCount();
+    }
+
 }
