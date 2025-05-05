@@ -24,6 +24,11 @@ export function FindId(data) {
     return api.post('/user/users/find-id', data);
 }
 
+/* 4. 비밀번호 찾기 */
+export function FindPassword(data) {
+    return api.post('/user/users/find-password', data);
+}
+
 /* 5. 회원 탈퇴 */
 export const deleteUser = (data) => {
     return api.delete('/user/users/me', {
