@@ -2,9 +2,17 @@
 
 import CoffeechatItem from "@/features/mypage/components/CoffeechatItem.vue";
 
-const {coffeechats} = defineProps({
+const props = defineProps({
   coffeechats: {
     type: Array,
+    required: true
+  },
+  isMentor: {
+    type: Boolean,
+    required: true
+  },
+  pagination: {
+    type: Object,
     required: true
   }
 })
@@ -13,9 +21,10 @@ const {coffeechats} = defineProps({
 <template>
   <div>
     <CoffeechatItem
-        v-for="coffeechat in coffeechats"
+        v-for="coffeechat in props.coffeechats"
         :key="coffeechat.coffeechatId"
         :coffeechat="coffeechat"
+        :isMentor="props.isMentor"
     />
   </div>
 </template>

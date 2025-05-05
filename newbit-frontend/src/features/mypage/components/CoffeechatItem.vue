@@ -1,11 +1,16 @@
 <script setup>
-const {coffeechat} = defineProps({
+const props = defineProps({
   coffeechat: {
     type: Object,
+    required: true
+  },
+  isMentor: {
+    type: Boolean,
     required: true
   }
 });
 
+const coffeechat = props.coffeechat;
 const statusMap = {
   IN_PROGRESS: '승인대기',
   PAYMENT_WAITING: '결제대기',
@@ -20,7 +25,7 @@ function getStatusText(status) {
 </script>
 
 <template>
-  <router-link :to="`/mypage/history/coffeechats/${coffeechat.coffeechatId}`" class="hover:underline">
+  <router-link :to="`/mypage/${isMentor ? 'mentor' : 'history'}/coffeechats/${coffeechat.coffeechatId}`" class="hover:underline">
     <div class="flex items-center w-full px-4 py-5 border-b border-gray-200">
       <!-- 프로필 이미지 -->
       <img

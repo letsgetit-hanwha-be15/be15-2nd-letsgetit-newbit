@@ -119,7 +119,9 @@ const coffeechats = computed(() => {
     </div>
     <CoffeechatList
         :coffeechats="coffeechats"
-        :pagination="originalCoffeechats.data.pagination"/>
+        :pagination="originalCoffeechats.data.pagination"
+        :isMentor=true
+    />
     <PagingBar
         :currentPage="originalCoffeechats.data.pagination.currentPage"
         :totalPage="originalCoffeechats.data.pagination.totalPage"
