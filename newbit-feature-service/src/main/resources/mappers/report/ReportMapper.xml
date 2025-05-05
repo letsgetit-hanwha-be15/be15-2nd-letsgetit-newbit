@@ -12,13 +12,13 @@
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
         <association property="reportType" javaType="com.newbit.newbitfeatureservice.report.query.dto.response.ReportTypeDTO">
-            <id property="id" column="report_type_id"/>
-            <result property="name" column="report_type_name"/>
+            <id property="reportTypeId" column="report_type_id"/>
+            <result property="reportTypeName" column="report_type_name"/>
         </association>
     </resultMap>
     
     <sql id="selectClause">
-        SELECT r.id as report_id, 
+        SELECT r.report_id, 
                r.user_id, 
                r.comment_id, 
                r.post_id, 
@@ -26,10 +26,10 @@
                r.status, 
                r.created_at, 
                r.updated_at, 
-               rt.id as report_type_id, 
-               rt.name as report_type_name
-        FROM tb_report r
-        JOIN tb_report_type rt ON r.report_type_id = rt.id
+               rt.report_type_id, 
+               rt.report_type_name
+        FROM report r
+        JOIN report_type rt ON r.report_type_id = rt.report_type_id
     </sql>
     
     <sql id="whereClause">
@@ -47,18 +47,18 @@
                 AND r.user_id = #{userId}
             </if>
             <if test="reportTypeId != null">
-                AND rt.id = #{reportTypeId}
+                AND rt.report_type_id = #{reportTypeId}
             </if>
             <if test="postUserId != null">
-                AND r.post_id IN (SELECT id FROM tb_post WHERE user_id = #{postUserId})
+                AND r.post_id IN (SELECT post_id FROM post WHERE user_id = #{postUserId})
             </if>
             <if test="commentUserId != null">
-                AND r.comment_id IN (SELECT id FROM tb_comment WHERE user_id = #{commentUserId})
+                AND r.comment_id IN (SELECT comment_id FROM comment WHERE user_id = #{commentUserId})
             </if>
             <if test="contentUserId != null">
                 AND (
-                    r.post_id IN (SELECT id FROM tb_post WHERE user_id = #{contentUserId})
-                    OR r.comment_id IN (SELECT id FROM tb_comment WHERE user_id = #{contentUserId})
+                    r.post_id IN (SELECT post_id FROM post WHERE user_id = #{contentUserId})
+                    OR r.comment_id IN (SELECT comment_id FROM comment WHERE user_id = #{contentUserId})
                 )
             </if>
         </where>
@@ -73,8 +73,8 @@
     
     <select id="countReports" resultType="int">
         SELECT COUNT(*)
-        FROM tb_report r
-        JOIN tb_report_type rt ON r.report_type_id = rt.id
+        FROM report r
+        JOIN report_type rt ON r.report_type_id = rt.report_type_id
         <include refid="whereClause" />
     </select>
     

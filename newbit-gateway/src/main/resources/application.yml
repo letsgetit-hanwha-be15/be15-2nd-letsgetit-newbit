@@ -16,6 +16,24 @@ spring:
           uri: lb://newbit-feature-service
           predicates:
             - Path=/api/v1/feature/**
+            - Method=GET,POST,PUT,DELETE,OPTIONS
+          filters:
+            - RewritePath=/api/v1/feature/(?<segment>.*), /${segment}
+        # SockJS websocket 연결 (info, xhr 요청)
+        - id: feature-service-sockjs
+          uri: lb://newbit-feature-service
+          predicates:
+            - Path=/api/v1/feature/ws/**
+            - Method=GET,POST,OPTIONS
+          filters:
+            - RewritePath=/api/v1/feature/(?<segment>.*), /${segment}
+        # 실제 WebSocket 업그레이드 요청
+        - id: feature-service-ws
+          uri: lb:ws://newbit-feature-service
+          predicates:
+            - Path=/api/v1/feature/ws/**
+            - Method=GET
+            - Header=Upgrade, websocket
           filters:
             - RewritePath=/api/v1/feature/(?<segment>.*), /${segment}
       globalcors:

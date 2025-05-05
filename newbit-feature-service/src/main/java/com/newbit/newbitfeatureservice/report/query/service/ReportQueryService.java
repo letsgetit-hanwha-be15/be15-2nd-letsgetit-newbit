@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,7 +93,7 @@ public class ReportQueryService {
         return reportQueryRepository.findReportsByContentUserId(userId, pageable);
     }
 
-    public List<ReportedPostResponse> findReportedPosts() {
+    public Page<ReportedPostResponse> findReportedPosts(Pageable pageable, String sortType) {
         List<ReportDTO> allReports = reportQueryRepository.findAllWithoutPaging();
         List<ReportDTO> postReports = allReports.stream()
                                                 .filter(report -> report.getPostId() != null)
@@ -100,21 +102,23 @@ public class ReportQueryService {
         Map<Long, List<ReportDTO>> reportsByPostId = postReports.stream()
             .collect(Collectors.groupingBy(ReportDTO::getPostId));
 
-        return reportsByPostId.entrySet().stream()
+        List<ReportedPostResponse> result = reportsByPostId.entrySet().stream()
             .map(entry -> {
                 Long postId = entry.getKey();
                 List<ReportDTO> reports = entry.getValue();
-                
-                String lastReportContent = reports.stream()
+
+                ReportDTO latestReport = reports.stream()
                     .max(Comparator.comparing(ReportDTO::getCreatedAt))
-                    .map(ReportDTO::getContent)
-                    .orElse("N/A");
+                    .orElse(null);
+
+                String lastReportContent = latestReport != null ? latestReport.getContent() : "N/A";
+                String lastReportDate = latestReport != null && latestReport.getCreatedAt() != null ? latestReport.getCreatedAt().toString() : null;
+                String lastReportStatus = latestReport != null && latestReport.getStatus() != null ? latestReport.getStatus().name() : null;
 
                 String postTitle;
                 try {
                     postTitle = postService.getPostTitle(postId);
                 } catch (BusinessException e) {
-                    logger.warn("Could not find post title for postId {}: {}", postId, e.getMessage());
                     postTitle = "Post Not Found";
                 }
 
@@ -123,13 +127,28 @@ public class ReportQueryService {
                     .postTitle(postTitle)
                     .reportCount((long) reports.size())
                     .lastReportContent(lastReportContent)
+                    .lastReportDate(lastReportDate)
+                    .lastReportStatus(lastReportStatus)
                     .build();
             })
-            .sorted(Comparator.comparing(ReportedPostResponse::getReportCount).reversed())
             .collect(Collectors.toList());
+
+        // 정렬
+        if ("count".equals(sortType)) {
+            result.sort(Comparator.comparing(ReportedPostResponse::getReportCount).reversed());
+        } else {
+            result.sort(Comparator.comparing(ReportedPostResponse::getLastReportDate, Comparator.nullsLast(Comparator.reverseOrder())));
+        }
+
+        // 페이징
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), result.size());
+        List<ReportedPostResponse> pageContent = result.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, result.size());
     }
 
-    public List<ReportedCommentResponse> findReportedComments() {
+    public Page<ReportedCommentResponse> findReportedComments(Pageable pageable, String sortType) {
         List<ReportDTO> allReports = reportQueryRepository.findAllWithoutPaging();
         List<ReportDTO> commentReports = allReports.stream()
                                                    .filter(report -> report.getCommentId() != null)
@@ -138,24 +157,25 @@ public class ReportQueryService {
         Map<Long, List<ReportDTO>> reportsByCommentId = commentReports.stream()
             .collect(Collectors.groupingBy(ReportDTO::getCommentId));
 
-        return reportsByCommentId.entrySet().stream()
+        List<ReportedCommentResponse> result = reportsByCommentId.entrySet().stream()
             .map(entry -> {
                 Long commentId = entry.getKey();
                 List<ReportDTO> reports = entry.getValue();
 
-                String lastReportContent = reports.stream()
+                ReportDTO latestReport = reports.stream()
                     .max(Comparator.comparing(ReportDTO::getCreatedAt))
-                    .map(ReportDTO::getContent)
-                    .orElse("N/A");
+                    .orElse(null);
+
+                String lastReportContent = latestReport != null ? latestReport.getContent() : "N/A";
+                String lastReportDate = latestReport != null && latestReport.getCreatedAt() != null ? latestReport.getCreatedAt().toString() : null;
+                String lastReportStatus = latestReport != null && latestReport.getStatus() != null ? latestReport.getStatus().name() : null;
 
                 String commentContent;
                 try {
                     commentContent = commentService.getCommentContent(commentId);
                 } catch (BusinessException e) {
-                    logger.warn("Could not find comment content for commentId {}: {}", commentId, e.getMessage());
                     commentContent = "Comment Not Found";
                 } catch (Exception e) {
-                    logger.error("Error fetching comment content for commentId {}: {}", commentId, e.getMessage(), e);
                     commentContent = "Error Fetching Comment";
                 }
 
@@ -164,9 +184,24 @@ public class ReportQueryService {
                     .commentContent(commentContent)
                     .reportCount((long) reports.size())
                     .lastReportContent(lastReportContent)
+                    .lastReportDate(lastReportDate)
+                    .lastReportStatus(lastReportStatus)
                     .build();
             })
-            .sorted(Comparator.comparing(ReportedCommentResponse::getReportCount).reversed())
             .collect(Collectors.toList());
+
+        // 정렬
+        if ("count".equals(sortType)) {
+            result.sort(Comparator.comparing(ReportedCommentResponse::getReportCount).reversed());
+        } else {
+            result.sort(Comparator.comparing(ReportedCommentResponse::getLastReportDate, Comparator.nullsLast(Comparator.reverseOrder())));
+        }
+
+        // 페이징
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), result.size());
+        List<ReportedCommentResponse> pageContent = result.subList(start, end);
+
+        return new PageImpl<>(pageContent, pageable, result.size());
     }
 } 

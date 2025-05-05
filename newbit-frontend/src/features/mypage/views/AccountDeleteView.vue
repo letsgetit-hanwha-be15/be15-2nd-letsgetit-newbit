@@ -1,18 +1,48 @@
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { deleteUser } from '@/api/user.js' // deleteUser API 함수 사용
 
-const password = ref('');
-const showModal = ref(false);
-
-const submitWithdrawRequest = () => {
-  // 실제 탈퇴 요청 처리
-  alert(`탈퇴 요청 진행: 입력한 비밀번호는 "${password.value}"`);
-  showModal.value = false;
-};
+const password = ref('')
+const showModal = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
+const router = useRouter()
 
 const handleWithdraw = () => {
-  showModal.value = true;
-};
+  errorMessage.value = ''
+  successMessage.value = ''
+  showModal.value = true
+}
+
+const submitWithdrawRequest = async () => {
+  try {
+    const response = await deleteUser({ password: password.value })
+
+    if (response.data?.success) {
+      successMessage.value = '회원 탈퇴가 완료되었습니다.'
+      errorMessage.value = ''
+      showModal.value = false
+
+      // 로그아웃 처리 (토큰 삭제)
+      localStorage.removeItem('accessToken')
+
+      // 메인 페이지로 이동
+      await router.push('/')
+    } else {
+      errorMessage.value = response.data?.message || '탈퇴에 실패했습니다.'
+      showModal.value = false
+    }
+  } catch (error) {
+
+    if (error.response?.data?.message) {
+      errorMessage.value = error.response.data.message
+    } else {
+      errorMessage.value = '요청 중 오류가 발생했습니다.'
+    }
+    showModal.value = false
+  }
+}
 </script>
 
 <template>
@@ -39,11 +69,21 @@ const handleWithdraw = () => {
           >
             회원 탈퇴
           </button>
+
+          <!-- 에러 메시지 -->
+          <p v-if="errorMessage" class="text-red-500 text-sm w-3/5 text-left mt-2">
+            {{ errorMessage }}
+          </p>
+
+          <!-- 성공 메시지 -->
+          <p v-if="successMessage" class="text-blue-500 text-sm w-3/5 text-left mt-2">
+            {{ successMessage }}
+          </p>
         </form>
       </div>
     </div>
 
-    <!-- 임시 모달 -->
+    <!-- 임시 확인 모달 -->
     <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-6 w-full max-w-md text-center shadow-lg">
         <p class="text-lg font-medium mb-6">정말로 회원을 탈퇴하시겠습니까?</p>

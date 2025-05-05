@@ -4,5 +4,6 @@ public enum MessageType {
     CHAT,
     SYSTEM,
     ENTER,
-    LEAVE
+    LEAVE,
+    READ_RECEIPT
 } 
