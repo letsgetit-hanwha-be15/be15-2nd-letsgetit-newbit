@@ -1,11 +1,25 @@
 <script setup>
-import SignUpForm from '@/features/user/components/SignUpForm.vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { SignUpUser } from "@/api/user.js"
+import { SignUpUser, FetchJobList, FetchTechstackList } from '@/api/user.js'
+import SignUpForm from '@/features/user/components/SignUpForm.vue'
 
 const router = useRouter()
+const jobs = ref([])
+const techstacks = ref([])
 
-// 회원가입 후 로그인 화면으로 이동
+onMounted(async () => {
+  try {
+    const jobRes = await FetchJobList()
+    jobs.value = jobRes.data.data // ✅ .data 안의 data만
+
+    const techstackRes = await FetchTechstackList()
+    techstacks.value = techstackRes.data.data // ✅ .data 안의 data만
+  } catch (error) {
+    console.error('목록 조회 실패:', error)
+  }
+})
+
 const handleRegister = async (formData) => {
   try {
     await SignUpUser(formData)
@@ -21,7 +35,7 @@ const handleRegister = async (formData) => {
         alert('이미 존재하는 닉네임입니다.')
         break
       case '10009':
-        alert('비밀번호 형식이 올바르지 않습니다. 최소 8자, 영문자, 숫자, 특수문자를 포함해야 합니다.')
+        alert('비밀번호 형식이 올바르지 않습니다.')
         break
       case '10010':
         alert('현재 비밀번호가 올바르지 않습니다.')
@@ -37,11 +51,11 @@ const handleRegister = async (formData) => {
 <template>
   <div class="flex flex-col min-h-screen bg-white">
     <main class="flex-1 flex items-center justify-center">
-      <SignUpForm @submit="handleRegister" />
+      <SignUpForm
+          :jobs="jobs"
+          :techstacks="techstacks"
+          @submit="handleRegister"
+      />
     </main>
   </div>
 </template>
-
-<style scoped>
-/* 필요 시 추가 */
-</style>
