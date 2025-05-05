@@ -8,7 +8,7 @@ const route = useRoute();
 const toast = useToast()
 const coffeechatId = route.params.id;
 
-const { coffeechat, requestTimes, isMentor } = defineProps({
+const { coffeechat, requestTimes, isMentor, diamondCount } = defineProps({
   coffeechat: {
     type: Object,
     required: true
@@ -20,6 +20,10 @@ const { coffeechat, requestTimes, isMentor } = defineProps({
   isMentor: {
     type: Boolean,
     default: false
+  },
+  diamondCount: {
+    type: Number,
+    default: 0
   }
 })
 
@@ -73,14 +77,23 @@ const selectedRequestTime = computed(() =>
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div class="space-y-12">
+    <!-- 커피챗 진행 시간   -->
     <div>
       <div class="text-heading3" >커피챗 진행 시간</div>
-      <div class="ml-2 mt-1">{{ coffeechat.purchaseQuantity * 30 }} 분</div>
+      <div class="ml-2 mt-2 text-16px-regular">{{ coffeechat.purchaseQuantity * 30 }} 분</div>
     </div>
-    <div>
+    <!-- 커피챗 확정 시간   -->
+    <template v-if="coffeechat.progressStatus !== 'IN_PROGRESS'">
+      <div>
+        <div class="text-heading3" >커피챗 확정 시간</div>
+        <div class="ml-2 mt-2 text-16px-regular">{{ formatFullTime(coffeechat.confirmedSchedule, coffeechat.endedAt) }}</div>
+      </div>
+    </template>
+    <!-- 커피챗 요청 시간   -->
+    <template v-if="coffeechat.progressStatus === 'IN_PROGRESS'">
       <div class="text-heading3">커피챗 요청 시간</div>
-      <ul class="ml-2 mt-1">
+      <ul class="ml-2 mt-2 text-16px-regular">
         <li
             v-for="requestTime in requestTimes"
             :key="requestTime.requestTimeId"
@@ -98,42 +111,54 @@ const selectedRequestTime = computed(() =>
         </li>
 
       </ul>
-    </div>
+    </template>
+    <!-- 요청 메시지   -->
     <div>
       <div class="text-heading3">요청 메시지</div>
-      <div class="ml-2 mt-1 min-h-20">{{ coffeechat.requestMessage }}</div>
+      <div class="ml-2 mt-2 min-h-20 rounded border p-1">{{ coffeechat.requestMessage }}</div>
     </div>
+    <!-- 필요 다이아   -->
+    <div v-if="!isMentor">
+      <div class="text-heading3" >필요 다이아</div>
+      <div class="ml-2 mt-2 text-16px-regular">{{ diamondCount }} 개</div>
+    </div>
+    <!-- 버튼들   -->
     <div class="flex flex-wrap gap-2 justify-end pb-10">
-      <button v-if="isMentor"
-              @click="approveRequest"
-              class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
-        승인
-      </button>
-      <button v-if="isMentor"
-              @click="cancelRequest"
-              class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
-        취소
-      </button>
-    </div>
-    <!-- 커피챗 승인 모달 -->
-    <div v-if="isConfirmModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-[var(--newbitbackground)] rounded-lg p-6 w-[400px] shadow-lg">
-        <h2 class="text-heading3 mb-4">커피챗 승인</h2>
-        <p class="mb-6 text-13px-regular">
-          {{ formatFullTime(selectedRequestTime.startTime, selectedRequestTime.endTime) }} 승인하시겠습니까?
-        </p>
-        <div class="flex justify-end gap-2">
-          <button @click="closeApproveModal"
-                  class="bg-[var(--newbitred)] text-[var(--newbitlight)] px-4 py-1 rounded-md font-semibold">
-            아니요
-          </button>
-          <button @click="confirmCoffeechat"
-                  class="bg-[var(--newbitnormal)] text-[var(--newbitlight)] px-4 py-1 rounded-md font-semibold">
-            네
-          </button>
+      <!-- 멘토가 커피챗 승인/취소 버튼 및 모달 -->
+      <template v-if="coffeechat.progressStatus === 'IN_PROGRESS'">
+        <button v-if="isMentor"
+                @click="approveRequest"
+                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
+          승인
+        </button>
+        <button v-if="isMentor"
+                @click="cancelRequest"
+                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
+          취소
+        </button>
+        <!-- 커피챗 승인 모달 -->
+        <div v-if="isConfirmModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div class="bg-[var(--newbitbackground)] rounded-lg p-6 w-[400px] shadow-lg">
+            <h2 class="text-heading3 mb-4">커피챗 승인</h2>
+            <p class="mb-6 text-13px-regular">
+              {{ formatFullTime(selectedRequestTime.startTime, selectedRequestTime.endTime) }} 승인하시겠습니까?
+            </p>
+            <div class="flex justify-end gap-2">
+              <button @click="closeApproveModal"
+                      class="bg-[var(--newbitred)] text-[var(--newbitlight)] px-4 py-1 rounded-md font-semibold">
+                아니요
+              </button>
+              <button @click="confirmCoffeechat"
+                      class="bg-[var(--newbitnormal)] text-[var(--newbitlight)] px-4 py-1 rounded-md font-semibold">
+                네
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      </template>
+
     </div>
+
   </div>
 </template>
 

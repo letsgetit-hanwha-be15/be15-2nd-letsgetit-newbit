@@ -92,12 +92,12 @@ export const mypageRoutes = [
             },
             {
                 path: 'history/coffeechats/:id',
-                name: 'CoffeechatDetail',
+                name: 'CoffeechatDetailMentee',
                 component: CoffeechatDetailMenteeView,
             },
             {
                 path: 'mentor/coffeechats/:id',
-                name: 'CoffeechatDetail',
+                name: 'CoffeechatDetailMentor',
                 component: CoffeechatDetailMentorView,
             },
             {
