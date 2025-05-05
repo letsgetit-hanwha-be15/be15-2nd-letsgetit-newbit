@@ -50,7 +50,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, inject, watch, computed } from "vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
+import { fetchChatRoomsByUser } from "@/api/coffeeletter";
 
 const props = defineProps({
   open: Boolean,
@@ -67,7 +67,7 @@ const router = useRouter();
 const loading = ref(false);
 
 // TODO: 사용자 정보 auth 적용 후 수정
-const currentUserId = ref(1);
+const currentUserId = ref(3);
 const isMentor = ref(true);
 
 watch(activeDropdown, (newValue) => {
@@ -85,85 +85,8 @@ const displayedRooms = computed(() => {
 const fetchChatRooms = async () => {
   loading.value = true;
   try {
-    // TODO: 실제 API 구현 시 아래 코드 사용
-    // const response = await axios.get(`/coffeeletter/rooms/user/${currentUserId.value}`);
-    // chatRooms.value = response.data;
-
-    // 테스트용 더미 데이터
-    chatRooms.value = [
-      {
-        id: "1",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 2,
-        menteeName: "멘티B",
-        lastMessageContent: "안녕하세요! 커피챗 질문이 있어요.",
-        lastMessageTime: "2025-05-01T14:30:00",
-        status: "ACTIVE",
-        unreadCountMentor: 0,
-        unreadCountMentee: 2,
-      },
-      {
-        id: "2",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 3,
-        menteeName: "멘티C",
-        lastMessageContent: "답변 감사합니다! 정말 도움이 많이 됐어요.",
-        lastMessageTime: "2025-04-30T09:15:00",
-        status: "ACTIVE",
-        unreadCountMentor: 1,
-        unreadCountMentee: 0,
-      },
-      {
-        id: "3",
-        mentorId: 4,
-        mentorName: "멘토D",
-        menteeId: 1,
-        menteeName: "멘티A",
-        lastMessageContent: "다음 주에 일정 조율 가능할까요?",
-        lastMessageTime: "2025-04-29T18:20:00",
-        status: "ACTIVE",
-        unreadCountMentor: 0,
-        unreadCountMentee: 0,
-      },
-      {
-        id: "4",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 5,
-        menteeName: "멘티E",
-        lastMessageContent: "프로젝트 리뷰 부탁드려요!",
-        lastMessageTime: "2025-04-28T10:45:00",
-        status: "ACTIVE",
-        unreadCountMentor: 3,
-        unreadCountMentee: 0,
-      },
-      {
-        id: "5",
-        mentorId: 6,
-        mentorName: "멘토F",
-        menteeId: 1,
-        menteeName: "멘티A",
-        lastMessageContent: "온라인 미팅 링크 보내드렸습니다!",
-        lastMessageTime: "2025-04-27T16:30:00",
-        status: "ACTIVE",
-        unreadCountMentor: 0,
-        unreadCountMentee: 1,
-      },
-      {
-        id: "6",
-        mentorId: 1,
-        mentorName: "멘토A",
-        menteeId: 7,
-        menteeName: "멘티G",
-        lastMessageContent: "포트폴리오 피드백 감사합니다!",
-        lastMessageTime: "2025-04-26T09:45:00",
-        status: "ACTIVE",
-        unreadCountMentor: 0,
-        unreadCountMentee: 0,
-      },
-    ];
+    const response = await fetchChatRoomsByUser(currentUserId.value);
+    chatRooms.value = response.data;
   } catch (error) {
     console.error("채팅방 목록 조회 실패:", error);
     chatRooms.value = [];

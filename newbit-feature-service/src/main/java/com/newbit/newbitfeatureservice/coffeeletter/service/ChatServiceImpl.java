@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import com.newbit.newbitfeatureservice.coffeeletter.domain.chat.CoffeeLetterRoom;
 import com.newbit.newbitfeatureservice.coffeeletter.dto.ChatMessageDTO;
 import com.newbit.newbitfeatureservice.coffeeletter.dto.CoffeeLetterRoomDTO;
+import com.newbit.newbitfeatureservice.coffeeletter.repository.CoffeeLetterRoomRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,28 +23,43 @@ public class ChatServiceImpl implements ChatService {
 
     private final RoomService roomService;
     private final MessageService messageService;
+    private final SimpMessageSendingOperations messagingTemplate;
+    private final CoffeeLetterRoomRepository roomRepository;
     
     public ChatServiceImpl(
             @Qualifier("roomServiceImpl") RoomService roomService,
-            @Qualifier("messageServiceImpl") MessageService messageService) {
+            @Qualifier("messageServiceImpl") MessageService messageService,
+            SimpMessageSendingOperations messagingTemplate,
+            CoffeeLetterRoomRepository roomRepository) {
         this.roomService = roomService;
         this.messageService = messageService;
+        this.messagingTemplate = messagingTemplate;
+        this.roomRepository = roomRepository;
     }
 
     // RoomService 메서드 위임
     @Override
     public CoffeeLetterRoomDTO createRoom(CoffeeLetterRoomDTO roomDto) {
-        return roomService.createRoom(roomDto);
+        CoffeeLetterRoomDTO createdRoom = roomService.createRoom(roomDto);
+        // 채팅방 생성 후 웹소켓으로 알림
+        notifyRoomListUpdate(createdRoom.getId());
+        return createdRoom;
     }
 
     @Override
     public CoffeeLetterRoomDTO endRoom(String roomId) {
-        return roomService.endRoom(roomId);
+        CoffeeLetterRoomDTO endedRoom = roomService.endRoom(roomId);
+        // 채팅방 종료 후 웹소켓으로 알림
+        notifyRoomListUpdate(roomId);
+        return endedRoom;
     }
 
     @Override
     public CoffeeLetterRoomDTO cancelRoom(String roomId) {
-        return roomService.cancelRoom(roomId);
+        CoffeeLetterRoomDTO canceledRoom = roomService.cancelRoom(roomId);
+        // 채팅방 취소 후 웹소켓으로 알림
+        notifyRoomListUpdate(roomId);
+        return canceledRoom;
     }
 
     @Override
@@ -78,12 +95,18 @@ public class ChatServiceImpl implements ChatService {
     // MessageService 메서드 위임
     @Override
     public ChatMessageDTO sendMessage(ChatMessageDTO messageDto) {
-        return messageService.sendMessage(messageDto);
+        ChatMessageDTO sentMessage = messageService.sendMessage(messageDto);
+        // 메시지 전송 후 채팅방 목록 업데이트 웹소켓으로 알림
+        notifyRoomListUpdate(messageDto.getRoomId());
+        return sentMessage;
     }
 
     @Override
     public ChatMessageDTO sendSystemMessage(String roomId, String content) {
-        return messageService.sendSystemMessage(roomId, content);
+        ChatMessageDTO systemMessage = messageService.sendSystemMessage(roomId, content);
+        // 시스템 메시지 전송 후 채팅방 목록 업데이트 웹소켓으로 알림
+        notifyRoomListUpdate(roomId);
+        return systemMessage;
     }
 
     @Override
@@ -114,5 +137,17 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public int getUnreadMessageCount(String roomId, Long userId) {
         return messageService.getUnreadMessageCount(roomId, userId);
+    }
+
+    // 채팅방 목록 업데이트 알림 메서드
+    private void notifyRoomListUpdate(String roomId) {
+        try {
+            CoffeeLetterRoom room = roomRepository.findById(roomId).orElse(null);
+            if (room != null) {
+                messagingTemplate.convertAndSend("/topic/rooms", room);
+            }
+        } catch (Exception e) {
+            log.error("채팅방 목록 업데이트 알림 실패: {}", e.getMessage());
+        }
     }
 }
