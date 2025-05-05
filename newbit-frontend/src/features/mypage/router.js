@@ -6,7 +6,7 @@ import AccountEditView from './views/AccountEditView.vue'
 import LikedContentsView from './views/LikedContentsView.vue'
 import PointHistoryView from './views/PointHistoryView.vue'
 import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.vue";
-import CoffeechatListView from "@/features/mypage/views/CoffeechatListView.vue";
+import CoffeechatListMenteeView from "@/features/mypage/views/CoffeechatListMenteeView.vue";
 import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
 import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
 import SaleHistoryView from "@/features/mypage/views/SaleHistoryView.vue";
@@ -80,7 +80,12 @@ export const mypageRoutes = [
             {
                 path: 'history/coffeechats',
                 name: 'CoffeechatList',
-                component: CoffeechatListView,
+                component: CoffeechatListMenteeView,
+            },
+            {
+                path: 'mentor/coffeechats',
+                name: 'CoffeechatList',
+                component: CoffeechatListMentorView,
             },
             {
                 path: 'history/coffeechats/:id',
