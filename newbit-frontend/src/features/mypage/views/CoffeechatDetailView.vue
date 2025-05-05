@@ -1,9 +1,15 @@
 <script setup>
 
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import profileImage from '@/assets/image/default-profile.png'
 import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vue";
+import {useRoute} from "vue-router";
+import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
 
+const route = useRoute()
+const coffeechatId = ref(Number(route.params.id))
+
+// 프론트용 페이지
 // 유저 정보 (API 연동 전용 Mock)
 const user = ref({
   id: 1,
@@ -17,11 +23,184 @@ const user = ref({
   introduction: '안녕하세요! 반갑습니다! 잘 부탁드립니다. 반갑습니다. 잘 부탁드립니다. 반갑스빈다.',
   isActive: true
 })
+
+const originalCoffeechats = ref([
+  {
+    "success": true,
+    "data": {
+      "coffeechat": {
+        "coffeechatId": 1,
+        "progressStatus": "IN_PROGRESS",
+        "requestMessage": "안녕하세요웅웅",
+        "purchaseQuantity": 2,
+        "confirmedSchedule": null,
+        "endedAt": null,
+        "updatedAt": null,
+        "reason": null,
+        "mentorId": 3,
+        "menteeId": 2
+      }
+    },
+    "errorCode": null,
+    "message": null,
+    "timestamp": "2025-05-04T22:55:16.9462967"
+  }, {
+    "success": true,
+    "data": {
+      "coffeechat": {
+        "coffeechatId": 2,
+        "progressStatus": "PAYMENT_WAITING",
+        "requestMessage": "안녕하세요웅웅",
+        "purchaseQuantity": 2,
+        "confirmedSchedule": null,
+        "endedAt": null,
+        "updatedAt": null,
+        "reason": null,
+        "mentorId": 3,
+        "menteeId": 2
+      }
+    },
+    "errorCode": null,
+    "message": null,
+    "timestamp": "2025-05-04T22:55:16.9462967"
+  },
+  {
+    "success": true,
+    "data": {
+      "coffeechat": {
+        "coffeechatId": 3,
+        "progressStatus": "COFFEECHAT_WAITING",
+        "requestMessage": "안녕하세요웅웅",
+        "purchaseQuantity": 2,
+        "confirmedSchedule": null,
+        "endedAt": null,
+        "updatedAt": null,
+        "reason": null,
+        "mentorId": 3,
+        "menteeId": 2
+      }
+    },
+    "errorCode": null,
+    "message": null,
+    "timestamp": "2025-05-04T22:55:16.9462967"
+  },
+  {
+    "success": true,
+    "data": {
+      "coffeechat": {
+        "coffeechatId": 4,
+        "progressStatus": "CANCEL",
+        "requestMessage": "안녕하세요웅웅",
+        "purchaseQuantity": 2,
+        "confirmedSchedule": null,
+        "endedAt": null,
+        "updatedAt": "2025-05-20T22:55:16",
+        "reason": "단순변심",
+        "mentorId": 3,
+        "menteeId": 2
+      }
+    },
+    "errorCode": null,
+    "message": null,
+    "timestamp": "2025-05-04T22:55:16.9462967"
+  },
+  {
+    "success": true,
+    "data": {
+      "coffeechat": {
+        "coffeechatId": 5,
+        "progressStatus": "IN-PROGRESS",
+        "requestMessage": "안녕하세요웅웅",
+        "purchaseQuantity": 2,
+        "confirmedSchedule": null,
+        "endedAt": null,
+        "updatedAt": null,
+        "reason": null,
+        "mentorId": 3,
+        "menteeId": 2
+      }
+    },
+    "errorCode": null,
+    "message": null,
+    "timestamp": "2025-05-04T22:55:16.9462967"
+  },
+]);
+
+const requestTimes = {
+  "requestTimes": [
+    {
+      "requestTimeId": 1,
+      "eventDate": "2025-05-10T",
+      "startTime": "2025-05-10T14:00:00",
+      "endTime": "2025-05-10T16:00:00",
+      "coffeechatId": 1
+    }, {
+      "requestTimeId": 2,
+      "eventDate": "2025-05-11T",
+      "startTime": "2025-05-11T14:00:00",
+      "endTime": "2025-05-11T16:00:00",
+      "coffeechatId": 1
+    }, {
+      "requestTimeId": 3,
+      "eventDate": "2025-05-12T",
+      "startTime": "2025-05-12T14:00:00",
+      "endTime": "2025-05-12T16:00:00",
+      "coffeechatId": 1
+    }]
+}
+
+const coffeechat = computed(() => {
+  return originalCoffeechats.value
+      .map(item => item.data.coffeechat)
+      .find(c => c.coffeechatId === coffeechatId.value);
+});
+
+// 프론트용 끝
+
+function cancelRegister() {
+  // 멘티 커피챗 취소 확인 모달 띄우기
+}
+
+const statusMap = {
+  IN_PROGRESS: '승인대기',
+  PAYMENT_WAITING: '결제대기',
+  COFFEECHAT_WAITING: '커피챗대기',
+  COMPLETE: '이용완료',
+  CANCEL: '취소/환불',
+}
+
+function getStatusText(status) {
+  console.log(status)
+  return statusMap[status] || '알 수 없음'
+}
+
 </script>
 
 <template>
- 커피챗 상세 조회 페이지
-  <div class="flex justify-end w-screen">
+  <!--  커피챗 상세 조회 페이지-->
+  <div class="space-y-8 w-screen">
+    <div class="border-b pb-3 space-x-4 ">
+      <span class="text-heading2">진행 상태</span>
+      <span class="text-16px-regular">{{ getStatusText(coffeechat.progressStatus) }}</span>
+    </div>
+    <div class="border rounded p-4">
+      <!-- 1. 상태가 in-progress일 때 보여주는 컴포넌트 -->
+      <CoffeechatDetail
+          v-if="coffeechat.progressStatus === 'IN_PROGRESS'"
+          :coffeechat="coffeechat"
+          :requestTimes="requestTimes.requestTimes"
+      />
+      <!-- 버튼들 -->
+      <div class="flex flex-wrap gap-2 justify-end pb-10">
+        <button type="button"
+                @click="cancelRegister"
+                class="ml-2 rounded-md px-3 py-1 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
+          취소
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="flex justify-end">
     <div class="w-fit">
       <MentorProfileCard
           :isMyProfile=false
