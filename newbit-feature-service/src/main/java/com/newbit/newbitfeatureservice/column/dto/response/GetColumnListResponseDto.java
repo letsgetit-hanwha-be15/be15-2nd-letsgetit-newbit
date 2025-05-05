@@ -31,13 +31,14 @@ public class GetColumnListResponseDto {
 
     public GetColumnListResponseDto(Long columnId, String title, String thumbnailUrl,
                                     Integer price, Integer likeCount,
-                                    Long mentorId) {
+                                    Long mentorId, String mentorNickname) {
         this.columnId = columnId;
         this.title = title;
         this.thumbnailUrl = thumbnailUrl;
         this.price = price;
         this.likeCount = likeCount;
         this.mentorId = mentorId;
+        this.mentorNickname = mentorNickname;
     }
     public void setMentorNickname(String nickname) {
         this.mentorNickname = nickname;
