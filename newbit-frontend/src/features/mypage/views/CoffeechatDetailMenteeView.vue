@@ -81,8 +81,8 @@ const originalCoffeechats = ref([
         "progressStatus": "COFFEECHAT_WAITING",
         "requestMessage": "안녕하세요웅웅",
         "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
+        "confirmedSchedule": "2025-05-14T22:55:00",
+        "endedAt": "2025-05-14T23:55:00",
         "updatedAt": null,
         "reason": null,
         "mentorId": 3,
@@ -101,8 +101,8 @@ const originalCoffeechats = ref([
         "progressStatus": "CANCEL",
         "requestMessage": "안녕하세요웅웅",
         "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
+        "confirmedSchedule": "2025-05-14T22:55:00",
+        "endedAt": "2025-05-14T23:55:00",
         "updatedAt": "2025-05-20T22:55:16",
         "reason": "단순변심",
         "mentorId": 3,
@@ -118,11 +118,11 @@ const originalCoffeechats = ref([
     "data": {
       "coffeechat": {
         "coffeechatId": 5,
-        "progressStatus": "IN-PROGRESS",
+        "progressStatus": "COMPLETE",
         "requestMessage": "안녕하세요웅웅",
         "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
+        "confirmedSchedule": "2025-05-14T22:55:00",
+        "endedAt": "2025-05-14T23:55:00",
         "updatedAt": null,
         "reason": null,
         "mentorId": 3,
@@ -203,6 +203,17 @@ function paymentCoffeechat() {
   }
 }
 
+function goCoffeeLetter() {
+  // todo : 커피챗 아이디로 커피레터 아이디 조회
+  const coffeeLetterId = 1
+  router.push(`/coffeeletter/${coffeeLetterId}`)
+}
+
+function confirmPurchase() {
+  // todo : 멘티가 구매를 확정하는 api 호출
+  toast.success('구매 확정되었습니다.');
+}
+
 </script>
 
 <template>
@@ -220,6 +231,17 @@ function paymentCoffeechat() {
       />
       <!-- 버튼들 -->
       <div class="flex flex-wrap gap-2 justify-end pb-10">
+        <button v-if="coffeechat.progressStatus === 'COFFEECHAT_WAITING'"
+                @click="goCoffeeLetter"
+                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
+          커피레터 입장
+        </button>
+        <button v-if="coffeechat.progressStatus === 'COMPLETE'"
+                :disabled
+                @click="confirmPurchase"
+                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
+          구매 확정
+        </button>
         <button v-if="coffeechat.progressStatus === 'PAYMENT_WAITING'"
                 @click="openPaymentModal"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">

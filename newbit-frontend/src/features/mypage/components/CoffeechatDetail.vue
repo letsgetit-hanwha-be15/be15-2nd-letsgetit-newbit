@@ -74,6 +74,12 @@ const formatFullTime = (startTimeStr, endTimeStr) => {
 const selectedRequestTime = computed(() =>
     requestTimes.find(rt => rt.requestTimeId === selectedRequestTimeId.value)
 )
+
+function goCoffeeLetter() {
+  // todo : 커피챗 아이디로 커피레터 아이디 조회
+  const coffeeLetterId = 1
+  router.push(`/coffeeletter/${coffeeLetterId}`)
+}
 </script>
 
 <template>
@@ -156,7 +162,14 @@ const selectedRequestTime = computed(() =>
           </div>
         </div>
       </template>
-
+      <!-- 멘토가 커피레터 입장     -->
+      <template v-if="coffeechat.progressStatus === 'COFFEECHAT_WAITING'">
+        <button v-if="isMentor"
+                @click="goCoffeeLetter"
+                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
+          커피레터 입장
+        </button>
+      </template>
     </div>
 
   </div>
