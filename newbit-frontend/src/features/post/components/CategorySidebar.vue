@@ -6,6 +6,7 @@ const router = useRouter()
 const selectedId = ref(null)
 
 const categories = [
+  { id: null, name: '전체' },
   { id: 1, name: '자유 게시판' },
   { id: 2, name: '문서 템플릿' },
   { id: 3, name: '개발 트렌드/뉴스' },
@@ -23,23 +24,30 @@ const categories = [
 
 const handleClick = (id) => {
   selectedId.value = id
-  router.push(`/posts/category/${id}`)
+  if (id === null) {
+    router.push('/posts')
+  } else {
+    router.push(`/posts/category/${id}`)
+  }
 }
 </script>
 
 <template>
   <aside
-      class="w-[200px] h-[650px] p-4 border border-blue-200 rounded-lg text-sm flex-shrink-0 mt-16">
-    <h2 class="text-gray-600 font-semibold text-base">카테고리</h2>
+      class="w-[200px] h-[680px] p-4 border border-blue-200 rounded-lg text-sm flex-shrink-0 mt-6 bg-white shadow">
+
+    <!-- 제목 -->
+    <h2 class="text-heading3 text-gray-600 mb-4">카테고리</h2>
+
     <ul class="space-y-2">
       <li
           v-for="cat in categories"
-          :key="cat.id"
+          :key="cat.id ?? 'all'"
           @click="handleClick(cat.id)"
           :class="[
-          'cursor-pointer px-3 py-2 rounded-md transition',
+          'cursor-pointer px-3 py-2 rounded-md transition text-13px-regular',
           cat.id === selectedId
-            ? 'bg-blue-100 text-blue-600 font-semibold'
+            ? 'bg-blue-100 text-blue-500 font-semibold'
             : 'hover:bg-gray-100 text-gray-800'
         ]"
       >

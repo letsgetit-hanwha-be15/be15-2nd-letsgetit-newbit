@@ -96,7 +96,7 @@ onBeforeUnmount(() => {
           readonly
       />
       <label
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm cursor-pointer flex items-center"
+          class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm cursor-pointer flex items-center"
       >
         찾아보기
         <input type="file" class="hidden" @change="handleFileChange" />
@@ -109,13 +109,13 @@ onBeforeUnmount(() => {
     <div class="flex justify-end gap-2 mt-4">
       <button
           @click="$router.back()"
-          class="bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded"
+          class="bg-[var(--newbitred)] text-white px-4 py-2 rounded"
       >
         취소
       </button>
       <button
           @click="submitEdit"
-          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          class="bg-blue-500 text-white px-4 py-2 rounded"
       >
         수정
       </button>

@@ -26,7 +26,7 @@
                 class="w-full border rounded px-3 py-2 h-24 mb-6 resize-none"></textarea>
 
       <div class="flex justify-end gap-2">
-        <button @click="close" class="bg-red-400 text-white px-4 py-2 rounded">취소</button>
+        <button @click="close" class="bg-[var(--newbitred)] text-white px-4 py-2 rounded">취소</button>
         <button @click="submitReport" class="bg-blue-500 text-white px-4 py-2 rounded">신고</button>
       </div>
     </div>
