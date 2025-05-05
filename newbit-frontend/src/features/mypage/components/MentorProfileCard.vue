@@ -3,7 +3,6 @@ defineProps({
   profileImageUrl: String,
   nickname: String,
   jobName: String,
-  isMyProfile: Boolean,
   temperature: Number,
   price: Number,
   preferredTime: String,

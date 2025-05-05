@@ -5,7 +5,7 @@ import MentorProfileEditView from './views/MentorProfileEditView.vue'
 import AccountEditView from './views/AccountEditView.vue'
 import LikedContentsView from './views/LikedContentsView.vue'
 import PointHistoryView from './views/PointHistoryView.vue'
-import CoffeechatDetailView from "@/features/mypage/views/CoffeechatDetailView.vue";
+import CoffeechatDetailMenteeView from "@/features/mypage/views/CoffeechatDetailMenteeView.vue";
 import CoffeechatListMenteeView from "@/features/mypage/views/CoffeechatListMenteeView.vue";
 import ReviewRegisterView from "@/features/mypage/views/ReviewRegisterView.vue";
 import DiamondHistoryView from "@/features/mypage/views/DiamondHistoryView.vue";
@@ -19,6 +19,7 @@ import MyColumnsView from "@/features/mypage/views/MyColumnsView.vue";
 import MySeriesView from "@/features/mypage/views/MySeriesView.vue";
 import CoffeechatListMentorView from "@/features/mypage/views/CoffeechatListMentorView.vue";
 import CoffeechatCancelView from "@/features/mypage/views/CoffeechatCancelView.vue";
+import CoffeechatDetailMentorView from "@/features/mypage/views/CoffeechatDetailMentorView.vue";
 
 export const mypageRoutes = [
     {
@@ -92,7 +93,12 @@ export const mypageRoutes = [
             {
                 path: 'history/coffeechats/:id',
                 name: 'CoffeechatDetail',
-                component: CoffeechatDetailView,
+                component: CoffeechatDetailMenteeView,
+            },
+            {
+                path: 'mentor/coffeechats/:id',
+                name: 'CoffeechatDetail',
+                component: CoffeechatDetailMentorView,
             },
             {
                 path: 'history/coffeechats/:id/review',

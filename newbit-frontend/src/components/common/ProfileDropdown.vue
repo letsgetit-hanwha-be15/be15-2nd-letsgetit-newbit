@@ -41,7 +41,7 @@
 
       <ul class="menu-list">
         <li @click="goTo('/mypage/contents/posts')">내 콘텐츠</li>
-        <li @click="goTo('/mypage/history/coffeechat')">커피챗</li>
+        <li @click="goTo('/mypage/history/coffeechats')">커피챗</li>
         <li @click="goTo('/mypage/history/point')">활동 내역</li>
         <!-- TODO : authStore, 로그인 기능 추가 시 role에 따라서 조건 표시 -->
         <li @click="goTo('/mypage/mentor/series')">멘토 활동 관리</li>
