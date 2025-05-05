@@ -18,6 +18,7 @@ import SubscribedSeriesView from "@/features/mypage/views/SubscribedSeriesView.v
 import MyColumnsView from "@/features/mypage/views/MyColumnsView.vue";
 import MySeriesView from "@/features/mypage/views/MySeriesView.vue";
 import CoffeechatListMentorView from "@/features/mypage/views/CoffeechatListMentorView.vue";
+import CoffeechatCancelView from "@/features/mypage/views/CoffeechatCancelView.vue";
 
 export const mypageRoutes = [
     {
@@ -97,6 +98,11 @@ export const mypageRoutes = [
                 path: 'history/coffeechats/:id/review',
                 name: 'ReviewRegister',
                 component: ReviewRegisterView,
+            },
+            {
+                path: 'history/coffeechats/:id/cancel',
+                name: 'ReviewRegister',
+                component: CoffeechatCancelView,
             },
             {
                 path: 'contents/purchased-columns',
