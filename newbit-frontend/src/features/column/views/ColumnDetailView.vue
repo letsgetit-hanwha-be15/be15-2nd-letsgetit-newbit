@@ -3,13 +3,16 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getColumnDetail } from '@/api/column.js'
 import dayjs from 'dayjs'
+import { useAuthStore } from '@/features/stores/auth'
+
+const authStore = useAuthStore()
 
 const route = useRoute()
 const router = useRouter()
 
 const columnId = Number(route.params.id)
-const userId = 12 // TODO: 추후 auth 연동 시, store에서 동적으로 가져올 것
-
+const userId = authStore.userId || 12;
+// const userId = 12;
 const column = ref(null)
 const isMentor = true // TODO: 로그인 유저와 비교하여 판단
 
@@ -41,8 +44,8 @@ const formattedDate = computed(() => {
 
 onMounted(async () => {
   try {
-    const res = await getColumnDetail(userId, columnId)
-    column.value = res.data.data
+    const res = await getColumnDetail(columnId, userId)
+    column.value = res.data
   } catch (err) {
     console.error('칼럼 상세 조회 실패', err)
   }
