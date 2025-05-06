@@ -371,4 +371,21 @@ public class PostService {
         return post.getLikeCount();
     }
 
+    @Transactional(readOnly = true)
+    public Page<PostResponse> getPostsByUserId(Long userId, Pageable pageable) {
+        Page<Post> postPage = postRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId, pageable);
+        return postPage.map(post -> {
+            ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
+            String writerName = response.getData() != null ? response.getData().getNickname() : null;
+            String categoryName = post.getPostCategory().getName();
+
+            List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
+                    .stream()
+                    .map(Attachment::getImageUrl)
+                    .toList();
+
+            return new PostResponse(post, writerName, categoryName, imageUrls);
+        });
+    }
+
 }

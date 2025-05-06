@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   currentPage: Number,
-  totalPage: Number
+  totalPages: Number
 })
 
 const emit = defineEmits(['page-change'])
@@ -19,7 +19,7 @@ watch(() => props.currentPage, (newPage) => {
 // 표시할 페이지들 계산
 const pages = computed(() => {
   const start = currentGroup.value * groupSize + 1
-  const end = Math.min(start + groupSize - 1, props.totalPage)
+  const end = Math.min(start + groupSize - 1, props.totalPages)
   const pageList = []
   for (let i = start; i <= end; i++) {
     pageList.push(i)
@@ -39,7 +39,7 @@ const goToPrevGroup = () => {
 
 const goToNextGroup = () => {
   const nextStart = (currentGroup.value + 1) * groupSize + 1
-  if (nextStart <= props.totalPage) emit('page-change', nextStart)
+  if (nextStart <= props.totalPages) emit('page-change', nextStart)
 }
 </script>
 
@@ -69,7 +69,7 @@ const goToNextGroup = () => {
 
     <button
         class="flex items-center gap-1 px-2 py-1 text-black  text-13px-regular disabled:text-gray-400 disabled:cursor-not-allowed"
-        :disabled="pages.at(-1) === totalPage"
+        :disabled="pages.at(-1) === totalPages"
         @click="goToNextGroup"
     >
       Next →
