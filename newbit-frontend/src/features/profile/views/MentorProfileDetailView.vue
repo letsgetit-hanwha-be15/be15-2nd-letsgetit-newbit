@@ -4,6 +4,10 @@ import MentorProfileSideBar from '@/features/profile/components/MentorProfileSid
 import MentorProfileTabBar from '@/features/profile/components/MentorProfileTabBar.vue'
 import PagingBar from '@/components/common/PagingBar.vue'
 import profileImage from '@/assets/image/default-profile.png'
+import ColumnTab from "@/features/profile/components/ColumnTab.vue";
+import SeriesTab from "@/features/profile/components/SeriesTab.vue";
+import PostTab from "@/features/profile/components/PostTab.vue";
+import ReviewTab from "@/features/profile/components/ReviewTab.vue";
 
 // 로그인한 내 ID (임시)
 const myId = 1
@@ -33,6 +37,8 @@ function handlePageChange(page) {
   currentPage.value = page
   // 👉 여기에 데이터 로딩 또는 API 호출 연결 가능
 }
+
+const selectedTab = ref('칼럼')
 </script>
 
 <template>
@@ -53,15 +59,14 @@ function handlePageChange(page) {
 
     <!-- 오른쪽: 탭 + 콘텐츠 -->
     <div class="flex flex-col flex-1 py-16 pr-25 ml-5">
-      <MentorProfileTabBar />
+      <MentorProfileTabBar v-model:tab="selectedTab" />
 
       <!-- 콘텐츠 카드 -->
-      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow">
-        <h1 class="text-xl font-bold text-[var(--newbittext)] mb-4">
-          유저 프로필 상세 조회
-        </h1>
-        <p>여기에 유저 게시글, 시리즈, 리뷰 등의 콘텐츠가 들어갈 예정입니다.</p>
-      </div>
+      <ColumnTab v-if="selectedTab==='칼럼'"></ColumnTab>
+      <SeriesTab v-else-if="selectedTab==='시리즈'"></SeriesTab>
+      <PostTab v-else-if="selectedTab==='게시글'"></PostTab>
+      <ReviewTab v-else-if="selectedTab==='리뷰'"></ReviewTab>
+
 
       <!-- 페이징 바 추가 -->
       <PagingBar

@@ -1,8 +1,21 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, defineEmits, defineProps } from 'vue'
+
+const props = defineProps({
+  tab: {
+    type: String,
+    default: '칼럼',
+  }
+})
+
+const emit = defineEmits(['update:tab'])
 
 const tabs = ['칼럼', '시리즈', '게시글', '리뷰']
-const activeTab = ref(tabs[0])
+
+function selectTab(tab) {
+  emit('update:tab', tab)
+}
+
 </script>
 
 <template>
@@ -12,10 +25,10 @@ const activeTab = ref(tabs[0])
       <button
           v-for="tab in tabs"
           :key="tab"
-          @click="activeTab = tab"
+          @click="selectTab(tab)"
           :class="[
           'pb-2 text-13px-regular text-[var(--newbitgray)]',
-          activeTab === tab ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold' : ''
+          props.tab === tab ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold' : ''
         ]"
       >
         {{ tab }}
