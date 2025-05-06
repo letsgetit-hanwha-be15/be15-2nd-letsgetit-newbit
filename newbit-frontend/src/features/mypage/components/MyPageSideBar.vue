@@ -78,7 +78,7 @@ const sidebarSections = computed(() => {
       title: '멘토 콘텐츠',
       items: [
         { text: '멘토 프로필', to: '/mypage/mentor/edit' },
-        { text: '작성한 칼럼', to: '/mypage/mentor/my-columns' },
+        { text: '작성한 칼럼', to: '/mypage/mentor/columns' },
         { text: '내 시리즈 관리', to: '/mypage/mentor/series' },
         { text: '커피챗 관리', to: '/mypage/mentor/coffeechats' },
         { text: '판매 내역', to: '/mypage/history/sale' },
