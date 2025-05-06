@@ -73,7 +73,7 @@ public class NotificationCommandController {
     }
 
     //    @PreAuthorize("isAuthenticated()")
-    @PatchMapping("/{notificationId}/read")
+    @PatchMapping(value = "/{notificationId}/read", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Void>> markAsRead(
             @AuthenticationPrincipal CustomUser user,
             @PathVariable Long notificationId
@@ -82,13 +82,11 @@ public class NotificationCommandController {
         return ResponseEntity.ok().build();
     }
 
-    //    @PreAuthorize("isAuthenticated()")
-    @PatchMapping("/read-all")
+
+    @PatchMapping(value = "/read-all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Void>> markAllAsRead(@AuthenticationPrincipal CustomUser user) {
         System.out.println("user: " + user);
         notificationCommandService.markAllAsRead(user.getUserId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
-
-
 }
