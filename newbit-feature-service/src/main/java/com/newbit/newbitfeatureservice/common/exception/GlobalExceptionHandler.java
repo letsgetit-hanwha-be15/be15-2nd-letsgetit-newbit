@@ -1,6 +1,9 @@
 package com.newbit.newbitfeatureservice.common.exception;
 
 import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,10 +34,15 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException() {
+    public ResponseEntity<?> handleException(HttpServletRequest request) {
+        String accept = request.getHeader("Accept");
+        if (MediaType.TEXT_EVENT_STREAM_VALUE.equals(accept)) {
+            // SSE 연결에서는 ApiResponse로 감싸지 않고 500만 반환
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("SSE Error");
+        }
+
         ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
-        ApiResponse<Void> response
-                = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());
+        ApiResponse<Void> response = ApiResponse.failure(errorCode.getCode(), errorCode.getMessage());
         return new ResponseEntity<>(response, errorCode.getHttpStatus());
     }
 }
