@@ -1,5 +1,6 @@
 package com.newbit.newbitfeatureservice.column.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
@@ -148,6 +149,34 @@ public class ColumnService {
     @Transactional(readOnly = true)
     public Page<GetColumnListResponseDto> searchPublicColumns(SearchCondition condition, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return columnRepository.searchPublicColumns(condition.getKeyword(), pageable);
+        String keyword = condition.getKeyword();
+
+        // 1차로 모든 공개 칼럼을 가져옴 (검색은 자바에서 처리)
+        Page<GetColumnListResponseDto> resultPage = columnRepository.findAllByIsPublicTrueOrderByCreatedAtDesc(pageable);
+        List<GetColumnListResponseDto> content = resultPage.getContent();
+
+        List<GetColumnListResponseDto> filtered = new ArrayList<>();
+
+        String loweredKeyword = keyword != null ? keyword.toLowerCase() : null;
+
+        for (GetColumnListResponseDto dto : content) {
+            try {
+                Long mentorId = dto.getMentorId();
+                Long userId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
+                String nickname = userFeignClient.getNicknameByUserId(userId).getData();
+                dto.setMentorNickname(nickname);
+
+                if (loweredKeyword == null ||
+                        (nickname != null && nickname.toLowerCase().contains(loweredKeyword)) ||
+                        (dto.getTitle() != null && dto.getTitle().toLowerCase().contains(loweredKeyword))) {
+                    filtered.add(dto);
+                }
+
+            } catch (Exception e) {
+                log.warn("닉네임 조회 실패 mentorId={}", dto.getMentorId(), e);
+            }
+        }
+
+        return new PageImpl<>(filtered, pageable, filtered.size());
     }
 }

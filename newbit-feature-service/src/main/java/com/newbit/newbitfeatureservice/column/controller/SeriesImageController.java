@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/v1/series/images")
+@RequestMapping("/series")
 @RequiredArgsConstructor
 @Tag(name = "시리즈 이미지 API", description = "시리즈 이미지 업로드 관련 API")
 public class SeriesImageController {

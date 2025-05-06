@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api/v1/columns")
+@RequestMapping("/columns")
 @RequiredArgsConstructor
 @Tag(name = "칼럼 이미지 API", description = "칼럼 이미지 업로드 관련 API ")
 public class ColumnImageController {
