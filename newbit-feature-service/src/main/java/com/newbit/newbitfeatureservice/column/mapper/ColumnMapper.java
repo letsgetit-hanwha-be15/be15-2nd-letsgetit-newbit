@@ -62,7 +62,7 @@ public class ColumnMapper {
                 .title(column.getTitle())
                 .thumbnailUrl(column.getThumbnailUrl())
                 .price(column.getPrice())
-                .likeCount(column.getLikeCount())
+                .createdAt(column.getCreatedAt())
                 .build();
     }
 }

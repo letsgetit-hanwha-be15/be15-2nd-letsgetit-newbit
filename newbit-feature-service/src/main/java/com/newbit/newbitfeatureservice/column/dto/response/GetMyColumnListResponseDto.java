@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 @Schema(description = "멘토 본인 승인된 칼럼 목록 응답")
@@ -21,6 +23,6 @@ public class GetMyColumnListResponseDto {
     @Schema(description = "가격", example = "1000")
     private Integer price;
 
-    @Schema(description = "좋아요 수", example = "23")
-    private Integer likeCount;
+    @Schema(description = "작성 일시", example = "2025-04-10T14:22:30")
+    private LocalDateTime createdAt;
 }
