@@ -91,9 +91,11 @@ const handleLogout = async () => {
           />
         </button>
 
-        <button class="profile-button" @click="goMypage">
-          <img :src="authStore.userInfo?.profileImageUrl || '/default-avatar.png'" alt="프로필" />
-        </button>
+        <ProfileDropdown
+            class="mr-3"
+            :dropdown-id="'profile'"
+            @dropdown-opened="handleDropdownOpened"
+        />
         <button class="nav-button" @click="handleLogout">LOGOUT</button>
       </template>
 
