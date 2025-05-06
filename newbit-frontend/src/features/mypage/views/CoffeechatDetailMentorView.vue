@@ -48,8 +48,8 @@ const originalCoffeechats = ref([
         "progressStatus": "PAYMENT_WAITING",
         "requestMessage": "안녕하세요웅웅",
         "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
+        "confirmedSchedule": "2025-05-14T22:55:00",
+        "endedAt": "2025-05-14T23:55:00",
         "updatedAt": null,
         "reason": null,
         "mentorId": 3,
@@ -175,9 +175,7 @@ function getStatusText(status) {
       <span class="text-16px-regular">{{ getStatusText(coffeechat.progressStatus) }}</span>
     </div>
     <div class="border rounded p-4">
-      <!-- 1. 상태가 in-progress일 때 보여주는 컴포넌트 -->
       <CoffeechatDetail
-          v-if="coffeechat.progressStatus === 'IN_PROGRESS'"
           :coffeechat="coffeechat"
           :requestTimes="requestTimes.requestTimes"
           :isMentor=true

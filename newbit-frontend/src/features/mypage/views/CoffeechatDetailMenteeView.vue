@@ -5,13 +5,16 @@ import profileImage from '@/assets/image/default-profile.png'
 import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vue";
 import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
+import {useToast} from "vue-toastification";
 
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 const coffeechatId = ref(Number(route.params.id))
+const isPaymentModalOpen = ref(false);
 
 // 프론트용 페이지
-// 유저 정보 (API 연동 전용 Mock)
+// 멘토 정보 (API 연동 전용 Mock)
 const user = ref({
   id: 1,
   profileImageUrl: profileImage,
@@ -23,6 +26,11 @@ const user = ref({
   externalLinkUrl: 'https://example.com',
   introduction: '안녕하세요! 반갑습니다! 잘 부탁드립니다. 반갑습니다. 잘 부탁드립니다. 반갑스빈다.',
   isActive: true
+})
+
+// 현재 로그인한 유저 정보
+const me = ref({
+  "diamond": 30
 })
 
 const originalCoffeechats = ref([
@@ -53,8 +61,8 @@ const originalCoffeechats = ref([
         "progressStatus": "PAYMENT_WAITING",
         "requestMessage": "안녕하세요웅웅",
         "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
+        "confirmedSchedule": "2025-05-14T22:55:00",
+        "endedAt": "2025-05-14T23:55:00",
         "updatedAt": null,
         "reason": null,
         "mentorId": 3,
@@ -169,8 +177,30 @@ const statusMap = {
 function getStatusText(status) {
   return statusMap[status] || '알 수 없음'
 }
+
 function cancelRegister() {
   router.push(`/mypage/history/coffeechats/${coffeechatId.value}/cancel`);
+}
+
+function openPaymentModal() {
+  isPaymentModalOpen.value = true;
+}
+
+function closePaymentModal() {
+  isPaymentModalOpen.value = false;
+}
+
+function paymentCoffeechat() {
+  // todo : 현재 보유 중인 다이아 몇 개인지 검사 후, 다이아가 부족하면 상점으로 이동
+  console.log(me.value.diamond + (user.value.price * coffeechat.value.purchaseQuantity))
+  if(me.value.diamond < user.value.price * coffeechat.value.purchaseQuantity){
+    router.push('/products')
+  }
+  else {
+    // todo : 커피챗 결제 api 호출
+    toast.success('결제 완료되었습니다.');
+    isPaymentModalOpen.value = false;
+  }
 }
 
 </script>
@@ -183,19 +213,47 @@ function cancelRegister() {
       <span class="text-16px-regular">{{ getStatusText(coffeechat.progressStatus) }}</span>
     </div>
     <div class="border rounded p-4">
-      <!-- 1. 상태가 in-progress일 때 보여주는 컴포넌트 -->
       <CoffeechatDetail
-          v-if="coffeechat.progressStatus === 'IN_PROGRESS'"
           :coffeechat="coffeechat"
           :requestTimes="requestTimes.requestTimes"
+          :diamondCount="user.price * coffeechat.purchaseQuantity"
       />
       <!-- 버튼들 -->
       <div class="flex flex-wrap gap-2 justify-end pb-10">
+        <button v-if="coffeechat.progressStatus === 'PAYMENT_WAITING'"
+                @click="openPaymentModal"
+                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
+          다이아 결제
+        </button>
         <button type="button"
                 @click="cancelRegister"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
           취소
         </button>
+      </div>
+      <!-- 모달 -->
+      <!-- 커피챗 결제 모달 -->
+      <div v-if="isPaymentModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-[var(--newbitbackground)] rounded-lg p-6 w-[400px] shadow-lg">
+          <h2 class="text-heading3 mb-4">다이아 결제</h2>
+          <p class="mb-6 text-13px-regular">
+            현재 보유 다이아 {{ me.diamond }} 개, 필요 다이아 {{ user.price * coffeechat.purchaseQuantity }}개<br/>
+            <template v-if="me.diamond < user.price * coffeechat.purchaseQuantity">
+              다이아 결제창으로 넘어갑니다.<br/>
+            </template>
+            결제하시겠습니까?
+          </p>
+          <div class="flex justify-end gap-2">
+            <button @click="closePaymentModal"
+                    class="bg-[var(--newbitred)] text-[var(--newbitlight)] px-4 py-1 rounded-md font-semibold">
+              아니요
+            </button>
+            <button @click="paymentCoffeechat"
+                    class="bg-[var(--newbitnormal)] text-[var(--newbitlight)] px-4 py-1 rounded-md font-semibold">
+              네
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
