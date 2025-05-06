@@ -16,6 +16,15 @@ const isAdmin = authStore.userRole === 'ADMIN'
 
 provide('activeDropdown', activeDropdown)
 
+const handleDropdownOpened = (id) => {
+  if (id === "profile" && showChatModal.value) {
+    showChatModal.value = false;
+    showNotification.value = false;
+  }
+  activeDropdown.value = id;
+};
+
+
 const toggleChatModal = () => {
   if (activeDropdown.value === 'profile' || activeDropdown.value === 'notification') {
     activeDropdown.value = null
