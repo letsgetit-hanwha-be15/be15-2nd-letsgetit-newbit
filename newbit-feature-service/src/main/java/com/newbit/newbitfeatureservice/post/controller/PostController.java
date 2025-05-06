@@ -193,4 +193,19 @@ public class PostController {
         Long writerId = postService.getWriterIdByPostId(postId);
         return ResponseEntity.ok(writerId);
     }
+
+    @GetMapping("/user/{userId}")
+    @Operation(
+            summary = "사용자 게시글 목록 조회",
+            description = "userId를 통해 해당 사용자가 작성한 게시글들을 페이지네이션하여 조회합니다."
+    )
+    public ResponseEntity<Page<PostResponse>> getPostsByUserId(
+            @PathVariable Long userId,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Page<PostResponse> posts = postService.getPostsByUserId(userId, pageable);
+        return ResponseEntity.ok(posts);
+    }
+
+
 }
