@@ -27,6 +27,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.newbit.newbitfeatureservice.security.model.CustomUser;
 
 @Slf4j
 @RestController
@@ -176,5 +179,24 @@ public class PaymentQueryController extends AbstractApiController {
         
         log.info("주문번호 또는 결제키로 결제 정보 조회 요청: orderId={}, paymentKey={}", orderId, paymentKey);
         return successResponse(paymentQueryService.getPaymentByOrderIdOrPaymentKey(orderId, paymentKey));
+    }
+
+    @Operation(
+        summary = "내 결제 내역 조회",
+        description = "로그인한 사용자의 결제 내역을 페이징하여 조회합니다."
+    )
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공",
+            content = @Content(schema = @Schema(implementation = Page.class)))
+    })
+    @GetMapping("/users/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<Page<PaymentQueryDto>>> getPaymentsByMe(
+        @Parameter(hidden = true) @AuthenticationPrincipal CustomUser userDetails,
+        @PageableDefault(size = 10, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
+
+        Long userId = userDetails.getUserId();
+        log.info("내 결제 내역 조회 요청: userId={}, page={}, size={}", userId, pageable.getPageNumber(), pageable.getPageSize());
+        return successResponse(paymentQueryService.getPaymentsByUserId(userId, pageable));
     }
 } 
