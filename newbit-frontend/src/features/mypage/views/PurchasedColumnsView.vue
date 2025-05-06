@@ -1,69 +1,53 @@
 <script setup>
-import {ref} from 'vue';
+import { ref, onMounted } from 'vue';
+import { getPurchaseHistory } from '@/api/purchase'; // ✅ 실제 API 경로
 import ColumnCard from "@/features/column/components/ColumnCard.vue";
 import PagingBar from "@/components/common/PagingBar.vue";
 
-const handlePageChange = (page) => {
-  // API 호출 or emit
-  console.log('이동할 페이지:', page)
-}
+const purchasedColumns = ref(null);
+const currentPage = ref(1);
 
-const purchasedColumns = ref({
-  "success": true,
-  "data": {
-    "columnPurchases": [
-      {
-        "columnId": 8,
-        "columnTitle": "JPA 성능 최적화 팁",
-        "thumbnailUrl": null,
-        "price": 1000,
-        "purchasedAt": "2025-04-18T11:50:10"
-      },
-      {
-        "columnId": 9,
-        "columnTitle": "테크 스타트업에서 살아남기",
-        "thumbnailUrl": null,
-        "price": 170,
-        "purchasedAt": "2025-04-11T10:03:38"
-      },
-      {
-        "columnId": 10,
-        "columnTitle": "코딩 테스트 전략 정리",
-        "thumbnailUrl": null,
-        "price": 110,
-        "purchasedAt": "2025-04-11T10:03:38"
-      }
-    ],
-    "pagination": {
-      "currentPage": 1,
-      "totalPage": 1,
-      "totalItems": 3
+const fetchPurchasedColumns = async (page = 1) => {
+  try {
+    const response = await getPurchaseHistory(page); // page가 있으면 쿼리 파라미터로 전달 필요
+    if (response.data.success) {
+      purchasedColumns.value = response.data.data;
+    } else {
+      console.error('불러오기 실패:', response.data.message);
     }
-  },
-  "errorCode": null,
-  "message": null,
-  "timestamp": "2025-05-04T01:12:26.497062"
-})
+  } catch (e) {
+    console.error('API 호출 오류:', e);
+  }
+};
+
+const handlePageChange = (page) => {
+  currentPage.value = page;
+  fetchPurchasedColumns(page);
+};
+
+onMounted(() => {
+  fetchPurchasedColumns();
+});
 </script>
 
 <template>
   <div class="w-full max-w-4xl mx-auto p-6">
     <h2 class="text-heading3 mb-4">구매한 칼럼</h2>
-    <div class="space-y-6">
+
+    <div v-if="purchasedColumns" class="space-y-6">
       <ColumnCard
-          v-for="column in purchasedColumns.data.columnPurchases"
+          v-for="column in purchasedColumns.columnPurchases"
           :key="column.columnId"
           :column="column"
       />
+
+      <PagingBar
+          :currentPage="purchasedColumns.pagination.currentPage"
+          :totalPage="purchasedColumns.pagination.totalPage"
+          @page-change="handlePageChange"
+      />
     </div>
-    <PagingBar
-        :currentPage="purchasedColumns.data.pagination.currentPage"
-        :totalPage="purchasedColumns.data.pagination.totalPage"
-        @page-change="handlePageChange"
-    />
+
+    <div v-else class="text-gray-500 text-sm">구매한 칼럼을 불러오는 중입니다...</div>
   </div>
 </template>
-
-<style scoped>
-
-</style>
