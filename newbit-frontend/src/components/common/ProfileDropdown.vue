@@ -1,15 +1,19 @@
 <template>
   <div class="dropdown-wrapper" @click.stop="toggleDropdown">
     <img
-      src="@/assets/image/profile.png"
-      alt="Profile"
-      class="profile-button"
+        src="@/assets/image/profile.png"
+        alt="Profile"
+        class="profile-button"
     />
     <div v-if="showDropdown" class="dropdown">
-      <!-- TODO : authStore, 로그인 기능 추가 시 role에 따라서 조건 표시, 닉네임 가져오기 -->
       <div class="nickname">
-        <span class="name">레츠기릿</span>
-        <span class="role text-13px-bold">멘토</span>
+        <span class="name">{{ authStore.nickname }}</span>
+        <span
+            v-if="authStore.userRole === 'MENTOR'"
+            class="role text-13px-bold"
+        >
+          멘토
+        </span>
       </div>
 
       <button class="edit-profile" @click="goTo('/mypage/profile/edit')">
@@ -22,16 +26,14 @@
         <div class="asset" @click="goTo('/mypage/history/point')">
           <div class="asset-wrapper">
             <img src="@/assets/image/profile.png" class="icon" />
-            <!-- TODO : Pinia store에서 가져오는 방식으로 수정 -->
-            <span>1230</span>
+            <span>{{ authStore.point ?? 0 }}</span>
           </div>
           <img src="@/assets/image/arrow-icon.png" class="arrow-icon" />
         </div>
         <div class="asset" @click="goTo('/mypage/history/diamond')">
           <div class="asset-wrapper">
             <img src="@/assets/image/diamond-icon.png" class="icon" />
-            <!-- TODO : Pinia store에서 가져오는 방식으로 수정 -->
-            <span>200</span>
+            <span>{{ authStore.diamond ?? 0 }}</span>
           </div>
           <img src="@/assets/image/arrow-icon.png" class="arrow-icon" />
         </div>
@@ -43,10 +45,13 @@
         <li @click="goTo('/mypage/contents/posts')">내 콘텐츠</li>
         <li @click="goTo('/mypage/history/coffeechats')">커피챗</li>
         <li @click="goTo('/mypage/history/point')">활동 내역</li>
-        <!-- TODO : authStore, 로그인 기능 추가 시 role에 따라서 조건 표시 -->
-        <li @click="goTo('/mypage/mentor/series')">멘토 활동 관리</li>
+        <li
+            v-if="authStore.role === 'MENTOR'"
+            @click="goTo('/mypage/mentor/series')"
+        >
+          멘토 활동 관리
+        </li>
         <li @click="goTo('/mypage/account')">설정</li>
-        <!-- TODO : 로그아웃 로직 추가 -->
         <li class="logout" @click="logout">로그아웃</li>
       </ul>
     </div>
@@ -56,6 +61,9 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, inject, watch } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from '@/features/stores/auth';
+
+const authStore = useAuthStore();
 
 const props = defineProps({
   dropdownId: {
@@ -69,7 +77,6 @@ const router = useRouter();
 const showDropdown = ref(false);
 const activeDropdown = inject("activeDropdown", ref(null));
 
-// activeDropdown이 변경될 때마다 현재 드롭다운 상태 확인
 watch(activeDropdown, (newValue) => {
   if (newValue !== props.dropdownId) {
     showDropdown.value = false;
@@ -79,6 +86,7 @@ watch(activeDropdown, (newValue) => {
 const toggleDropdown = () => {
   const newState = !showDropdown.value;
   showDropdown.value = newState;
+  console.log(authStore.nickname);
 
   if (newState) {
     emit("dropdown-opened", props.dropdownId);
@@ -106,8 +114,8 @@ const logout = () => {
 
 function handleClickOutside(event) {
   if (
-    !event.target.closest(".dropdown-wrapper") &&
-    !event.target.closest(".chatroom-dropdown-wrapper")
+      !event.target.closest(".dropdown-wrapper") &&
+      !event.target.closest(".chatroom-dropdown-wrapper")
   ) {
     closeDropdown();
   }
@@ -121,6 +129,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("click", handleClickOutside);
 });
 </script>
+
 
 <style scoped>
 .profile-button {
