@@ -63,7 +63,41 @@ public class GatewayJwtTokenProvider {
                 .getPayload();
         return claims.get("authority", String.class);
     }
+    public String getNicknameFromJWT(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("nickname", String.class);
+    }
 
+    public Integer getPointFromJWT(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("point", Integer.class);
+    }
+
+    public Integer getDiamondFromJWT(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("diamond", Integer.class);
+    }
+
+    public Long getMentorIdFromJWT(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.get("mentorId", Long.class);
+    }
     public String getUsernameFromJWT(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
