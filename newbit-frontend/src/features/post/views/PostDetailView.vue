@@ -1,9 +1,11 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import ReportModal from '@/features/post/components/ReportModal.vue'
 import DeleteConfirmModal from '@/features/post/components/DeleteConfirmModal.vue'
 
+const toast = useToast()
 const reportType = ref('') // 'post' or 'comment'
 const reportedId = ref(null)
 const router = useRouter()
@@ -23,7 +25,7 @@ const closeCommentDeleteModal = () => {
 const confirmCommentDelete = () => {
   comments.value = comments.value.filter(comment => comment.id !== commentToDeleteId.value)
   isCommentDeleteModalOpen.value = false
-  alert('댓글이 삭제되었습니다.')
+  toast.success('댓글이 삭제되었습니다.')
 }
 
 const openDeleteModal = () => {
@@ -37,10 +39,10 @@ const closeDeleteModal = () => {
 const confirmDelete = async () => {
   try {
     await fetch(`/api/posts/${post.value.id}`, { method: 'DELETE' })
-    alert('삭제되었습니다.')
+    toast.success('삭제되었습니다.')
     router.push('/posts')
   } catch (e) {
-    alert('삭제 실패')
+    toast.error('삭제 실패')
   }
   isDeleteModalOpen.value = false
 }
@@ -89,7 +91,7 @@ const handleReportSubmit = (reportData) => {
     content: reportData.content
   })
 
-  alert(`${typeLabel} 신고가 접수되었습니다.`)
+  toast.success(`${typeLabel} 신고가 접수되었습니다.`)
   closeReportModal()
 }
 
