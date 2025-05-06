@@ -26,4 +26,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Optional<Long> findUserIdByPostId(@Param("postId") Long postId);
 
     Page<Post> findByPostCategoryIdAndDeletedAtIsNull(Long postCategoryId, Pageable pageable);
+
+    Page<Post> findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
 }
