@@ -25,7 +25,7 @@
       <div class="asset-row">
         <div class="asset" @click="goTo('/mypage/history/point')">
           <div class="asset-wrapper">
-            <img src="@/assets/image/profile.png" class="icon" />
+            <img src="@/assets/image/point-icon.png" class="icon" />
             <span>{{ authStore.point ?? 0 }}</span>
           </div>
           <img src="@/assets/image/arrow-icon.png" class="arrow-icon" />
