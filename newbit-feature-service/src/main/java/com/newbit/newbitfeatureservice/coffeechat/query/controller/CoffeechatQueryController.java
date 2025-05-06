@@ -42,12 +42,14 @@ public class CoffeechatQueryController {
 
     @Operation(
             summary = "멘토의 커피챗 목록 조회", description = "멘토ID로 진행상태에 따른 커피챗 목록 정보를 조회한다."
-            )
+    )
     @GetMapping({"/mentors/me"})
 //    @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMentorCoffeechats(
-                    @AuthenticationPrincipal CustomUser customUser,
-            @RequestParam(required = false) ProgressStatus status
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(required = false) ProgressStatus status,
+            @RequestParam(defaultValue = "0") int page, // 기본값 0
+            @RequestParam(defaultValue = "10") int size // 기본값 10
     ) {
 
         // 유저 아이디로 멘토 아이디를 찾아오기
@@ -56,9 +58,10 @@ public class CoffeechatQueryController {
 
         // 서비스 레이어에 보낼 request 생성
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
-
         coffeechatSearchServiceRequest.setMentorId(mentorId);
-        if(status != null) {
+        coffeechatSearchServiceRequest.setPage(page);
+        coffeechatSearchServiceRequest.setSize(size);
+        if (status != null) {
             coffeechatSearchServiceRequest.setProgressStatus(status);
         }
 
@@ -74,15 +77,19 @@ public class CoffeechatQueryController {
     @GetMapping({"/mentees/me"})
     public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMenteeCoffeechats(
             @AuthenticationPrincipal CustomUser customUser,
-            @RequestParam(required = false) ProgressStatus status
+            @RequestParam(required = false) ProgressStatus status,
+            @RequestParam(defaultValue = "0") int page, // 기본값 0
+            @RequestParam(defaultValue = "10") int size // 기본값 10
     ) {
 
         // 서비스 레이어에 보낼 request 생성
         CoffeechatSearchServiceRequest coffeechatSearchServiceRequest = new CoffeechatSearchServiceRequest();
         Long menteeId = customUser.getUserId();
         coffeechatSearchServiceRequest.setMenteeId(menteeId);
+        coffeechatSearchServiceRequest.setPage(page);
+        coffeechatSearchServiceRequest.setSize(size);
 
-        if(status != null) {
+        if (status != null) {
             coffeechatSearchServiceRequest.setProgressStatus(status);
         }
 

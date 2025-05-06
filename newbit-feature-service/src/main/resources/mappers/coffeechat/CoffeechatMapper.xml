@@ -25,25 +25,13 @@
         u.profile_image_url,
         u.nickname
         FROM coffeechat c
-        <choose>
-            <when test="authority == 'USER'">
-                JOIN mentor m ON (c.mentor_id = m.mentor_id)
-                JOIN user u ON (u.user_id = m.user_id)
-            </when>
-            <when test="authority == 'MENTOR'">
-                JOIN mentor m ON (c.mentor_id = m.mentor_id)
-                JOIN user u ON (u.user_id = c.mentee_id)
-            </when>
-        </choose>
         <where>
-            <choose>
-                <when test="authority == 'MENTOR' and userId != null">
-                    AND m.user_id = #{userId}
-                </when>
-                <when test="authority == 'USER' and userId != null">
-                    AND c.mentee_id = #{userId}
-                </when>
-            </choose>
+            <if test="mentorId != null">
+                AND c.mentor_id = #{ mentorId }
+            </if>
+            <if test="menteeId != null">
+            AND c.mentee_id = #{ menteeId }
+            </if>
             <if test="isProgressing != null">
                 AND c.progress_status NOT IN ('COMPLETE', 'CANCEL')
             </if>
@@ -57,20 +45,13 @@
     <select id="countCoffeechats" resultType="long">
         SELECT COUNT(*)
         FROM coffeechat c
-        <choose>
-            <when test="authority == 'MENTOR'">
-                JOIN mentor m ON c.mentor_id = m.mentor_id
-            </when>
-        </choose>
         <where>
-            <choose>
-                <when test="authority == 'MENTOR' and userId != null">
-                    AND m.user_id = #{userId}
-                </when>
-                <when test="authority == 'USER' and userId != null">
-                    AND c.mentee_id = #{userId}
-                </when>
-            </choose>
+            <if test="mentorId != null">
+                AND c.mentor_id = #{ mentorId }
+            </if>
+            <if test="menteeId != null">
+            AND c.mentee_id = #{ menteeId }
+            </if>
             <if test="isProgressing != null">
                 AND c.progress_status NOT IN ('COMPLETE', 'CANCEL')
             </if>
