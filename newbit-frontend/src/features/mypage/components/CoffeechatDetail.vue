@@ -95,6 +95,17 @@ function closeCoffeechat() {
 
 <template>
   <div class="space-y-12">
+    <!-- 취소 사유, 취소 일시   -->
+    <template v-if="coffeechat.progressStatus === 'CANCEL'">
+      <div>
+        <div class="text-heading3" >취소 사유</div>
+        <div class="ml-2 mt-2 text-16px-regular">{{ coffeechat.reason }}</div>
+      </div>
+      <div>
+        <div class="text-heading3" >취소 일시</div>
+        <div class="ml-2 mt-2 text-16px-regular">{{ formatTime(coffeechat.updatedAt) }}</div>
+      </div>
+    </template>
     <!-- 커피챗 진행 시간   -->
     <div>
       <div class="text-heading3" >커피챗 진행 시간</div>
@@ -135,7 +146,7 @@ function closeCoffeechat() {
       <div class="ml-2 mt-2 min-h-20 rounded border p-1">{{ coffeechat.requestMessage }}</div>
     </div>
     <!-- 필요 다이아   -->
-    <div v-if="!isMentor">
+    <div v-if="!isMentor && coffeechat.progressStatus === 'PAYMENT_WAITING'">
       <div class="text-heading3" >필요 다이아</div>
       <div class="ml-2 mt-2 text-16px-regular">{{ diamondCount }} 개</div>
     </div>
