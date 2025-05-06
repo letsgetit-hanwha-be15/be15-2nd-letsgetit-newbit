@@ -173,13 +173,15 @@ function closeCoffeechat() {
           </div>
         </div>
       </template>
-      <template v-if="coffeechat.progressStatus === 'COFFEECHAT_WAITING'">
+      <template v-if="coffeechat.progressStatus === 'COFFEECHAT_WAITING' || coffeechat.progressStatus === 'COMPLETE'">
         <!-- 멘토가 커피레터 입장     -->
         <button v-if="isMentor"
                 @click="goCoffeeLetter"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
           커피레터 입장
         </button>
+      </template>
+      <template v-if="coffeechat.progressStatus === 'COFFEECHAT_WAITING'">
         <!-- 멘토가 커피챗 종료 확정     -->
         <button v-if="isMentor"
                 @click="closeCoffeechat"
