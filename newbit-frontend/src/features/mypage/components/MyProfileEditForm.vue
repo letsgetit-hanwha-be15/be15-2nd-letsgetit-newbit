@@ -3,8 +3,8 @@ import { ref, watch } from 'vue';
 
 const props = defineProps({
   initialProfile: Object,
-  jobOptions: Array,
-  techstackOptions: Array
+  jobOptions: Array,          // [{ jobId, jobName }]
+  techstackOptions: Array     // [{ techstackId, techstackName }]
 });
 
 const emit = defineEmits(['submit']);
@@ -15,22 +15,31 @@ const jobName = ref('');
 const techstackNames = ref([]);
 const selectedStack = ref('');
 const errorMessage = ref('');
-
 const fileInput = ref(null);
 
+// 초기 데이터 바인딩
 watch(
-    () => props.initialProfile,
-    (profile) => {
+    [() => props.initialProfile, () => props.jobOptions],
+    ([profile, jobs]) => {
       if (profile) {
         nickname.value = profile.nickname || '';
         profileImageUrl.value = profile.profileImageUrl || '';
-        jobName.value = profile.jobName || '';
+        //TODO: 기술스택 조회 추가 후 초기값 바인딩
         techstackNames.value = profile.techstackNames ? [...profile.techstackNames] : [];
+
+        // jobId가 있고 jobOptions가 로드된 경우 매핑
+        if (profile.jobId && jobs?.length) {
+          const matched = jobs.find(job => String(job.jobId) === String(profile.jobId));
+          jobName.value = matched?.jobName || '';
+        } else {
+          jobName.value = '';
+        }
       }
     },
     { immediate: true }
 );
 
+// 기술 스택 추가
 const addTechstack = () => {
   if (selectedStack.value && !techstackNames.value.includes(selectedStack.value)) {
     techstackNames.value.push(selectedStack.value);
@@ -38,15 +47,18 @@ const addTechstack = () => {
   }
 };
 
+// 기술 스택 제거
 const removeTechstack = (stack) => {
   techstackNames.value = techstackNames.value.filter((s) => s !== stack);
 };
 
+// 제출
 const handleSubmit = () => {
   if (!nickname.value) {
     errorMessage.value = '닉네임은 필수입니다.';
     return;
   }
+
   emit('submit', {
     nickname: nickname.value,
     profileImageUrl: profileImageUrl.value,
@@ -55,6 +67,7 @@ const handleSubmit = () => {
   });
 };
 
+// 프로필 이미지 변경
 const triggerFileSelect = () => {
   fileInput.value?.click();
 };
@@ -75,22 +88,8 @@ const handleImageUpload = (event) => {
   <form @submit.prevent="handleSubmit" class="space-y-6">
     <!-- 프로필 이미지 -->
     <div class="relative w-32 h-32 group mx-auto">
-      <img
-          :src="profileImageUrl"
-          alt="profile"
-          class="w-32 h-32 rounded-full object-cover border"
-      />
-
-      <!-- 숨겨진 파일 선택 input -->
-      <input
-          type="file"
-          accept="image/*"
-          ref="fileInput"
-          class="hidden"
-          @change="handleImageUpload"
-      />
-
-      <!-- 마우스 오버 시 보이는 수정 버튼 -->
+      <img :src="profileImageUrl" alt="profile" class="w-32 h-32 rounded-full object-cover border" />
+      <input type="file" accept="image/*" ref="fileInput" class="hidden" @change="handleImageUpload" />
       <button
           type="button"
           @click="triggerFileSelect"
@@ -111,7 +110,13 @@ const handleImageUpload = (event) => {
       <label class="block text-sm mb-2">직종</label>
       <select v-model="jobName" class="w-full px-4 py-2 border rounded">
         <option disabled value="">직종 선택</option>
-        <option v-for="job in jobOptions" :key="job" :value="job">{{ job }}</option>
+        <option
+            v-for="job in jobOptions"
+            :key="job.jobId"
+            :value="job.jobName"
+        >
+          {{ job.jobName }}
+        </option>
       </select>
     </div>
 
@@ -120,9 +125,14 @@ const handleImageUpload = (event) => {
       <label class="block text-sm mb-2">기술 스택</label>
       <select v-model="selectedStack" @change="addTechstack" class="w-full px-4 py-2 border rounded">
         <option disabled value="">Techstack</option>
-        <option v-for="stack in techstackOptions" :key="stack" :value="stack">{{ stack }}</option>
+        <option
+            v-for="stack in techstackOptions"
+            :key="stack.techstackId"
+            :value="stack.techstackName"
+        >
+          {{ stack.techstackName }}
+        </option>
       </select>
-
       <div class="flex flex-wrap mt-3 gap-2 min-h-[60px] border border-gray-300 p-3 rounded">
         <span
             v-for="stack in techstackNames"

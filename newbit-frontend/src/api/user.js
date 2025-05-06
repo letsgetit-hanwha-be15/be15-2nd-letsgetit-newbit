@@ -57,3 +57,27 @@ export function putUserInfo(data) {
         }
     });
 }
+
+/* 9. 로그인 */
+export function loginUser(data) {
+    return api.post('user/auth/login', data);
+}
+
+/* 10. 로그아웃 */
+export function logoutUser() {
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken'); // ✅ 반드시 존재해야 함
+
+    return api.post('/user/auth/logout', {
+        refreshToken: refreshToken // ✅ 정확히 이 key로 보내야 함
+    }, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    });
+}
+
+/* 11. 리프레시 토큰으로 토큰 재발급 */
+export function refreshUserToken() {
+    return api.post(`user/auth/refresh`)
+}

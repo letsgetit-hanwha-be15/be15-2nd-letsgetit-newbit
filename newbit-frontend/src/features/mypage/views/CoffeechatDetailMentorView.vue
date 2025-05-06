@@ -18,12 +18,6 @@ const user = ref({
   profileImageUrl: profileImage,
   nickname: 'sezeme',
   jobName: '백엔드',
-  temperature: 100,
-  price: 50,
-  preferredTime: '7시 이후 좋아요! 2시간 이하로 신청해주세요!',
-  externalLinkUrl: 'https://example.com',
-  introduction: '안녕하세요! 반갑습니다! 잘 부탁드립니다. 반갑습니다. 잘 부탁드립니다. 반갑스빈다.',
-  isActive: true
 })
 
 const originalCoffeechats = ref([
@@ -54,8 +48,8 @@ const originalCoffeechats = ref([
         "progressStatus": "PAYMENT_WAITING",
         "requestMessage": "안녕하세요웅웅",
         "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
+        "confirmedSchedule": "2025-05-14T22:55:00",
+        "endedAt": "2025-05-14T23:55:00",
         "updatedAt": null,
         "reason": null,
         "mentorId": 3,
@@ -74,8 +68,8 @@ const originalCoffeechats = ref([
         "progressStatus": "COFFEECHAT_WAITING",
         "requestMessage": "안녕하세요웅웅",
         "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
+        "confirmedSchedule": "2025-05-14T22:55:00",
+        "endedAt": "2025-05-14T23:55:00",
         "updatedAt": null,
         "reason": null,
         "mentorId": 3,
@@ -94,8 +88,8 @@ const originalCoffeechats = ref([
         "progressStatus": "CANCEL",
         "requestMessage": "안녕하세요웅웅",
         "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
+        "confirmedSchedule": "2025-05-14T22:55:00",
+        "endedAt": "2025-05-14T23:55:00",
         "updatedAt": "2025-05-20T22:55:16",
         "reason": "단순변심",
         "mentorId": 3,
@@ -111,11 +105,11 @@ const originalCoffeechats = ref([
     "data": {
       "coffeechat": {
         "coffeechatId": 5,
-        "progressStatus": "IN-PROGRESS",
+        "progressStatus": "COMPLETE",
         "requestMessage": "안녕하세요웅웅",
         "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
+        "confirmedSchedule": "2025-05-14T22:55:00",
+        "endedAt": "2025-05-14T23:55:00",
         "updatedAt": null,
         "reason": null,
         "mentorId": 3,
@@ -181,9 +175,7 @@ function getStatusText(status) {
       <span class="text-16px-regular">{{ getStatusText(coffeechat.progressStatus) }}</span>
     </div>
     <div class="border rounded p-4">
-      <!-- 1. 상태가 in-progress일 때 보여주는 컴포넌트 -->
       <CoffeechatDetail
-          v-if="coffeechat.progressStatus === 'IN_PROGRESS'"
           :coffeechat="coffeechat"
           :requestTimes="requestTimes.requestTimes"
           :isMentor=true
