@@ -25,6 +25,13 @@
         u.profile_image_url,
         u.nickname
         FROM coffeechat c
+        <if test="mentorId != null">
+            JOIN user u ON (u.user_id = c.mentee_id)
+        </if>
+        <if test="menteeId != null">
+            JOIN mentor m ON (m.mentor_id = c.mentor_id)
+            JOIN user u ON (m.user_id = u.user_id)
+        </if>
         <where>
             <if test="mentorId != null">
                 AND c.mentor_id = #{ mentorId }

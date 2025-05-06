@@ -48,7 +48,7 @@ public class CoffeechatQueryController {
     public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMentorCoffeechats(
             @AuthenticationPrincipal CustomUser customUser,
             @RequestParam(required = false) ProgressStatus status,
-            @RequestParam(defaultValue = "0") int page, // 기본값 0
+            @RequestParam(defaultValue = "1") int page, // 기본값 0
             @RequestParam(defaultValue = "10") int size // 기본값 10
     ) {
 
@@ -78,7 +78,7 @@ public class CoffeechatQueryController {
     public ResponseEntity<ApiResponse<CoffeechatListResponse>> getMenteeCoffeechats(
             @AuthenticationPrincipal CustomUser customUser,
             @RequestParam(required = false) ProgressStatus status,
-            @RequestParam(defaultValue = "0") int page, // 기본값 0
+            @RequestParam(defaultValue = "1") int page, // 기본값 0
             @RequestParam(defaultValue = "10") int size // 기본값 10
     ) {
 
