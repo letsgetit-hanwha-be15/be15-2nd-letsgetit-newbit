@@ -30,7 +30,7 @@ const myColumns = ref(
             "title": "CS 전공지식 핵심 요약",
             "thumbnailUrl": null,
             "price": 0,
-            "likeCount": 40
+            "createdAt": "2025-03-11T09:00:00"
           }
         ],
         "pageable": {
@@ -38,8 +38,8 @@ const myColumns = ref(
           "pageSize": 10,
           "sort": [],
           "offset": 0,
-          "paged": true,
-          "unpaged": false
+          "unpaged": false,
+          "paged": true
         },
         "last": true,
         "totalPages": 1,
@@ -53,7 +53,7 @@ const myColumns = ref(
       },
       "errorCode": null,
       "message": null,
-      "timestamp": "2025-05-06T14:59:11.685033"
+      "timestamp": "2025-05-06T16:27:26.001644"
     }
 )
 
