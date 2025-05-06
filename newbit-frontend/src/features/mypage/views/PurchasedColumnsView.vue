@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getPurchaseHistory } from '@/api/purchase'; // ✅ 실제 API 경로
+import { getPurchaseHistory } from '@/api/purchase';
 import ColumnCard from "@/features/column/components/ColumnCard.vue";
 import PagingBar from "@/components/common/PagingBar.vue";
 
