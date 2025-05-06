@@ -32,4 +32,7 @@ public class GetMyColumnRequestResponseDto {
 
     @Schema(description = "요청 생성일", example = "2025-04-10T14:22:30")
     private LocalDateTime createdAt;
+
+    @Schema(description = "반려 사유", example = "내용에 비해 가격이 상대적으로 높습니다. 가격 재고 부탁합니다.")
+    private String rejectedReason;
 }
