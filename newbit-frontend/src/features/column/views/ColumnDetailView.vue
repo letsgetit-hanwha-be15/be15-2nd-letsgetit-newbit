@@ -16,7 +16,7 @@ const userId = authStore.userId || 12;
 const column = ref(null)
 
 const isMentor = authStore.userRole === 'MENTOR'
-// const isOwner = computed(() => column.value?.mentorId === authStore.mentorId)  // 추후에 적용
+// const isOwner = computed(() => column.value?.mentorId === authStore.mentorId)  // 추후에 적용(작성자 본인만 수정/삭제 버튼 노출하도록 조건 분기)
 
 const isLiked = ref(false)
 const toggleLike = () => {
