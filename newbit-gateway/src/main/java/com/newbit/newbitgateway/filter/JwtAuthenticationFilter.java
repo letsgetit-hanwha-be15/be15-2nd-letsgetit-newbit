@@ -36,13 +36,23 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         jwtTokenProvider.validateToken(token);
 
         Long userId = jwtTokenProvider.getUserIdFromJWT(token);
+        Long mentorId = jwtTokenProvider.getMentorIdFromJWT(token);
         String authority = jwtTokenProvider.getAuthorityFromJWT(token);
         String username = jwtTokenProvider.getUsernameFromJWT(token);
+        String nickname = jwtTokenProvider.getNicknameFromJWT(token);
+        Integer point = jwtTokenProvider.getPointFromJWT(token);
+        Integer diamond = jwtTokenProvider.getDiamondFromJWT(token);
+
 
         ServerHttpRequest mutateRequest = exchange.getRequest().mutate()
                 .header("X-User-Id", String.valueOf(userId))
+                .header("X-mentorId", String.valueOf(mentorId))
                 .header("X-User-Authority", authority)
                 .header("X-User-Email", username)
+                .header("X-User-Nickname", nickname)
+                .header("X-User-Point", point.toString())
+                .header("X-User-Diamond", diamond.toString())
+
                 .build();
 
         ServerWebExchange mutatedExchange = exchange.mutate().request(mutateRequest).build();
