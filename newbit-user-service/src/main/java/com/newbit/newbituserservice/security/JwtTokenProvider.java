@@ -2,6 +2,7 @@ package com.newbit.newbituserservice.security;
 
 import com.newbit.newbituserservice.common.exception.BusinessException;
 import com.newbit.newbituserservice.common.exception.ErrorCode;
+import com.newbit.newbituserservice.user.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -33,27 +34,35 @@ public class JwtTokenProvider {
     }
 
     // access token 생성 메소드
-    public String createToken(String username, String authority, Long userId) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpiration);
+    public String createToken(User user, Long mentorId) {
         return Jwts.builder()
-                .subject(username)
-                .claim("authority", authority)
-                .claim("userId", userId)
-                .issuedAt(now)
-                .expiration(expiryDate)
+                .subject(user.getEmail())
+                .claim("userId", user.getUserId())
+                .claim("authority", user.getAuthority().name())
+                .claim("nickname", user.getNickname())
+                .claim("point", user.getPoint())
+                .claim("diamond", user.getDiamond())
+                .claim("mentorId", mentorId)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(secretKey)
                 .compact();
     }
 
+
     // refresh token 생성 메소드
-    public String createRefreshToken(String username, String authority, Long userId) {
+    public String createRefreshToken(User user, Long mentorId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtRefreshExpiration);
+
         return Jwts.builder()
-                .subject(username)
-                .claim("authority", authority)
-                .claim("userId", userId)
+                .subject(user.getEmail())
+                .claim("userId", user.getUserId())
+                .claim("authority", user.getAuthority().name())
+                .claim("nickname", user.getNickname())
+                .claim("point", user.getPoint())
+                .claim("diamond", user.getDiamond())
+                .claim("mentorId", mentorId)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(secretKey)
