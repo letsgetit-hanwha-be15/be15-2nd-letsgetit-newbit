@@ -39,6 +39,7 @@ function handlePageChange(page) {
 }
 
 const selectedTab = ref('칼럼')
+const paginationInfo = ref(null)
 </script>
 
 <template>
@@ -58,15 +59,18 @@ const selectedTab = ref('칼럼')
     />
 
     <!-- 오른쪽: 탭 + 콘텐츠 -->
-    <div class="flex flex-col flex-1 py-16 pr-25 ml-5">
+    <div class="flex flex-col flex-1 space-y-8 pr-25 ml-5">
       <MentorProfileTabBar v-model:tab="selectedTab" />
 
       <!-- 콘텐츠 카드 -->
-      <ColumnTab v-if="selectedTab==='칼럼'"></ColumnTab>
-      <SeriesTab v-else-if="selectedTab==='시리즈'"></SeriesTab>
-      <PostTab v-else-if="selectedTab==='게시글'"></PostTab>
-      <ReviewTab v-else-if="selectedTab==='리뷰'"></ReviewTab>
-
+      <div class="border rounded px-4 py-8 space-y-12">
+        <ColumnTab v-if="selectedTab==='칼럼'"/>
+        <SeriesTab v-else-if="selectedTab==='시리즈'"/>
+        <PostTab v-else-if="selectedTab==='게시글'"/>
+        <ReviewTab
+            v-else-if="selectedTab==='리뷰'"
+            v-model:pagination="paginationInfo"/>
+      </div>
 
       <!-- 페이징 바 추가 -->
       <PagingBar

@@ -20,7 +20,7 @@ function selectTab(tab) {
 
 <template>
   <!-- 탭 컨테이너: 수직 가운데 정렬 + 높이 확보 -->
-  <div class="flex items-center min-h-[200px]">
+  <div class="flex items-end min-h-[100px]">
     <div class="flex space-x-6 border-b border-[var(--newbitdivider)]">
       <button
           v-for="tab in tabs"

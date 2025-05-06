@@ -66,7 +66,7 @@ const originalCoffeechats = ref({
 });
 
 const fetchCoffeechats = (page = 1) => {
-  // API 호출 or emit
+  // todo : API 호출 or emit
   console.log('이동할 페이지: ', page)
 }
 
