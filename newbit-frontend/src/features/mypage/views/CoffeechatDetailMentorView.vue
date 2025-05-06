@@ -18,12 +18,6 @@ const user = ref({
   profileImageUrl: profileImage,
   nickname: 'sezeme',
   jobName: '백엔드',
-  temperature: 100,
-  price: 50,
-  preferredTime: '7시 이후 좋아요! 2시간 이하로 신청해주세요!',
-  externalLinkUrl: 'https://example.com',
-  introduction: '안녕하세요! 반갑습니다! 잘 부탁드립니다. 반갑습니다. 잘 부탁드립니다. 반갑스빈다.',
-  isActive: true
 })
 
 const originalCoffeechats = ref([
