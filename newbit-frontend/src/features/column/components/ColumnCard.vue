@@ -34,7 +34,9 @@ const formattedDate = computed(() => {
     <!-- 텍스트 -->
     <div class="flex flex-col justify-between flex-1 pr-4">
       <!-- 제목 -->
-      <h2 class="text-heading3 mb-4">{{ column.title }}</h2>
+      <div class="mb-20">
+        <h2 class="text-heading3">{{ column.title }}</h2>
+      </div>
 
       <!-- 다이아 가격 -->
       <div v-if="column.diamondCount !== undefined" class="flex items-center gap-1 text-13px-regular text-[var(--newbitdark)] mb-4">
