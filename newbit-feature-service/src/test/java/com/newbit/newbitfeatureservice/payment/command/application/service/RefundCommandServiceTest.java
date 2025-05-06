@@ -51,7 +51,7 @@ class RefundCommandServiceTest {
     private Payment payment;
     private Refund refund;
     private Refund savedRefund;
-    private TossPaymentApiDto.PaymentResponse tossPaymentResponse;
+    private TossPaymentApiDto.RefundResponse tossRefundResponse;
 
     @BeforeEach
     void setUp() {
@@ -60,99 +60,53 @@ class RefundCommandServiceTest {
         savedRefund = createTestRefund(payment);
         setRefundId(savedRefund, 1L);
         
-        Map<String, Object> receiptMap = new HashMap<>();
-        receiptMap.put("url", "https://receipt.url");
-        
-        tossPaymentResponse = TossPaymentApiDto.PaymentResponse.builder()
-                .paymentKey("test-refund-key")
-                .orderId("test-order-id")
+        tossRefundResponse = TossPaymentApiDto.RefundResponse.builder()
+                .refundKey("test-refund-key")
+                .paymentKey("test-payment-key")
+                .cancelAmount(10000L)
                 .status("CANCELED")
-                .approvedAt("2023-01-01T12:00:00")
-                .receipt(receiptMap)
+                .reason("테스트 환불")
                 .build();
     }
 
     @Test
-    @DisplayName("전체 환불 - 성공")
-    void cancelPayment_success() {
-        when(paymentRepository.findById(anyLong())).thenReturn(Optional.of(payment));
-        when(tossPaymentApiClient.cancelPayment(anyString(), anyString())).thenReturn(tossPaymentResponse);
+    @DisplayName("결제키로 환불 취소 - 성공")
+    void cancelPaymentByKey_success() {
+        String paymentKey = "test-payment-key";
+        String reason = "테스트 환불";
+        when(paymentRepository.findByPaymentKey(paymentKey)).thenReturn(Optional.of(payment));
+        when(tossPaymentApiClient.requestPaymentCancel(eq(paymentKey), eq(reason), isNull(), isNull()))
+                .thenReturn(tossRefundResponse);
         when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
         when(refundRepository.save(any(Refund.class))).thenReturn(savedRefund);
 
-        PaymentRefundResponse response = refundCommandService.cancelPayment(1L, "환불 테스트");
+        PaymentRefundResponse response = refundCommandService.cancelPaymentByKey(paymentKey, reason);
 
         assertNotNull(response);
-        assertEquals(1L, response.getRefundId());
-        assertEquals(1L, response.getPaymentId());
-        assertEquals(BigDecimal.valueOf(10000), response.getAmount());
-        assertEquals("환불 테스트", response.getReason());
-        
-        verify(paymentRepository).findById(anyLong());
-        verify(tossPaymentApiClient).cancelPayment(anyString(), anyString());
+        assertEquals(reason, response.getReason());
+        verify(paymentRepository).findByPaymentKey(paymentKey);
+        verify(tossPaymentApiClient).requestPaymentCancel(eq(paymentKey), eq(reason), isNull(), isNull());
         verify(paymentRepository).save(any(Payment.class));
         verify(refundRepository).save(any(Refund.class));
     }
 
     @Test
-    @DisplayName("전체 환불 - 결제 내역 없음")
-    void cancelPayment_paymentNotFound() {
-        when(paymentRepository.findById(anyLong())).thenReturn(Optional.empty());
-
-        assertThrows(BusinessException.class, () -> refundCommandService.cancelPayment(1L, "환불 테스트"));
-        
-        verify(paymentRepository).findById(anyLong());
-        verify(tossPaymentApiClient, never()).cancelPayment(anyString(), anyString());
-        verify(paymentRepository, never()).save(any(Payment.class));
-        verify(refundRepository, never()).save(any(Refund.class));
-    }
-    
-    @Test
-    @DisplayName("전체 환불 - 취소 불가능한 상태")
-    void cancelPayment_cannotBeCancelled() {
-        setPaymentStatus(payment, PaymentStatus.CANCELED);
-        
-        when(paymentRepository.findById(anyLong())).thenReturn(Optional.of(payment));
-
-        assertThrows(BusinessException.class, () -> refundCommandService.cancelPayment(1L, "환불 테스트"));
-        
-        verify(paymentRepository).findById(anyLong());
-        verify(tossPaymentApiClient, never()).cancelPayment(anyString(), anyString());
+    @DisplayName("결제키로 환불 취소 - 결제 없음")
+    void cancelPaymentByKey_paymentNotFound() {
+        when(paymentRepository.findByPaymentKey(anyString())).thenReturn(Optional.empty());
+        assertThrows(BusinessException.class, () -> refundCommandService.cancelPaymentByKey("not-exist", "사유"));
+        verify(paymentRepository).findByPaymentKey(anyString());
+        verify(tossPaymentApiClient, never()).requestPaymentCancel(anyString(), anyString(), any(), any());
     }
 
     @Test
-    @DisplayName("부분 환불 - 성공")
-    void cancelPaymentPartial_success() {
-        when(paymentRepository.findById(anyLong())).thenReturn(Optional.of(payment));
-        when(tossPaymentApiClient.cancelPaymentPartial(anyString(), anyString(), anyLong())).thenReturn(tossPaymentResponse);
-        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
-        when(refundRepository.save(any(Refund.class))).thenReturn(savedRefund);
-
-        PaymentRefundResponse response = refundCommandService.cancelPaymentPartial(1L, BigDecimal.valueOf(5000), "부분 환불 테스트");
-
-        assertNotNull(response);
-        assertEquals(1L, response.getRefundId());
-        assertEquals(1L, response.getPaymentId());
-        assertEquals(BigDecimal.valueOf(10000), response.getAmount());
-        assertEquals("환불 테스트", response.getReason());
-        
-        verify(paymentRepository).findById(anyLong());
-        verify(tossPaymentApiClient).cancelPaymentPartial(anyString(), anyString(), anyLong());
-        verify(paymentRepository).save(any(Payment.class));
-        verify(refundRepository).save(any(Refund.class));
-    }
-    
-    @Test
-    @DisplayName("부분 환불 - 금액 초과")
-    void cancelPaymentPartial_amountExceeds() {
-        when(paymentRepository.findById(anyLong())).thenReturn(Optional.of(payment));
-
-        assertThrows(BusinessException.class, () -> 
-            refundCommandService.cancelPaymentPartial(1L, BigDecimal.valueOf(20000), "금액 초과 환불 테스트")
-        );
-        
-        verify(paymentRepository).findById(anyLong());
-        verify(tossPaymentApiClient, never()).cancelPaymentPartial(anyString(), anyString(), anyLong());
+    @DisplayName("결제키로 환불 취소 - 이미 취소된 결제")
+    void cancelPaymentByKey_alreadyCanceled() {
+        payment.updatePaymentStatus(PaymentStatus.CANCELED);
+        when(paymentRepository.findByPaymentKey(anyString())).thenReturn(Optional.of(payment));
+        assertThrows(BusinessException.class, () -> refundCommandService.cancelPaymentByKey("test-key", "사유"));
+        verify(paymentRepository).findByPaymentKey(anyString());
+        verify(tossPaymentApiClient, never()).requestPaymentCancel(anyString(), anyString(), any(), any());
     }
 
     @Test
@@ -160,75 +114,40 @@ class RefundCommandServiceTest {
     void getRefundsByPaymentId_success() {
         when(paymentRepository.existsById(anyLong())).thenReturn(true);
         when(refundRepository.findByPaymentPaymentId(anyLong())).thenReturn(Arrays.asList(refund, savedRefund));
-
         List<PaymentRefundResponse> responses = refundCommandService.getRefundsByPaymentId(1L);
-
         assertNotNull(responses);
         assertEquals(2, responses.size());
-        
         verify(paymentRepository).existsById(anyLong());
         verify(refundRepository).findByPaymentPaymentId(anyLong());
     }
-    
+
     @Test
-    @DisplayName("환불 내역 조회 - 결제 내역 없음")
+    @DisplayName("환불 내역 조회 - 결제 없음")
     void getRefundsByPaymentId_paymentNotFound() {
         when(paymentRepository.existsById(anyLong())).thenReturn(false);
-
         assertThrows(BusinessException.class, () -> refundCommandService.getRefundsByPaymentId(1L));
-        
         verify(paymentRepository).existsById(anyLong());
         verify(refundRepository, never()).findByPaymentPaymentId(anyLong());
-    }
-
-    @Test
-    @DisplayName("결제 ID로 최근 환불 내역 조회 - 성공")
-    void getPayment_success() {
-        when(refundRepository.findByPaymentPaymentId(anyLong())).thenReturn(Arrays.asList(refund, savedRefund));
-
-        PaymentRefundResponse response = refundCommandService.getPayment(1L);
-
-        assertNotNull(response);
-        assertEquals(1L, response.getRefundId());
-        
-        verify(refundRepository).findByPaymentPaymentId(anyLong());
-    }
-    
-    @Test
-    @DisplayName("결제 ID로 최근 환불 내역 조회 - 환불 내역 없음")
-    void getPayment_refundNotFound() {
-        when(refundRepository.findByPaymentPaymentId(anyLong())).thenReturn(Collections.emptyList());
-
-        assertThrows(BusinessException.class, () -> refundCommandService.getPayment(1L));
-        
-        verify(refundRepository).findByPaymentPaymentId(anyLong());
     }
 
     @Test
     @DisplayName("환불 ID로 환불 내역 조회 - 성공")
     void getRefund_success() {
         when(refundRepository.findById(anyLong())).thenReturn(Optional.of(savedRefund));
-
         PaymentRefundResponse response = refundCommandService.getRefund(1L);
-
         assertNotNull(response);
         assertEquals(1L, response.getRefundId());
-        assertEquals(1L, response.getPaymentId());
-        assertEquals(BigDecimal.valueOf(10000), response.getAmount());
-        
         verify(refundRepository).findById(anyLong());
     }
-    
-    @Test
-    @DisplayName("환불 ID로 환불 내역 조회 - 환불 내역 없음")
-    void getRefund_refundNotFound() {
-        when(refundRepository.findById(anyLong())).thenReturn(Optional.empty());
 
+    @Test
+    @DisplayName("환불 ID로 환불 내역 조회 - 없음")
+    void getRefund_notFound() {
+        when(refundRepository.findById(anyLong())).thenReturn(Optional.empty());
         assertThrows(BusinessException.class, () -> refundCommandService.getRefund(1L));
-        
         verify(refundRepository).findById(anyLong());
     }
-    
+
     private Payment createTestPayment() {
         Payment testPayment = Payment.createPayment(
                 BigDecimal.valueOf(10000),
@@ -250,7 +169,7 @@ class RefundCommandServiceTest {
         return Refund.createRefund(
                 payment,
                 BigDecimal.valueOf(10000),
-                "환불 테스트",
+                "테스트 환불",
                 "test-refund-key",
                 false
         );

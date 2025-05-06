@@ -1,3 +1,51 @@
+<script setup>
+import { ref, provide } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/features/stores/auth.js'
+import { logoutUser } from '@/api/user.js'
+import ProfileDropdown from '@/components/common/ProfileDropdown.vue'
+import ChatRoomListModal from '@/features/coffeeletter/components/ChatRoomListDropdown.vue'
+import NotificationDropdown from '@/features/notification/components/NotificationDropdown.vue'
+
+const showChatModal = ref(false)
+const showNotification = ref(false)
+const activeDropdown = ref(null)
+const router = useRouter()
+const authStore = useAuthStore()
+const isAdmin = authStore.userRole === 'ADMIN'
+
+provide('activeDropdown', activeDropdown)
+
+const toggleChatModal = () => {
+  if (activeDropdown.value === 'profile' || activeDropdown.value === 'notification') {
+    activeDropdown.value = null
+  }
+  showChatModal.value = !showChatModal.value
+  activeDropdown.value = showChatModal.value ? 'chat' : null
+}
+
+const toggleNotification = () => {
+  if (activeDropdown.value === 'profile' || activeDropdown.value === 'chat') {
+    activeDropdown.value = null
+  }
+  showNotification.value = !showNotification.value
+  activeDropdown.value = showNotification.value ? 'notification' : null
+}
+
+const goMypage = () => router.push('/mypage')
+
+const handleLogout = async () => {
+  try {
+    await logoutUser()
+    authStore.clearAuth()
+    router.push('/')
+    window.location.reload() // ✅ 강제 새로고침으로 UI 반영
+  } catch (e) {
+    console.error('로그아웃 실패', e)
+  }
+}
+</script>
+
 <template>
   <header class="header">
     <div class="left">
@@ -5,24 +53,12 @@
         <img src="@/assets/image/logo.png" alt="Newbit Logo" />
       </router-link>
       <nav class="nav text-13px-regular">
-        <router-link to="/posts" class="nav-link" active-class="active"
-          >게시판</router-link
-        >
-        <router-link to="/columns" class="nav-link" active-class="active"
-          >칼럼</router-link
-        >
-        <router-link to="/coffeechats" class="nav-link" active-class="active"
-          >커피챗</router-link
-        >
-        <router-link to="/perks" class="nav-link" active-class="active"
-          >심리 테스트</router-link
-        >
+        <router-link to="/posts" class="nav-link" active-class="active">게시판</router-link>
+        <router-link to="/columns" class="nav-link" active-class="active">칼럼</router-link>
+        <router-link to="/mentors" class="nav-link" active-class="active">커피챗</router-link>
+        <router-link to="/perks" class="nav-link" active-class="active">심리 테스트</router-link>
         <div class="divider" v-if="isAdmin"></div>
-        <!-- TODO : authStore, 로그인 기능 추가 시 주석 해제 후 코드 원복 -->
-        <!-- <router-link v-if="isAdmin" to="/admin">Admin</router-link> -->
-        <router-link to="/admin" class="nav-link" active-class="active"
-          >Admin</router-link
-        >
+        <router-link v-if="isAdmin" to="/admin" class="nav-link" active-class="active">Admin</router-link>
       </nav>
     </div>
 
@@ -32,68 +68,41 @@
         <span class="text-13px-regular">상점</span>
       </router-link>
 
-      <div class="chatroom-dropdown-wrapper" ref="chatroomWrapper">
-        <button class="icon-button" @click="toggleChatModal">
-          <img
-            class="chat-icon"
-            src="@/assets/image/chat-icon.png"
-            alt="Chat"
+      <template v-if="authStore.isAuthenticated">
+        <div class="chatroom-dropdown-wrapper">
+          <button class="icon-button" @click="toggleChatModal">
+            <img class="chat-icon" src="@/assets/image/chat-icon.png" alt="Chat" />
+          </button>
+          <ChatRoomListModal
+              v-if="showChatModal"
+              :open="showChatModal"
+              @close="showChatModal = false"
+              :dropdown-id="'chat'"
+          />
+        </div>
+
+        <button class="icon-button relative" @click="toggleNotification">
+          <img class="notification-icon" src="@/assets/image/notification-icon.png" alt="Notifications" />
+          <NotificationDropdown
+              v-if="showNotification"
+              :open="showNotification"
+              @close="showNotification = false"
+              :dropdown-id="'notification'"
           />
         </button>
-        <ChatRoomListModal
-          v-if="showChatModal"
-          :open="showChatModal"
-          @close="showChatModal = false"
-          :dropdown-id="'chat'"
-        />
-      </div>
 
-      <button class="icon-button">
-        <img
-          class="notification-icon"
-          src="@/assets/image/notification-icon.png"
-          alt="Notifications"
-        />
-      </button>
+        <button class="profile-button" @click="goMypage">
+          <img :src="authStore.userInfo?.profileImageUrl || '/default-avatar.png'" alt="프로필" />
+        </button>
+        <button class="nav-button" @click="handleLogout">LOGOUT</button>
+      </template>
 
-      <ProfileDropdown
-        :dropdown-id="'profile'"
-        @dropdown-opened="handleDropdownOpened"
-      />
+      <template v-else>
+        <router-link class="nav-button" to="/login">LOGIN</router-link>
+      </template>
     </div>
   </header>
 </template>
-
-<script setup>
-import { ref, provide } from "vue";
-import ProfileDropdown from "@/components/common/ProfileDropdown.vue";
-import ChatRoomListModal from "@/features/coffeeletter/components/ChatRoomListDropdown.vue";
-
-const showChatModal = ref(false);
-const activeDropdown = ref(null);
-
-provide("activeDropdown", activeDropdown);
-
-const handleDropdownOpened = (id) => {
-  if (id === "profile" && showChatModal.value) {
-    showChatModal.value = false;
-  }
-  activeDropdown.value = id;
-};
-
-const toggleChatModal = () => {
-  if (activeDropdown.value === "profile") {
-    activeDropdown.value = null;
-  }
-
-  showChatModal.value = !showChatModal.value;
-  if (showChatModal.value) {
-    activeDropdown.value = "chat";
-  } else {
-    activeDropdown.value = null;
-  }
-};
-</script>
 
 <style scoped>
 .header {
@@ -176,7 +185,7 @@ const toggleChatModal = () => {
 
 .shop-button span {
   position: relative;
-  top: 1px; /* 아주 살짝 내리기 */
+  top: 1px;
 }
 
 .icon-button {
@@ -205,11 +214,27 @@ const toggleChatModal = () => {
   border-radius: 50%;
   border: none;
   background: none;
+  cursor: pointer;
 }
 
 .profile-button img {
   width: 36px;
   height: 36px;
   border-radius: 50%;
+}
+
+/* ✅ 변경된 nav-button 스타일 */
+.nav-button {
+  background-color: var(--newbitnormal);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.nav-button:hover {
+  background-color: var(--newbitnormal-hover);
 }
 </style>

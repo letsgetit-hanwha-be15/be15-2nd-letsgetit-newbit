@@ -1,6 +1,7 @@
 package com.newbit.newbituserservice.user.service;
 
 
+import com.newbit.newbituserservice.common.dto.Pagination;
 import com.newbit.newbituserservice.common.exception.BusinessException;
 import com.newbit.newbituserservice.common.exception.ErrorCode;
 import com.newbit.newbituserservice.user.dto.request.MentorListRequestDTO;
@@ -52,12 +53,30 @@ public class UserQueryService {
         return profile;
     }
 
-    public List<MentorListResponseDTO> getMentors(MentorListRequestDTO request) {
+    public MentorListResponseWrapper getMentors(MentorListRequestDTO request) {
+        // 페이지와 크기 기본값 보정 (1페이지 이상, 1개 이상)
+        int page = Math.max(request.getPage(), 1);
+        int size = Math.max(request.getSize(), 1);
+
+        // offset 및 limit 설정
+        request.setOffset((page - 1) * size);
+        request.setLimit(size);
+
+        // 멘토 목록 조회
         List<MentorListResponseDTO> mentors = userMapper.findMentors(request);
-        if (mentors.isEmpty()) {
-            throw new BusinessException(ErrorCode.MENTOR_NOT_FOUND);
-        }
-        return mentors;
+
+        // 총 멘토 수 조회
+        long total = userMapper.countMentors(request);
+
+        // 응답 객체 조립
+        return MentorListResponseWrapper.builder()
+                .mentors(mentors)
+                .pagination(Pagination.builder()
+                        .currentPage(page)
+                        .totalPage((int) Math.ceil((double) total / size))
+                        .totalItems(total)
+                        .build())
+                .build();
     }
 
     public String getEmailByUserId(Long userId) {

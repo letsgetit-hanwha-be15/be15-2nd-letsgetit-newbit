@@ -211,5 +211,10 @@ public class SeriesService {
         Page<Series> seriesPage = seriesRepository.searchSeriesByKeyword(condition.getKeyword(), pageable);
         return seriesPage.map(seriesMapper::toMySeriesListDto);
     }
+
+    @Transactional(readOnly = true)
+    public int getColumnCountBySeriesId(Long seriesId) {
+        return columnRepository.findAllBySeries_SeriesId(seriesId).size();
+    }
 }
 

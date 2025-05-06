@@ -11,7 +11,7 @@ const isMentor = true
 
 const column = ref({
   title: '강한 사람이 되는 방법',
-  writer: '유관순',
+  mentorNickname: '유관순',
   date: '2025.04.02',
   likeCount: 10,
   thumbnailUrl: '',
@@ -89,7 +89,7 @@ const handleDelete = () => {
 
         <!-- 작성자/날짜/좋아요 -->
         <div class="flex flex-col gap-2.5 text-13px-regular text-[var(--newbitgray)]">
-          <span>멘토 {{ column.writer }}</span>
+          <span>멘토 {{ column.mentorNickname }}</span>
           <span>작성일 {{ column.date }}</span>
           <button
               @click="toggleLike"

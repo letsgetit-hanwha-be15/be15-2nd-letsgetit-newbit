@@ -1,6 +1,15 @@
 <template>
   <div class="report-detail">
-    <div class="detail-content">
+    <div v-if="loading" class="loading-container">
+      <p class="text-subtitle">데이터를 불러오는 중...</p>
+    </div>
+    <div v-else-if="error" class="error-container">
+      <p class="text-subtitle">{{ error }}</p>
+      <button @click="router.go(-1)" class="back-button text-button">
+        뒤로 가기
+      </button>
+    </div>
+    <div v-else class="detail-content">
       <div class="report-info-section">
         <h2 class="text-heading3">게시글 신고 정보</h2>
         <div class="info-grid">
@@ -125,34 +134,24 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { getReportsByPostId, processReport } from "@/api/report.js";
 
 const route = useRoute();
 const router = useRouter();
 const adminComment = ref("");
+const loading = ref(false);
+const error = ref(null);
 
 const reportData = ref({
-  postId: "123",
-  category: "자유게시판",
-  authorId: "321",
-  createdAt: "2025-04-20 09:15:30",
-  postTitle: "부적절한 내용의 게시글입니다.",
-  postContent: `날씨가 좋고 배가 부르니 잠이 너무 온다. 이럴 땐 노래를 불러서 활력을 찾아봅시다.\n소리 지르는 nigger, 음악에 미치는 nigger!\n감사합니다. Real recognize real!\n이미지 아래 추가 설명글입니다.`,
+  postId: "",
+  category: "",
+  authorId: "",
+  createdAt: "",
+  postTitle: "",
+  postContent: "",
 });
 
-const reportHistory = ref([
-  {
-    reporterId: "1231",
-    reportType: "혐오 표현, 차별",
-    reportedAt: "2025-04-20 09:16:00",
-    content: `해당 게시글에는 다른 사용자를 향한 심각한 모욕적 표현과 차별적 내용이 포함되어 있어 신고합니다. 특히 3번째 문단의 내용은 특정 집단을 향한 혐오 발언으로 보입니다.`,
-  },
-  {
-    reporterId: "5555",
-    reportType: "욕설",
-    reportedAt: "2025-04-20 09:18:12",
-    content: `욕설이 포함되어 있어 신고합니다.`,
-  },
-]);
+const reportHistory = ref([]);
 const currentReportIndex = ref(0);
 
 const totalReports = computed(() => reportHistory.value.length);
@@ -164,20 +163,40 @@ const hasNextReport = computed(
   () => currentReportIndex.value < totalReports.value - 1
 );
 
-const handleHold = () => {
-  // TODO: Implement hold logic
+const handleHold = async () => {
+  await processReportAction("IN_REVIEW");
 };
 
-const handleStop = () => {
-  // TODO: Implement stop logic
+const handleStop = async () => {
+  await processReportAction("SUSPENDED");
 };
 
-const handleDelete = () => {
-  // TODO: Implement delete logic
+const handleDelete = async () => {
+  await processReportAction("DELETED");
 };
 
-const handleFalse = () => {
-  // TODO: Implement false logic
+const handleFalse = async () => {
+  await processReportAction("FALSE_REPORT");
+};
+
+const processReportAction = async (status) => {
+  if (!currentReport.value.id) return;
+
+  try {
+    loading.value = true;
+    await processReport(currentReport.value.id, status);
+
+    // 업데이트된 신고 상태를 가져오기 위해 데이터 다시 로드
+    await fetchReportData();
+
+    // 관리자 코멘트 초기화
+    adminComment.value = "";
+  } catch (err) {
+    error.value = "처리 중 오류가 발생했습니다: " + err.message;
+    console.error("Error processing report:", err);
+  } finally {
+    loading.value = false;
+  }
 };
 
 const navigateToPrev = () => {
@@ -192,16 +211,55 @@ const navigateToNext = () => {
   }
 };
 
-onMounted(async () => {
-  const reportId = route.params.id;
+const fetchReportData = async () => {
+  const postId = route.params.id;
+  if (!postId) return;
+
   try {
-    // TODO: Fetch post data and report history
-    // const response = await fetchPostReportDetail(reportId)
-    // reportData.value = response.postData
-    // reportHistory.value = response.reportHistory
-  } catch (error) {
-    console.error("Failed to fetch report detail:", error);
+    loading.value = true;
+    error.value = null;
+
+    // 게시글 ID로 신고 목록 조회
+    const response = await getReportsByPostId(postId);
+    const reports = response.data.data.content;
+
+    if (reports && reports.length > 0) {
+      // 첫 번째 신고 정보를 기반으로 게시글 데이터 설정
+      const firstReport = reports[0];
+
+      reportData.value = {
+        postId: firstReport.postId,
+        category: firstReport.postCategoryName || "카테고리 없음",
+        authorId: firstReport.postUserId,
+        createdAt: firstReport.postCreatedAt,
+        postTitle: firstReport.postTitle,
+        postContent: firstReport.postContent || "내용 없음",
+      };
+
+      // 신고 내역 설정
+      reportHistory.value = reports.map((report) => ({
+        id: report.id,
+        reporterId: report.reporterId,
+        reportType: report.reportTypeName,
+        reportedAt: report.createdAt,
+        content: report.content,
+      }));
+
+      // 처음 신고 항목을 선택
+      currentReportIndex.value = 0;
+    } else {
+      error.value = "해당 게시글에 대한 신고 내역이 없습니다.";
+    }
+  } catch (err) {
+    error.value = "신고 데이터를 불러오는데 실패했습니다.";
+    console.error("Failed to fetch report detail:", err);
+  } finally {
+    loading.value = false;
   }
+};
+
+onMounted(() => {
+  fetchReportData();
 });
 </script>
 
@@ -213,7 +271,6 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
 }
-
 
 .detail-content {
   flex: 1;
@@ -414,5 +471,33 @@ button {
 
 button:hover:not(:disabled) {
   filter: brightness(0.9);
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.back-button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #038ffd;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #026bbe;
 }
 </style>

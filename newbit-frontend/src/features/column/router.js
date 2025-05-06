@@ -21,4 +21,14 @@ export const columnRoutes = [
         component: () => import("@/features/column/views/ColumnDetailView.vue"),
         props: true
     },
+    {
+        path: "/series",
+        name: "SeriesListView",
+        component: () => import("@/features/column/views/SeriesListView.vue")
+    },
+    {
+        path: '/series/:id',
+        name: 'SeriesDetail',
+        component: () => import('@/features/column/views/SeriesDetailView.vue'),
+    },
 ];

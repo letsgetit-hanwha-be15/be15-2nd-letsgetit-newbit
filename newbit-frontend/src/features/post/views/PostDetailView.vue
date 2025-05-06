@@ -1,10 +1,11 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import ReportModal from '@/features/post/components/ReportModal.vue'
-import { useRouter } from 'vue-router'
 import DeleteConfirmModal from '@/features/post/components/DeleteConfirmModal.vue'
 
+const toast = useToast()
 const reportType = ref('') // 'post' or 'comment'
 const reportedId = ref(null)
 const router = useRouter()
@@ -24,7 +25,7 @@ const closeCommentDeleteModal = () => {
 const confirmCommentDelete = () => {
   comments.value = comments.value.filter(comment => comment.id !== commentToDeleteId.value)
   isCommentDeleteModalOpen.value = false
-  alert('댓글이 삭제되었습니다.')
+  toast.success('댓글이 삭제되었습니다.')
 }
 
 const openDeleteModal = () => {
@@ -38,10 +39,10 @@ const closeDeleteModal = () => {
 const confirmDelete = async () => {
   try {
     await fetch(`/api/posts/${post.value.id}`, { method: 'DELETE' })
-    alert('삭제되었습니다.')
+    toast.success('삭제되었습니다.')
     router.push('/posts')
   } catch (e) {
-    alert('삭제 실패')
+    toast.error('삭제 실패')
   }
   isDeleteModalOpen.value = false
 }
@@ -58,11 +59,9 @@ const openCommentReportModal = (commentId) => {
   isReportModalOpen.value = true
 }
 
-
 const goToEdit = () => {
   router.push(`/posts/${post.value.id}/edit`)
 }
-
 
 const route = useRoute()
 const postId = route.params.postId
@@ -85,14 +84,14 @@ const closeReportModal = () => {
 
 const handleReportSubmit = (reportData) => {
   const typeLabel = reportType.value === 'post' ? '게시글' : '댓글'
-  console.log(`🚨 ${typeLabel} 신고:`, {
+  console.log(`${typeLabel} 신고:`, {
     type: reportType.value,
     targetId: reportedId.value,
     reason: reportData.reason,
     content: reportData.content
   })
 
-  alert(`${typeLabel} 신고가 접수되었습니다.`)
+  toast.success(`${typeLabel} 신고가 접수되었습니다.`)
   closeReportModal()
 }
 
@@ -169,13 +168,13 @@ onMounted(fetchPostDetail)
       <div class="flex justify-end gap-2 mb-2">
         <button
             @click="goToEdit"
-            class="bg-blue-400 text-white px-3 py-1 rounded text-sm"
+            class="bg-blue-500 text-white px-3 py-1 rounded text-sm"
         >
           수정
         </button>
         <button
             @click="openDeleteModal"
-            class="bg-red-500 text-white px-3 py-1 rounded text-sm"
+            class="bg-[var(--newbitred)] text-white px-3 py-1 rounded text-sm"
         >
           삭제
         </button>
@@ -199,7 +198,7 @@ onMounted(fetchPostDetail)
             <img :src="post.liked ? '/src/assets/image/heart-active.png' : '/src/assets/image/heart-default.png'" class="w-4 h-4" />
             <span>{{ post.likeCount }}</span>
           </button>
-          <button @click="openPostReportModal" class="bg-red-500 text-white px-3 py-1 rounded text-sm">신고</button>
+          <button @click="openPostReportModal" class="bg-[var(--newbitred)] text-white px-3 py-1 rounded text-sm">신고</button>
         </div>
       </div>
 
@@ -209,7 +208,7 @@ onMounted(fetchPostDetail)
 
       <div class="mt-4 text-sm">
         <strong>첨부파일</strong> (1개 {{ post.attachment.size }})<br />
-        <span class="text-blue-600 underline cursor-pointer">{{ post.attachment.name }}</span>
+        <span class="text-blue-500 underline cursor-pointer">{{ post.attachment.name }}</span>
       </div>
 
       <div class="mt-10">
@@ -223,11 +222,11 @@ onMounted(fetchPostDetail)
               <span class="text-xs">{{ c.date }}</span>
             </div>
             <p class="text-sm">{{ c.content }}</p>
-            <!-- ✅ 댓글 버튼 (삭제 & 신고) -->
+            <!-- 댓글 버튼 (삭제 & 신고) -->
             <div class="flex justify-between mt-2">
               <!-- 삭제 버튼 -->
               <button
-                  class="bg-red-400 text-white text-xs px-3 py-1 rounded"
+                  class="bg-[var(--newbitred)] text-white text-xs px-3 py-1 rounded"
                   @click="openCommentDeleteModal(c.id)"
               >
                 삭제
@@ -235,7 +234,7 @@ onMounted(fetchPostDetail)
 
               <!-- 신고 버튼 -->
               <button
-                  class="bg-red-500 text-white text-xs px-3 py-1 rounded"
+                  class="bg-[var(--newbitred)] text-white text-xs px-3 py-1 rounded"
                   @click="() => openCommentReportModal(c.id)"
               >
                 신고

@@ -12,8 +12,8 @@ import {columnRoutes} from "@/features/column/router.js";
 import {profileRouters} from "@/features/profile/router.js";
 import {postRoutes} from "@/features/post/router.js";
 import {userRoutes} from "@/features/user/router.js";
-
 import {adminRoutes} from "@/features/admin/router.js";
+import { useAuthStore } from '@/features/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -40,5 +40,26 @@ const router = createRouter({
     ...mypageRoutes
   ],
 });
+
+// 전역 가드 (라우팅 전 확인하여 라우팅 여부 결정 가능)
+router.beforeEach((to) => {
+  const authStore = useAuthStore(); // 이 위치에서 호출 가능함 (라우터가 등록된 이후로)
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    return {
+      name: 'login',
+      query: { redirect: to.fullPath }
+    };
+  }
+
+  if ((to.name === 'login' || to.name === 'register') && authStore.isAuthenticated) {
+    return { name: 'main' };
+  }
+
+  return true; // 명시적으로 통과 처리
+});
+
+
+
 
 export default router;

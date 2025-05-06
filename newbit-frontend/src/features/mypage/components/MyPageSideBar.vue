@@ -1,28 +1,40 @@
 <template>
-  <aside class="w-[214px] border border-[--newbitnormal] rounded-[8px] p-6 bg-[--newbitbackground] shrink-0">
-    <div
-        v-for="section in sidebarSections"
-        :key="section.title"
-        class="mb-8"
-    >
-      <div class="text-13px-regular text-[--newbitgray] mb-3">
-        {{ section.title }}
+  <div class="flex flex-col gap-5">
+    <aside class="w-[214px] border border-[--newbitnormal] rounded-[8px] p-6 bg-[--newbitbackground] shrink-0">
+      <div
+          v-for="section in sidebarSections"
+          :key="section.title"
+          class="mb-8"
+      >
+        <div class="text-13px-regular text-[--newbitgray] mb-3">
+          {{ section.title }}
+        </div>
+        <ul class="list-none p-0 m-0">
+          <SideBarItem
+              v-for="item in section.items"
+              :key="item.text"
+              :to="item.to"
+              :text="item.text"
+          />
+        </ul>
       </div>
-      <ul class="list-none p-0 m-0">
-        <SideBarItem
-            v-for="item in section.items"
-            :key="item.text"
-            :to="item.to"
-            :text="item.text"
-        />
-      </ul>
+    </aside>
+    <div
+        class="text-gray-400 text-13px-regular cursor-pointer hover:underline"
+        @click="$router.push('/mypage/account/delete')"
+    >
+      회원 탈퇴
     </div>
-  </aside>
+  </div>
+
 </template>
 
 <script setup>
 import SideBarItem from '@/features/mypage/components/SideBarItem.vue'
 import { computed } from 'vue'
+
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 const props = defineProps({
   authority: {
@@ -40,17 +52,10 @@ const sidebarSections = computed(() => {
     {
       title: '내 콘텐츠',
       items: [
-        { text: '작성한 게시글', to: '/mypage/contents?type=posts' },
+        { text: '작성한 게시글', to: '/mypage/contents/posts' },
         { text: '좋아요한 콘텐츠', to: '/mypage/contents/like' },
         { text: '구매한 칼럼', to: '/mypage/contents/purchased-columns' },
-        { text: '구독한 시리즈', to: '/mypage/contents?type=subscribed-series' },
-      ],
-    },
-    {
-      title: '커피챗',
-      items: [
-        { text: '커피챗 내역', to: '/mypage/history/coffeechat' },
-        { text: '내 리뷰', to: '/mypage/reviews' },
+        { text: '구독한 시리즈', to: '/mypage/contents/subscribe' },
       ],
     },
     {
@@ -59,6 +64,7 @@ const sidebarSections = computed(() => {
         { text: '포인트 내역', to: '/mypage/history/point' },
         { text: '다이아 내역', to: '/mypage/history/diamond' },
         { text: '결제 내역', to: '/mypage/history/payment' },
+        { text: '커피챗 내역', to: '/mypage/history/coffeechats' },
       ],
     },
     {

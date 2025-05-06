@@ -106,4 +106,21 @@ public class TossPaymentApiDto {
         private String accountNumber;
         private String holderName;
     }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RefundResponse {
+        private String refundKey;
+        private String paymentKey;
+        private Long cancelAmount;
+        private String status;
+        private String requestedAt;
+        private String reason;
+        private Map<String, Object> receipt;
+        private String currency;
+        private String transactionKey;
+        private RefundReceiveAccount refundReceiveAccount;
+    }
 } 

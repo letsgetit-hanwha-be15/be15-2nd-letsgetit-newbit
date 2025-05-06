@@ -1,7 +1,9 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 
 const router = useRouter()
+const selectedId = ref(null)
 
 const categories = [
   { id: null, name: '전체' },
@@ -9,33 +11,45 @@ const categories = [
   { id: 2, name: '문서 템플릿' },
   { id: 3, name: '개발 트렌드/뉴스' },
   { id: 4, name: '취업/이직' },
-  { id: 5, name: '급여 관리/재테크' }
+  { id: 5, name: '급여관리/재테크' },
+  { id: 6, name: '개발 장비' },
+  { id: 7, name: '직장 생활/커뮤니케이션' },
+  { id: 8, name: '업무 생산성' },
+  { id: 9, name: 'AI 활용법' },
+  { id: 10, name: '코드 리뷰' },
+  { id: 11, name: '팀 프로젝트' },
+  { id: 12, name: '기술 면접/코딩 테스트' },
+  { id: 13, name: '개발자 밋업/컨퍼런스' }
 ]
 
-// 클릭 시 RESTful 주소로 이동
 const handleClick = (id) => {
+  selectedId.value = id
   if (id === null) {
-    router.push('/posts') // 전체 게시글
+    router.push('/posts')
   } else {
-    router.push(`/posts/category/${id}`) // 해당 카테고리 게시글
+    router.push(`/posts/category/${id}`)
   }
 }
 </script>
 
 <template>
-  <aside class="w-[200px] p-4 border-r text-sm">
-    <h2 class="mb-2 text-gray-600 font-semibold">카테고리</h2>
+  <aside
+      class="w-[200px] h-[680px] p-4 border border-blue-200 rounded-lg text-sm flex-shrink-0 mt-6 bg-white shadow">
+
+    <!-- 제목 -->
+    <h2 class="text-heading3 text-gray-600 mb-4">카테고리</h2>
+
     <ul class="space-y-2">
       <li
           v-for="cat in categories"
-          :key="cat.id"
+          :key="cat.id ?? 'all'"
+          @click="handleClick(cat.id)"
           :class="[
-          'cursor-pointer px-3 py-2 rounded-md transition',
+          'cursor-pointer px-3 py-2 rounded-md transition text-13px-regular',
           cat.id === selectedId
-            ? 'bg-blue-100 text-blue-600 font-semibold'
+            ? 'bg-blue-100 text-blue-500 font-semibold'
             : 'hover:bg-gray-100 text-gray-800'
         ]"
-          @click="handleClick(cat.id)"
       >
         {{ cat.name }}
       </li>

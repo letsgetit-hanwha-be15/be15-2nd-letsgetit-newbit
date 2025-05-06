@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import Editor from '@toast-ui/editor'
 import '@toast-ui/editor/dist/toastui-editor.css'
 
+const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 
@@ -21,7 +23,7 @@ const submitEdit = async () => {
   const content = toastEditor?.getMarkdown()
 
   if (!title.value.trim() || !content.trim()) {
-    alert('제목과 내용을 입력해주세요.')
+    toast.error('제목과 내용을 입력해주세요.')
     return
   }
 
@@ -35,10 +37,10 @@ const submitEdit = async () => {
       method: 'PUT',
       body: formData
     })
-    alert('게시글이 수정되었습니다.')
+    toast.success('게시글이 수정되었습니다!')
     router.push(`/posts/${postId}`)
   } catch (e) {
-    alert('게시글 수정 실패')
+    toast.error('게시글 수정에 실패했습니다.')
   }
 }
 
@@ -96,7 +98,7 @@ onBeforeUnmount(() => {
           readonly
       />
       <label
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm cursor-pointer flex items-center"
+          class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm cursor-pointer flex items-center"
       >
         찾아보기
         <input type="file" class="hidden" @change="handleFileChange" />
@@ -109,13 +111,13 @@ onBeforeUnmount(() => {
     <div class="flex justify-end gap-2 mt-4">
       <button
           @click="$router.back()"
-          class="bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded"
+          class="bg-[var(--newbitred)] text-white px-4 py-2 rounded"
       >
         취소
       </button>
       <button
           @click="submitEdit"
-          class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          class="bg-blue-500 text-white px-4 py-2 rounded"
       >
         수정
       </button>

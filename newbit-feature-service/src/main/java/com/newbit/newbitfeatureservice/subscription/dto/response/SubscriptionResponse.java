@@ -30,6 +30,18 @@ public class SubscriptionResponse {
     @Schema(description = "상태 변경 시간", example = "2023-08-15T14:30:15")
     private LocalDateTime updatedAt;
     
+    @Schema(description = "시리즈 썸네일 URL", example = "https://example.com/series.jpg")
+    private String thumbnailUrl;
+
+    @Schema(description = "시리즈 제목", example = "개발자 성장 시리즈")
+    private String seriesTitle;
+
+    @Schema(description = "발행자 닉네임", example = "멘토홍길동")
+    private String mentorNickname;
+
+    @Schema(description = "시리즈에 발행된 칼럼 개수", example = "5")
+    private Integer columnCount;
+    
     public static SubscriptionResponse from(Subscription subscription) {
         return SubscriptionResponse.builder()
                 .seriesId(subscription.getSeriesId())

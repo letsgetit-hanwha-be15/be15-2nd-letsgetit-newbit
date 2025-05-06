@@ -22,4 +22,10 @@ public class ReportDTO {
     private ReportStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public Long getPostId() { return postId; }
+    public Long getCommentId() { return commentId; }
+    public java.time.LocalDateTime getCreatedAt() { return createdAt; }
+    public String getContent() { return content; }
+    public com.newbit.newbitfeatureservice.report.command.domain.aggregate.ReportStatus getStatus() { return status; }
 } 
