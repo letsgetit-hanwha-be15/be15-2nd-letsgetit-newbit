@@ -1,63 +1,138 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/features/stores/auth'
+import { getUserProfile } from '@/api/user'
+import { getPostUserId } from '@/api/post'
 import UserProfileSideBar from '@/features/profile/components/UserProfileSideBar.vue'
-import UserUserProfileTabBar from '@/features/profile/components/UserProfileTabBar.vue'
+import UserProfileTabBar from '@/features/profile/components/UserProfileTabBar.vue'
 import PagingBar from '@/components/common/PagingBar.vue'
+import UserPostListItem from '@/features/profile/components/UserPostListItem.vue'
 import profileImage from '@/assets/image/default-profile.png'
 
-// 로그인한 내 ID (임시)
-const myId = 1
+// 인증 및 라우터 정보
+const authStore = useAuthStore()
+const myId = authStore.userId
+const route = useRoute()
+const userId = Number(route.params.id)
 
-// 프로필 대상 유저 정보 (API 연동 전용 Mock)
+// 상태 정의
 const user = ref({
-  id: 1,
+  id: userId,
   profileImageUrl: profileImage,
-  nickname: 'sezeme',
-  jobName: '백엔드',
+  nickname: '',
+  jobName: ''
+})
+const isMyProfile = ref(false)
+const isLoaded = ref(false)
+const currentPage = ref(1)
+const totalPages = ref(0)
+const posts = ref([])
+
+// 항상 8줄 고정
+const paddedPosts = computed(() => {
+  const filled = [...posts.value]
+  while (filled.length < 8) {
+    filled.push(null)
+  }
+  return filled
 })
 
-// 내 프로필인지 여부
-const isMyProfile = ref(user.value.id === myId)
+// 유저 정보 API
+async function fetchUserProfile() {
+  try {
+    const res = await getUserProfile(userId)
+    const data = res.data.data
 
-// 페이징 상태
-const currentPage = ref(1)
-const totalPages = ref(5)
+    user.value = {
+      id: userId,
+      profileImageUrl: data.profileImageUrl || profileImage,
+      nickname: data.nickname,
+      jobName: data.jobName
+    }
 
+    isMyProfile.value = String(userId) === String(myId)
+  } catch (e) {
+    console.error('유저 프로필 조회 실패:', e)
+  }
+}
+
+// 게시글 목록 API
+async function fetchPosts() {
+  try {
+    const res = await getPostUserId(userId, currentPage.value - 1, 8) // page, size
+    const data = res.data
+    posts.value = data.content
+    totalPages.value = data.totalPages
+  } catch (e) {
+    console.error('게시글 조회 실패:', e)
+  }
+}
+
+// 페이지 변경 시 호출
 function handlePageChange(page) {
   currentPage.value = page
-  // 👉 여기에 API 호출 등 페이지 변경에 따른 로직 추가 가능
+  fetchPosts()
 }
+
+// 최초 로딩
+onMounted(async () => {
+  await fetchUserProfile()
+  await fetchPosts()
+  isLoaded.value = true
+})
 </script>
 
 <template>
-  <div class="flex">
-    <!-- 왼쪽: 프로필 사이드바 -->
+  <div v-if="isLoaded" class="flex">
+    <!-- 좌측 프로필 사이드바 -->
     <UserProfileSideBar
-        :isMyProfile="isMyProfile"
         :profileImageUrl="user.profileImageUrl"
         :nickname="user.nickname"
         :jobName="user.jobName"
+        :isMyProfile="isMyProfile"
     />
 
-    <!-- 오른쪽: 탭 + 콘텐츠 -->
+    <!-- 우측 콘텐츠 -->
     <div class="flex flex-col flex-1 py-16 pr-25 ml-5">
-      <UserUserProfileTabBar />
+      <UserProfileTabBar />
 
-      <!-- 콘텐츠 카드 -->
+      <!-- 게시글 테이블 -->
       <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow">
-        <h1 class="text-xl font-bold text-[var(--newbittext)] mb-4">
-          유저 프로필 상세 조회
-        </h1>
-        <p>여기에 유저 게시글, 시리즈, 리뷰 등의 콘텐츠가 들어갈 예정입니다.</p>
+        <table class="w-full table-auto border-collapse">
+          <thead>
+          <tr class="border-b">
+            <th class="py-2">번호</th>
+            <th class="text-left pl-4 py-2">제목</th>
+            <th class="py-2">작성자</th>
+            <th class="py-2">작성일</th>
+            <th class="py-2">좋아요</th>
+          </tr>
+          </thead>
+          <tbody>
+          <UserPostListItem
+              v-for="(post, index) in paddedPosts"
+              :key="index"
+              :post="post"
+              :rowIndex="index"
+              :currentPage="currentPage"
+              :pageSize="8"
+          />
+          </tbody>
+        </table>
       </div>
 
-      <!-- 페이징 바 -->
+      <!-- 페이징바 -->
       <PagingBar
           class="mt-8"
           :current-page="currentPage"
           :total-pages="totalPages"
-          @change-page="handlePageChange"
+          @page-change="handlePageChange"
       />
     </div>
+  </div>
+
+  <div v-else class="text-center text-gray-500 py-20">
+    프로필 정보를 불러오는 중입니다...
   </div>
 </template>
