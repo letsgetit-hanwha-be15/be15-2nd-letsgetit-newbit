@@ -2,21 +2,32 @@
 import { useRoute, useRouter } from "vue-router";
 import PaymentWidget from "@/features/payment/components/PaymentWidget.vue";
 import { paymentService } from "@/features/payment/services/paymentService";
-import { onMounted, ref, onUnmounted } from "vue";
+import { onMounted, ref, onUnmounted, computed } from "vue";
+import { useAuthStore } from "@/features/stores/auth";
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const paymentError = ref(false);
 const errorMessage = ref("");
 const isPageLoading = ref(true);
 
-// URL 쿼리 파라미터에서 결제 정보 가져오기
 const orderId = `ORDER-${Date.now()}`;
 const amount = Number(route.query.amount) || 0;
 const orderName = route.query.orderName || "";
 const customerKey = `CUSTOMER-${route.query.userId || "guest"}`;
-const userId = Number(route.query.userId) || 9;
+
+const userId = computed(() => {
+  try {
+    const token = authStore.accessToken;
+    if (!token) return null;
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.userId;
+  } catch (e) {
+    return null;
+  }
+});
 
 onMounted(() => {
   // 뒤로가기 방지: popstate 발생 시 상품 목록으로 이동
@@ -31,7 +42,6 @@ onMounted(() => {
     return;
   }
 
-  // 페이지 로딩 시뮬레이션
   setTimeout(() => {
     isPageLoading.value = false;
   }, 500);
