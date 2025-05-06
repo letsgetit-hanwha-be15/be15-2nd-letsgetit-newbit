@@ -17,7 +17,7 @@ public interface ColumnRepository extends JpaRepository<Column, Long> {
     // 공개 칼럼 리스트 조회 (페이징)
     @Query("""
         SELECT new com.newbit.newbitfeatureservice.column.dto.response.GetColumnListResponseDto(
-            c.columnId, c.title, c.thumbnailUrl, c.price, c.likeCount, c.mentorId
+            c.columnId, c.title, c.thumbnailUrl, c.price, c.likeCount, c.mentorId, c.createdAt
         )
         FROM Column c
         WHERE c.isPublic = true
@@ -45,17 +45,16 @@ public interface ColumnRepository extends JpaRepository<Column, Long> {
     // 작성자, 제목으로 검색
     @Query("""
     SELECT new com.newbit.newbitfeatureservice.column.dto.response.GetColumnListResponseDto(
-        c.columnId, c.title, c.thumbnailUrl, c.price, c.likeCount, c.mentorId
+        c.columnId, c.title, c.thumbnailUrl, c.price, c.likeCount, c.mentorId, c.createdAt
     )
     FROM Column c
     WHERE c.isPublic = true
     AND (
         :keyword IS NULL OR
-        LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-        LOWER(c.mentorNickname) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
     )
     ORDER BY c.createdAt DESC
 """)
-    Page<GetColumnListResponseDto> searchPublicColumns(@Param("keyword") String keyword, Pageable pageable);
+    Page<GetColumnListResponseDto> searchPublicColumnsByTitle(@Param("keyword") String keyword, Pageable pageable);
 
 }

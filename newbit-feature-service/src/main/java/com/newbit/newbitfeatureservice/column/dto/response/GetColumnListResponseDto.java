@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Schema(description = "공개 칼럼 리스트 조회 응답")
 public class GetColumnListResponseDto {
@@ -29,15 +31,19 @@ public class GetColumnListResponseDto {
     @Schema(description = "멘토 닉네임", example = "개발자도토리")
     private String mentorNickname;
 
+    @Schema(description = "작성 일시", example = "2025-07-02T09:00:00")
+    private LocalDateTime createdAt;
+
     public GetColumnListResponseDto(Long columnId, String title, String thumbnailUrl,
                                     Integer price, Integer likeCount,
-                                    Long mentorId) {
+                                    Long mentorId, LocalDateTime createdAt) {
         this.columnId = columnId;
         this.title = title;
         this.thumbnailUrl = thumbnailUrl;
         this.price = price;
         this.likeCount = likeCount;
         this.mentorId = mentorId;
+        this.createdAt = createdAt;
     }
     public void setMentorNickname(String nickname) {
         this.mentorNickname = nickname;
