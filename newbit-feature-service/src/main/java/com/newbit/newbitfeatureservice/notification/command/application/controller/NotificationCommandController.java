@@ -19,6 +19,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @Tag(name = "알림 API", description = "알림 연결, 발송 API")
 @RestController
@@ -35,7 +37,7 @@ public class NotificationCommandController {
         Long userId = customUser.getUserId();
 
         String emitterId = userId + "_" + UUID.randomUUID();
-        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 60초 타임아웃
+        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 1시간
 
         sseEmitterRepository.save(emitterId, userId, emitter);
 
@@ -49,6 +51,15 @@ public class NotificationCommandController {
             emitter.completeWithError(e);
         }
 
+        // 🔁 30초마다 heartbeat 전송
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+            try {
+                emitter.send(SseEmitter.event().name("heartbeat").data("ping"));
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+            }
+        }, 30, 30, TimeUnit.SECONDS); // 30초 후 시작, 30초 간격
+
         return emitter;
     }
 
@@ -61,8 +72,8 @@ public class NotificationCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    //    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/{notificationId}/read")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<Void>> markAsRead(
             @AuthenticationPrincipal CustomUser user,
             @PathVariable Long notificationId
@@ -71,11 +82,12 @@ public class NotificationCommandController {
         return ResponseEntity.ok().build();
     }
 
+    //    @PreAuthorize("isAuthenticated()")
     @PatchMapping("/read-all")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal CustomUser user) {
+    public ResponseEntity<ApiResponse<Void>> markAllAsRead(@AuthenticationPrincipal CustomUser user) {
+        System.out.println("user: " + user);
         notificationCommandService.markAllAsRead(user.getUserId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
 
