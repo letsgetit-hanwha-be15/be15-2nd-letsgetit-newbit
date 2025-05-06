@@ -1,7 +1,9 @@
-<!-- ColumnCard.vue -->
 <script setup>
 import { computed, ref } from 'vue'
 import dayjs from 'dayjs'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const props = defineProps({
   column: {
@@ -9,6 +11,10 @@ const props = defineProps({
     required: true,
   },
 })
+
+const goToDetail = () => {
+  router.push(`/columns/${props.column.id}`)
+}
 
 // 좋아요 상태 (임시 로컬 상태)
 const isLiked = ref(false)
@@ -31,7 +37,9 @@ const formattedDate = computed(() => {
 </script>
 
 <template>
-  <div class="flex justify-between items-start p-5 border border-[var(--newbitdivider)] rounded-lg shadow-sm">
+  <div
+      class="flex justify-between items-start p-5 border border-[var(--newbitdivider)] rounded-lg shadow-sm"
+      @click="goToDetail">
     <!-- 텍스트 -->
     <div class="flex flex-col justify-between flex-1 pr-4">
       <!-- 제목 -->
