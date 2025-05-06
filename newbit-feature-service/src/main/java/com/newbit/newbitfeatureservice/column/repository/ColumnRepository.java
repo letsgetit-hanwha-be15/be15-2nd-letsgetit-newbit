@@ -25,9 +25,10 @@ public interface ColumnRepository extends JpaRepository<Column, Long> {
     """)
     Page<GetColumnListResponseDto> findAllByIsPublicTrueOrderByCreatedAtDesc(Pageable pageable);
 
+    // 칼럼 상세 조회
     @Query("""
     SELECT new com.newbit.newbitfeatureservice.column.dto.response.GetColumnDetailResponseDto(
-        c.columnId, c.title, c.content, c.price, c.thumbnailUrl, c.likeCount, c.mentorId
+        c.columnId, c.title, c.content, c.price, c.thumbnailUrl, c.likeCount, c.mentorId, c.createdAt
     )
     FROM Column c
     WHERE c.columnId = :columnId AND c.isPublic = true

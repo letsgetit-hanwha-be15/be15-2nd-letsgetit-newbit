@@ -81,3 +81,8 @@ export function logoutUser() {
 export function refreshUserToken() {
     return api.post(`user/auth/refresh`)
 }
+
+/* 12. 유저 프로필 조회 */
+export function getUserProfile(userId) {
+    return api.get(`user/users/${userId}/profile`);
+}

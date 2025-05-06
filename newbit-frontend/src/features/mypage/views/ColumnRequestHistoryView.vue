@@ -33,7 +33,7 @@
 
             <!-- 반려 사유 -->
             <p v-if="item.status === '반려'" class="text-13px-regular text-[var(--newbitgray)]">
-              반려 사유 : {{ item.rejectionReason }}
+              반려 사유 : {{ item.rejectedReason }}
             </p>
           </div>
 
@@ -60,51 +60,48 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { getMyColumnRequests } from '@/api/column'
+import { useToast } from 'vue-toastification'
+
+const toast = useToast()
+
+const columnRequests = ref([])
 
 const diamondIcon = new URL('@/assets/image/diamond-icon.png', import.meta.url).href
 const fallbackImg = new URL('@/assets/image/product-skeleton.png', import.meta.url).href
-
-// 임시 데이터
-const columnRequests = ref([
-  {
-    id: 1,
-    title: '[인터뷰 1] 스펙의 전례 없는 위기 대응 전략: "통제할 수 있는 것에 집중하자"',
-    diamondCount: 10,
-    date: '2025.07.02',
-    type: '등록',
-    status: '반려',
-    rejectionReason: '내용에 비해 가격이 상대적으로 높습니다. 가격 재고 부탁합니다.',
-    thumbnailUrl: 'https://via.placeholder.com/160x100?text=썸네일1',
-  },
-  {
-    id: 2,
-    title: '[5분 순삭] 팀장없이도 굴러가는 시스템 만들기',
-    diamondCount: 5,
-    date: '2025.05.10',
-    type: '수정',
-    status: '승인',
-    rejectionReason: '',
-    thumbnailUrl: 'https://via.placeholder.com/160x100?text=썸네일2',
-  },
-  {
-    id: 3,
-    title: '직장생활을 바꿀 수 있는 한 단어, 일의 맥락을 발견하는 다섯가지 방법',
-    diamondCount: 5,
-    date: '2025.04.12',
-    type: '수정',
-    status: '진행중',
-    rejectionReason: '',
-    thumbnailUrl: 'https://via.placeholder.com/160x100?text=썸네일3',
-  }
-])
 
 const statusColor = (status) => {
   if (status === '승인') return 'text-blue-500'
   if (status === '반려') return 'text-[var(--newbitred)]'
   return 'text-[var(--newbitgray)]'
 }
-</script>
 
+// 요청 타입 한글 변환
+const requestTypeToKorean = (type) => {
+  if (type === 'CREATE') return '등록'
+  if (type === 'UPDATE') return '수정'
+  if (type === 'DELETE') return '삭제'
+  return ''
+}
+
+onMounted(async () => {
+  try {
+    const res = await getMyColumnRequests()
+    columnRequests.value = res.data.data.map((item) => ({
+      id: item.columnRequestId,
+      title: item.title,
+      diamondCount: item.price || 0,
+      date: item.createdAt?.substring(0, 10).replace(/-/g, '.'),
+      type: requestTypeToKorean(item.requestType),
+      status: item.isApproved === null ? '진행중' : item.isApproved ? '승인' : '반려',
+      rejectedReason: item.rejectedReason || '',
+      thumbnailUrl: item.thumbnailUrl,
+    }))
+  } catch (e) {
+    toast.error('칼럼 요청 목록을 불러오지 못했어요.')
+  }
+})
+</script>
 <style scoped>
 </style>
