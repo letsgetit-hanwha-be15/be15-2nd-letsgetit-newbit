@@ -40,9 +40,12 @@ public class ColumnRequestService {
         log.info("userId 테슽 {}", userId);
         Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
 
-        // 2. 시리즈 조회
-        Series series = seriesRepository.findById(dto.getSeriesId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+        // 2. 시리즈 조회 (선택 사항이므로 null 가능성 처리)
+        Series series = null;
+        if (dto.getSeriesId() != null) {
+            series = seriesRepository.findById(dto.getSeriesId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.SERIES_NOT_FOUND));
+        }
 
         // 3. Column 저장
         Column column = columnMapper.toColumn(dto, mentorId, series);
