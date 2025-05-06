@@ -33,6 +33,8 @@ const me = ref({
   "diamond": 30
 })
 
+
+// todo : coffeechat 상세 조회 api에서 coffeechat.sale_confirmed_at 속성 추가로 가져오기
 const originalCoffeechats = ref([
   {
     "success": true,
@@ -123,6 +125,7 @@ const originalCoffeechats = ref([
         "purchaseQuantity": 2,
         "confirmedSchedule": "2025-05-14T22:55:00",
         "endedAt": "2025-05-14T23:55:00",
+        "saleConfirmedAt" : "2025-05-14T23:57:00",
         "updatedAt": null,
         "reason": null,
         "mentorId": 3,
@@ -243,7 +246,7 @@ function registerReview() {
           커피레터 입장
         </button>
         <button v-if="coffeechat.progressStatus === 'COMPLETE'"
-                :disabled
+                :disabled="!coffeechat.saleConfirmedAt"
                 @click="confirmPurchase"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
           구매 확정

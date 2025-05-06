@@ -11,7 +11,7 @@ const router = useRouter();
 const emit = defineEmits(['submit']);
 
 const formData = ref({
-  rating: 1,
+  rating: 5,
   comment: null,
   tip: null,
   coffeechatId: Number(route.params.id)
