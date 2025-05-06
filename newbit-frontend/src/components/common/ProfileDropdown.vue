@@ -52,7 +52,7 @@
           멘토 활동 관리
         </li>
         <li @click="goTo('/mypage/account')">설정</li>
-        <li class="logout" @click="logout">로그아웃</li>
+        <li class="logout" @click="emit('logout')">로그아웃</li>
       </ul>
     </div>
   </div>
@@ -72,7 +72,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["dropdown-opened"]);
+const emit = defineEmits(['dropdown-opened', 'logout']);
 const router = useRouter();
 const showDropdown = ref(false);
 const activeDropdown = inject("activeDropdown", ref(null));
@@ -106,10 +106,6 @@ const goTo = (path) => {
   closeDropdown();
 };
 
-const logout = () => {
-  closeDropdown();
-  router.push("/");
-};
 
 function handleClickOutside(event) {
   if (

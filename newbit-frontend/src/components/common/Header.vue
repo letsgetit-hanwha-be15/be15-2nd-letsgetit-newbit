@@ -104,8 +104,8 @@ const handleLogout = async () => {
             class="mr-3"
             :dropdown-id="'profile'"
             @dropdown-opened="handleDropdownOpened"
+            @logout="handleLogout"
         />
-        <button class="nav-button" @click="handleLogout">LOGOUT</button>
       </template>
 
       <template v-else>
