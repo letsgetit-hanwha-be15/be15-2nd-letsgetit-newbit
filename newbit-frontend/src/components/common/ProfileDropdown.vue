@@ -86,7 +86,6 @@ watch(activeDropdown, (newValue) => {
 const toggleDropdown = () => {
   const newState = !showDropdown.value;
   showDropdown.value = newState;
-  console.log(authStore.nickname);
 
   if (newState) {
     emit("dropdown-opened", props.dropdownId);
