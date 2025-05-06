@@ -1,3 +1,4 @@
+<!-- ColumnCard.vue -->
 <script setup>
 import { computed, ref } from 'vue'
 import dayjs from 'dayjs'
@@ -5,11 +6,11 @@ import dayjs from 'dayjs'
 const props = defineProps({
   column: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 })
 
-// 좋아요 상태
+// 좋아요 상태 (임시 로컬 상태)
 const isLiked = ref(false)
 const toggleLike = () => {
   isLiked.value = !isLiked.value
@@ -21,12 +22,12 @@ const heartDefault = new URL('@/assets/image/heart-default.png', import.meta.url
 const heartActive = new URL('@/assets/image/heart-active.png', import.meta.url).href
 const diamondIcon = new URL('@/assets/image/diamond-icon.png', import.meta.url).href
 
+// 날짜 포맷
 const formattedDate = computed(() => {
   return props.column.createdAt
       ? dayjs(new Date(props.column.createdAt)).format('YYYY.MM.DD')
       : ''
 })
-
 </script>
 
 <template>

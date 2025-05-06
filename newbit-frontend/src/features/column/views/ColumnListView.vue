@@ -17,17 +17,20 @@ const error = ref(null)
 
 const fetchColumns = async () => {
   try {
-    let res
-    const page = currentPage.value - 1 // 백엔드는 0부터 시작
+    const page = currentPage.value - 1
     const size = 5
+    let res, content = []
 
     if (searchKeyword.value.trim()) {
       res = await searchPublicColumns({ keyword: searchKeyword.value }, page, size)
+      content = res.data?.data?.content || []
+      totalPage.value = res.data?.data?.totalPages || 1
     } else {
       res = await getPublicColumnList(page, size)
+      content = res.data?.content || []
+      totalPage.value = res.data?.totalPages || 1
     }
 
-    const content = res.data.content || []
     columns.value = content.map(col => ({
       id: col.columnId,
       title: col.title,
@@ -35,15 +38,14 @@ const fetchColumns = async () => {
       mentorNickname: col.mentorNickname,
       diamondCount: col.price,
       likeCount: col.likeCount,
-      createdAt: col.createdAt // createdAt 필드가 없으면 기본값
+      createdAt: col.createdAt
     }))
-    totalPage.value = res.data.totalPages
     error.value = null
   } catch (e) {
-    console.error(e)
     error.value = '칼럼 목록을 불러오는 데 실패했습니다.'
   }
 }
+
 
 const handleSearch = () => {
   currentPage.value = 1

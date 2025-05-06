@@ -151,10 +151,13 @@ public class ColumnService {
         Pageable pageable = PageRequest.of(page, size);
         String keyword = condition.getKeyword();
 
-        Page<GetColumnListResponseDto> resultPage = columnRepository.searchPublicColumnsByTitle(keyword, pageable);
+        // 1차로 모든 공개 칼럼을 가져옴 (검색은 자바에서 처리)
+        Page<GetColumnListResponseDto> resultPage = columnRepository.findAllByIsPublicTrueOrderByCreatedAtDesc(pageable);
         List<GetColumnListResponseDto> content = resultPage.getContent();
 
         List<GetColumnListResponseDto> filtered = new ArrayList<>();
+
+        String loweredKeyword = keyword != null ? keyword.toLowerCase() : null;
 
         for (GetColumnListResponseDto dto : content) {
             try {
@@ -163,8 +166,9 @@ public class ColumnService {
                 String nickname = userFeignClient.getNicknameByUserId(userId).getData();
                 dto.setMentorNickname(nickname);
 
-                // keyword로 mentorNickname도 필터링
-                if (keyword == null || nickname.toLowerCase().contains(keyword.toLowerCase()) || dto.getTitle().toLowerCase().contains(keyword.toLowerCase())) {
+                if (loweredKeyword == null ||
+                        (nickname != null && nickname.toLowerCase().contains(loweredKeyword)) ||
+                        (dto.getTitle() != null && dto.getTitle().toLowerCase().contains(loweredKeyword))) {
                     filtered.add(dto);
                 }
 
