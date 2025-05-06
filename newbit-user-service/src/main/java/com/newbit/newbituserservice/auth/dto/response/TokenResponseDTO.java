@@ -10,7 +10,10 @@ public class TokenResponseDTO {
     private String email;
     private String nickname;
     private String authority;
-    private String accessToken;
     private String profileImageUrl;
+    private Integer point;
+    private Integer diamond;
+    private Long mentorId;
+    private String accessToken;
     private String refreshToken;
 }
