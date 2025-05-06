@@ -18,6 +18,7 @@
     "axios": "^1.9.0",
     "dayjs": "^1.11.13",
     "element-plus": "^2.9.9",
+    "event-source-polyfill": "^1.0.31",
     "highlight.js": "^11.11.1",
     "pinia": "^3.0.1",
     "sockjs-client": "^1.6.1",
