@@ -49,7 +49,18 @@ onBeforeUnmount(() => {
 
 // 모두 읽음 처리
 const handleMarkAllAsRead = async () => {
-  await store.markAllRead();
+  try {
+    await store.markAllRead();
+
+    store.notifications = store.notifications.map(n => ({
+      ...n,
+      isRead: true
+    }));
+
+    store.hasNew = false;
+  } catch (e) {
+    console.error('알림 읽음 처리 실패', e);
+  };
 };
 </script>
 
@@ -70,7 +81,7 @@ const handleMarkAllAsRead = async () => {
 
     <div class="max-h-96 overflow-y-auto">
       <NotificationItem
-          v-for="n in store.notifications"
+          v-for="n in store.notifications.filter(n => !n.isRead)"
           :key="n.notificationId"
           :notification="n"
       />
