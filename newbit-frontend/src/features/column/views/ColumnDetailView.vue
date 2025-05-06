@@ -14,7 +14,9 @@ const columnId = Number(route.params.id)
 const userId = authStore.userId || 12;
 // const userId = 12;
 const column = ref(null)
-const isMentor = true // TODO: 로그인 유저와 비교하여 판단
+
+const isMentor = authStore.userRole === 'MENTOR'
+// const isOwner = computed(() => column.value?.mentorId === authStore.mentorId)  // 추후에 적용
 
 const isLiked = ref(false)
 const toggleLike = () => {
