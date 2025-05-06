@@ -43,7 +43,7 @@ onMounted(() => {
 
       <PagingBar
           :currentPage="purchasedColumns.pagination.currentPage"
-          :totalPage="purchasedColumns.pagination.totalPage"
+          :totalPages="purchasedColumns.pagination.totalPage"
           @page-change="handlePageChange"
       />
     </div>

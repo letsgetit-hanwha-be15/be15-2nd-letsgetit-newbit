@@ -1,6 +1,13 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
+function decodeJwtPayload(token) {
+    const payload = token.split('.')[1];
+    const decoded = atob(payload);
+    const utf8Payload = new TextDecoder().decode(Uint8Array.from(decoded, c => c.charCodeAt(0)));
+    return JSON.parse(utf8Payload);
+}
+
 export const useAuthStore = defineStore('auth', () => {
     const accessToken = ref(null);
     const userRole = ref(null);
@@ -21,7 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
     function setAuth(at) {
         accessToken.value = at;
         try {
-            const payload = JSON.parse(atob(at.split('.')[1]));
+            const payload = decodeJwtPayload(at);
             console.log('payload', payload);
             userRole.value = payload.authority;
             userId.value = payload.userId;

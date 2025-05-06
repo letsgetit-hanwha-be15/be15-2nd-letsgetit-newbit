@@ -3,11 +3,11 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import ColumnRequestForm from '@/features/column/components/ColumnRequestForm.vue'
+import { createColumnRequest } from '@/api/column'
 
 const router = useRouter()
 const toast = useToast()
 
-// 시리즈 목록 임시 더미데이터
 const seriesList = [
   { id: '', name: '선택 없음' },
   { id: '1', name: '시리즈 제목1' },
@@ -16,24 +16,31 @@ const seriesList = [
   { id: '4', name: '버텨야 할 때와 그만두어야 할 때' }
 ]
 
-// ColumnRequestForm에서 등록 버튼 누를 때 실행되는 콜백
-const handleSubmit = (formData) => {
-  console.log('폼 제출됨:', formData)
+const handleSubmit = async (formData) => {
+  try {
+    const payload = {
+      title: formData.title,
+      price: formData.price,
+      seriesId: formData.seriesId ? Number(formData.seriesId) : null, // 문자열이면 숫자로 변환
+      content: formData.content || null,
+      thumbnailUrl: formData.thumbnail || null
+    }
 
-  // 성공 알림 표시
-  toast.success('등록 요청에 성공했습니다!')
-  // 칼럼 목록으로 이동
-  router.push('/columns')
+    console.log('🔍 payload:', payload)
 
-  // TODO: API 연동 후 성공 시 이동 처리
-  // await columnApi.submit(formData)
-  // router.push('/columns')
+    await createColumnRequest(payload)
+
+    toast.success('칼럼 등록 요청이 완료되었습니다!')
+    router.push('/mypage/mentor/column-requests')  // 또는 원하는 목록 페이지
+  } catch (error) {
+    console.error('칼럼 등록 요청 실패:', error)
+    toast.error('등록 요청 중 오류가 발생했습니다.')
+  }
 }
 
 const handleCancel = () => {
-  router.push('/columns')  // 칼러 목록 페이지로 이동
+  router.push('/columns')
 }
-
 </script>
 
 <template>
