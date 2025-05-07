@@ -34,7 +34,7 @@ spring:
             - Method=GET,POST,OPTIONS
           filters:
             - RewritePath=/api/v1/feature/ws/(?<segment>.*), /ws/${segment}
-            -
+#            -
         # 실제 WebSocket 업그레이드 요청
 
         - id: feature-service-ws
