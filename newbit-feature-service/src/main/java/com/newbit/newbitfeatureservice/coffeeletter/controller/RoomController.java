@@ -20,6 +20,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.newbit.newbitfeatureservice.security.model.CustomUser;
+
 
 @Slf4j
 @RestController
@@ -46,17 +49,10 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getRoomById(roomId));
     }
     
-    @Operation(summary = "사용자별 채팅방 조회", description = "특정 사용자가 참여한 모든 채팅방을 조회합니다.")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CoffeeLetterRoomDTO>> getRoomsByUserId(
-            @Parameter(description = "사용자 ID") @PathVariable Long userId) {
-        return ResponseEntity.ok(roomService.getRoomsByUserId(userId));
-    }
-    
     @Operation(summary = "사용자별/상태별 채팅방 조회", description = "특정 사용자가 참여한 특정 상태의 채팅방을 조회합니다.")
     @GetMapping("/user/{userId}/status/{status}")
     public ResponseEntity<List<CoffeeLetterRoomDTO>> getRoomsByUserIdAndStatus(
-            @Parameter(description = "사용자 ID") @PathVariable Long userId, 
+            @Parameter(description = "사용자 ID") @PathVariable Long userId,
             @Parameter(description = "채팅방 상태 (ACTIVE, INACTIVE, CANCELED)") @PathVariable CoffeeLetterRoom.RoomStatus status) {
         return ResponseEntity.ok(roomService.getRoomsByUserIdAndStatus(userId, status));
     }
@@ -94,5 +90,23 @@ public class RoomController {
     public ResponseEntity<CoffeeLetterRoomDTO> cancelRoom(
             @Parameter(description = "채팅방 ID") @PathVariable String roomId) {
         return ResponseEntity.ok(roomService.cancelRoom(roomId));
+    }
+
+    @Operation(summary = "내 채팅방 목록 조회", description = "현재 인증된 사용자가 참여한 모든 채팅방을 조회합니다.")
+    @GetMapping("/my")
+    public ResponseEntity<List<CoffeeLetterRoomDTO>> getMyRooms(
+            @Parameter(hidden = true) @AuthenticationPrincipal CustomUser customUser) { 
+
+        if (customUser == null) {
+            log.warn("Unauthorized access attempt to /my rooms");
+            return ResponseEntity.status(401).build();
+        }
+        Long currentUserId = customUser.getUserId();
+        if (currentUserId == null) {
+            log.error("User ID not found in CustomUser principal for user: {}", customUser.getUsername());
+            return ResponseEntity.status(500).build();
+        }
+
+        return ResponseEntity.ok(roomService.getRoomsByUserId(currentUserId));
     }
 }

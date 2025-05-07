@@ -2,6 +2,10 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import { getPostDetail } from '@/api/post'
+import { deletePost } from '@/api/post'
+import { postComment } from '@/api/post'
+import { deleteComment } from '@/api/post'
 import ReportModal from '@/features/post/components/ReportModal.vue'
 import DeleteConfirmModal from '@/features/post/components/DeleteConfirmModal.vue'
 
@@ -22,10 +26,17 @@ const closeCommentDeleteModal = () => {
   isCommentDeleteModalOpen.value = false
 }
 
-const confirmCommentDelete = () => {
-  comments.value = comments.value.filter(comment => comment.id !== commentToDeleteId.value)
-  isCommentDeleteModalOpen.value = false
-  toast.success('댓글이 삭제되었습니다.')
+const confirmCommentDelete = async () => {
+  try {
+    await deleteComment(post.value.id, commentToDeleteId.value)
+    toast.success('댓글이 삭제되었습니다.')
+    await fetchPostDetail() // 댓글 목록 다시 불러오기
+  } catch (e) {
+    toast.error('댓글 삭제에 실패했습니다.')
+    console.error('댓글 삭제 오류:', e)
+  } finally {
+    isCommentDeleteModalOpen.value = false
+  }
 }
 
 const openDeleteModal = () => {
@@ -38,13 +49,14 @@ const closeDeleteModal = () => {
 
 const confirmDelete = async () => {
   try {
-    await fetch(`/api/posts/${post.value.id}`, { method: 'DELETE' })
+    await deletePost(post.value.id)
     toast.success('삭제되었습니다.')
     router.push('/posts')
   } catch (e) {
     toast.error('삭제 실패')
+  } finally {
+    isDeleteModalOpen.value = false
   }
-  isDeleteModalOpen.value = false
 }
 
 const openPostReportModal = () => {
@@ -117,46 +129,47 @@ const totalPages = computed(() => {
   return Math.ceil(comments.value.length / pageSize)
 })
 
-const submitComment = () => {
+const submitComment = async () => {
   if (!newComment.value.trim()) return
-  comments.value.unshift({
-    id: Date.now(),
-    nickname: '익명 사용자',
-    date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-    content: newComment.value.trim()
-  })
-  newComment.value = ''
-  currentPage.value = 1
+
+  try {
+    await postComment(post.value.id, newComment.value.trim())
+    toast.success('댓글이 등록되었습니다.')
+    newComment.value = ''
+    await fetchPostDetail() // 댓글 목록 다시 불러오기
+  } catch (e) {
+    toast.error('댓글 등록에 실패했습니다.')
+    console.error('댓글 등록 오류:', e)
+  }
 }
 
 const fetchPostDetail = async () => {
-  post.value = {
-    id: postId,
-    title: '생산성을 높여주는 개발 툴 추천 리스트',
-    author: '일산 김기홍',
-    createdAt: '2025.05.01. 22:09',
-    content: `안녕하세요. 개발하면서 자주 사용하는 유용한 툴들을 공유해봅니다!
-여러분도 본인이 자주 쓰는 툴들 공유해 주세요 🙌
-
-✅ 추천 툴 목록
-1. Postman
-- API 테스트할 때 없어서는 안 될 존재!
-2. Notion
-- 프로젝트 정리, 회의록, 일정 관리까지 한번에.`,
-    likeCount: 10,
-    liked: false,
-    attachment: {
-      name: '개발 도구 리스트.xlsx',
-      size: '451KB'
+  try {
+    const res = await getPostDetail(postId)
+    post.value = {
+      id: res.id,
+      title: res.title,
+      author: res.writerName,
+      createdAt: res.createdAt.replace('T', ' ').slice(0, 16),
+      content: res.content,
+      likeCount: res.likeCount,
+      liked: false,
+      attachment: {
+        name: res.imageUrls?.[0]?.split('/').pop() || '첨부 이미지',
+        size: '알 수 없음'
+      }
     }
-  }
 
-  comments.value = Array.from({ length: 18 }, (_, i) => ({
-    id: i + 1,
-    nickname: `사용자 ${i + 1}`,
-    date: `2025.04.23. 23:${(10 + i).toString().padStart(2, '0')}`,
-    content: `댓글 내용 ${i + 1}`
-  }))
+    comments.value = res.comments.map((c) => ({
+      id: c.id,
+      nickname: c.writerName,
+      date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      content: c.content
+    }))
+  } catch (e) {
+    console.error('게시글 상세 조회 실패:', e)
+    toast.error('게시글을 불러오지 못했습니다.')
+  }
 }
 
 onMounted(fetchPostDetail)

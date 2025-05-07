@@ -16,6 +16,8 @@ const displayThumbnail = computed(() =>
         : fallbackImg
 )
 
+const title = computed(() => props.series.title ?? props.series.seriesTitle ?? '')
+
 // 구독 toggle 함수 (임시)
 const toggleSubscription = () => {
   props.series.subscribed = !props.series.subscribed
@@ -40,10 +42,13 @@ const toggleSubscription = () => {
       </button>
     </div>
     <p class="text-12px-regular text-[var(--newbitgray)] mb-1">
-      {{ series.mentorNickname }} | {{ series.columnCount }}개의 칼럼
+      <template v-if="series.mentorNickname">
+        {{ series.mentorNickname }} |
+      </template>
+      {{ series.columnCount }}개의 칼럼
     </p>
     <p class="text-14px-bold text-[var(--newbittext)] mt-1">
-      {{ series.title }}
+      {{ title }}
     </p>
   </div>
 </template>

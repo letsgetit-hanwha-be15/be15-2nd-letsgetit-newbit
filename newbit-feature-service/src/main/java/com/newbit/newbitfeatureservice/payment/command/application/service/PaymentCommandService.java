@@ -59,16 +59,16 @@ public class PaymentCommandService {
                 updatedPayment.getPaymentId(),
                 diamondAmount
         );
-
-        String notificationContent = String.format("결제가 완료 되었습니다. (결제 금액: %,d)", updatedPayment.getAmount().intValue());
-        notificationCommandService.sendNotification(
-                new NotificationSendRequest(
-                        updatedPayment.getUserId(),
-                        14L,
-                        payment.getPaymentId(),
-                        notificationContent
-                )
-        );
+// TODO : 알림 에러 때문에 주석 처리해 놓음
+//        String notificationContent = String.format("결제가 완료 되었습니다. (결제 금액: %,d)", updatedPayment.getAmount().intValue());
+//        notificationCommandService.sendNotification(
+//                new NotificationSendRequest(
+//                        updatedPayment.getUserId(),
+//                        14L,
+//                        payment.getPaymentId(),
+//                        notificationContent
+//                )
+//        );
     }
 
     @Transactional(readOnly = true)

@@ -1,13 +1,11 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/features/stores/auth'
 import { getUserProfile } from '@/api/user'
-import { getPostUserId } from '@/api/post'
 import UserProfileSideBar from '@/features/profile/components/UserProfileSideBar.vue'
 import UserProfileTabBar from '@/features/profile/components/UserProfileTabBar.vue'
-import PagingBar from '@/components/common/PagingBar.vue'
-import UserPostListItem from '@/features/profile/components/UserPostListItem.vue'
+import PostTab from '@/features/profile/components/PostTab.vue' // ✅ 게시글 탭 컴포넌트
 import profileImage from '@/assets/image/default-profile.png'
 
 // 인증 및 라우터 정보
@@ -25,18 +23,6 @@ const user = ref({
 })
 const isMyProfile = ref(false)
 const isLoaded = ref(false)
-const currentPage = ref(1)
-const totalPages = ref(0)
-const posts = ref([])
-
-// 항상 8줄 고정
-const paddedPosts = computed(() => {
-  const filled = [...posts.value]
-  while (filled.length < 8) {
-    filled.push(null)
-  }
-  return filled
-})
 
 // 유저 정보 API
 async function fetchUserProfile() {
@@ -57,28 +43,8 @@ async function fetchUserProfile() {
   }
 }
 
-// 게시글 목록 API
-async function fetchPosts() {
-  try {
-    const res = await getPostUserId(userId, currentPage.value - 1, 8) // page, size
-    const data = res.data
-    posts.value = data.content
-    totalPages.value = data.totalPages
-  } catch (e) {
-    console.error('게시글 조회 실패:', e)
-  }
-}
-
-// 페이지 변경 시 호출
-function handlePageChange(page) {
-  currentPage.value = page
-  fetchPosts()
-}
-
-// 최초 로딩
 onMounted(async () => {
   await fetchUserProfile()
-  await fetchPosts()
   isLoaded.value = true
 })
 </script>
@@ -97,38 +63,10 @@ onMounted(async () => {
     <div class="flex flex-col flex-1 py-16 pr-25 ml-5">
       <UserProfileTabBar />
 
-      <!-- 게시글 테이블 -->
-      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow">
-        <table class="w-full table-auto border-collapse">
-          <thead>
-          <tr class="border-b">
-            <th class="py-2">번호</th>
-            <th class="text-left pl-4 py-2">제목</th>
-            <th class="py-2">작성자</th>
-            <th class="py-2">작성일</th>
-            <th class="py-2">좋아요</th>
-          </tr>
-          </thead>
-          <tbody>
-          <UserPostListItem
-              v-for="(post, index) in paddedPosts"
-              :key="index"
-              :post="post"
-              :rowIndex="index"
-              :currentPage="currentPage"
-              :pageSize="8"
-          />
-          </tbody>
-        </table>
+      <!-- 게시글 탭 -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow mt-6">
+        <PostTab />
       </div>
-
-      <!-- 페이징바 -->
-      <PagingBar
-          class="mt-8"
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          @page-change="handlePageChange"
-      />
     </div>
   </div>
 

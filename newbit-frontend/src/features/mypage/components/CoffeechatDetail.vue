@@ -3,6 +3,7 @@ import {computed, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {useToast} from "vue-toastification";
 import dayjs from 'dayjs'
+import {acceptCoffeechatTime, rejectCoffeechatTime} from "@/api/coffeechat.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -47,16 +48,27 @@ function closeApproveModal() {
   isConfirmModalOpen.value = false;
 }
 
-function confirmCoffeechat () {
+async function confirmCoffeechat () {
   console.log('승인된 requestTimeId:', selectedRequestTimeId.value)
-  // todo : 커피챗 승인 API 호출
-  router.push(`/mypage/mentor/coffeechats/${coffeechatId}`);
+  try {
+    await acceptCoffeechatTime(selectedRequestTimeId.value);
+    closeApproveModal();
+  } catch (e) {
+    console.log('커피챗 승인 실패', e);
+  }
+  window.location.href = `/mypage/mentor/coffeechats/${coffeechatId}`;
+
 }
 
-function cancelRequest() {
-  // todo : api 연결(멘토가 커피챗 취소)
-  toast.info('취소되었습니다.')
-  router.push(`/mypage/mentor/coffeechats/${coffeechatId}`);
+async function cancelRequest() {
+  try {
+    await rejectCoffeechatTime(coffeechatId);
+  } catch (e) {
+    console.log('커피챗 거절 실패', e);
+  }
+  toast.info('거절되었습니다.')
+  window.location.href = `/mypage/mentor/coffeechats/${coffeechatId}`;
+
 }
 
 const formatFullTime = (startTimeStr, endTimeStr) => {
@@ -120,25 +132,29 @@ function closeCoffeechat() {
     </template>
     <!-- 커피챗 요청 시간   -->
     <template v-if="coffeechat.progressStatus === 'IN_PROGRESS'">
-      <div class="text-heading3">커피챗 요청 시간</div>
-      <ul class="ml-2 mt-2 text-16px-regular">
-        <li
-            v-for="requestTime in requestTimes"
-            :key="requestTime.requestTimeId"
-            class="p-2">
-          <template v-if="isMentor">
-            <input
-                type="radio"
-                name="requestTime"
-                :value="requestTime.requestTimeId"
-                v-model="selectedRequestTimeId"
-                class="mr-2"
-            />
-          </template>
-          {{ formatTime(requestTime.startTime) }} ~ {{formatTime(requestTime.endTime) }}
-        </li>
-
-      </ul>
+      <div>
+        <div class="text-heading3 pb-0 mb-0">커피챗 요청 시간</div>
+        <ul class="ml-2 mt-2 text-16px-regular">
+          <li
+              v-for="requestTime in requestTimes"
+              :key="requestTime.requestTimeId"
+              class="p-2">
+            <template v-if="isMentor">
+              <input
+                  type="radio"
+                  name="requestTime"
+                  :value="requestTime.requestTimeId"
+                  v-model="selectedRequestTimeId"
+                  class="mr-2"
+              />
+            </template>
+            <template v-else>
+              •
+            </template>
+            {{ formatTime(requestTime.startTime) }} ~ {{formatTime(requestTime.endTime) }}
+          </li>
+        </ul>
+      </div>
     </template>
     <!-- 요청 메시지   -->
     <div>
@@ -162,7 +178,7 @@ function closeCoffeechat() {
         <button v-if="isMentor"
                 @click="cancelRequest"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
-          취소
+          거절
         </button>
         <!-- 커피챗 승인 모달 -->
         <div v-if="isConfirmModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

@@ -17,13 +17,18 @@ export const useAuthStore = defineStore('auth', () => {
     // ✅ 추가 상태
     const nickname = ref(null);
     const profileImageUrl = ref(null);
-    const point = ref(null);
-    const diamond = ref(null);
+    const point = ref(0);
+    const diamond = ref(0);
     const mentorId = ref(null);
 
     const isAuthenticated = computed(() =>
         !!accessToken.value && Date.now() < (expirationTime.value || 0)
     );
+
+    function updateBalance(newPoint, newDiamond) {
+        point.value = newPoint;
+        diamond.value = newDiamond;
+    }
 
     function setAuth(at) {
         accessToken.value = at;
@@ -34,8 +39,6 @@ export const useAuthStore = defineStore('auth', () => {
             userId.value = payload.userId;
             nickname.value = payload.nickname || null;
             profileImageUrl.value = payload.profileImageUrl || null;
-            point.value = payload.point || null;
-            diamond.value = payload.diamond || null;
             mentorId.value = payload.mentorId || null;
             expirationTime.value = payload.exp * 1000;
 
@@ -72,6 +75,10 @@ export const useAuthStore = defineStore('auth', () => {
         expirationTime,
         isAuthenticated,
         setAuth,
-        clearAuth
+        clearAuth,
+        updateBalance,
+
+        pointValue: computed(() => point.value),
+        diamondValue: computed(() => diamond.value),
     };
 });

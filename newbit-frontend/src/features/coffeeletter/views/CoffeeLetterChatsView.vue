@@ -23,10 +23,8 @@ const router = useRouter();
 
 const selectedRoomId = ref(null);
 
-// TODO: 사용자 정보 auth 적용 후 수정
-const currentUserId = ref(5);
+const currentUserId = ref(0);
 
-// 쿼리 파라미터 roomId 변화를 감지해서 selectedRoomId를 갱신
 watch(
   () => route.query.roomId,
   (newRoomId) => {
@@ -65,7 +63,9 @@ const selectRoom = (roomId) => {
 };
 
 onUnmounted(() => {
-  webSocketService.unsubscribe(`/user/${currentUserId.value}/queue/events`);
+  // 전역 구독을 해제하지 않도록 수정 - App.vue에서 관리합니다.
+  // webSocketService.unsubscribe(`/user/${currentUserId.value}/queue/events`);
+  console.log("CoffeeLetterChatsView: 컴포넌트 언마운트 - 전역 구독 유지");
 });
 </script>
 

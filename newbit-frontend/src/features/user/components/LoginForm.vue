@@ -1,5 +1,10 @@
+<!-- LoginForm.vue -->
 <script setup>
 import { ref } from 'vue'
+
+const props = defineProps({
+  loginError: Boolean
+})
 
 const emit = defineEmits(['submit', 'goFindId', 'goFindPassword', 'goSignup'])
 
@@ -28,37 +33,45 @@ const onSubmit = () => {
         <p class="text-[20px] text-newbittext font-semibold">로그인</p>
       </div>
 
-      <!-- 이메일 입력 -->
-      <div class="mb-5">
-        <label for="email" class="block mb-2 text-20px-regular text-newbittext">아이디(이메일)</label>
-        <input
-            id="email"
-            v-model="email"
-            type="email"
-            placeholder="Email"
-            class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-[rgba(3,3,4,0.54)] text-16px-regular"
-        />
-      </div>
+      <!-- ✅ form 시작 -->
+      <form @submit.prevent="onSubmit">
+        <!-- 이메일 입력 -->
+        <div class="mb-5">
+          <label for="email" class="block mb-2 text-20px-regular text-newbittext">아이디(이메일)</label>
+          <input
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="Email"
+              class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-[rgba(3,3,4,0.54)] text-16px-regular"
+          />
+        </div>
 
-      <!-- 비밀번호 입력 -->
-      <div class="mb-5">
-        <label for="password" class="block mb-2 text-20px-regular text-newbittext">비밀번호</label>
-        <input
-            id="password"
-            v-model="password"
-            type="password"
-            placeholder="Password"
-            class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-[rgba(3,3,4,0.54)] text-16px-regular"
-        />
-      </div>
+        <!-- 비밀번호 입력 -->
+        <div class="mb-5">
+          <label for="password" class="block mb-2 text-20px-regular text-newbittext">비밀번호</label>
+          <input
+              id="password"
+              v-model="password"
+              type="password"
+              placeholder="Password"
+              class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-[rgba(3,3,4,0.54)] text-16px-regular"
+          />
+        </div>
 
-      <!-- 로그인 버튼 -->
-      <button
-          @click.prevent="onSubmit"
-          class="w-full h-[48px] bg-[var(--newbitnormal)] text-white text-button rounded-md mb-5 hover:bg-[var(--newbitnormal-hover)]"
-      >
-        로그인
-      </button>
+        <!-- 에러 메시지 -->
+        <p v-if="props.loginError" class="text-red-500 text-sm mb-5">
+          이메일 또는 비밀번호가 일치하지 않습니다.
+        </p>
+
+        <!-- 로그인 버튼 -->
+        <button
+            type="submit"
+            class="w-full h-[48px] bg-[var(--newbitnormal)] text-white text-button rounded-md mb-5 hover:bg-[var(--newbitnormal-hover)]"
+        >
+          로그인
+        </button>
+      </form>
 
       <!-- 하단 링크 -->
       <div class="flex justify-between text-[16px] text-[rgba(3,3,4,0.54)] underline">

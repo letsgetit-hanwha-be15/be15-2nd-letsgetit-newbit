@@ -1,18 +1,23 @@
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { FindPassword } from '@/api/user' // ✅ API 함수 import
+import { FindPassword } from '@/api/user'
 import FindPasswordForm from '@/features/user/components/FindPasswordForm.vue'
 
 const router = useRouter()
+const findError = ref(false) // 🔴 에러 상태
 
 const handleFindPassword = async (formData) => {
   try {
     const response = await FindPassword(formData)
 
     if (response.data.success) {
+      findError.value = false // 에러 상태 초기화
       alert('임시 비밀번호가 이메일로 전송되었습니다.')
       router.push('/login')
     } else {
+      findError.value = true // 에러 상태 표시
+
       const errorCode = response.data.error?.code || response.data.code
       const errorMessage = response.data.error?.message || response.data.message
 
@@ -24,6 +29,7 @@ const handleFindPassword = async (formData) => {
     }
   } catch (error) {
     console.error('❗Axios Error:', error)
+    findError.value = true // 에러 상태 표시
 
     const errorData = error?.response?.data
     const errorCode = errorData?.error?.code || errorData?.code
@@ -44,7 +50,7 @@ const goFindId = () => {
 }
 
 const goFindPassword = () => {
-  // 현재 페이지
+  // 현재 페이지, 아무 동작 없음
 }
 
 const goSignup = () => {
@@ -55,10 +61,11 @@ const goSignup = () => {
 <template>
   <div class="min-h-screen flex items-center justify-center">
     <FindPasswordForm
-        @submit="handleFindPassword"
-        @goFindId="goFindId"
-        @goFindPassword="goFindPassword"
-        @goSignup="goSignup"
+        :findError="findError"
+    @submit="handleFindPassword"
+    @goFindId="goFindId"
+    @goFindPassword="goFindPassword"
+    @goSignup="goSignup"
     />
   </div>
 </template>

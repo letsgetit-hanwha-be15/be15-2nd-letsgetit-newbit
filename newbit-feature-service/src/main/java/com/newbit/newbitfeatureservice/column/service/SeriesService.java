@@ -218,17 +218,43 @@ public class SeriesService {
     }
 
     @Transactional(readOnly = true)
-    public Page<GetMySeriesListResponseDto> getMentorSeriesList(Long mentorId, int page, int size) {
-
+    public Page<GetSeriesListResponseDto> getMentorSeriesList(Long mentorId, int page, int size) {
+        // 1. 멘토 존재 여부 확인 및 userId 가져오기
+        Long userId;
         try {
-            mentorFeignClient.getUserIdByMentorId(mentorId); // 404 발생 시 예외 터짐
+            userId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
         } catch (FeignException.NotFound e) {
             throw new BusinessException(ErrorCode.MENTOR_NOT_FOUND);
         }
+
+        // 2. 닉네임 조회
+        String mentorNickname;
+        try {
+            mentorNickname = userFeignClient.getNicknameByUserId(userId).getData();
+        } catch (FeignException.NotFound e) {
+            throw new BusinessException(ErrorCode.USER_INFO_NOT_FOUND);
+        }
+
+        // 3. 시리즈 조회
         Pageable pageable = PageRequest.of(page, size);
         Page<Series> seriesPage = seriesRepository.findAllByMentorIdOrderByCreatedAtDesc(mentorId, pageable);
-        return seriesPage.map(seriesMapper::toMySeriesListDto);
+
+        // 4. 수동 매핑
+        return seriesPage.map(series -> {
+            GetSeriesListResponseDto dto = GetSeriesListResponseDto.builder()
+                    .seriesId(series.getSeriesId())
+                    .title(series.getTitle())
+                    .description(series.getDescription())
+                    .thumbnailUrl(series.getThumbnailUrl())
+                    .mentorId(mentorId)
+                    .createdAt(series.getCreatedAt())
+                    .build();
+
+            dto.setMentorNickname(mentorNickname);
+            return dto;
+        });
     }
+
 
 
     @Transactional(readOnly = true)

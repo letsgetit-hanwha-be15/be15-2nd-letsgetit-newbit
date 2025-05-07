@@ -20,3 +20,40 @@ export function getMentorCoffeechats(params) {
         params: params
     })
 }
+
+/* 4. 커피챗 상세 조회 */
+export function getCoffeechatById(coffeechatId) {
+    return api.get(`/feature/coffeechats/${coffeechatId}`)
+}
+
+/* 5. 커피챗별 요청시간 조회 */
+export function getRequestTimes(coffeechatId) {
+    return api.get(`/feature/coffeechats/${coffeechatId}/request-times`)
+}
+
+/* 6. 커피챗 승인 */
+export function acceptCoffeechatTime(requestTimeId) {
+    return api.put(`/feature/coffeechats/${requestTimeId}/approve`, null)
+}
+
+/* 7. 커피챗 거절 */
+export function rejectCoffeechatTime(coffeechatId) {
+    return api.put(`/feature/coffeechats/${coffeechatId}/reject`, null)
+}
+
+/* 8. 멘토 리뷰 조회(프로필) */
+export const getMentorReviews = (mentorId, page = 0, size = 5) => {
+    return api.get(`/feature/reviews/mentors/${mentorId}`, {
+        params: {
+            page,
+            size
+        }
+    })
+}
+
+/* 9. 멘티가 커피챗 취소 */
+export function cancelCoffeechat(coffeechatId, cancelReasonId) {
+    return api.delete(`/feature/coffeechats/${coffeechatId}`, {
+        data: {cancelReasonId}
+    })
+}

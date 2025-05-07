@@ -1,157 +1,53 @@
 <script setup>
 
-import {computed, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import profileImage from '@/assets/image/default-profile.png'
 import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vue";
 import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
 import UserProfileCard from "@/features/mypage/components/UserProfileCard.vue";
 import UserProfileSideBar from "@/features/profile/components/UserProfileSideBar.vue";
+import {getCoffeechatById, getRequestTimes} from "@/api/coffeechat.js";
+import {getUserProfile} from "@/api/user.js";
 
 const route = useRoute();
 const coffeechatId = ref(Number(route.params.id))
 
 // 프론트용 페이지
 // 유저 정보 (API 연동 전용 Mock)
-const user = ref({
-  id: 1,
-  profileImageUrl: profileImage,
-  nickname: 'sezeme',
-  jobName: '백엔드',
-})
+const mentee = ref({})
 
-const originalCoffeechats = ref([
-  {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 1,
-        "progressStatus": "IN_PROGRESS",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
-        "updatedAt": null,
-        "reason": null,
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  }, {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 2,
-        "progressStatus": "PAYMENT_WAITING",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": "2025-05-14T22:55:00",
-        "endedAt": "2025-05-14T23:55:00",
-        "updatedAt": null,
-        "reason": null,
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  },
-  {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 3,
-        "progressStatus": "COFFEECHAT_WAITING",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": "2025-05-14T22:55:00",
-        "endedAt": "2025-05-14T23:55:00",
-        "updatedAt": null,
-        "reason": null,
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  },
-  {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 4,
-        "progressStatus": "CANCEL",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": "2025-05-14T22:55:00",
-        "endedAt": "2025-05-14T23:55:00",
-        "updatedAt": "2025-05-20T22:55:16",
-        "reason": "단순변심",
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  },
-  {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 5,
-        "progressStatus": "COMPLETE",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": "2025-05-14T22:55:00",
-        "endedAt": "2025-05-14T23:55:00",
-        "updatedAt": null,
-        "reason": null,
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  },
-]);
+const coffeechat = ref({});
 
-const requestTimes = {
-  "requestTimes": [
-    {
-      "requestTimeId": 1,
-      "eventDate": "2025-05-10T",
-      "startTime": "2025-05-10T14:00:00",
-      "endTime": "2025-05-10T16:00:00",
-      "coffeechatId": 1
-    }, {
-      "requestTimeId": 2,
-      "eventDate": "2025-05-11T",
-      "startTime": "2025-05-11T14:00:00",
-      "endTime": "2025-05-11T16:00:00",
-      "coffeechatId": 1
-    }, {
-      "requestTimeId": 3,
-      "eventDate": "2025-05-12T",
-      "startTime": "2025-05-12T14:00:00",
-      "endTime": "2025-05-12T16:00:00",
-      "coffeechatId": 1
-    }]
+const requestTimes = ref([]);
+
+const fetchMentee = async () => {
+  try {
+    const menteeData = await getUserProfile(coffeechat.value.menteeId);
+    mentee.value = menteeData.data.data || {};
+  } catch (e) {
+    console.log('멘티 상세 조회 실패', e);
+  }
 }
 
-const coffeechat = computed(() => {
-  return originalCoffeechats.value
-      .map(item => item.data.coffeechat)
-      .find(c => c.coffeechatId === coffeechatId.value);
-});
+const fetchCoffeechat = async () => {
+  try {
+    const {data : wrapper} = await getCoffeechatById(coffeechatId.value);
+    coffeechat.value = wrapper.data.coffeechat || {};
 
-// 프론트용 끝
+    if(coffeechat.value.progressStatus === 'IN_PROGRESS'){
+      const timesData = await getRequestTimes(coffeechatId.value);
+      requestTimes.value = timesData.data.data.requestTimes || [];
+    }
+  } catch (e) {
+    console.log('커피챗 상세 조회 실패', e);
+  }
+}
+
+onMounted(async () => {
+  await fetchCoffeechat();
+  await fetchMentee();
+});
 
 const statusMap = {
   IN_PROGRESS: '승인대기',
@@ -177,7 +73,7 @@ function getStatusText(status) {
     <div class="border rounded p-4">
       <CoffeechatDetail
           :coffeechat="coffeechat"
-          :requestTimes="requestTimes.requestTimes"
+          :requestTimes="requestTimes"
           :isMentor=true
       />
       <!-- 버튼들 -->
@@ -187,9 +83,9 @@ function getStatusText(status) {
   <div class="flex justify-end">
     <div class="w-fit">
       <UserProfileCard
-          :profileImageUrl="user.profileImageUrl"
-          :nickname="user.nickname"
-          :jobName="user.jobName"
+          :profileImageUrl="mentee.profileImageUrl"
+          :nickname="mentee.nickname"
+          :jobName="mentee.jobName"
       />
     </div>
   </div>

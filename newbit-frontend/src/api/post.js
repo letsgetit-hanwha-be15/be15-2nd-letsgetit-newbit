@@ -20,3 +20,26 @@ export function fetchPostCategories() {
 export function postPost(formData) {
     return api.post('/feature/posts', formData)
 }
+
+export async function getPostDetail(postId) {
+    const res = await api.get(`/feature/posts/${postId}`)
+    return res.data
+}
+
+export function updatePost(postId, formData) {
+    return api.put(`/feature/posts/${postId}`, formData)
+}
+
+export function deletePost(postId) {
+    return api.delete(`/feature/posts/${postId}`)
+}
+
+export function postComment(postId, content) {
+    return api.post(`/feature/posts/${postId}/comments`, {
+        content: content
+    })
+}
+
+export const deleteComment = (postId, commentId) => {
+    return api.delete(`/feature/posts/${postId}/comments/${commentId}`)
+}
