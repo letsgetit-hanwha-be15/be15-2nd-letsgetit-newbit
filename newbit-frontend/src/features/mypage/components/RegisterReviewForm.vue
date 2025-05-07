@@ -1,7 +1,8 @@
 <script setup>
 
-import {ref} from "vue";
+import {reactive, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
+import {useAuthStore} from "@/features/stores/auth.js";
 
 const {submitLabel} = defineProps({
   submitLabel: {type: String, default: '등록'}
@@ -9,20 +10,17 @@ const {submitLabel} = defineProps({
 const route = useRoute();
 const router = useRouter();
 const emit = defineEmits(['submit']);
+const authStore = useAuthStore();
 
-const formData = ref({
+const formData = reactive({
   rating: 5,
   comment: null,
   tip: null,
   coffeechatId: Number(route.params.id)
 })
 
-const user = { // todo : 현재 로그인한 유저의 포인트 가져오기
-  "point" : 100
-}
-
 function submitForm() {
-  emit('submit', {formData: formData.value});
+  emit('submit', {payload: formData});
 }
 
 function cancelRegister() {
@@ -32,7 +30,7 @@ function cancelRegister() {
 }
 
 function setRating(value) {
-  formData.value.rating = value
+  formData.rating = value
 }
 
 </script>
@@ -81,7 +79,7 @@ function setRating(value) {
           <option :value="null">선택 안 함</option>
           <option v-for="n in [20, 40, 60, 80, 100]" :key="n" :value="n">{{ n }} 개</option>
         </select>
-        / {{ user.point }} 개
+        / {{ authStore.point }} 개
       </label>
     </div>
 
