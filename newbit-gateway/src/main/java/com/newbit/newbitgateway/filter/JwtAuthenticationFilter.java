@@ -44,17 +44,17 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         Integer diamond = jwtTokenProvider.getDiamondFromJWT(token);
 
 
-        ServerHttpRequest mutateRequest = exchange.getRequest().mutate()
-                .header("X-User-Id", String.valueOf(userId))
-                .header("X-Mentor-Id", String.valueOf(mentorId))
-                .header("X-User-Authority", authority)
-                .header("X-User-Email", username)
-                .header("X-User-Nickname", nickname)
-                .header("X-User-Point", point.toString())
-                .header("X-User-Diamond", diamond.toString())
+        ServerHttpRequest.Builder builder = exchange.getRequest().mutate();
 
-                .build();
+        if (userId != null) builder.header("X-User-Id", userId.toString());
+        if (mentorId != null) builder.header("X-Mentor-Id", mentorId.toString());
+        if (authority != null) builder.header("X-User-Authority", authority);
+        if (username != null) builder.header("X-User-Email", username);
+        if (nickname != null) builder.header("X-User-Nickname", nickname);
+        if (point != null) builder.header("X-User-Point", point.toString());
+        if (diamond != null) builder.header("X-User-Diamond", diamond.toString());
 
+        ServerHttpRequest mutateRequest = builder.build();
         ServerWebExchange mutatedExchange = exchange.mutate().request(mutateRequest).build();
         return chain.filter(mutatedExchange);
     }
