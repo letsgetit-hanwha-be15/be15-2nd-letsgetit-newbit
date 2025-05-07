@@ -43,3 +43,11 @@ export function postComment(postId, content) {
 export const deleteComment = (postId, commentId) => {
     return api.delete(`/feature/posts/${postId}/comments/${commentId}`)
 }
+
+export const reportPost = (reportData) => {
+    return api.post('/feature/reports/post', reportData)
+}
+
+export const reportComment = (reportData) => {
+    return api.post('/feature/reports/comment', reportData)
+}
