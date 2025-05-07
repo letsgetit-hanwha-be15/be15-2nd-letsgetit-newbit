@@ -29,6 +29,10 @@ public class CoffeechatDto {
     private LocalDateTime updatedAt;
     @Schema(description = "취소 사유")
     private String reason;
+    @Schema(description = "판매확정일시")
+    private LocalDateTime ConfirmedAt;
+    @Schema(description = "구매확정일시")
+    private LocalDateTime purchaseConfirmedAt;
     @Schema(description = "멘토 ID")
     private Long mentorId;
     @Schema(description = "멘티 ID")
