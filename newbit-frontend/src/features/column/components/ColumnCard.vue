@@ -34,6 +34,11 @@ const formattedDate = computed(() => {
       ? dayjs(new Date(props.column.createdAt)).format('YYYY.MM.DD')
       : ''
 })
+const formattedPurchasedDate = computed(() => {
+  return props.column.purchasedAt
+      ? dayjs(new Date(props.column.purchasedAt)).format('YYYY.MM.DD')
+      : ''
+})
 </script>
 
 <template>
@@ -49,6 +54,7 @@ const formattedDate = computed(() => {
 
       <!-- 다이아 가격 -->
       <div v-if="column.diamondCount !== undefined" class="flex items-center gap-1 text-13px-regular text-[var(--newbitdark)] mb-4">
+        <div v-if="column.purchasedAt">구매 가격 </div>
         <img :src="diamondIcon" alt="다이아" class="w-4 h-4" />
         <span>{{ column.diamondCount }}</span>
       </div>
@@ -60,8 +66,12 @@ const formattedDate = computed(() => {
           <img :src="isLiked ? heartActive : heartDefault" alt="하트" class="w-full h-full" />
         </button>
 
+
+        <span v-if="column.purchasedAt">
+          <template v-if="formattedPurchasedDate">구매 일시  {{ formattedPurchasedDate }}</template>
+        </span>
         <!-- 작성자와 작성일 -->
-        <span>
+        <span v-else>
           {{ column.mentorNickname }}
           <template v-if="column.mentorNickName"></template>
           <span> | </span>
