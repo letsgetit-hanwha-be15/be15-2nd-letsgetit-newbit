@@ -83,17 +83,28 @@ watch(activeDropdown, (newValue) => {
   }
 });
 
-const toggleDropdown = () => {
+import { getUserBalance } from '@/api/user'; // 잔여량 조회 API import
+
+const toggleDropdown = async () => {
   const newState = !showDropdown.value;
   showDropdown.value = newState;
 
   if (newState) {
+    try {
+      const res = await getUserBalance();
+      if (res.data.success) {
+        const { pointBalance, diamondBalance } = res.data.data;
+        authStore.updateBalance(pointBalance, diamondBalance); // ✅ 사용
+      }
+    } catch (e) {
+      console.error("잔여량 불러오기 실패", e);
+    }
+
     emit("dropdown-opened", props.dropdownId);
   } else {
     activeDropdown.value = null;
   }
 };
-
 const closeDropdown = () => {
   showDropdown.value = false;
   if (activeDropdown.value === props.dropdownId) {
