@@ -44,11 +44,11 @@ public class PurchaseCommandController {
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200", description = "커피챗 구매 성공"
     )
-    @PostMapping("/coffeechat")
+    @PostMapping("/coffeechat/{coffeechatId}")
     public ResponseEntity<ApiResponse<Void>> purchaseCoffeeChat(
             @AuthenticationPrincipal CustomUser customUser,
-            @Valid @RequestBody CoffeeChatPurchaseRequest request) {
-        purchaseCommandService.purchaseCoffeeChat(customUser.getUserId(), request);
+            @PathVariable Long coffeechatId) {
+        purchaseCommandService.purchaseCoffeeChat(customUser.getUserId(), coffeechatId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 

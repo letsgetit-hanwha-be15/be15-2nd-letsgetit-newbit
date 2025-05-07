@@ -6,7 +6,7 @@ import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vu
 import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
 import {useToast} from "vue-toastification";
-import {cancelCoffeechat, getCoffeechatById, getRequestTimes} from "@/api/coffeechat.js";
+import {cancelCoffeechat, getCoffeechatById, getRequestTimes, purchaseCoffeeChat} from "@/api/coffeechat.js";
 import {getMentorById} from "@/api/mentor.js";
 import {useAuthStore} from "@/features/stores/auth.js";
 
@@ -78,15 +78,22 @@ function closePaymentModal() {
   isPaymentModalOpen.value = false;
 }
 
-function paymentCoffeechat() {
-  // todo : 현재 보유 중인 다이아 몇 개인지 검사 후, 다이아가 부족하면 상점으로 이동
-  console.log(authStore.diamond + (mentor.value.price * coffeechat.value.purchaseQuantity))
-  if(authStore.diamond < mentor.value.price * coffeechat.value.purchaseQuantity){
-    router.push('/products')
+async function paymentCoffeechat() {
+  const diamondUsage = mentor.value.price * coffeechat.value.purchaseQuantity;
+  if(authStore.diamond < diamondUsage){
+    await router.push('/products')
   }
   else {
-    // todo : 커피챗 결제 api 호출
-    toast.success('결제 완료되었습니다.');
+    try {
+      console.log(route.params.id);
+      await purchaseCoffeeChat(route.params.id)
+      const diamondBalance = authStore.diamond - diamondUsage;
+      authStore.updateBalance(authStore.point, diamondBalance);
+      toast.success('결제 완료되었습니다.');
+      window.location.href = `/mypage/history/coffeechats/${coffeechatId.value}`;
+    } catch (e) {
+      console.log('커피챗 다이아 결제 에러', e);
+    }
     isPaymentModalOpen.value = false;
   }
 }

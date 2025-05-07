@@ -57,3 +57,8 @@ export function cancelCoffeechat(coffeechatId, cancelReasonId) {
         data: {cancelReasonId}
     })
 }
+
+/* 10. 커피챗 다이아 결제 */
+export function purchaseCoffeeChat(coffeechatId) {
+    return api.post(`/feature/purchase/coffeechat/${coffeechatId}`, null)
+}
