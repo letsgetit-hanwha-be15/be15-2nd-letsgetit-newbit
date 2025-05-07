@@ -92,7 +92,7 @@ const posts = computed(() => {
       <PostTable :posts="posts" />
       <PagingBar
           :currentPage="currentPage"
-          :totalPage="totalPages"
+          :totalPages="totalPages"
           :totalItems="totalItems"
           @page-change="onPageChanged"
       />
