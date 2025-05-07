@@ -118,5 +118,12 @@ public class UserInfoController {
         userInfoService.updateMentorIntroductionInfo(request, customUser.getUserId());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @Operation(summary = "포인트, 다이아 잔여량 조회", description = "포인트, 다이아 잔여량 조회")
+    @GetMapping("/me/balance")
+    public ResponseEntity<ApiResponse<BalanceDTO>> getBalance(@AuthenticationPrincipal CustomUser customUser) {
+        BalanceDTO response = userInfoService.getUserBalance(customUser.getUserId());
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }
 

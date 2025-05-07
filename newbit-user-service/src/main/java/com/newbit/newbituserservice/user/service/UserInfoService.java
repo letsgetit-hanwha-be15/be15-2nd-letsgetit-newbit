@@ -5,6 +5,7 @@ import com.newbit.newbituserservice.security.model.CustomUser;
 import com.newbit.newbituserservice.common.exception.BusinessException;
 import com.newbit.newbituserservice.common.exception.ErrorCode;
 import com.newbit.newbituserservice.user.dto.request.*;
+import com.newbit.newbituserservice.user.dto.response.BalanceDTO;
 import com.newbit.newbituserservice.user.dto.response.UserDTO;
 import com.newbit.newbituserservice.user.entity.*;
 import com.newbit.newbituserservice.user.repository.*;
@@ -193,6 +194,11 @@ public class UserInfoService {
         }
     }
 
+    @Transactional
+    public BalanceDTO getUserBalance(Long userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_INFO_NOT_FOUND));
 
-
+        return new BalanceDTO(user.getDiamond(), user.getPoint());
+    }
 }
