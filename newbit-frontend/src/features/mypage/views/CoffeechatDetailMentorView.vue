@@ -23,9 +23,8 @@ const requestTimes = ref([]);
 
 const fetchMentee = async () => {
   try {
-    const menteeData = await getUserProfile(coffeechat.value.coffeechatId);
+    const menteeData = await getUserProfile(coffeechat.value.menteeId);
     mentee.value = menteeData.data.data || {};
-    console.log(menteeData);
   } catch (e) {
     console.log('멘티 상세 조회 실패', e);
   }
@@ -40,8 +39,6 @@ const fetchCoffeechat = async () => {
       const timesData = await getRequestTimes(coffeechatId.value);
       requestTimes.value = timesData.data.data.requestTimes || [];
     }
-    console.log('커피챗객체', coffeechat.value)
-    console.log('요청시간객체', requestTimes.value)
   } catch (e) {
     console.log('커피챗 상세 조회 실패', e);
   }
