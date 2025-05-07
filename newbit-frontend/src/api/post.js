@@ -30,6 +30,3 @@ export function updatePost(postId, formData) {
     return api.put(`/feature/posts/${postId}`, formData)
 }
 
-export function deletePost(postId) {
-    return api.delete(`/feature/posts/${postId}`)
-}
