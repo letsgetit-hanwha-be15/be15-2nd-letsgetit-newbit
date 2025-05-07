@@ -1,5 +1,5 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 
 const props = defineProps({
   profileImageUrl: {
@@ -45,6 +45,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const route = useRoute()
 
 function goToProfileEdit() {
   router.push('/mypage/profile/edit')
@@ -52,7 +53,7 @@ function goToProfileEdit() {
 
 
 function requestCoffeeChat() {
-  router.push('/mentors/:id/coffeechat-register')
+  router.push(`/mentors/${route.params.id}/coffeechat-register`)
   console.log('커피챗 신청하기')
 }
 </script>

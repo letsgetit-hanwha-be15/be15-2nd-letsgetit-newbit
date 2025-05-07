@@ -17,7 +17,7 @@ const mentor = ref({});
 
 const fetchMentor = async () => {
   try {
-    const response = await getMentorById(route.params.id);
+    const response = await getMentorById(Number(route.params.id));
     const data = response.data?.data;
     if (!data) {
       throw new Error('멘토 데이터가 존재하지 않습니다');
