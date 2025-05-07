@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {useToast} from "vue-toastification";
 import dayjs from 'dayjs'
-import {acceptCoffeechatTime, rejectCoffeechatTime} from "@/api/coffeechat.js";
+import {acceptCoffeechatTime, endCoffeechat, rejectCoffeechatTime} from "@/api/coffeechat.js";
 import {getRoomIdByCoffeeChatId} from "@/api/coffeeletter.js";
 
 const router = useRouter();
@@ -91,23 +91,28 @@ const selectedRequestTime = computed(() =>
 
 async function goCoffeeLetter() {
   try {
-    console.log('읽기 시작!',coffeechatId)
     const coffeeLetterId = await getRoomIdByCoffeeChatId(coffeechatId);
-    console.log('커피레터아이디', coffeeLetterId);
-    // await router.push(`/coffeeletter/${coffeeLetterId.data}`)
+    await router.push(`/coffeeletter/${coffeeLetterId.data}`)
   } catch (e) {
     console.log('커피레터 아이디 조회 실패', e)
   }
 }
 
 const isAfterEndedAt = computed(() => {
-  const endedAt = coffeechat.value?.endedAt;
-  if (!endedAt) return false;
-  return dayjs().isAfter(dayjs(endedAt));
+  const endedAt = coffeechat.endedAt;
+  return endedAt ? dayjs().isAfter(dayjs(endedAt)) : true;
 });
 
-function closeCoffeechat() {
-  // todo : 멘토가 커피챗 종료 확정
+
+async function closeCoffeechat() {
+  try {
+    await endCoffeechat(coffeechatId);
+    window.location.href = `/mypage/mentor/coffeechats/${coffeechatId}`;
+
+  } catch (e) {
+    console.log('커피챗 종료 실패', e)
+  }
+
 }
 </script>
 
