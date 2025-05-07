@@ -36,7 +36,7 @@ const totalItems = ref(0)
 async function loadPosts() {
   try {
     const page = currentPage.value - 1 // Spring은 0부터 시작
-    const res = await fetchPostList(page, 10)
+    const res = await fetchPostList(page, 10, sortOption.value, searchKeyword.value, selectedCategoryId.value)
     originalPosts.value = res.data.content
     totalPages.value = res.data.totalPages
     totalItems.value = res.data.totalElements
@@ -92,7 +92,7 @@ const posts = computed(() => {
       <PostTable :posts="posts" />
       <PagingBar
           :currentPage="currentPage"
-          :totalPage="totalPages"
+          :totalPages="totalPages"
           :totalItems="totalItems"
           @page-change="onPageChanged"
       />

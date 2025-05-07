@@ -6,6 +6,7 @@ import java.util.List;
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
 import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -97,6 +98,23 @@ public class ColumnService {
     }
 
     @Transactional(readOnly = true)
+    public Page<GetMyColumnListResponseDto> getMentorColumnList(Long mentorId, int page, int size) {
+        // 예외 처리: 멘토 존재 여부 확인
+        try {
+            mentorFeignClient.getUserIdByMentorId(mentorId); // 404 발생 시 예외 터짐
+        } catch (FeignException.NotFound e) {
+            throw new BusinessException(ErrorCode.MENTOR_NOT_FOUND);
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Column> columnsPage = columnRepository
+                .findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId, pageable);
+
+        return columnsPage.map(columnMapper::toMyColumnListDto);
+    }
+
+
+    @Transactional(readOnly = true)
     public Column getColumn(Long columnId) {
         return columnRepository.findById(columnId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
@@ -179,4 +197,6 @@ public class ColumnService {
 
         return new PageImpl<>(filtered, pageable, filtered.size());
     }
+
+
 }

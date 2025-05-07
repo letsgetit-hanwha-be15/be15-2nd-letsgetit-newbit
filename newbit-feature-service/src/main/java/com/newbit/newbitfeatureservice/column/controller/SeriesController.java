@@ -70,6 +70,17 @@ public class SeriesController {
     ) {
         return ApiResponse.success(seriesService.getMySeriesList(customUser.getUserId(), page, size));
     }
+    @GetMapping("/mentor/{mentorId}")
+    @Operation(summary = "멘토 시리즈 목록 조회", description = "특정 멘토가 작성한 시리즈 목록을 조회합니다.")
+    public ApiResponse<Page<GetMySeriesListResponseDto>> getMentorSeriesList(
+            @PathVariable Long mentorId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.success(seriesService.getMentorSeriesList(mentorId, page, size));
+    }
+
+
 
     @GetMapping("/{seriesId}/columns")
     @Operation(summary = "시리즈에 포함된 칼럼 목록 조회", description = "해당 시리즈에 포함된 칼럼 목록을 조회합니다.")

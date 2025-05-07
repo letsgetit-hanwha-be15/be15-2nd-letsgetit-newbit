@@ -6,6 +6,7 @@ import java.util.List;
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
 import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
+import feign.FeignException;
 import com.newbit.newbitfeatureservice.column.dto.response.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -215,6 +216,20 @@ public class SeriesService {
 
         return new PageImpl<>(content, pageable, allSeries.getTotalElements());
     }
+
+    @Transactional(readOnly = true)
+    public Page<GetMySeriesListResponseDto> getMentorSeriesList(Long mentorId, int page, int size) {
+
+        try {
+            mentorFeignClient.getUserIdByMentorId(mentorId); // 404 발생 시 예외 터짐
+        } catch (FeignException.NotFound e) {
+            throw new BusinessException(ErrorCode.MENTOR_NOT_FOUND);
+        }
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Series> seriesPage = seriesRepository.findAllByMentorIdOrderByCreatedAtDesc(mentorId, pageable);
+        return seriesPage.map(seriesMapper::toMySeriesListDto);
+    }
+
 
     @Transactional(readOnly = true)
     public Page<GetSeriesColumnsResponseDto> getSeriesColumns(Long seriesId, int page, int size) {
