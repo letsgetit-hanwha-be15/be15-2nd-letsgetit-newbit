@@ -155,4 +155,22 @@ public class ColumnRequestService {
             return columnMapper.toAdminColumnRequestResponseDto(request, nickname);
         });
     }
+
+    public AdminColumnRequestResponseDto getAdminColumnRequestDetail(Long requestId) {
+        ColumnRequest request = columnRequestRepository.findById(requestId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_REQUEST_NOT_FOUND));
+
+        Long mentorId = request.getColumn().getMentorId();
+        Long userId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
+
+        String nickname;
+        try {
+            nickname = userFeignClient.getNicknameByUserId(userId).getData();
+        } catch (Exception e) {
+            log.error("닉네임 조회 실패 - userId: {}", userId, e);
+            nickname = "익명 멘토";
+        }
+        return columnMapper.toAdminColumnRequestResponseDto(request, nickname);
+    }
+
 }

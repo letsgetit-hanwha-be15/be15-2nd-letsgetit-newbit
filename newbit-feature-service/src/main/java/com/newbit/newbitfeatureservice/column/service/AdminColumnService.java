@@ -55,23 +55,28 @@ public class AdminColumnService {
                 )
         );
 
-        List<Long> subscriberIds = subscriptionService.getSeriesSubscribers(request.getColumn().getSeries().getSeriesId());
+        // 시리즈가 있을 때만 구독자 알림 전송
+        if (request.getColumn().getSeries() != null) {
+            List<Long> subscriberIds = subscriptionService.getSeriesSubscribers(
+                    request.getColumn().getSeries().getSeriesId()
+            );
 
-        for (Long subscriberId : subscriberIds) {
-            notificationCommandService.sendNotification(
-                    new NotificationSendRequest(
-                            subscriberId,
-                            9L, // 시리즈 새 칼럼 등록 알림 타입 ID
-                            request.getColumn().getColumnId(),
-                            String.format("'%s' 시리즈에 새로운 칼럼 '%s'이(가) 등록되었습니다.",
-                                    request.getColumn().getSeries().getTitle(), request.getColumn().getTitle())
+            for (Long subscriberId : subscriberIds) {
+                notificationCommandService.sendNotification(
+                        new NotificationSendRequest(
+                                subscriberId,
+                                9L,
+                                request.getColumn().getColumnId(),
+                                String.format("'%s' 시리즈에 새로운 칼럼 '%s'이(가) 등록되었습니다.",
+                                        request.getColumn().getSeries().getTitle(), request.getColumn().getTitle())
                         )
                 );
+            }
         }
-
 
         return adminColumnMapper.toDto(request);
     }
+
 
     @Transactional
     public AdminColumnResponseDto rejectCreateColumnRequest(RejectColumnRequestDto dto, Long adminUserId) {

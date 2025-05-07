@@ -38,4 +38,7 @@ public class AdminColumnRequestResponseDto {
 
     @Schema(description = "멘토 닉네임")
     private String mentorNickname;
+
+    @Schema(description = "본문 내용")
+    private String content;
 }
