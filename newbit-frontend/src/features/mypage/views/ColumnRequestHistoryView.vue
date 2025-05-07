@@ -48,13 +48,12 @@
       </div>
 
       <!-- 페이지네이션 (임시) -->
-      <div class="flex justify-center mt-10 gap-2 text-13px-regular text-[var(--newbitgray)]">
-        <span class="cursor-pointer">← Previous</span>
-        <span class="font-bold text-[var(--newbitnormal)]">1</span>
-        <span class="cursor-pointer">2</span>
-        <span class="cursor-pointer">3</span>
-        <span class="cursor-pointer">Next →</span>
-      </div>
+      <PagingBar
+          :currentPage="currentPage"
+          :totalPage="totalPage"
+          @page-change="handlePageChange"
+      />
+
     </div>
   </div>
 </template>
@@ -63,9 +62,11 @@
 import { ref, onMounted } from 'vue'
 import { getMyColumnRequests } from '@/api/column'
 import { useToast } from 'vue-toastification'
+import PagingBar from "@/components/common/PagingBar.vue";
 
 const toast = useToast()
-
+const currentPage = ref(1)
+const totalPage = ref(1)
 const columnRequests = ref([])
 
 const diamondIcon = new URL('@/assets/image/diamond-icon.png', import.meta.url).href
@@ -83,6 +84,11 @@ const requestTypeToKorean = (type) => {
   if (type === 'UPDATE') return '수정'
   if (type === 'DELETE') return '삭제'
   return ''
+}
+
+const handlePageChange = (page) => {
+  currentPage.value = page
+  fetchColumns()
 }
 
 onMounted(async () => {
