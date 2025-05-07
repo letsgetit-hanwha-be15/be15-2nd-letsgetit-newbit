@@ -89,4 +89,8 @@ public class Column {
     public void decreaseLikeCount() {
         this.likeCount = Math.max(0, this.likeCount - 1);
     }
+
+    public boolean getIsPublic() {
+        return this.isPublic;
+    }
 }
