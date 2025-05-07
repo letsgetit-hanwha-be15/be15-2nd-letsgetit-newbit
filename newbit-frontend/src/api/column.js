@@ -120,6 +120,10 @@ export const searchPublicSeriesList = (condition, page = 0, size = 10) =>
         params: { ...condition, page, size },
     })
 
+// 구독한 시리즈 조회
+export function getSubscribedSeries() {
+    return api.get('feature/subscriptions/user/list');
+}
 
 /* --- 시리즈 이미지 업로드 --- */
 
