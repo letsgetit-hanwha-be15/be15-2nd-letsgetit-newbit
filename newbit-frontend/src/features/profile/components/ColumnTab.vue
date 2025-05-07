@@ -50,7 +50,7 @@ onMounted(() => {
       />
     </div>
 
-    <div v-else class="text-gray-500 text-sm py-10">작성한 칼럼이 없습니다.</div>
+    <div v-else class="text-gray-500 text-center text-sm py-10">작성한 칼럼이 없습니다.</div>
 
     <PagingBar
         class="mt-8"
