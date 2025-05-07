@@ -47,27 +47,33 @@ onMounted(() => {
 
 <template>
   <div>
-    <table class="w-full table-auto border-collapse">
-      <thead>
-      <tr class="border-b">
-        <th class="py-2">번호</th>
-        <th class="text-left pl-4 py-2">제목</th>
-        <th class="py-2">작성자</th>
-        <th class="py-2">작성일</th>
-        <th class="py-2">좋아요</th>
-      </tr>
-      </thead>
-      <tbody>
-      <UserPostListItem
-          v-for="(post, index) in paddedPosts"
-          :key="index"
-          :post="post"
-          :rowIndex="index"
-          :currentPage="currentPage"
-          :pageSize="pageSize"
-      />
-      </tbody>
-    </table>
+    <div v-if="posts.length > 0">
+      <table class="w-full table-auto border-collapse">
+        <thead>
+        <tr class="border-b">
+          <th class="py-2">번호</th>
+          <th class="text-left pl-4 py-2">제목</th>
+          <th class="py-2">작성자</th>
+          <th class="py-2">작성일</th>
+          <th class="py-2">좋아요</th>
+        </tr>
+        </thead>
+        <tbody>
+        <UserPostListItem
+            v-for="(post, index) in paddedPosts"
+            :key="index"
+            :post="post"
+            :rowIndex="index"
+            :currentPage="currentPage"
+            :pageSize="pageSize"
+        />
+        </tbody>
+      </table>
+    </div>
+
+    <div v-else class="text-sm text-gray-500 text-center py-10">
+      작성한 게시글이 없습니다.
+    </div>
 
     <PagingBar
         class="mt-8"
