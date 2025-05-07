@@ -75,8 +75,8 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getMyColumnRequests } from '@/api/column'
 import PagingBar from '@/components/common/PagingBar.vue'
+import { getAllColumnRequests } from "@/api/column.js";
 
 const router = useRouter()
 
@@ -97,14 +97,18 @@ const requestTypeMap = {
 
 const fetchRequests = async () => {
   try {
-    const { data } = await getMyColumnRequests({
+    const res = await getAllColumnRequests({
       page: currentPage.value,
       size: 6
     })
-    columnRequests.value = data.content.filter(
+
+    const result = res?.data?.data
+
+    columnRequests.value = result.content.filter(
         (item) => item.requestType === requestTypeMap[selectedTab.value]
     )
-    totalPages.value = data.totalPages
+
+    totalPages.value = result.totalPages
   } catch (err) {
     console.error('칼럼 요청 목록 조회 실패', err)
   }
