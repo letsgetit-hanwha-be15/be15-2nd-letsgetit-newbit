@@ -1,35 +1,33 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { fetchPostCategories } from '@/api/post'
 
 const router = useRouter()
 const selectedId = ref(null)
-
-const categories = [
-  { id: null, name: '전체' },
-  { id: 1, name: '자유 게시판' },
-  { id: 2, name: '문서 템플릿' },
-  { id: 3, name: '개발 트렌드/뉴스' },
-  { id: 4, name: '취업/이직' },
-  { id: 5, name: '급여관리/재테크' },
-  { id: 6, name: '개발 장비' },
-  { id: 7, name: '직장 생활/커뮤니케이션' },
-  { id: 8, name: '업무 생산성' },
-  { id: 9, name: 'AI 활용법' },
-  { id: 10, name: '코드 리뷰' },
-  { id: 11, name: '팀 프로젝트' },
-  { id: 12, name: '기술 면접/코딩 테스트' },
-  { id: 13, name: '개발자 밋업/컨퍼런스' }
-]
+const categories = ref([{ id: null, name: '전체' }]) // 기본 '전체' 포함
 
 const handleClick = (id) => {
   selectedId.value = id
   if (id === null) {
     router.push('/posts')
   } else {
-    router.push(`/posts/category/${id}`)
+    router.push(`/posts/category/${Number(id)}`)
   }
 }
+
+const loadCategories = async () => {
+  try {
+    const res = await fetchPostCategories()
+    categories.value.push(...res.data.filter(c => c.name !== '전체'))
+  } catch (e) {
+    console.error('카테고리 불러오기 실패:', e)
+  }
+}
+
+onMounted(() => {
+  loadCategories()
+})
 </script>
 
 <template>
