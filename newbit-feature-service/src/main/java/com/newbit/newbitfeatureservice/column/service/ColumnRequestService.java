@@ -144,7 +144,13 @@ public class ColumnRequestService {
         return columnRequestPage.map(request -> {
             Long mentorId = request.getColumn().getMentorId();
             Long userId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
-            String nickname = userFeignClient.getNicknameByUserId(userId).getData();
+            String nickname;
+            try {
+                nickname = userFeignClient.getNicknameByUserId(userId).getData();
+            } catch (Exception e) {
+                log.error("닉네임 조회 실패 - userId: {}", userId, e);
+                nickname = "익명 멘토"; // fallback
+            }
 
             return columnMapper.toAdminColumnRequestResponseDto(request, nickname);
         });

@@ -50,7 +50,11 @@ public class ColumnMapper {
 
                 // CREATE 요청이면 Column 테이블의 값 사용, 아니면 updated 값 사용
                 .title(isCreate ? column.getTitle() : columnRequest.getUpdatedTitle())
-                .price(isCreate ? column.getPrice() : columnRequest.getUpdatedPrice())
+                .price(isCreate
+                        ? column.getPrice()
+                        : columnRequest.getUpdatedPrice() != null
+                        ? columnRequest.getUpdatedPrice()
+                        : 0)
                 .thumbnailUrl(isCreate ? column.getThumbnailUrl() : columnRequest.getUpdatedThumbnailUrl())
 
                 .createdAt(columnRequest.getCreatedAt())
@@ -77,7 +81,11 @@ public class ColumnMapper {
                 .requestType(request.getRequestType())
                 .isApproved(request.getIsApproved())
                 .title(isCreate ? column.getTitle() : request.getUpdatedTitle())
-                .price(isCreate ? column.getPrice() : request.getUpdatedPrice())
+                .price(isCreate
+                        ? column.getPrice()
+                        : request.getUpdatedPrice() != null
+                        ? request.getUpdatedPrice()
+                        : 0)
                 .thumbnailUrl(isCreate ? column.getThumbnailUrl() : request.getUpdatedThumbnailUrl())
                 .createdAt(request.getCreatedAt())
                 .rejectedReason(request.getRejectedReason())
