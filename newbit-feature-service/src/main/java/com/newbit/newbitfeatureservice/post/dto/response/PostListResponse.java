@@ -12,11 +12,19 @@ public class PostListResponse {
     private final String title;
     private final boolean isNotice;
     private final LocalDateTime createdAt;
+    private final String writerNickname;
+    private final Long categoryId;
+    private final Integer likeCount;
+    private final String serialNumber;
 
-    public PostListResponse(Post post) {
+    public PostListResponse(Post post, String writerNickname, String serialNumber) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.isNotice = post.isNotice();
         this.createdAt = post.getCreatedAt();
+        this.writerNickname = writerNickname;
+        this.categoryId = post.getPostCategoryId();
+        this.likeCount = post.getLikeCount();
+        this.serialNumber = serialNumber;
     }
 }

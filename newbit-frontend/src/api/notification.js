@@ -1,4 +1,5 @@
 import api from './axios'
+import { EventSourcePolyfill } from 'event-source-polyfill';
 
 /* --- 알림 관련 --- */
 
@@ -8,10 +9,15 @@ export const fetchUnreadNotifications = () =>
 
 // 알림 읽음 처리
 export const markAllAsRead = () =>
-    api.patch('/feature/notification/mark-all-read');
+    api.patch('/feature/notification/read-all');
 
 // SSE 연결
-export const connectNotificationSSE = (userId) => {
-    const es = new EventSource(`/api/v1/feature/notification/subscribe?userId=${userId}`);
+export const connectNotificationSSE = () => {
+    const token = localStorage.getItem('accessToken');
+    const es = new EventSourcePolyfill('http://localhost:8000/api/v1/feature/notification/subscribe', {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
     return es;
 };

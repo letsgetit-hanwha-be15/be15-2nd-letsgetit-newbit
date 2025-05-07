@@ -10,6 +10,7 @@ const notification = useNotificationStore();
 onMounted(() => {
   if (auth.userId) {
     notification.initSSE(auth.userId);
+    notification.loadInitialNotifications();
   }
 });
 </script>

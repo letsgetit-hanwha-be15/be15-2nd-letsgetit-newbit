@@ -63,7 +63,8 @@ const formattedDate = computed(() => {
         <!-- 작성자와 작성일 -->
         <span>
           {{ column.mentorNickname }}
-          <template v-if="column.mentorNickName"> | </template>
+          <template v-if="column.mentorNickName"></template>
+          <span> | </span>
           <template v-if="formattedDate">작성 일시  {{ formattedDate }}</template>
         </span>
       </div>

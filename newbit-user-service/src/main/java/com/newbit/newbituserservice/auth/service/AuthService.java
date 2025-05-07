@@ -6,7 +6,9 @@ import com.newbit.newbituserservice.auth.dto.response.TokenResponseDTO;
 import com.newbit.newbituserservice.auth.entity.RefreshToken;
 import com.newbit.newbituserservice.security.JwtTokenProvider;
 import com.newbit.newbituserservice.auth.repository.RefreshTokenRepository;
+import com.newbit.newbituserservice.user.entity.Mentor;
 import com.newbit.newbituserservice.user.entity.User;
+import com.newbit.newbituserservice.user.repository.MentorRepository;
 import com.newbit.newbituserservice.user.repository.UserRepository;
 import com.newbit.newbituserservice.user.service.SuspensionService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ import java.util.Date;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final MentorRepository  mentorRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
@@ -54,8 +57,12 @@ public class AuthService {
             throw new BadCredentialsException("올바르지 않은 아이디 혹은 비밀번호");
         }
 
-        String accessToken = jwtTokenProvider.createToken(user.getEmail(), user.getAuthority().name(), user.getUserId());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getAuthority().name(), user.getUserId());
+        Long mentorId = mentorRepository.findByUserUserId(user.getUserId())
+                .map(Mentor::getMentorId)
+                .orElse(null);
+
+        String accessToken = jwtTokenProvider.createToken(user,mentorId);
+        String refreshToken = jwtTokenProvider.createRefreshToken(user,mentorId);
 
         RefreshToken tokenEntity = RefreshToken.builder()
                 .email(user.getEmail())
@@ -66,11 +73,14 @@ public class AuthService {
         refreshTokenRepository.save(tokenEntity);
 
         return TokenResponseDTO.builder()
-                .userId(Long.valueOf(user.getUserId()))
+                .userId(user.getUserId())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
                 .authority(user.getAuthority().name())
                 .profileImageUrl(user.getProfileImageUrl())
+                .point(user.getPoint())
+                .diamond(user.getDiamond())
+                .mentorId(mentorId)
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
@@ -79,6 +89,8 @@ public class AuthService {
     public TokenResponseDTO refreshToken(String providedRefreshToken) {
         jwtTokenProvider.validateToken(providedRefreshToken);
         String email = jwtTokenProvider.getUsernameFromJWT(providedRefreshToken);
+
+
 
         RefreshToken storedToken = refreshTokenRepository.findById(email)
                 .orElseThrow(() -> new BadCredentialsException("해당 유저로 조회되는 리프레시 토큰 없음"));
@@ -94,8 +106,12 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadCredentialsException("해당 리프레시 토큰을 위한 유저 없음"));
 
-        String accessToken = jwtTokenProvider.createToken(user.getEmail(), user.getAuthority().name(), user.getUserId());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail(), user.getAuthority().name(), user.getUserId());
+        Long mentorId = mentorRepository.findByUserUserId(user.getUserId())
+                .map(mentor -> mentor.getMentorId())
+                .orElse(null);
+
+        String accessToken = jwtTokenProvider.createToken(user, mentorId);
+        String refreshToken = jwtTokenProvider.createRefreshToken(user,mentorId);
 
         RefreshToken tokenEntity = RefreshToken.builder()
                 .email(user.getEmail())
@@ -106,11 +122,14 @@ public class AuthService {
         refreshTokenRepository.save(tokenEntity);
 
         return TokenResponseDTO.builder()
-                .userId(Long.valueOf(user.getUserId()))
+                .userId(user.getUserId())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
                 .authority(user.getAuthority().name())
                 .profileImageUrl(user.getProfileImageUrl())
+                .point(user.getPoint())
+                .diamond(user.getDiamond())
+                .mentorId(mentorId)
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();

@@ -1,5 +1,10 @@
 server:
   port: 8000
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 spring:
   application:
     name: gateway-server
@@ -16,7 +21,7 @@ spring:
           uri: lb://newbit-feature-service
           predicates:
             - Path=/api/v1/feature/**
-            - Method=GET,POST,PUT,DELETE,OPTIONS
+            - Method=GET,POST,PUT,DELETE,OPTIONS,PATCH
           filters:
             - RewritePath=/api/v1/feature/(?<segment>.*), /${segment}
         # SockJS websocket 연결 (info, xhr 요청)

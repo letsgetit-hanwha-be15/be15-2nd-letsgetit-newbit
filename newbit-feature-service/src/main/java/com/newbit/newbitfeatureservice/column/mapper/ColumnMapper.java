@@ -53,6 +53,7 @@ public class ColumnMapper {
                 .thumbnailUrl(isCreate ? column.getThumbnailUrl() : columnRequest.getUpdatedThumbnailUrl())
 
                 .createdAt(columnRequest.getCreatedAt())
+                .rejectedReason(columnRequest.getRejectedReason())
                 .build();
     }
 
