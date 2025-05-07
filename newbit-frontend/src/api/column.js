@@ -30,6 +30,10 @@ export const getMentorColumnList = (mentorId, page = 0, size = 10) => {
     })
 }
 
+// 좋아요한 칼럼 조회
+export const getLikedColumnList = (page = 1, size = 10) =>
+    api.get('feature/users/likes/columns', { params: { page, size } })
+
 
 /* --- 칼럼 요청 관련 --- */
 
@@ -131,6 +135,10 @@ export const searchPublicSeriesList = (condition, page = 0, size = 10) =>
         params: { ...condition, page, size },
     })
 
+// 구독한 시리즈 조회
+export function getSubscribedSeries() {
+    return api.get('feature/subscriptions/user/list');
+}
 // 멘토 리시즈 검색
 export const getMentorSeriesList = (mentorId, page = 0, size = 10) => {
     return api.get(`feature/series/mentor/${mentorId}`, {
