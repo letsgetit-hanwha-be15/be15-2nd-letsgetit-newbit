@@ -2,12 +2,36 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
-import { getPostDetail } from '@/api/post'
+import {getPostDetail } from '@/api/post'
 import { deletePost } from '@/api/post'
 import { postComment } from '@/api/post'
 import { deleteComment } from '@/api/post'
+import { reportPost, reportComment } from '@/api/post'
+import { marked } from 'marked'
+import { useAuthStore } from '@/features/stores/auth.js'
 import ReportModal from '@/features/post/components/ReportModal.vue'
 import DeleteConfirmModal from '@/features/post/components/DeleteConfirmModal.vue'
+
+const convertReasonToId = (reason) => {
+  const reasonMap = {
+    '욕설, 비하': 1,
+    '혐오 표현, 차별': 2,
+    '음란물, 선정적 표현': 3,
+    '사기, 사칭': 4,
+    '광고, 판매, 스팸': 5,
+    '불법 정보, 범죄 조장': 6,
+    '개인정보 노출, 사생활 침해': 7,
+    '저작권 침해': 8,
+    '도배 행위': 9,
+    '타인 명예 훼손': 10,
+    '기타': 11
+  }
+
+  return reasonMap[reason] || 11
+}
+
+const authStore = useAuthStore()
+const currentUserId = authStore.userId
 
 const toast = useToast()
 const reportType = ref('') // 'post' or 'comment'
@@ -96,17 +120,34 @@ const closeReportModal = () => {
 
 const handleReportSubmit = (reportData) => {
   const typeLabel = reportType.value === 'post' ? '게시글' : '댓글'
-  console.log(`${typeLabel} 신고:`, {
-    type: reportType.value,
-    targetId: reportedId.value,
-    reason: reportData.reason,
+
+  const basePayload = {
+    userId: authStore.userId,
+    reportTypeId: convertReasonToId(reportData.reason),
     content: reportData.content
-  })
+  }
 
-  toast.success(`${typeLabel} 신고가 접수되었습니다.`)
-  closeReportModal()
+  try {
+    if (reportType.value === 'post') {
+      reportPost({
+        ...basePayload,
+        postId: reportedId.value
+      })
+    } else {
+      reportComment({
+        ...basePayload,
+        commentId: reportedId.value
+      })
+    }
+
+    toast.success(`${typeLabel} 신고가 접수되었습니다.`)
+  } catch (e) {
+    toast.error(`${typeLabel} 신고에 실패했습니다.`)
+    console.error('🚨 신고 오류:', e)
+  } finally {
+    closeReportModal()
+  }
 }
-
 
 
 const toggleLike = () => {
@@ -143,6 +184,10 @@ const submitComment = async () => {
   }
 }
 
+marked.setOptions({
+  breaks: true
+})
+
 const fetchPostDetail = async () => {
   try {
     const res = await getPostDetail(postId)
@@ -151,12 +196,12 @@ const fetchPostDetail = async () => {
       title: res.title,
       author: res.writerName,
       createdAt: res.createdAt.replace('T', ' ').slice(0, 16),
-      content: res.content,
+      content: marked(res.content),
       likeCount: res.likeCount,
       liked: false,
       attachment: {
-        name: res.imageUrls?.[0]?.split('/').pop() || '첨부 이미지',
-        size: '알 수 없음'
+        name: res.imageUrls?.[0]?.split('/').pop() || 'Newbit.jpg',
+        size: '2KB'
       }
     }
 
@@ -215,9 +260,7 @@ onMounted(fetchPostDetail)
         </div>
       </div>
 
-      <div class="border p-4 rounded whitespace-pre-line leading-relaxed mb-4">
-        {{ post.content }}
-      </div>
+      <div class="border p-4 rounded leading-relaxed mb-4" v-html="post.content"></div>
 
       <div class="mt-4 text-sm">
         <strong>첨부파일</strong> (1개 {{ post.attachment.size }})<br />
