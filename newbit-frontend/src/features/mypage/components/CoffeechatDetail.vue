@@ -3,6 +3,7 @@ import {computed, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {useToast} from "vue-toastification";
 import dayjs from 'dayjs'
+import {acceptCoffeechatTime} from "@/api/coffeechat.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -47,10 +48,16 @@ function closeApproveModal() {
   isConfirmModalOpen.value = false;
 }
 
-function confirmCoffeechat () {
+async function confirmCoffeechat () {
   console.log('승인된 requestTimeId:', selectedRequestTimeId.value)
-  // todo : 커피챗 승인 API 호출
-  router.push(`/mypage/mentor/coffeechats/${coffeechatId}`);
+  try {
+    await acceptCoffeechatTime(selectedRequestTimeId.value);
+    closeApproveModal();
+  } catch (e) {
+    console.log('커피챗 승인 실패', e);
+  }
+  window.location.href = `/mypage/mentor/coffeechats/${coffeechatId}`;
+
 }
 
 function cancelRequest() {

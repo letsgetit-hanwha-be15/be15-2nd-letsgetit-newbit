@@ -30,3 +30,8 @@ export function getCoffeechatById(coffeechatId) {
 export function getRequestTimes(coffeechatId) {
     return api.get(`/feature/coffeechats/${coffeechatId}/request-times`)
 }
+
+/* 6. 커피챗 승인 */
+export function acceptCoffeechatTime(requestTimeId) {
+    return api.put(`/feature/coffeechats/${requestTimeId}/approve`, null)
+}
