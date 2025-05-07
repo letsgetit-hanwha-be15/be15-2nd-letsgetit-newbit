@@ -54,6 +54,16 @@ public class ColumnController {
         return ApiResponse.success(columnService.getMyColumnList(customUser.getUserId(), page, size));
     }
 
+    @GetMapping("/{mentorId}")
+    @Operation(summary = "멘토 칼럼 목록 조회", description = "특정 멘토가 작성한 공개 칼럼 목록을 조회합니다.")
+    public ApiResponse<Page<GetColumnListResponseDto>> getMentorColumnList(
+            @PathVariable Long mentorId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.success(columnService.getMentorColumnList(mentorId, page, size));
+    }
+
     @GetMapping("/public-list/search")
     @Operation(summary = "공개 칼럼 검색", description = "제목 또는 작성자 닉네임으로 공개된 칼럼을 검색합니다.")
     public ApiResponse<Page<GetColumnListResponseDto>> searchPublicColumns(

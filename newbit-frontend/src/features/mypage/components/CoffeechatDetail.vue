@@ -120,25 +120,29 @@ function closeCoffeechat() {
     </template>
     <!-- 커피챗 요청 시간   -->
     <template v-if="coffeechat.progressStatus === 'IN_PROGRESS'">
-      <div class="text-heading3">커피챗 요청 시간</div>
-      <ul class="ml-2 mt-2 text-16px-regular">
-        <li
-            v-for="requestTime in requestTimes"
-            :key="requestTime.requestTimeId"
-            class="p-2">
-          <template v-if="isMentor">
-            <input
-                type="radio"
-                name="requestTime"
-                :value="requestTime.requestTimeId"
-                v-model="selectedRequestTimeId"
-                class="mr-2"
-            />
-          </template>
-          {{ formatTime(requestTime.startTime) }} ~ {{formatTime(requestTime.endTime) }}
-        </li>
-
-      </ul>
+      <div>
+        <div class="text-heading3 pb-0 mb-0">커피챗 요청 시간</div>
+        <ul class="ml-2 mt-2 text-16px-regular">
+          <li
+              v-for="requestTime in requestTimes"
+              :key="requestTime.requestTimeId"
+              class="p-2">
+            <template v-if="isMentor">
+              <input
+                  type="radio"
+                  name="requestTime"
+                  :value="requestTime.requestTimeId"
+                  v-model="selectedRequestTimeId"
+                  class="mr-2"
+              />
+            </template>
+            <template v-else>
+              •
+            </template>
+            {{ formatTime(requestTime.startTime) }} ~ {{formatTime(requestTime.endTime) }}
+          </li>
+        </ul>
+      </div>
     </template>
     <!-- 요청 메시지   -->
     <div>

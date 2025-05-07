@@ -1,11 +1,14 @@
 <script setup>
 
-import {computed, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import profileImage from '@/assets/image/default-profile.png'
 import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vue";
 import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
 import {useToast} from "vue-toastification";
+import {getCoffeechatById, getRequestTimes} from "@/api/coffeechat.js";
+import {getMentorById} from "@/api/mentor.js";
+import {useAuthStore} from "@/features/stores/auth.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -13,161 +16,43 @@ const toast = useToast();
 const coffeechatId = ref(Number(route.params.id))
 const isPaymentModalOpen = ref(false);
 
-// 프론트용 페이지
-// 멘토 정보 (API 연동 전용 Mock)
-const user = ref({
-  id: 1,
-  profileImageUrl: profileImage,
-  nickname: 'sezeme',
-  jobName: '백엔드',
-  temperature: 100,
-  price: 50,
-  preferredTime: '7시 이후 좋아요! 2시간 이하로 신청해주세요!',
-  externalLinkUrl: 'https://example.com',
-  introduction: '안녕하세요! 반갑습니다! 잘 부탁드립니다. 반갑습니다. 잘 부탁드립니다. 반갑스빈다.',
-  isActive: true
-})
-
 // 현재 로그인한 유저 정보
-const me = ref({
-  "diamond": 30
-})
+const authStore = useAuthStore();
 
+
+const mentor = ref({})
 
 // todo : coffeechat 상세 조회 api에서 coffeechat.sale_confirmed_at 속성 추가로 가져오기
-const originalCoffeechats = ref([
-  {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 1,
-        "progressStatus": "IN_PROGRESS",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": null,
-        "endedAt": null,
-        "updatedAt": null,
-        "reason": null,
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  }, {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 2,
-        "progressStatus": "PAYMENT_WAITING",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": "2025-05-14T22:55:00",
-        "endedAt": "2025-05-14T23:55:00",
-        "updatedAt": null,
-        "reason": null,
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  },
-  {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 3,
-        "progressStatus": "COFFEECHAT_WAITING",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": "2025-05-14T22:55:00",
-        "endedAt": "2025-05-14T23:55:00",
-        "updatedAt": null,
-        "reason": null,
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  },
-  {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 4,
-        "progressStatus": "CANCEL",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": "2025-05-14T22:55:00",
-        "endedAt": "2025-05-14T23:55:00",
-        "updatedAt": "2025-05-20T22:55:16",
-        "reason": "단순변심",
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  },
-  {
-    "success": true,
-    "data": {
-      "coffeechat": {
-        "coffeechatId": 5,
-        "progressStatus": "COMPLETE",
-        "requestMessage": "안녕하세요웅웅",
-        "purchaseQuantity": 2,
-        "confirmedSchedule": "2025-05-14T22:55:00",
-        "endedAt": "2025-05-14T23:55:00",
-        "saleConfirmedAt" : "2025-05-14T23:57:00",
-        "updatedAt": null,
-        "reason": null,
-        "mentorId": 3,
-        "menteeId": 2
-      }
-    },
-    "errorCode": null,
-    "message": null,
-    "timestamp": "2025-05-04T22:55:16.9462967"
-  },
-]);
+const coffeechat = ref({});
 
-const requestTimes = {
-  "requestTimes": [
-    {
-      "requestTimeId": 1,
-      "eventDate": "2025-05-10T",
-      "startTime": "2025-05-10T14:00:00",
-      "endTime": "2025-05-10T16:00:00",
-      "coffeechatId": 1
-    }, {
-      "requestTimeId": 2,
-      "eventDate": "2025-05-11T",
-      "startTime": "2025-05-11T14:00:00",
-      "endTime": "2025-05-11T16:00:00",
-      "coffeechatId": 1
-    }, {
-      "requestTimeId": 3,
-      "eventDate": "2025-05-12T",
-      "startTime": "2025-05-12T14:00:00",
-      "endTime": "2025-05-12T16:00:00",
-      "coffeechatId": 1
-    }]
+const requestTimes = ref([]);
+
+const fetchMentor = async () => {
+  try {
+    const mentorData = await getMentorById(coffeechat.value.mentorId);
+    mentor.value = mentorData.data.data || {};
+  } catch (e) {
+    console.log('멘토 상세 조회 실패', e);
+  }
 }
 
-const coffeechat = computed(() => {
-  return originalCoffeechats.value
-      .map(item => item.data.coffeechat)
-      .find(c => c.coffeechatId === coffeechatId.value);
-});
+const fetchCoffeechat = async () => {
+  try {
+    const {data : wrapper} = await getCoffeechatById(coffeechatId.value);
+    coffeechat.value = wrapper.data.coffeechat || {};
 
-// 프론트용 끝
+    if(coffeechat.value.progressStatus === 'IN_PROGRESS'){
+      const timesData = await getRequestTimes(coffeechatId.value);
+      requestTimes.value = timesData.data.data.requestTimes || [];
+    }
+  } catch (e) {
+    console.log('커피챗 상세 조회 실패', e);
+  }
+}
+onMounted(async () => {
+  await fetchCoffeechat();
+  await fetchMentor();
+});
 
 const statusMap = {
   IN_PROGRESS: '승인대기',
@@ -195,8 +80,8 @@ function closePaymentModal() {
 
 function paymentCoffeechat() {
   // todo : 현재 보유 중인 다이아 몇 개인지 검사 후, 다이아가 부족하면 상점으로 이동
-  console.log(me.value.diamond + (user.value.price * coffeechat.value.purchaseQuantity))
-  if(me.value.diamond < user.value.price * coffeechat.value.purchaseQuantity){
+  console.log(authStore.diamond + (mentor.value.price * coffeechat.value.purchaseQuantity))
+  if(authStore.diamond < mentor.value.price * coffeechat.value.purchaseQuantity){
     router.push('/products')
   }
   else {
@@ -235,8 +120,8 @@ function registerReview() {
     <div class="border rounded p-4">
       <CoffeechatDetail
           :coffeechat="coffeechat"
-          :requestTimes="requestTimes.requestTimes"
-          :diamondCount="user.price * coffeechat.purchaseQuantity"
+          :requestTimes="requestTimes"
+          :diamondCount="mentor.price * coffeechat.purchaseQuantity"
       />
       <!-- 버튼들 -->
       <div class="flex flex-wrap gap-2 justify-end pb-10">
@@ -299,15 +184,15 @@ function registerReview() {
   <div class="flex justify-end">
     <div class="w-fit">
       <MentorProfileCard
-          :profileImageUrl="user.profileImageUrl"
-          :nickname="user.nickname"
-          :jobName="user.jobName"
-          :temperature="user.temperature"
-          :price="user.price"
-          :preferredTime="user.preferredTime"
-          :externalLinkUrl="user.externalLinkUrl"
-          :introduction="user.introduction"
-          :isActive="user.isActive"
+          :profileImageUrl="mentor.profileImageUrl"
+          :nickname="mentor.nickname"
+          :jobName="mentor.jobName"
+          :temperature="mentor.temperature"
+          :price="mentor.price"
+          :preferredTime="mentor.preferredTime"
+          :externalLinkUrl="mentor.externalLinkUrl"
+          :introduction="mentor.introduction"
+          :isActive="mentor.isActive"
       />
     </div>
   </div>

@@ -20,6 +20,8 @@ import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -60,12 +62,25 @@ public class ColumnRequestService {
                 .build();
     }
 
-    public UpdateColumnResponseDto updateColumnRequest(UpdateColumnRequestDto dto, Long columnId) {
-        // 1. columnId로 Column 조회
+    public UpdateColumnResponseDto updateColumnRequest(UpdateColumnRequestDto dto, Long columnId, Long userId) {
+        // 1. userId → mentorId 변환
+        Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
+
+        // 2. columnId로 Column 조회
         Column column = columnRepository.findById(columnId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
 
-        // 2. ColumnRequest 생성
+        // 3. 본인 칼럼인지 확인
+        if (!column.getMentorId().equals(mentorId)) {
+            throw new BusinessException(ErrorCode.COLUMN_NOT_OWNED);
+        }
+
+        // 4. 공개된 칼럼인지 확인
+        if (!column.getIsPublic()) {
+            throw new BusinessException(ErrorCode.COLUMN_NOT_OWNED);
+        }
+
+        // 5. 수정 요청 생성
         ColumnRequest request = ColumnRequest.builder()
                 .requestType(RequestType.UPDATE)
                 .isApproved(false)
@@ -76,10 +91,8 @@ public class ColumnRequestService {
                 .column(column)
                 .build();
 
-        // 3. 저장
         ColumnRequest saved = columnRequestRepository.save(request);
 
-        // 4. 응답
         return UpdateColumnResponseDto.builder()
                 .columnRequestId(saved.getColumnRequestId())
                 .build();
@@ -102,14 +115,12 @@ public class ColumnRequestService {
                 .build();
     }
 
-    public List<GetMyColumnRequestResponseDto> getMyColumnRequests(Long userId) {
+    public Page<GetMyColumnRequestResponseDto> getMyColumnRequests(Long userId, Pageable pageable) {
         Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
 
-        List<ColumnRequest> requests = columnRequestRepository.findAllByColumn_MentorIdOrderByCreatedAtDesc(mentorId);
+        Page<ColumnRequest> page = columnRequestRepository.findAllByColumn_MentorIdOrderByCreatedAtDesc(mentorId, pageable);
 
-        return requests.stream()
-                .map(columnMapper::toMyColumnRequestResponseDto)
-                .toList();
+        return page.map(columnMapper::toMyColumnRequestResponseDto);
     }
 
     public Integer getColumnPriceById(Long columnId) {

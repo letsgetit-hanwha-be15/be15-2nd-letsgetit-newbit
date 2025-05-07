@@ -71,6 +71,20 @@ public class SeriesController {
         return ApiResponse.success(seriesService.getMySeriesList(customUser.getUserId(), page, size));
     }
 
+
+
+    @GetMapping("/mentor/{mentorId}")
+    @Operation(summary = "멘토 시리즈 목록 조회", description = "특정 멘토가 작성한 시리즈 목록을 조회합니다.")
+    public ApiResponse<Page<GetSeriesListResponseDto>> getMentorSeriesList(
+            @PathVariable Long mentorId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.success(seriesService.getMentorSeriesList(mentorId, page, size));
+    }
+
+
+
     @GetMapping("/{seriesId}/columns")
     @Operation(summary = "시리즈에 포함된 칼럼 목록 조회", description = "해당 시리즈에 포함된 칼럼 목록을 조회합니다.")
     public ApiResponse<Page<GetSeriesColumnsResponseDto>> getSeriesColumns(
@@ -83,7 +97,7 @@ public class SeriesController {
 
     @GetMapping
     @Operation(summary = "공개된 시리즈 목록 조회", description = "사용자가 볼 수 있는 공개 시리즈 목록을 조회합니다.")
-    public ApiResponse<Page<GetMySeriesListResponseDto>> getPublicSeriesList(
+    public ApiResponse<Page<GetSeriesListResponseDto>> getPublicSeriesList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -93,7 +107,7 @@ public class SeriesController {
 
     @GetMapping("/public-list/search")
     @Operation(summary = "공개된 시리즈 검색", description = "시리즈 제목 또는 작성자 닉네임으로 공개된 시리즈를 검색합니다.")
-    public ApiResponse<Page<GetMySeriesListResponseDto>> searchPublicSeriesList(
+    public ApiResponse<Page<GetSeriesListResponseDto>> searchPublicSeriesList(
             @ModelAttribute SearchCondition condition,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size

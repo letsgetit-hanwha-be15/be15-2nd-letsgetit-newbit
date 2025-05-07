@@ -27,8 +27,7 @@ public interface SeriesRepository extends JpaRepository<Series, Long> {
     FROM Series s
     WHERE (
         :keyword IS NULL OR
-        LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
-        LOWER(s.mentorNickname) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
     )
     AND EXISTS (
         SELECT 1 FROM Column c WHERE c.series.seriesId = s.seriesId

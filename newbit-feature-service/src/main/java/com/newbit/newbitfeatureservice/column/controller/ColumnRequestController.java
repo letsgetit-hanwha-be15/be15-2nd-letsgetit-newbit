@@ -14,6 +14,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -44,9 +48,11 @@ public class ColumnRequestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<UpdateColumnResponseDto> updateColumnRequest(
             @PathVariable Long columnId,
-            @RequestBody @Valid UpdateColumnRequestDto dto
+            @RequestBody @Valid UpdateColumnRequestDto dto,
+            @AuthenticationPrincipal CustomUser customUser
             ) {
-        return ApiResponse.success(columnRequestService.updateColumnRequest(dto, columnId));
+        return ApiResponse.success(
+                columnRequestService.updateColumnRequest(dto, columnId, customUser.getUserId()));
     }
 
     // 칼럼 삭제 요청 API
@@ -62,12 +68,13 @@ public class ColumnRequestController {
     }
 
     // 본인 칼럼 요청 조회
-    @Operation(summary = "멘토 본인 칼럼 요청 조회", description = "멘토가 등록, 수정, 삭제 요청한 칼럼 목록을 조회합니다.")
     @GetMapping("/my")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<List<GetMyColumnRequestResponseDto>> getMyColumnRequests(
-            @AuthenticationPrincipal CustomUser customUser
-            ) {
-        return ApiResponse.success(columnRequestService.getMyColumnRequests(customUser.getUserId()));
+    @Operation(summary = "멘토 본인 칼럼 요청 조회", description = "멘토가 등록, 수정, 삭제 요청한 칼럼 목록을 조회합니다.")
+    public ApiResponse<Page<GetMyColumnRequestResponseDto>> getMyColumnRequests(
+            @AuthenticationPrincipal CustomUser customUser,
+            @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ApiResponse.success(columnRequestService.getMyColumnRequests(customUser.getUserId(), pageable));
     }
 }

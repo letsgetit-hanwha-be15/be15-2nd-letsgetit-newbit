@@ -2,6 +2,8 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import { updatePost } from '@/api/post'
+import { getPostDetail } from '@/api/post'
 import Editor from '@toast-ui/editor'
 import '@toast-ui/editor/dist/toastui-editor.css'
 
@@ -33,10 +35,7 @@ const submitEdit = async () => {
   if (file.value) formData.append('file', file.value)
 
   try {
-    await fetch(`/api/posts/${postId}`, {
-      method: 'PUT',
-      body: formData
-    })
+    await updatePost(postId, formData)
     toast.success('게시글이 수정되었습니다!')
     router.push(`/posts/${postId}`)
   } catch (e) {
@@ -45,16 +44,12 @@ const submitEdit = async () => {
 }
 
 const fetchPostData = async () => {
-  // 실제 API 요청으로 변경
-  const data = {
-    title: '기존 게시글 제목',
-    content: '기존 게시글 내용입니다.',
-    fileName: '기존파일.jpg'
-  }
-
-  title.value = data.title
-  if (toastEditor) {
-    toastEditor.setMarkdown(data.content)
+  try {
+    const data = await getPostDetail(postId) // 실제 서버에서 게시글 정보 조회
+    title.value = data.title
+    if (toastEditor) toastEditor.setMarkdown(data.content)
+  } catch (e) {
+    toast.error('게시글 데이터를 불러오지 못했습니다.')
   }
 }
 

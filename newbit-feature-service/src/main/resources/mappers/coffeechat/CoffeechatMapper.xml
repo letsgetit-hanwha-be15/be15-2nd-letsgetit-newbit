@@ -14,8 +14,8 @@
         c.updated_at, <!--삭제 일시( progress status를 cancel로 변경한 일시가 가장 마지막으로 기록 )-->
         r.reason
         FROM coffeechat c
-        JOIN cancel_reason r ON (c.cancel_reason_id = r.cancel_reason_id)
-        WHERE coffeechat_id = #{ coffeechatId }
+        LEFT JOIN cancel_reason r ON (c.cancel_reason_id = r.cancel_reason_id)
+        WHERE c.coffeechat_id = #{ coffeechatId }
     </select>
     <select id="selectCoffeechats" resultType="CoffeechatListDto">
         SELECT

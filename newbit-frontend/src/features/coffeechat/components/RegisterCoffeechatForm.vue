@@ -1,6 +1,6 @@
 <script setup>
 
-import {computed, ref, watch} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import {useRoute, useRouter} from 'vue-router';
 import {useToast} from "vue-toastification";
 
@@ -15,7 +15,7 @@ const newTime = ref('');
 const duration = ref(30);
 const toast =  useToast();
 
-const formData = ref({
+const formData = reactive({
   requestMessage: '',
   purchaseQuantity: 1,
   mentorId: Number(route.params.id),
@@ -23,7 +23,7 @@ const formData = ref({
 })
 
 function addTime() {
-  if (formData.value.requestTimes.length >= 3) {
+  if (formData.requestTimes.length >= 3) {
     alert('최대 3개의 시간만 추가할 수 있습니다.')
     return
   }
@@ -33,13 +33,13 @@ function addTime() {
         ? newTime.value + ':00'
         : newTime.value
 
-    formData.value.requestTimes.push(withSeconds)
+    formData.requestTimes.push(withSeconds)
     newTime.value = ''
   }
 }
 
 function removeTime(index) {
-  formData.value.requestTimes.splice(index, 1)
+  formData.requestTimes.splice(index, 1)
 }
 
 function formatTime(datetimeString) {
@@ -47,12 +47,11 @@ function formatTime(datetimeString) {
 }
 
 watch(duration, (newDuration) => {
-  formData.value.purchaseQuantity = Math.floor(newDuration / 30);
-  console.log(formData.value.purchaseQuantity);
+  formData.purchaseQuantity = Math.floor(newDuration / 30);
 });
 
 const isFormValid = computed(() => {
-  const f = formData.value;
+  const f = formData;
   return (
       f.purchaseQuantity &&
       f.requestMessage.length > 0 &&
@@ -61,7 +60,7 @@ const isFormValid = computed(() => {
 });
 
 function submitForm() {
-  emit('submit', {payload: formData.value});
+  emit('submit', {payload: formData});
 }
 
 function cancelRegister() {

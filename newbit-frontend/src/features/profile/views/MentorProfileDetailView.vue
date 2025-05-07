@@ -1,55 +1,89 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/features/stores/auth'
+import { getMentorProfile } from '@/api/user'
 import MentorProfileSideBar from '@/features/profile/components/MentorProfileSideBar.vue'
 import MentorProfileTabBar from '@/features/profile/components/MentorProfileTabBar.vue'
-import PagingBar from '@/components/common/PagingBar.vue'
 import profileImage from '@/assets/image/default-profile.png'
-import ColumnTab from "@/features/profile/components/ColumnTab.vue";
+import ColumnTab from "@/features/profile/components/ColumnTab.vue"
 import SeriesTab from "@/features/profile/components/SeriesTab.vue";
 import PostTab from "@/features/profile/components/PostTab.vue";
 import ReviewTab from "@/features/profile/components/ReviewTab.vue";
 
-// 로그인한 내 ID (임시)
-const myId = 1
+// 인증 및 라우터 정보
+const authStore = useAuthStore()
+const myId = authStore.mentorId
+const route = useRoute()
+const mentorId = Number(route.params.id)
 
-// 유저 정보 (API 연동 전용 Mock)
+// 상태 정의
 const user = ref({
-  id: 1,
+  id: mentorId,
   profileImageUrl: profileImage,
-  nickname: 'sezeme',
-  jobName: '백엔드',
-  temperature: 100,
-  price: 50,
-  preferredTime: '7시 이후 좋아요! 2시간 이하로 신청해주세요!',
-  externalLinkUrl: 'https://example.com',
-  introduction: '안녕하세요! 반갑습니다! 잘 부탁드립니다. 반갑습니다. 잘 부탁드립니다. 반갑스빈다.',
-  isActive: true
+  nickname: '',
+  jobName: '',
+  temperature: 0,
+  price: 0,
+  preferredTime: '',
+  externalLinkUrl: '',
+  introduction: '',
+  isActive: false
 })
+const isMyProfile = ref(false)
+const isLoaded = ref(false)
+const selectedTab = ref('칼럼')
 
-// 내 프로필인지 여부
-const isMyProfile = ref(user.value.id === myId)
+// 데이터
+const columns = ref([])
+const series = ref([])
+const posts= ref([])
+const reviews = ref([])
 
-// 페이징 상태
-const currentPage = ref(1)
-const totalPages = ref(5)
+// 멘토 프로필 API
+async function fetchMentorProfile() {
+  try {
+    const res = await getMentorProfile(mentorId)
+    const data = res.data.data
 
-function handlePageChange(page) {
-  currentPage.value = page
-  // 👉 여기에 데이터 로딩 또는 API 호출 연결 가능
+    user.value = {
+      id: mentorId,
+      profileImageUrl: data.profileImageUrl || profileImage,
+      nickname: data.nickname,
+      jobName: data.jobName,
+      temperature: data.temperature,
+      price: data.price,
+      preferredTime: data.preferredTime,
+      externalLinkUrl: data.externalLinkUrl,
+      introduction: data.introduction,
+      isActive: data.isActive
+    }
+
+    isMyProfile.value = String(mentorId) === String(myId)
+
+    // 칼럼만 사용
+    columns.value = data.columns || []
+
+  } catch (e) {
+    console.error('멘토 프로필 조회 실패:', e)
+  }
 }
 
-const selectedTab = ref('칼럼')
-const paginationInfo = ref(null)
+// 최초 로딩
+onMounted(async () => {
+  await fetchMentorProfile()
+  isLoaded.value = true
+})
 </script>
 
 <template>
-  <div class="flex">
-    <!-- 왼쪽: 프로필 사이드바 -->
+  <div v-if="isLoaded" class="flex">
+    <!-- 좌측 프로필 사이드바 -->
     <MentorProfileSideBar
-        :isMyProfile="isMyProfile"
         :profileImageUrl="user.profileImageUrl"
         :nickname="user.nickname"
         :jobName="user.jobName"
+        :isMyProfile="isMyProfile"
         :temperature="user.temperature"
         :price="user.price"
         :preferredTime="user.preferredTime"
@@ -58,27 +92,21 @@ const paginationInfo = ref(null)
         :isActive="user.isActive"
     />
 
-    <!-- 오른쪽: 탭 + 콘텐츠 -->
-    <div class="flex flex-col flex-1 space-y-8 pr-25 ml-5">
+    <!-- 우측 콘텐츠 -->
+    <div class="flex flex-col flex-1 py-16 pr-25 ml-5">
       <MentorProfileTabBar v-model:tab="selectedTab" />
 
-      <!-- 콘텐츠 카드 -->
-      <div class="border rounded px-4 py-8 space-y-12">
-        <ColumnTab v-if="selectedTab==='칼럼'"/>
-        <SeriesTab v-else-if="selectedTab==='시리즈'"/>
-        <PostTab v-else-if="selectedTab==='게시글'"/>
-        <ReviewTab
-            v-else-if="selectedTab==='리뷰'"
-            v-model:pagination="paginationInfo"/>
+      <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow mt-8">
+        <ColumnTab v-if="selectedTab === '칼럼'" :columns="columns" />
+        <SeriesTab v-if="selectedTab === '시리즈'" :series="series" />
+        <PostTab v-if="selectedTab === '게시글'" :post="posts"/>
+        <ReviewTab v-if="selectedTab === '리뷰'" :review="reviews" />
       </div>
 
-      <!-- 페이징 바 추가 -->
-      <PagingBar
-          class="mt-8"
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          @change-page="handlePageChange"
-      />
     </div>
+  </div>
+
+  <div v-else class="text-center text-gray-500 py-20">
+    멘토 프로필 정보를 불러오는 중입니다...
   </div>
 </template>

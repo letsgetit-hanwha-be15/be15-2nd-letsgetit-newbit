@@ -6,6 +6,7 @@ import java.util.List;
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
 import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -97,6 +98,47 @@ public class ColumnService {
     }
 
     @Transactional(readOnly = true)
+    public Page<GetColumnListResponseDto> getMentorColumnList(Long mentorId, int page, int size) {
+        // 1. 멘토 존재 여부 확인 및 userId 가져오기
+        Long userId;
+        try {
+            userId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
+        } catch (FeignException.NotFound e) {
+            throw new BusinessException(ErrorCode.MENTOR_NOT_FOUND);
+        }
+
+        // 2. 닉네임 조회
+        String mentorNickname;
+        try {
+            mentorNickname = userFeignClient.getNicknameByUserId(userId).getData();
+        } catch (FeignException.NotFound e) {
+            throw new BusinessException(ErrorCode.USER_INFO_NOT_FOUND);
+        }
+
+        // 3. 칼럼 페이지 조회
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Column> columnsPage = columnRepository
+                .findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId, pageable);
+
+        // 4. DTO 매핑 + 닉네임 수동 주입
+        return columnsPage.map(column -> {
+            GetColumnListResponseDto dto = new GetColumnListResponseDto(
+                    column.getColumnId(),
+                    column.getTitle(),
+                    column.getThumbnailUrl(),
+                    column.getPrice(),
+                    column.getLikeCount(),
+                    mentorId,
+                    column.getCreatedAt()
+            );
+            dto.setMentorNickname(mentorNickname);
+            return dto;
+        });
+    }
+
+
+
+    @Transactional(readOnly = true)
     public Column getColumn(Long columnId) {
         return columnRepository.findById(columnId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
@@ -179,4 +221,6 @@ public class ColumnService {
 
         return new PageImpl<>(filtered, pageable, filtered.size());
     }
+
+
 }
