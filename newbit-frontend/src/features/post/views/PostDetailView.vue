@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import { getPostDetail } from '@/api/post'
 import { deletePost } from '@/api/post'
+import { postComment } from '@/api/post'
+import { deleteComment } from '@/api/post'
 import ReportModal from '@/features/post/components/ReportModal.vue'
 import DeleteConfirmModal from '@/features/post/components/DeleteConfirmModal.vue'
 
@@ -24,10 +26,17 @@ const closeCommentDeleteModal = () => {
   isCommentDeleteModalOpen.value = false
 }
 
-const confirmCommentDelete = () => {
-  comments.value = comments.value.filter(comment => comment.id !== commentToDeleteId.value)
-  isCommentDeleteModalOpen.value = false
-  toast.success('댓글이 삭제되었습니다.')
+const confirmCommentDelete = async () => {
+  try {
+    await deleteComment(post.value.id, commentToDeleteId.value)
+    toast.success('댓글이 삭제되었습니다.')
+    await fetchPostDetail() // 댓글 목록 다시 불러오기
+  } catch (e) {
+    toast.error('댓글 삭제에 실패했습니다.')
+    console.error('댓글 삭제 오류:', e)
+  } finally {
+    isCommentDeleteModalOpen.value = false
+  }
 }
 
 const openDeleteModal = () => {
@@ -120,16 +129,18 @@ const totalPages = computed(() => {
   return Math.ceil(comments.value.length / pageSize)
 })
 
-const submitComment = () => {
+const submitComment = async () => {
   if (!newComment.value.trim()) return
-  comments.value.unshift({
-    id: Date.now(),
-    nickname: '익명 사용자',
-    date: new Date().toISOString().slice(0, 16).replace('T', ' '),
-    content: newComment.value.trim()
-  })
-  newComment.value = ''
-  currentPage.value = 1
+
+  try {
+    await postComment(post.value.id, newComment.value.trim())
+    toast.success('댓글이 등록되었습니다.')
+    newComment.value = ''
+    await fetchPostDetail() // 댓글 목록 다시 불러오기
+  } catch (e) {
+    toast.error('댓글 등록에 실패했습니다.')
+    console.error('댓글 등록 오류:', e)
+  }
 }
 
 const fetchPostDetail = async () => {
