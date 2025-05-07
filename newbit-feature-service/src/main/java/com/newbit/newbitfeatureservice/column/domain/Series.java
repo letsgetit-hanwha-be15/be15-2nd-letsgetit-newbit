@@ -41,6 +41,7 @@ public class Series {
     private Long mentorId;
 
     @jakarta.persistence.Column(nullable = false)
+    @Transient
     private String mentorNickname;
 
     @OneToMany(mappedBy = "series", cascade = CascadeType.PERSIST)
