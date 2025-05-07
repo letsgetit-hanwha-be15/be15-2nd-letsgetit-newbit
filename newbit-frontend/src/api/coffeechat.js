@@ -31,7 +31,17 @@ export function getRequestTimes(coffeechatId) {
     return api.get(`/feature/coffeechats/${coffeechatId}/request-times`)
 }
 
-/* 6. 멘토 리뷰 조회(프로필) */
+/* 6. 커피챗 승인 */
+export function acceptCoffeechatTime(requestTimeId) {
+    return api.put(`/feature/coffeechats/${requestTimeId}/approve`, null)
+}
+
+/* 7. 커피챗 거절 */
+export function rejectCoffeechatTime(coffeechatId) {
+    return api.put(`/feature/coffeechats/${coffeechatId}/reject`, null)
+}
+
+/* 8. 멘토 리뷰 조회(프로필) */
 export const getMentorReviews = (mentorId, page = 0, size = 5) => {
     return api.get(`/feature/reviews/mentors/${mentorId}`, {
         params: {

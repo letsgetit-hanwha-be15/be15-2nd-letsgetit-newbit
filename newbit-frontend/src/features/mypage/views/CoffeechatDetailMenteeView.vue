@@ -161,8 +161,8 @@ function registerReview() {
         <div class="bg-[var(--newbitbackground)] rounded-lg p-6 w-[400px] shadow-lg">
           <h2 class="text-heading3 mb-4">다이아 결제</h2>
           <p class="mb-6 text-13px-regular">
-            현재 보유 다이아 {{ me.diamond }} 개, 필요 다이아 {{ user.price * coffeechat.purchaseQuantity }}개<br/>
-            <template v-if="me.diamond < user.price * coffeechat.purchaseQuantity">
+            현재 보유 다이아 {{ authStore.diamond }} 개, 필요 다이아 {{ mentor.price * coffeechat.purchaseQuantity }}개<br/>
+            <template v-if="authStore.diamond < mentor.price * coffeechat.purchaseQuantity">
               다이아 결제창으로 넘어갑니다.<br/>
             </template>
             결제하시겠습니까?
