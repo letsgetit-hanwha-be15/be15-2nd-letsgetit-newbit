@@ -63,7 +63,7 @@ export function logoutUser() {
 
 /* 11. 리프레시 토큰으로 토큰 재발급 */
 export function refreshUserToken() {
-    return api.post(`user/auth/refresh`)
+    return api.post(`user/auth/refresh`,{})
 }
 
 /* 12. 유저 프로필 조회 */

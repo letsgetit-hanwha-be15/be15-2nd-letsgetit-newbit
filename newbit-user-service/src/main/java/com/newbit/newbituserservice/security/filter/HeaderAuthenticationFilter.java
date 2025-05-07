@@ -22,39 +22,49 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String userId = request.getHeader("X-User-Id");
+        String userIdStr = request.getHeader("X-User-Id");
         String authority = request.getHeader("X-User-Authority");
         String email = request.getHeader("X-User-Email");
         String nickname = request.getHeader("X-User-Nickname");
-        String point = request.getHeader("X-User-Point");
-        String diamond = request.getHeader("X-User-Diamond");
-        String mentorId = request.getHeader("X-Mentor-Id");
+        String pointStr = request.getHeader("X-User-Point");
+        String diamondStr = request.getHeader("X-User-Diamond");
+        String mentorIdStr = request.getHeader("X-Mentor-Id");
 
-        log.info("userId: {}", userId);
+        log.info("userId: {}", userIdStr);
         log.info("authority: {}", authority);
         log.info("email: {}", email);
         log.info("nickname: {}", nickname);
-        log.info("point: {}", point);
-        log.info("diamond: {}", diamond);
-        log.info("mentorId: {}", mentorId);
+        log.info("point: {}", pointStr);
+        log.info("diamond: {}", diamondStr);
+        log.info("mentorId: {}", mentorIdStr);
 
-        if (userId != null && authority != null) {
-            CustomUser customUser = CustomUser.builder()
-                    .userId(Long.valueOf(userId))
-                    .email(email)
-                    .nickname(nickname)
-                    .point(point != null ? Integer.parseInt(point) : null)
-                    .diamond(diamond != null ? Integer.parseInt(diamond) : null)
-                    .mentorId(mentorId != null ? Long.parseLong(mentorId) : null)
-                    .authorities(Collections.singleton(new SimpleGrantedAuthority(authority)))
-                    .build();
+        if (userIdStr != null && !userIdStr.equals("null") && authority != null) {
+            try {
+                Long userId = Long.parseLong(userIdStr);
+                Long mentorId = (mentorIdStr != null && !mentorIdStr.equals("null")) ? Long.parseLong(mentorIdStr) : null;
+                Integer point = (pointStr != null && !pointStr.equals("null")) ? Integer.parseInt(pointStr) : null;
+                Integer diamond = (diamondStr != null && !diamondStr.equals("null")) ? Integer.parseInt(diamondStr) : null;
 
-            PreAuthenticatedAuthenticationToken authentication =
-                    new PreAuthenticatedAuthenticationToken(customUser, null,
-                            List.of(new SimpleGrantedAuthority(authority)));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                CustomUser customUser = CustomUser.builder()
+                        .userId(userId)
+                        .email(email)
+                        .nickname(nickname)
+                        .point(point)
+                        .diamond(diamond)
+                        .mentorId(mentorId)
+                        .authorities(Collections.singleton(new SimpleGrantedAuthority(authority)))
+                        .build();
+
+                PreAuthenticatedAuthenticationToken authentication =
+                        new PreAuthenticatedAuthenticationToken(customUser, null,
+                                List.of(new SimpleGrantedAuthority(authority)));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } catch (NumberFormatException e) {
+                log.warn("헤더에서 숫자 파싱 실패: {}", e.getMessage());
+            }
         }
 
         filterChain.doFilter(request, response);
     }
+
 }
