@@ -42,15 +42,15 @@ public class ColumnService {
     public GetColumnDetailResponseDto getColumnDetail(Long userId, Long columnId) {
         GetColumnDetailResponseDto dto = columnRepository.findPublicColumnDetailById(columnId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
-
-        boolean isPurchased = columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId);
-        if (!isPurchased) {
-            throw new BusinessException(ErrorCode.COLUMN_NOT_PURCHASED);
-        }
         Long mentorId = dto.getMentorId();
         Long authorUserId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
         String nickname = userFeignClient.getUserByUserId(authorUserId).getData().getNickname();
         dto.setMentorNickname(nickname);
+
+        boolean isPurchased = columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId);
+        if (!isPurchased && !(authorUserId.equals(userId)) && !(dto.getPrice() == 0)) {
+            throw new BusinessException(ErrorCode.COLUMN_NOT_PURCHASED);
+        }
 
         return dto;
     }
