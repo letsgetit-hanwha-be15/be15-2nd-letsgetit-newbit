@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import defaultProfile from '@/assets/image/default-profile.png'
 
 const props = defineProps({
   profile: Object,
@@ -32,7 +33,7 @@ watch(
     () => props.profile,
     (val) => {
       if (val) {
-        profileImageUrl.value = val.profileImageUrl || '';
+        profileImageUrl.value = val.profileImageUrl || defaultProfile;
         nickname.value = val.nickname || '';
         jobName.value = val.jobName || '';
         temperature.value = val.temperature || 0;
