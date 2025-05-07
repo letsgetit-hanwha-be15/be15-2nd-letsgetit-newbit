@@ -1,4 +1,33 @@
-<!-- ReportModal.vue -->
+<script setup>
+import { ref } from 'vue'
+
+const props = defineProps({
+  title: {
+    type: String,
+    default: '신고'
+  }
+})
+
+const emit = defineEmits(['close', 'submit'])
+
+const selectedReason = ref('')
+const reportContent = ref('')
+
+const close = () => emit('close')
+
+const submitReport = () => {
+  if (!selectedReason.value || !reportContent.value.trim()) {
+    alert('신고 유형과 내용을 모두 입력해주세요.')
+    return
+  }
+
+  emit('submit', {
+    reason: selectedReason.value,
+    content: reportContent.value.trim()
+  })
+}
+</script>
+
 <template>
   <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-50" @click.self="close">
     <div class="bg-white rounded-xl p-6 w-[400px] text-left shadow">
@@ -33,32 +62,4 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
 
-const props = defineProps({
-  title: {
-    type: String,
-    default: '신고'
-  }
-})
-
-const emit = defineEmits(['close', 'submit'])
-
-const selectedReason = ref('')
-const reportContent = ref('')
-
-const close = () => emit('close')
-
-const submitReport = () => {
-  if (!selectedReason.value || !reportContent.value.trim()) {
-    alert('신고 유형과 내용을 모두 입력해주세요.')
-    return
-  }
-
-  emit('submit', {
-    reason: selectedReason.value,
-    content: reportContent.value.trim()
-  })
-}
-</script>

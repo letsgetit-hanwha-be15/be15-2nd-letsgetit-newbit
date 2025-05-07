@@ -64,15 +64,15 @@ public class CoffeechatCommandService {
         // 3. 커피챗 요청 등록(서비스 함수 생성)
         createRequestTime(coffeechat.getCoffeechatId(), request.getRequestTimes(), request.getPurchaseQuantity());
 
-        // 4. 커피챗 요청 등록시 멘토에게 실시간 알림 발송
-        notificationCommandService.sendNotification(
+        // todo : 4. 커피챗 요청 등록시 멘토에게 실시간 알림 발송
+/*        notificationCommandService.sendNotification(
                new NotificationSendRequest(
                        mentorClient.getUserIdByMentorId(request.getMentorId()).getData()
                        , 3L
                        , coffeechat.getCoffeechatId()
                        , "새로운 커피챗 신청이 도착했습니다."
                )
-        );
+        );*/
 
         return coffeechat.getCoffeechatId();
     }

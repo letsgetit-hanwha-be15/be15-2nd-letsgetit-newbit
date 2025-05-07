@@ -45,9 +45,9 @@ public class CompletePurchaseService {
         Long mentorId = columnRequestService.getMentorId(columnId);
         saleHistoryRepository.save(SaleHistory.forColumn(columnId, columnPrice, mentorId));
 
-        notificationCommandService.sendNotification(
-                new NotificationSendRequest(userId, 13L, columnId, "칼럼 구매가 완료되었습니다.")
-        );
+//        notificationCommandService.sendNotification(
+//                new NotificationSendRequest(userId, 13L, columnId, "칼럼 구매가 완료되었습니다.")
+//        );
     }
 
     @Transactional
@@ -59,15 +59,15 @@ public class CompletePurchaseService {
         // 2. 다이아 사용 내역 저장
         diamondHistoryRepository.save(DiamondHistory.forCoffeechatPurchase(menteeId, coffeechatId, totalPrice, balance));
 
-        // 3. 알림 발송
-        notificationCommandService.sendNotification(
+        // todo : 3. 알림 발송
+/*        notificationCommandService.sendNotification(
                 new NotificationSendRequest(
                         userId,
                         13L,
                         coffeechatId,
                         "커피챗 구매가 완료되었습니다."
                 )
-        );
+        );*/
     }
 
     @Transactional

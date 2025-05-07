@@ -28,7 +28,7 @@ public class ReviewCommandController {
             description = "커피챗 종료 후 사용자가 멘토에 대한 리뷰를 작성합니다. 별점은 필수, 리뷰내용과 팁은 옵션입니다."
     )
     @PostMapping
-    public ResponseEntity<ApiResponse<ReviewCommandResponse>> createCoffeechat(
+    public ResponseEntity<ApiResponse<ReviewCommandResponse>> createReview(
             @Valid @RequestBody ReviewCreateRequest reviewCreateRequest,
             @AuthenticationPrincipal CustomUser customUser
     ) {
