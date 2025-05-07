@@ -1,14 +1,14 @@
 <template>
-  <section class="px-6 py-8">
+  <section class="w-full max-w-[900px] mx-auto px-6 py-8">
     <h2 class="text-heading2 mb-8">칼럼 요청 내역</h2>
 
     <div v-if="columnRequests.length > 0" class="flex flex-col gap-6">
       <div
           v-for="item in columnRequests"
           :key="item.id"
-          class="flex justify-between items-start p-5 border border-[var(--newbitdivider)] rounded-lg shadow-sm"
+          class="flex justify-between items-start p-5 border border-[var(--newbitdivider)] rounded-lg shadow-sm bg-white"
       >
-        <!-- 텍스트 -->
+        <!-- 왼쪽 텍스트 -->
         <div class="flex flex-col justify-between flex-1 pr-4">
           <h3 class="text-heading3 mb-4">{{ item.title }}</h3>
 
@@ -30,6 +30,7 @@
           </p>
         </div>
 
+        <!-- 썸네일 -->
         <div class="w-[180px] h-[120px]">
           <img
               :src="item.thumbnailUrl || fallbackImg"
