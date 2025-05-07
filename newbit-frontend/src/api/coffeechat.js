@@ -67,3 +67,8 @@ export function purchaseCoffeeChat(coffeechatId) {
 export function endCoffeechat(coffeechatId) {
     return api.put(`/feature/coffeechats/${coffeechatId}/close`, null)
 }
+
+/* 12. 커피챗 구매확정 */
+export function confirmPurchaseCoffeechat(coffeechatId) {
+    return api.put(`/feature/coffeechats/${coffeechatId}/confirm-purchase`, null)
+}

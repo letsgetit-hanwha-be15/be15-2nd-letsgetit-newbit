@@ -6,7 +6,13 @@ import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vu
 import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
 import {useToast} from "vue-toastification";
-import {cancelCoffeechat, getCoffeechatById, getRequestTimes, purchaseCoffeeChat} from "@/api/coffeechat.js";
+import {
+  cancelCoffeechat,
+  confirmPurchaseCoffeechat,
+  getCoffeechatById,
+  getRequestTimes,
+  purchaseCoffeeChat
+} from "@/api/coffeechat.js";
 import {getMentorById} from "@/api/mentor.js";
 import {useAuthStore} from "@/features/stores/auth.js";
 import {getRoomIdByCoffeeChatId} from "@/api/coffeeletter.js";
@@ -23,7 +29,6 @@ const authStore = useAuthStore();
 
 const mentor = ref({})
 
-// todo : coffeechat 상세 조회 api에서 coffeechat.sale_confirmed_at 속성 추가로 가져오기
 const coffeechat = ref({});
 
 const requestTimes = ref([]);
@@ -104,9 +109,8 @@ async function goCoffeeLetter() {
   await router.push(`/coffeeletter/${coffeeLetterId.data}`)
 }
 
-function confirmPurchase() {
-  // todo : 멘토가 커피챗 종료 했는지 확인 -> DTO 변경
-  // todo : 멘티가 구매를 확정하는 api 호출
+async function confirmPurchase() {
+  await confirmPurchaseCoffeechat(coffeechatId.value);
   toast.success('구매 확정되었습니다.');
 }
 
@@ -137,16 +141,15 @@ function registerReview() {
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
           커피레터 입장
         </button>
-        <button v-if="coffeechat.progressStatus === 'COMPLETE'"
-                :disabled="!coffeechat.saleConfirmedAt"
+        <button v-if="coffeechat.progressStatus === 'COMPLETE' && coffeechat.purchaseConfirmedAt === null"
                 @click="confirmPurchase"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
           구매 확정
         </button>
         <button v-if="coffeechat.progressStatus === 'COMPLETE'"
-                :disabled
+                :disabled="true"
                 @click="registerReview"
-                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button">
+                class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button disabled:opacity-50">
           리뷰 작성
         </button>
         <button v-if="coffeechat.progressStatus === 'PAYMENT_WAITING'"
