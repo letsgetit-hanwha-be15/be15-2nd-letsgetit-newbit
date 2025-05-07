@@ -66,8 +66,8 @@ public class PurchaseCommandService {
     }
 
 
-    public void purchaseCoffeeChat(Long userId, CoffeeChatPurchaseRequest request) {
-        Long coffeechatId = request.getCoffeechatId();
+    @Transactional
+    public void purchaseCoffeeChat(Long userId, Long coffeechatId) {
 
         // 커피챗, 멘티/멘토 정보 조회
         CoffeechatDto coffeeChat = coffeechatQueryService.getCoffeechat(coffeechatId).getCoffeechat();
