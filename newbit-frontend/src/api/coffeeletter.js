@@ -42,9 +42,9 @@ export function markAsRead(roomId) {
   );
 }
 
-/* 7. 커피챗 ID로 채팅방 조회 */
-export function getRoomByCoffeeChatId(coffeeChatId) {
-  return api.get(`feature/coffeeletter/rooms/coffeechat/${coffeeChatId}`);
+/* 7. 커피챗 ID로 채팅방ID 조회 */
+export function getRoomIdByCoffeeChatId(coffeeChatId) {
+  return api.get(`feature/coffeeletter/rooms/coffeechat/${coffeeChatId}/roomId`);
 }
 
 /* 8. 채팅방 생성 */
