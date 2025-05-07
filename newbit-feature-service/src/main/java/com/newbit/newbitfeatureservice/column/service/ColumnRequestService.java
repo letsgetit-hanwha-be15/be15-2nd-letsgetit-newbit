@@ -20,6 +20,8 @@ import com.newbit.newbitfeatureservice.common.exception.BusinessException;
 import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -102,14 +104,12 @@ public class ColumnRequestService {
                 .build();
     }
 
-    public List<GetMyColumnRequestResponseDto> getMyColumnRequests(Long userId) {
+    public Page<GetMyColumnRequestResponseDto> getMyColumnRequests(Long userId, Pageable pageable) {
         Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
 
-        List<ColumnRequest> requests = columnRequestRepository.findAllByColumn_MentorIdOrderByCreatedAtDesc(mentorId);
+        Page<ColumnRequest> page = columnRequestRepository.findAllByColumn_MentorIdOrderByCreatedAtDesc(mentorId, pageable);
 
-        return requests.stream()
-                .map(columnMapper::toMyColumnRequestResponseDto)
-                .toList();
+        return page.map(columnMapper::toMyColumnRequestResponseDto);
     }
 
     public Integer getColumnPriceById(Long columnId) {

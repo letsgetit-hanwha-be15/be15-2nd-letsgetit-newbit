@@ -36,8 +36,8 @@ export const deleteColumnRequest = (columnId, data) =>
     api.post(`feature/columns/requests/${columnId}/delete`, data)
 
 // 본인 칼럼 요청 목록 조회
-export const getMyColumnRequests = () =>
-    api.get('feature/columns/requests/my')
+export const getMyColumnRequests = (params) =>
+    api.get('feature/columns/requests/my', { params })
 
 
 /* --- 칼럼 관리자 승인/거절 --- */
