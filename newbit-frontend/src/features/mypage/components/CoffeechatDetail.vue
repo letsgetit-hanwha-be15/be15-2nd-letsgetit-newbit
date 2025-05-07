@@ -4,6 +4,7 @@ import {useRoute, useRouter} from "vue-router";
 import {useToast} from "vue-toastification";
 import dayjs from 'dayjs'
 import {acceptCoffeechatTime, rejectCoffeechatTime} from "@/api/coffeechat.js";
+import {getRoomIdByCoffeeChatId} from "@/api/coffeeletter.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -88,10 +89,15 @@ const selectedRequestTime = computed(() =>
     requestTimes.find(rt => rt.requestTimeId === selectedRequestTimeId.value)
 )
 
-function goCoffeeLetter() {
-  // todo : 커피챗 아이디로 커피레터 아이디 조회
-  const coffeeLetterId = 1
-  router.push(`/coffeeletter/${coffeeLetterId}`)
+async function goCoffeeLetter() {
+  try {
+    console.log('읽기 시작!',coffeechatId)
+    const coffeeLetterId = await getRoomIdByCoffeeChatId(coffeechatId);
+    console.log('커피레터아이디', coffeeLetterId);
+    // await router.push(`/coffeeletter/${coffeeLetterId.data}`)
+  } catch (e) {
+    console.log('커피레터 아이디 조회 실패', e)
+  }
 }
 
 const isAfterEndedAt = computed(() => {

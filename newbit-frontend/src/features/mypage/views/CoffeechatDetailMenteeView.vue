@@ -9,6 +9,7 @@ import {useToast} from "vue-toastification";
 import {cancelCoffeechat, getCoffeechatById, getRequestTimes, purchaseCoffeeChat} from "@/api/coffeechat.js";
 import {getMentorById} from "@/api/mentor.js";
 import {useAuthStore} from "@/features/stores/auth.js";
+import {getRoomIdByCoffeeChatId} from "@/api/coffeeletter.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -98,10 +99,9 @@ async function paymentCoffeechat() {
   }
 }
 
-function goCoffeeLetter() {
-  // todo : 커피챗 아이디로 커피레터 아이디 조회
-  const coffeeLetterId = 1
-  router.push(`/coffeeletter/${coffeeLetterId}`)
+async function goCoffeeLetter() {
+  const coffeeLetterId = await getRoomIdByCoffeeChatId(coffeechatId.value);
+  await router.push(`/coffeeletter/${coffeeLetterId.data}`)
 }
 
 function confirmPurchase() {
