@@ -43,6 +43,7 @@ onMounted(() => {
 
 <template>
   <div class="w-full max-w-6xl mx-auto p-6">
+    <h2 class="text-heading3 mb-4">발행한 시리즈</h2>
     <div v-if="seriesList.length > 0" class="grid grid-cols-3 gap-6">
       <SeriesCard
           v-for="series in seriesList"
