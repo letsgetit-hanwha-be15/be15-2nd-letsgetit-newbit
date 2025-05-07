@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { useRoute } from "vue-router";
-import axios from "axios";
 import {
   fetchRoomInfo as fetchRoomInfoApi,
   fetchMessagesByRoom,
@@ -9,26 +8,21 @@ import {
   markAsRead as markAsReadApi,
 } from "@/api/coffeeletter.js";
 import { useAuthStore } from "@/features/stores/auth";
-import { useChatStore } from "../stores/chatStore";
-
-const DEFAULT_ROOM_ID = "67fca09d6632d00f31d416bc";
 
 const route = useRoute();
 const roomId = computed(() => route.params.id || DEFAULT_ROOM_ID);
 
 const authStore = useAuthStore();
-const chatStore = useChatStore();
 const currentUserId = ref(null);
 const isMentor = ref(false);
 
 const parseUserInfo = () => {
   if (authStore.accessToken) {
     try {
-      const payload = JSON.parse(atob(authStore.accessToken.split(".")[1]));
-      currentUserId.value = parseInt(payload.userId);
-      isMentor.value = payload.authority === "ROLE_MENTOR";
+      currentUserId.value = parseInt(authStore.userId);
     } catch (e) {
-      console.error("토큰 파싱 오류:", e);
+      console.error("사용자 정보 파싱 오류:", e);
+      currentUserId.value = null;
     }
   }
 };
@@ -72,7 +66,9 @@ const fetchRoomInfo = async () => {
 
     roomInfo.value = {
       id: room.id,
-      partnerName: isMentor.value ? room.menteeName : room.mentorName,
+      partnerName: isMentor.value
+        ? room.menteeNickname || room.menteeName || "멘티"
+        : room.mentorNickname || room.mentorName || "멘토",
       status: room.status,
       mentorId: room.mentorId,
       menteeId: room.menteeId,
@@ -97,6 +93,7 @@ const sendMessage = async () => {
   const messageData = {
     roomId: roomId.value,
     senderId: currentUserId.value,
+    senderName: authStore.nickname || "알 수 없는 사용자",
     content: newMessage.value,
     type: "CHAT",
     timestamp: new Date().toISOString(),
@@ -122,7 +119,7 @@ const markAsRead = async () => {
   if (!currentUserId.value) return;
 
   try {
-    await chatStore.markRoomAsRead(roomId.value);
+    await markAsReadApi(roomId.value, currentUserId.value);
 
     messages.value.forEach((msg) => {
       if (isMentor.value) {

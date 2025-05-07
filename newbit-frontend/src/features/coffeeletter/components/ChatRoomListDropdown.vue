@@ -16,8 +16,8 @@
           @click="selectRoom(room)"
         >
           <img
-            src="@/assets/image/profile.png"
-            alt="프로필"
+            :src="getProfileImage(room)"
+            :alt="getPartnerName(room)"
             class="profile-img"
           />
           <div class="chat-info">
@@ -52,6 +52,7 @@ import { ref, onMounted, onBeforeUnmount, inject, watch, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/features/stores/auth";
 import { useChatStore } from "../stores/chatStore";
+import { useProfileStore } from "@/features/stores/profile";
 import { storeToRefs } from "pinia";
 
 const props = defineProps({
@@ -68,6 +69,7 @@ const activeDropdown = inject("activeDropdown", ref(null));
 const router = useRouter();
 const authStore = useAuthStore();
 const chatStore = useChatStore();
+const profileStore = useProfileStore();
 const {
   rooms: chatRooms,
   isLoadingRooms: loading,
@@ -94,17 +96,23 @@ const displayedRooms = computed(() => {
 });
 
 const isCurrentUserMentor = (room) => {
-  return room.mentorId === authStore.parsedUserId;
+  return room.mentorId === parseInt(authStore.userId);
 };
 
 const getPartnerName = (room) => {
-  return isCurrentUserMentor(room) ? room.menteeName : room.mentorName;
+  const partnerInfo = chatStore.getPartnerInfo(room);
+  return partnerInfo?.nickname || "";
 };
 
 const getUnreadCount = (room) => {
   return isCurrentUserMentor(room)
     ? room.unreadCountMentor
     : room.unreadCountMentee;
+};
+
+const getProfileImage = (room) => {
+  const partnerInfo = chatStore.getPartnerInfo(room);
+  return profileStore.getProfileImageUrl(partnerInfo?.profileImageUrl);
 };
 
 const close = () => {

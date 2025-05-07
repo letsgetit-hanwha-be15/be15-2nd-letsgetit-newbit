@@ -34,7 +34,9 @@ export function sendMessage(messageData) {
 }
 
 /* 6. 메시지 읽음 표시 */
-export function markAsRead(roomId, userId) {
+export function markAsRead(roomId) {
+  const authStore = useAuthStore();
+  const userId = authStore.userId;
   return api.post(
     `feature/coffeeletter/messages/${roomId}/mark-as-read/${userId}`
   );
@@ -67,15 +69,20 @@ export function createTestRoom(mentorId, menteeId) {
   );
 
   const authStore = useAuthStore();
-  const menteeNickname =
-    authStore.userInfo?.nickname || authStore.userName || "멘티";
+  const menteeNickname = authStore.nickname || "멘티";
   const mentorNickname = "멘토스";
+
+  // 테스트 멘토 프로필 이미지 URL
+  const mentorProfileImageUrl =
+    "https://via.placeholder.com/150/3b82f6/ffffff?text=멘토";
 
   const roomData = {
     mentorId: mentorId,
     menteeId: menteeId,
     mentorNickname: mentorNickname,
     menteeNickname: menteeNickname,
+    mentorProfileImageUrl: mentorProfileImageUrl,
+    menteeProfileImageUrl: authStore.profileImageUrl || null,
     status: "ACTIVE",
   };
   console.log("[API] Sending roomData:", roomData);

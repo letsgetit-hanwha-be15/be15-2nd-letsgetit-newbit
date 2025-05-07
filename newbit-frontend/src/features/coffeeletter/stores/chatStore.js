@@ -1,22 +1,32 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { fetchMyChatRooms, markAsRead } from "@/api/coffeeletter";
 import { useAuthStore } from "@/features/stores/auth";
+import { useProfileStore } from "@/features/stores/profile";
+import webSocketService from "@/features/coffeeletter/services/websocket";
 
 export const useChatStore = defineStore("chat", () => {
   const rooms = ref([]);
   const isLoadingRooms = ref(false);
   const lastFetchTime = ref(0);
-  const fetchStatus = ref("idle"); // 'idle', 'pending', 'success', 'error'
+  const fetchStatus = ref("idle");
   const authStore = useAuthStore();
+  const profileStore = useProfileStore();
 
-  // 캐시 유효 시간 (milliseconds) - 5초
   const CACHE_VALIDITY = 5000;
+
+  const currentUserInfo = computed(() => {
+    return {
+      userId: parseInt(authStore.userId) || null,
+      nickname: authStore.nickname || null,
+      profileImageUrl: authStore.profileImageUrl || null,
+      isMentor: authStore.userRole === "ROLE_MENTOR",
+    };
+  });
 
   async function fetchRooms(force = false) {
     console.log("[ChatStore] Fetching rooms...");
 
-    // 액세스 토큰 검사
     if (!authStore.accessToken) {
       console.warn("[ChatStore] No access token found. Aborting fetchRooms.");
       rooms.value = [];
@@ -25,13 +35,11 @@ export const useChatStore = defineStore("chat", () => {
       return;
     }
 
-    // 이미 로딩 중이면 중복 요청 방지
     if (fetchStatus.value === "pending") {
       console.log("[ChatStore] Already fetching rooms. Request ignored.");
       return;
     }
 
-    // 캐시 유효 시간 내에 이미 불러왔고, 강제 로드 아니면 스킵
     const now = Date.now();
     if (
       !force &&
@@ -54,16 +62,67 @@ export const useChatStore = defineStore("chat", () => {
         "[ChatStore] Rooms fetched successfully:",
         rooms.value.length
       );
+
+      await loadRoomParticipantsProfiles();
     } catch (error) {
       console.error(
         "[ChatStore] Failed to fetch rooms:",
         error.response?.data || error.message
       );
       fetchStatus.value = "error";
-      // 에러 발생 시 이전 데이터 보존
     } finally {
       isLoadingRooms.value = false;
     }
+  }
+
+  async function loadRoomParticipantsProfiles() {
+    if (!rooms.value.length) return;
+
+    const usersToFetch = new Set();
+
+    rooms.value.forEach((room) => {
+      usersToFetch.add(room.mentorId);
+      usersToFetch.add(room.menteeId);
+    });
+
+    console.log("[ChatStore] Loading profiles for users:", [...usersToFetch]);
+
+    const profilePromises = [...usersToFetch].map((userId) =>
+      profileStore.fetchUserProfile(userId)
+    );
+
+    const results = await Promise.allSettled(profilePromises);
+    console.log("[ChatStore] Profile fetch results:", results);
+
+    updateRoomsWithProfileInfo();
+  }
+
+  function updateRoomsWithProfileInfo() {
+    console.log("[ChatStore] Updating rooms with profile info");
+
+    rooms.value.forEach((room) => {
+      const mentorProfile = profileStore.getCachedProfile(room.mentorId);
+      if (mentorProfile) {
+        console.log(
+          `[ChatStore] Updating mentor info for room ${room.id}`,
+          mentorProfile
+        );
+        room.mentorNickname = mentorProfile.nickname || room.mentorNickname;
+        room.mentorProfileImageUrl =
+          mentorProfile.profileImageUrl || room.mentorProfileImageUrl;
+      }
+
+      const menteeProfile = profileStore.getCachedProfile(room.menteeId);
+      if (menteeProfile) {
+        console.log(
+          `[ChatStore] Updating mentee info for room ${room.id}`,
+          menteeProfile
+        );
+        room.menteeNickname = menteeProfile.nickname || room.menteeNickname;
+        room.menteeProfileImageUrl =
+          menteeProfile.profileImageUrl || room.menteeProfileImageUrl;
+      }
+    });
   }
 
   function updateRoomFromTopicEvent(updatedRoom) {
@@ -80,10 +139,9 @@ export const useChatStore = defineStore("chat", () => {
       return;
     }
 
-    // 현재 사용자가 해당 채팅방의 멘토 또는 멘티인지 확인
     const isUserInRoom =
-      updatedRoom.mentorId === currentUserId ||
-      updatedRoom.menteeId === currentUserId;
+      updatedRoom.mentorId === parseInt(currentUserId) ||
+      updatedRoom.menteeId === parseInt(currentUserId);
 
     if (!isUserInRoom) {
       console.log(
@@ -94,9 +152,50 @@ export const useChatStore = defineStore("chat", () => {
 
     const index = rooms.value.findIndex((room) => room.id === updatedRoom.id);
     if (index !== -1) {
+      console.log(`[ChatStore] Updating existing room ${updatedRoom.id}`);
+
+      const oldRoom = rooms.value[index];
+      updatedRoom.mentorNickname =
+        updatedRoom.mentorNickname || oldRoom.mentorNickname;
+      updatedRoom.mentorProfileImageUrl =
+        updatedRoom.mentorProfileImageUrl || oldRoom.mentorProfileImageUrl;
+      updatedRoom.menteeNickname =
+        updatedRoom.menteeNickname || oldRoom.menteeNickname;
+      updatedRoom.menteeProfileImageUrl =
+        updatedRoom.menteeProfileImageUrl || oldRoom.menteeProfileImageUrl;
+
       rooms.value[index] = updatedRoom;
     } else {
+      console.log(`[ChatStore] Adding new room ${updatedRoom.id}`);
       rooms.value.unshift(updatedRoom);
+
+      const partnerUserId =
+        updatedRoom.mentorId === parseInt(currentUserId)
+          ? updatedRoom.menteeId
+          : updatedRoom.mentorId;
+
+      profileStore.fetchUserProfile(partnerUserId).then((profile) => {
+        if (profile) {
+          const newRoomIndex = rooms.value.findIndex(
+            (r) => r.id === updatedRoom.id
+          );
+          if (newRoomIndex !== -1) {
+            if (updatedRoom.mentorId === partnerUserId) {
+              rooms.value[newRoomIndex].mentorNickname =
+                profile.nickname || rooms.value[newRoomIndex].mentorNickname;
+              rooms.value[newRoomIndex].mentorProfileImageUrl =
+                profile.profileImageUrl ||
+                rooms.value[newRoomIndex].mentorProfileImageUrl;
+            } else {
+              rooms.value[newRoomIndex].menteeNickname =
+                profile.nickname || rooms.value[newRoomIndex].menteeNickname;
+              rooms.value[newRoomIndex].menteeProfileImageUrl =
+                profile.profileImageUrl ||
+                rooms.value[newRoomIndex].menteeProfileImageUrl;
+            }
+          }
+        }
+      });
     }
     sortRoomsByLastMessageTime();
   }
@@ -109,39 +208,88 @@ export const useChatStore = defineStore("chat", () => {
       return;
     }
 
+    console.log("[ChatStore] 이벤트 처리 시작:", {
+      eventType: event.type,
+      roomId: event.roomId,
+      senderId: event.senderId,
+      content: event.content,
+      hasRoomInStore: rooms.value.some((room) => room.id === event.roomId),
+    });
+
     const roomIndex = rooms.value.findIndex((room) => room.id === event.roomId);
     const isCurrentUserMentorInRoom = (room) =>
-      room && room.mentorId === currentUserId;
+      room && room.mentorId === parseInt(currentUserId);
 
     if (roomIndex !== -1) {
-      const room = rooms.value[roomIndex];
+      const room = { ...rooms.value[roomIndex] };
+
       if (event.type === "NEW_MESSAGE") {
         room.lastMessageContent = event.content;
         room.lastMessageTime = event.timestamp;
-        if (event.senderId !== currentUserId) {
+        room.lastMessageSenderId = event.senderId;
+
+        if (event.senderId !== parseInt(currentUserId)) {
           if (isCurrentUserMentorInRoom(room)) {
             room.unreadCountMentor = (room.unreadCountMentor || 0) + 1;
           } else {
             room.unreadCountMentee = (room.unreadCountMentee || 0) + 1;
           }
+          console.log("[ChatStore] 읽지 않은 메시지 카운트 증가:", {
+            roomId: room.id,
+            isMentor: isCurrentUserMentorInRoom(room),
+            unreadCountMentor: room.unreadCountMentor,
+            unreadCountMentee: room.unreadCountMentee,
+          });
         }
+
+        rooms.value.splice(roomIndex, 1, room);
+
         sortRoomsByLastMessageTime();
-        console.log("ChatStore: Room updated by NEW_MESSAGE event", room.id);
-      } else if (event.type === "READ_UPDATE") {
+
+        console.log(
+          "ChatStore: Room updated by NEW_MESSAGE event",
+          room.id,
+          room
+        );
+      } else if (
+        event.type === "READ_UPDATE" ||
+        event.type === "READ_RECEIPT"
+      ) {
         if (isCurrentUserMentorInRoom(room)) {
           room.unreadCountMentor = 0;
         } else {
           room.unreadCountMentee = 0;
         }
-        console.log("ChatStore: Room updated by READ_UPDATE event", room.id);
+
+        rooms.value.splice(roomIndex, 1, room);
+
+        console.log(
+          `ChatStore: Room updated by ${event.type} event`,
+          room.id,
+          room
+        );
       }
     } else if (event.type === "NEW_MESSAGE") {
-      console.log("ChatStore: New room message detected, fetching rooms...");
-      fetchRooms();
+      console.log(
+        `ChatStore: New message for unknown room ${event.roomId}, fetching rooms...`
+      );
+      fetchRooms(true).then(() => {
+        const newRoomIndex = rooms.value.findIndex(
+          (room) => room.id === event.roomId
+        );
+        if (newRoomIndex !== -1) {
+          console.log(
+            `ChatStore: Room ${event.roomId} now found after fetching`
+          );
+        } else {
+          console.warn(
+            `ChatStore: Room ${event.roomId} still not found after fetching`
+          );
+        }
+      });
     }
   }
 
-  // 마지막 메시지 시간 기준으로 채팅방 정렬
   function sortRoomsByLastMessageTime() {
     rooms.value.sort((a, b) => {
       const timeA = a.lastMessageTime
@@ -154,7 +302,6 @@ export const useChatStore = defineStore("chat", () => {
     });
   }
 
-  // 채팅방 읽음 처리 함수
   async function markRoomAsRead(roomId) {
     if (!authStore.accessToken) {
       console.warn("[ChatStore] No access token found. Cannot mark as read.");
@@ -164,13 +311,16 @@ export const useChatStore = defineStore("chat", () => {
     try {
       await markAsRead(roomId);
 
-      // 현재 사용자 기준으로 읽음 상태 업데이트
+      if (webSocketService.isConnected()) {
+        webSocketService.sendReadReceipt(roomId);
+      }
+
       const roomIndex = rooms.value.findIndex((room) => room.id === roomId);
       if (roomIndex !== -1) {
         const room = rooms.value[roomIndex];
         const currentUserId = authStore.userId;
 
-        if (room.mentorId === currentUserId) {
+        if (room.mentorId === parseInt(currentUserId)) {
           room.unreadCountMentor = 0;
         } else {
           room.unreadCountMentee = 0;
@@ -192,14 +342,49 @@ export const useChatStore = defineStore("chat", () => {
     fetchStatus.value = "idle";
   }
 
+  function getPartnerInfo(room) {
+    if (!room) return null;
+
+    const isUserMentor = room.mentorId === parseInt(authStore.userId);
+    const partnerId = isUserMentor ? room.menteeId : room.mentorId;
+
+    const cachedProfile = profileStore.getCachedProfile(partnerId);
+
+    console.log(`[ChatStore] Getting partner info for room ${room.id}:`, {
+      isUserMentor,
+      partnerId,
+      cachedProfile,
+      roomMentorNickname: room.mentorNickname,
+      roomMenteeNickname: room.menteeNickname,
+    });
+
+    const defaultName = isUserMentor ? "멘티" : "멘토";
+
+    const partnerNickname =
+      cachedProfile?.nickname ||
+      (isUserMentor ? room.menteeNickname : room.mentorNickname) ||
+      defaultName;
+
+    return {
+      userId: partnerId,
+      nickname: partnerNickname,
+      profileImageUrl: isUserMentor
+        ? room.menteeProfileImageUrl || cachedProfile?.profileImageUrl
+        : room.mentorProfileImageUrl || cachedProfile?.profileImageUrl,
+      isMentor: !isUserMentor,
+    };
+  }
+
   return {
     rooms,
     isLoadingRooms,
     fetchStatus,
+    currentUserInfo,
     fetchRooms,
     updateRoomFromTopicEvent,
     updateRoomFromUserEvent,
     markRoomAsRead,
     clearChatState,
+    getPartnerInfo,
   };
 });

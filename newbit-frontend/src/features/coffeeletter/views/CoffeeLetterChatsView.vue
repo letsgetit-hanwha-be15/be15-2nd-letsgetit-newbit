@@ -17,11 +17,9 @@ import { useRoute, useRouter } from "vue-router";
 import webSocketService from "@/features/coffeeletter/services/websocket";
 import ChatRoomList from "@/features/coffeeletter/components/ChatRoomList.vue";
 import Chat from "@/features/coffeeletter/components/Chat.vue";
-import { useAuthStore } from "@/features/stores/auth";
 
 const route = useRoute();
 const router = useRouter();
-const authStore = useAuthStore();
 
 const selectedRoomId = ref(null);
 
@@ -38,16 +36,6 @@ watch(
 );
 
 const setupGlobalWebSocket = () => {
-  // 사용자 ID가 없는 경우 연결 시도하지 않음
-  if (!authStore.userId) {
-    console.warn(
-      "CoffeeLetterChatsView: WebSocket 연결 시도 중단 (사용자 ID 없음)"
-    );
-    return;
-  }
-
-  currentUserId.value = authStore.userId;
-
   webSocketService.connect({
     userId: currentUserId.value,
     onUserEvent: (event) => {
@@ -75,7 +63,9 @@ const selectRoom = (roomId) => {
 };
 
 onUnmounted(() => {
-  webSocketService.unsubscribe(`/user/${currentUserId.value}/queue/events`);
+  // 전역 구독을 해제하지 않도록 수정 - App.vue에서 관리합니다.
+  // webSocketService.unsubscribe(`/user/${currentUserId.value}/queue/events`);
+  console.log("CoffeeLetterChatsView: 컴포넌트 언마운트 - 전역 구독 유지");
 });
 </script>
 

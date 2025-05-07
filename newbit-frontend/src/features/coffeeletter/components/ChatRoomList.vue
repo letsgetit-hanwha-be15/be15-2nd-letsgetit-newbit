@@ -2,9 +2,9 @@
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import webSocketService from "@/features/coffeeletter/services/websocket";
-import ChatRoomListDropdown from "./ChatRoomListDropdown.vue";
 import { useAuthStore } from "@/features/stores/auth";
 import { useChatStore } from "../stores/chatStore";
+import { useProfileStore } from "@/features/stores/profile";
 import { storeToRefs } from "pinia";
 import { createTestRoom } from "@/api/coffeeletter";
 
@@ -24,26 +24,27 @@ const router = useRouter();
 
 const authStore = useAuthStore();
 const chatStore = useChatStore();
+const profileStore = useProfileStore();
 const { rooms, isLoadingRooms, fetchStatus } = storeToRefs(chatStore);
 
 const currentUserId = ref(null);
 const isMentor = ref(false);
 const isCreatingTestRoom = ref(false);
-const mentorName = ref("멘토스");
+const mentorName = ref(null);
 
 const parseUserInfo = () => {
   if (authStore.accessToken) {
     try {
-      const payload = JSON.parse(atob(authStore.accessToken.split(".")[1]));
-      currentUserId.value = parseInt(payload.userId);
-      isMentor.value = payload.authority === "ROLE_MENTOR";
+      currentUserId.value = parseInt(authStore.userId);
+      isMentor.value = authStore.userRole === "ROLE_MENTOR";
       console.log(
         "ChatRoomList: User Info Parsed:",
         currentUserId.value,
-        isMentor.value
+        isMentor.value,
+        authStore.nickname
       );
     } catch (e) {
-      console.error("토큰 파싱 오류:", e);
+      console.error("사용자 정보 파싱 오류:", e);
       currentUserId.value = null;
     }
   } else {
@@ -123,7 +124,8 @@ const selectRoom = async (roomId) => {
 };
 
 const getPartnerName = (room) => {
-  return isCurrentUserMentor(room) ? room.menteeName : room.mentorName;
+  const partnerInfo = chatStore.getPartnerInfo(room);
+  return partnerInfo?.nickname || "";
 };
 
 const isCurrentUserMentor = (room) => {
@@ -172,12 +174,8 @@ const formatDate = (dateStr) => {
 };
 
 const getProfileImage = (room) => {
-  const defaultImage = "/src/assets/image/profile.png";
-  if (isCurrentUserMentor(room)) {
-    return room.menteeProfileImageUrl || defaultImage;
-  } else {
-    return room.mentorProfileImageUrl || defaultImage;
-  }
+  const partnerInfo = chatStore.getPartnerInfo(room);
+  return profileStore.getProfileImageUrl(partnerInfo?.profileImageUrl);
 };
 
 const setupWebSocket = () => {
@@ -283,10 +281,16 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  // 전역 구독을 해제하지 않도록 수정 - App.vue에서 관리합니다.
+  // 특정 방에 대한 구독만 해제
+  // 주석 처리하여 전역 구독이 페이지 이동 시에도 유지되도록 함
+  /*
   if (webSocketService.isConnected() && currentUserId.value) {
     webSocketService.unsubscribe("/topic/rooms");
     webSocketService.unsubscribe(`/user/${currentUserId.value}/queue/events`);
   }
+  */
+  console.log("ChatRoomList: 컴포넌트 언마운트 - 전역 구독 유지");
 });
 </script>
 
