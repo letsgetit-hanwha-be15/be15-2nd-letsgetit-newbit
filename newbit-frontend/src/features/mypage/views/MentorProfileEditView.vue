@@ -5,6 +5,7 @@ import { getMentorById, patchMentorCoffeechatInfo, patchMentorIntroduction } fro
 import axios from 'axios';
 import { useToast } from 'vue-toastification'
 import MentorProfileEditForm from '@/features/mypage/components/MentorProfileEditForm.vue';
+import {useAuthStore} from "@/features/stores/auth.js";
 
 
 const toast = useToast()
@@ -15,12 +16,11 @@ const errorMessage = ref('');
 const successMessage = ref('');
 const showModal = ref(false);
 
-// const userStore = useUserStore();
+const authStore = useAuthStore();
 
 onMounted(async () => {
   try {
-    //TODO: store에서 mentorId 가져오기
-    const mentorId = 2; // const mentorId = userStore.mentorId;
+    const mentorId = authStore.mentorId;
     if (!mentorId) throw new Error('mentorId 없음');
 
     const response = await getMentorById(mentorId);

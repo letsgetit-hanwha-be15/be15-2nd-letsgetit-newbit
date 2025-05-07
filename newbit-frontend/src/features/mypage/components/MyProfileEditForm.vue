@@ -1,5 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue';
+import defaultProfile from '@/assets/image/default-profile.png'
+
 
 const props = defineProps({
   initialProfile: Object,
@@ -10,7 +12,7 @@ const props = defineProps({
 const emit = defineEmits(['submit']);
 
 const nickname = ref('');
-const profileImageUrl = ref('@/assets/image/profile.png');
+const profileImageUrl = ref('');
 const jobName = ref('');
 const techstackNames = ref([]);
 const selectedStack = ref('');
@@ -23,8 +25,7 @@ watch(
     ([profile, jobs]) => {
       if (profile) {
         nickname.value = profile.nickname || '';
-        profileImageUrl.value = profile.profileImageUrl || '';
-        //TODO: 기술스택 조회 추가 후 초기값 바인딩
+        profileImageUrl.value = profile.profileImageUrl || defaultProfile;
         techstackNames.value = profile.techstackNames ? [...profile.techstackNames] : [];
 
         // jobId가 있고 jobOptions가 로드된 경우 매핑

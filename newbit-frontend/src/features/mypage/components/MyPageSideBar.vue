@@ -34,7 +34,9 @@ import SideBarItem from '@/features/mypage/components/SideBarItem.vue'
 import { computed } from 'vue'
 
 import { useRouter } from 'vue-router';
+import {useAuthStore} from "@/features/stores/auth.js";
 const router = useRouter();
+const authStore = useAuthStore();
 
 const props = defineProps({
   authority: {
@@ -88,7 +90,7 @@ const sidebarSections = computed(() => {
     },
   ]
 
-  return props.authority !== 'MENTOR'
+  return authStore.userRole === 'MENTOR'
       ? [...commonSections.slice(0, 1), ...mentorSections, ...commonSections.slice(1)]
       : commonSections
 })
