@@ -62,3 +62,8 @@ export function cancelCoffeechat(coffeechatId, cancelReasonId) {
 export function purchaseCoffeeChat(coffeechatId) {
     return api.post(`/feature/purchase/coffeechat/${coffeechatId}`, null)
 }
+
+/* 11. 커피챗 종료 */
+export function endCoffeechat(coffeechatId) {
+    return api.put(`/feature/coffeechats/${coffeechatId}/close`, null)
+}
