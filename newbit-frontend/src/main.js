@@ -5,7 +5,6 @@ import App from "./App.vue";
 import router from "./router";
 import { useAuthStore } from "@/features/stores/auth.js";
 import { refreshUserToken } from "@/api/user.js";
-import webSocketService from "@/features/coffeeletter/services/websocket";
 
 import "@/assets/styles/global.css";
 import "@/assets/styles/text-utilities.css";
@@ -44,24 +43,6 @@ async function bootstrap() {
   app.use(Toast);
 
   app.mount("#app");
-
-  console.log(
-    "main.js: Checking accessToken before connect attempt:",
-    authStore.accessToken
-  );
-  if (authStore.accessToken) {
-    console.log("main.js: accessToken 확인, WebSocket 연결 시도");
-    webSocketService.connect({
-      onConnected: () => {
-        console.log("main.js: 앱 레벨 WebSocket 연결 성공");
-      },
-      onError: (error) => {
-        console.error("main.js: 앱 레벨 WebSocket 연결 오류:", error);
-      },
-    });
-  } else {
-    console.log("main.js: accessToken 없음, WebSocket 연결 보류");
-  }
 }
 
 bootstrap();
