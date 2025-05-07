@@ -3,6 +3,7 @@ import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import { getPostDetail } from '@/api/post'
+import { deletePost } from '@/api/post'
 import ReportModal from '@/features/post/components/ReportModal.vue'
 import DeleteConfirmModal from '@/features/post/components/DeleteConfirmModal.vue'
 
@@ -39,13 +40,14 @@ const closeDeleteModal = () => {
 
 const confirmDelete = async () => {
   try {
-    await fetch(`/api/posts/${post.value.id}`, { method: 'DELETE' })
+    await deletePost(post.value.id)
     toast.success('삭제되었습니다.')
     router.push('/posts')
   } catch (e) {
     toast.error('삭제 실패')
+  } finally {
+    isDeleteModalOpen.value = false
   }
-  isDeleteModalOpen.value = false
 }
 
 const openPostReportModal = () => {
