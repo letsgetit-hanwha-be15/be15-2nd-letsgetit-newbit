@@ -89,4 +89,11 @@ public class AdminColumnController {
     ) {
         return ApiResponse.success(columnRequestService.getAllColumnRequests(page, size));
     }
+
+    @GetMapping("/requests/{requestId}")
+    @Operation(summary = "칼럼 요청 상세 조회 (관리자용)", description = "요청 ID로 칼럼 요청 상세 정보를 조회합니다.")
+    public ApiResponse<AdminColumnRequestResponseDto> getColumnRequestDetail(@PathVariable Long requestId) {
+        return ApiResponse.success(columnRequestService.getAdminColumnRequestDetail(requestId));
+    }
+
 }
