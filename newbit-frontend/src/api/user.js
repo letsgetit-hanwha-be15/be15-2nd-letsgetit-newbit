@@ -75,3 +75,8 @@ export function getUserProfile(userId) {
 export function getMentorProfile(mentorId) {
     return api.get(`user/users/mentor/${mentorId}/profile`);
 }
+
+/* 14. 회원 포인트, 다이아 잔여량 조회 */
+export function getUserBalance() {
+    return api.get('/user/users/me/balance');
+}

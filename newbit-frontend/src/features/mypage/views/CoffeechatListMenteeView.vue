@@ -37,7 +37,6 @@ const fetchCoffeechats = async (page = 1) => {
   } catch (e) {
     console.log('커피챗 목록 조회 실패', e);
   }
-  console.log('이동할 페이지: ', page)
 }
 
 const statusMap = {
@@ -88,7 +87,6 @@ onMounted(() => fetchCoffeechats());
     <CoffeechatList
         :coffeechats="coffeechats"
         :pagination="pagination"
-        :isMentor=true
     />
     <PagingBar
         :currentPage="pagination.currentPage"
