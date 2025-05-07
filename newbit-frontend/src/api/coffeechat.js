@@ -40,3 +40,13 @@ export function acceptCoffeechatTime(requestTimeId) {
 export function rejectCoffeechatTime(coffeechatId) {
     return api.put(`/feature/coffeechats/${coffeechatId}/reject`, null)
 }
+
+/* 8. 멘토 리뷰 조회(프로필) */
+export const getMentorReviews = (mentorId, page = 0, size = 5) => {
+    return api.get(`/feature/reviews/mentors/${mentorId}`, {
+        params: {
+            page,
+            size
+        }
+    })
+}
