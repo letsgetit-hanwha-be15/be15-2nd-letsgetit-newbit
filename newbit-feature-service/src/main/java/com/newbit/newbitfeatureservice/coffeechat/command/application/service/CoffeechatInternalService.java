@@ -2,6 +2,7 @@ package com.newbit.newbitfeatureservice.coffeechat.command.application.service;
 
 import com.newbit.newbitfeatureservice.coffeechat.command.application.dto.request.CoffeechatCancelRequest;
 import com.newbit.newbitfeatureservice.coffeechat.command.domain.aggregate.Coffeechat;
+import com.newbit.newbitfeatureservice.coffeechat.query.dto.response.ProgressStatus;
 import com.newbit.newbitfeatureservice.coffeeletter.service.RoomService;
 import com.newbit.newbitfeatureservice.notification.command.application.dto.request.NotificationSendRequest;
 import com.newbit.newbitfeatureservice.notification.command.application.service.NotificationCommandService;
@@ -19,12 +20,14 @@ public class CoffeechatInternalService {
     @Transactional
     protected void cancelCoffeechatTransactional(CoffeechatCancelRequest request,
                                                  Coffeechat coffeechat, Long mentorUserId) {
-        // 1. 커피챗 상태 업데이트
-        coffeechat.cancelCoffeechat(request.getCancelReasonId());
+        // 1. 채팅방 취소 처리
+        if (coffeechat.getProgressStatus() != ProgressStatus.IN_PROGRESS){
+            String roomId = roomService.findRoomIdByCoffeeChatId(coffeechat.getCoffeechatId());
+            roomService.cancelRoom(roomId);
+        }
 
-        // 2. 채팅방 취소 처리
-        String roomId = roomService.findRoomIdByCoffeeChatId(coffeechat.getCoffeechatId());
-        roomService.cancelRoom(roomId);
+        // 2. 커피챗 상태 업데이트
+        coffeechat.cancelCoffeechat(request.getCancelReasonId());
 
         // 3. 멘토에게 커피챗 취소 알림 전송
         notificationCommandService.sendNotification(

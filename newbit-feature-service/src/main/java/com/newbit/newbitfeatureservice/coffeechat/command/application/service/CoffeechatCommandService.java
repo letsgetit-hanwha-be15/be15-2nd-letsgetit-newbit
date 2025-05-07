@@ -146,15 +146,15 @@ public class CoffeechatCommandService {
                 mentor.getNickname());
 
 
-        // 7. 멘티에게 승인 알림 보내주기
-        notificationCommandService.sendNotification(
+        // todo : 7. 멘티에게 승인 알림 보내주기
+        /*notificationCommandService.sendNotification(
                 new NotificationSendRequest(
                         coffeechat.getMenteeId()
                         , 4L
                         , coffeechat.getCoffeechatId()
                         , notificationContent
                 )
-        );
+        );*/
     }
 
     @Transactional
