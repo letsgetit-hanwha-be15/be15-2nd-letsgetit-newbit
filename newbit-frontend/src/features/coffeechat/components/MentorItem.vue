@@ -10,9 +10,11 @@ const {mentor} = defineProps({
 
 const techstackArray = computed(() =>
     mentor.techstackName
+    ? mentor.techstackName
         .split(',')
         .map(item => item.trim())
         .filter(item => item.length > 0)
+        : null
 )
 </script>
 <template>
@@ -51,15 +53,16 @@ const techstackArray = computed(() =>
 
       <!-- 하단 -->
       <!-- Technology Stack -->
-      <div v-if="techstackArray.length > 0"
-           class="gap-2 w-[90%] min-h-20 mx-auto rounded-md p-2 bg-[var(--newbitlightgray)]">
-        <span
-            v-for="(tech, index) in techstackArray"
-            :key="index"
-            class="inline-block text-13px-regular bg-[var(--newbitdivider)] px-2 py-1 rounded"
-        >
-          {{ tech }}
-        </span>
+      <div class="flex flex-wrap items-start gap-4 w-[90%] min-h-20 mx-auto rounded-md p-2 bg-[var(--newbitlightgray)]">
+        <template v-if="techstackArray != null && techstackArray.length > 0">
+          <div
+              v-for="(tech, index) in techstackArray"
+              :key="index"
+              class="text-13px-regular bg-[var(--newbitdivider)] px-2 py-1 rounded"
+          >
+            {{ tech }}
+          </div>
+        </template>
       </div>
 
       <!-- Price and Duration -->

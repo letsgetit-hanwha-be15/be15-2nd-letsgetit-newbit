@@ -11,7 +11,7 @@ const {mentors} = defineProps({
 </script>
 
 <template>
-<div class="flex flex-wrap justify-start w-full gap-4 p-12">
+<div class="flex flex-wrap justify-center w-full gap-4 p-12">
     <MentorItem
         v-for="mentor in mentors"
         :key="mentor.mentorId"
