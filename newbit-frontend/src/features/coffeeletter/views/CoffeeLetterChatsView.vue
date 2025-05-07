@@ -17,16 +17,16 @@ import { useRoute, useRouter } from "vue-router";
 import webSocketService from "@/features/coffeeletter/services/websocket";
 import ChatRoomList from "@/features/coffeeletter/components/ChatRoomList.vue";
 import Chat from "@/features/coffeeletter/components/Chat.vue";
+import { useAuthStore } from "@/features/stores/auth";
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const selectedRoomId = ref(null);
 
-// TODO: 사용자 정보 auth 적용 후 수정
-const currentUserId = ref(5);
+const currentUserId = ref(0);
 
-// 쿼리 파라미터 roomId 변화를 감지해서 selectedRoomId를 갱신
 watch(
   () => route.query.roomId,
   (newRoomId) => {
@@ -38,6 +38,16 @@ watch(
 );
 
 const setupGlobalWebSocket = () => {
+  // 사용자 ID가 없는 경우 연결 시도하지 않음
+  if (!authStore.userId) {
+    console.warn(
+      "CoffeeLetterChatsView: WebSocket 연결 시도 중단 (사용자 ID 없음)"
+    );
+    return;
+  }
+
+  currentUserId.value = authStore.userId;
+
   webSocketService.connect({
     userId: currentUserId.value,
     onUserEvent: (event) => {

@@ -9,18 +9,18 @@ import {
   markAsRead as markAsReadApi,
 } from "@/api/coffeeletter.js";
 import { useAuthStore } from "@/features/stores/auth";
+import { useChatStore } from "../stores/chatStore";
 
 const DEFAULT_ROOM_ID = "67fca09d6632d00f31d416bc";
 
 const route = useRoute();
 const roomId = computed(() => route.params.id || DEFAULT_ROOM_ID);
 
-// Pinia 스토어에서 사용자 정보 가져오기
 const authStore = useAuthStore();
+const chatStore = useChatStore();
 const currentUserId = ref(null);
 const isMentor = ref(false);
 
-// 토큰에서 사용자 정보 파싱 (Pinia 스토어에서)
 const parseUserInfo = () => {
   if (authStore.accessToken) {
     try {
@@ -33,7 +33,6 @@ const parseUserInfo = () => {
   }
 };
 
-// 사용자 정보 초기화
 parseUserInfo();
 
 const messages = ref([]);
@@ -47,7 +46,6 @@ const roomInfo = ref({
   menteeId: null,
 });
 
-// 인증 상태 변경 감지
 watch(
   () => authStore.accessToken,
   () => {
@@ -57,7 +55,6 @@ watch(
   }
 );
 
-// 사용자 ID 변경 감지
 watch(
   () => currentUserId.value,
   () => {
@@ -85,7 +82,6 @@ const fetchRoomInfo = async () => {
   }
 };
 
-// 메시지 목록 조회
 const fetchMessages = async () => {
   try {
     const response = await fetchMessagesByRoom(roomId.value);
@@ -126,7 +122,7 @@ const markAsRead = async () => {
   if (!currentUserId.value) return;
 
   try {
-    await markAsReadApi(roomId.value, currentUserId.value);
+    await chatStore.markRoomAsRead(roomId.value);
 
     messages.value.forEach((msg) => {
       if (isMentor.value) {

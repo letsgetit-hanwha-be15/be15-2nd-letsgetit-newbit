@@ -68,7 +68,11 @@ const activeDropdown = inject("activeDropdown", ref(null));
 const router = useRouter();
 const authStore = useAuthStore();
 const chatStore = useChatStore();
-const { rooms: chatRooms, isLoadingRooms: loading } = storeToRefs(chatStore);
+const {
+  rooms: chatRooms,
+  isLoadingRooms: loading,
+  fetchStatus,
+} = storeToRefs(chatStore);
 
 watch(activeDropdown, (newValue) => {
   if (newValue !== props.dropdownId && props.open) {
@@ -78,20 +82,15 @@ watch(activeDropdown, (newValue) => {
 
 watch(
   () => authStore.accessToken,
-  () => {
-    if (props.open) {
-      // chatStore.fetchRooms();
+  (newToken) => {
+    if (props.open && newToken) {
+      chatStore.fetchRooms();
     }
   }
 );
 
 const displayedRooms = computed(() => {
-  const sortedRooms = [...chatRooms.value].sort((a, b) => {
-    const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
-    const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
-    return timeB - timeA;
-  });
-  return sortedRooms.slice(0, 5);
+  return chatRooms.value.slice(0, 5);
 });
 
 const isCurrentUserMentor = (room) => {
@@ -126,7 +125,9 @@ function handleClickOutside(event) {
 
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
-  // chatStore.fetchRooms();
+  if (chatRooms.value.length === 0 || fetchStatus.value === "error") {
+    chatStore.fetchRooms();
+  }
 });
 
 onBeforeUnmount(() => {
@@ -136,13 +137,21 @@ onBeforeUnmount(() => {
 watch(
   () => props.open,
   (newValue) => {
-    // if (newValue) {
-    //   chatStore.fetchRooms();
-    // }
+    if (newValue) {
+      chatStore.fetchRooms();
+    }
   }
 );
 
-const selectRoom = (room) => {
+const selectRoom = async (room) => {
+  if (getUnreadCount(room) > 0) {
+    try {
+      await chatStore.markRoomAsRead(room.id);
+    } catch (error) {
+      console.error("채팅방 읽음 처리 실패:", error);
+    }
+  }
+
   router.push({
     path: "/coffeeletters/chats",
     query: { roomId: room.id },

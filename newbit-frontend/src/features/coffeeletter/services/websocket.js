@@ -6,6 +6,9 @@ class WebSocketService {
     this.stompClient = null;
     this.connected = false;
     this.subscribers = new Map();
+    this.connectionAttempts = 0;
+    this.maxConnectionAttempts = 5;
+    this.reconnectTimer = null;
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
@@ -19,13 +22,39 @@ class WebSocketService {
       "[WebSocket] Pure WebSocket connect function entered.",
       callbacks
     );
+
+    // 이미 연결 중이라면 중복 연결 방지
     if (this.stompClient && this.connected) {
       console.log("WebSocket이 이미 연결되어 있습니다.");
       if (callbacks.onConnected) callbacks.onConnected();
       return this.stompClient;
     }
 
+    // 접속 시도 횟수 초과 체크
+    if (this.connectionAttempts >= this.maxConnectionAttempts) {
+      console.error(
+        `[WebSocket] 최대 연결 시도 횟수(${this.maxConnectionAttempts})를 초과했습니다.`
+      );
+      if (callbacks.onError) {
+        callbacks.onError(new Error("Maximum connection attempts exceeded"));
+      }
+      return null;
+    }
+
+    const authStore = useAuthStore();
+    const accessToken = authStore.accessToken;
+
+    // 접근 토큰이 없으면 연결 중단
+    if (!accessToken) {
+      console.warn("[WebSocket] 접근 토큰이 없어 연결을 중단합니다.");
+      if (callbacks.onError) {
+        callbacks.onError(new Error("No access token available"));
+      }
+      return null;
+    }
+
     console.log("[WebSocket] 연결 시도 URL:", this.webSocketUrl);
+    this.connectionAttempts++;
 
     try {
       this.stompClient = new Client({
@@ -40,6 +69,7 @@ class WebSocketService {
         onConnect: () => {
           console.log("[WebSocket] 연결 성공 (Pure WebSocket)");
           this.connected = true;
+          this.connectionAttempts = 0; // 연결 성공 시 카운터 초기화
           this.setupSubscriptions(callbacks);
           if (callbacks.onConnected) {
             callbacks.onConnected();
@@ -57,6 +87,9 @@ class WebSocketService {
               new Error(`STOMP error: ${frame.headers["message"]}`)
             );
           }
+
+          // 토큰 만료 등의 이유로 STOMP 오류 발생 시
+          this.handleReconnect(callbacks);
         },
         onWebSocketError: (error) => {
           console.error(
@@ -69,6 +102,9 @@ class WebSocketService {
               error instanceof Error ? error : new Error("WebSocket error")
             );
           }
+
+          // 오류 발생 시 재연결 시도
+          this.handleReconnect(callbacks);
         },
         onWebSocketClose: (event) => {
           console.log(
@@ -84,17 +120,26 @@ class WebSocketService {
               new Error(`WebSocket closed: ${event.code} ${event.reason}`)
             );
           }
+
+          // 연결 종료 시 재연결 시도
+          this.handleReconnect(callbacks);
         },
       });
 
-      const authStore = useAuthStore();
-      const accessToken = authStore.accessToken;
-      console.log("[WebSocket] 현재 accessToken:", accessToken);
-      if (accessToken) {
+      // 토큰을 최신 상태로 유지
+      const updatedToken = authStore.accessToken;
+      if (updatedToken) {
         this.stompClient.connectHeaders[
           "Authorization"
-        ] = `Bearer ${accessToken}`;
+        ] = `Bearer ${updatedToken}`;
+      } else {
+        console.warn("[WebSocket] 토큰이 소멸됨. 연결을 중단합니다.");
+        if (callbacks.onError) {
+          callbacks.onError(new Error("Token expired or missing"));
+        }
+        return null;
       }
+
       console.log(
         "[WebSocket] stompClient.activate 호출, headers:",
         this.stompClient.connectHeaders
@@ -106,9 +151,45 @@ class WebSocketService {
       if (callbacks.onError) {
         callbacks.onError(error);
       }
+
+      // 예외 발생 시 재연결 시도
+      this.handleReconnect(callbacks);
     }
 
     return this.stompClient;
+  }
+
+  // 재연결 처리 로직
+  handleReconnect(callbacks) {
+    // 이미 재연결 타이머가 설정되어 있으면 중복 설정 방지
+    if (this.reconnectTimer) {
+      return;
+    }
+
+    // 연결 시도 횟수가 최대치를 초과하지 않은 경우에만 재연결
+    if (this.connectionAttempts < this.maxConnectionAttempts) {
+      const delay = Math.min(
+        1000 * Math.pow(2, this.connectionAttempts - 1),
+        30000
+      );
+      console.log(
+        `[WebSocket] ${delay / 1000}초 후 재연결 시도 (${
+          this.connectionAttempts
+        }/${this.maxConnectionAttempts})`
+      );
+
+      this.reconnectTimer = setTimeout(() => {
+        this.reconnectTimer = null;
+
+        // 재연결 시 최신 토큰 확인
+        const authStore = useAuthStore();
+        if (authStore.accessToken) {
+          this.connect(callbacks);
+        } else {
+          console.warn("[WebSocket] 재연결 취소: 토큰이 없음");
+        }
+      }, delay);
+    }
   }
 
   setupSubscriptions(callbacks = {}) {

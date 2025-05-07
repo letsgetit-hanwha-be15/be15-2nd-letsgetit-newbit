@@ -24,7 +24,7 @@ const router = useRouter();
 
 const authStore = useAuthStore();
 const chatStore = useChatStore();
-const { rooms, isLoadingRooms } = storeToRefs(chatStore);
+const { rooms, isLoadingRooms, fetchStatus } = storeToRefs(chatStore);
 
 const currentUserId = ref(null);
 const isMentor = ref(false);
@@ -75,7 +75,7 @@ const handleCreateTestRoom = async () => {
     const response = await createTestRoom(mentorId, menteeId);
     console.log("테스트 방 생성 성공:", response.data);
     alert("테스트 방이 성공적으로 생성되었습니다. 목록을 새로고침합니다.");
-    await chatStore.fetchRooms();
+    await chatStore.fetchRooms(true);
   } catch (error) {
     console.error(
       "테스트 방 생성 실패:",
@@ -108,7 +108,17 @@ const filteredRooms = computed(() => {
   });
 });
 
-const selectRoom = (roomId) => {
+const selectRoom = async (roomId) => {
+  const room = rooms.value.find((r) => r.id === roomId);
+
+  if (room && getUnreadCount(room) > 0) {
+    try {
+      await chatStore.markRoomAsRead(roomId);
+    } catch (error) {
+      console.error("채팅방 읽음 처리 실패:", error);
+    }
+  }
+
   emit("select-room", roomId);
 };
 
@@ -180,12 +190,10 @@ const setupWebSocket = () => {
 
   console.log("ChatRoomList: 이미 연결된 WebSocket에 구독 시도");
 
-  // 방 목록 업데이트 구독 -> 스토어 액션 호출
   webSocketService.subscribeToRoomUpdates((updatedRoom) => {
     chatStore.updateRoomFromTopicEvent(updatedRoom);
   });
 
-  // 사용자 이벤트 구독 -> 스토어 액션 호출
   webSocketService.subscribeToUserEvents(currentUserId.value, (event) => {
     chatStore.updateRoomFromUserEvent(event);
   });
@@ -193,7 +201,7 @@ const setupWebSocket = () => {
 
 watch(
   () => props.selectedRoomId,
-  (newValue, oldValue) => {
+  async (newValue, oldValue) => {
     console.log(
       "ChatRoomList에서 selectedRoomId 변경 감지:",
       oldValue,
@@ -203,11 +211,11 @@ watch(
 
     if (newValue) {
       const selectedRoom = rooms.value.find((room) => room.id === newValue);
-      if (selectedRoom) {
-        if (isCurrentUserMentor(selectedRoom)) {
-          selectedRoom.unreadCountMentor = 0;
-        } else {
-          selectedRoom.unreadCountMentee = 0;
+      if (selectedRoom && getUnreadCount(selectedRoom) > 0) {
+        try {
+          await chatStore.markRoomAsRead(newValue);
+        } catch (error) {
+          console.error("채팅방 읽음 처리 실패:", error);
         }
       }
     }
@@ -216,36 +224,35 @@ watch(
 
 watch(
   () => authStore.accessToken,
-  (newToken, oldToken) => {
-    const userIdBeforeLogout = currentUserId.value;
+  (newToken) => {
+    console.log(
+      "ChatRoomList: Access token changed",
+      newToken ? "Token set" : "Token cleared"
+    );
+    const previousUserId = currentUserId.value;
     parseUserInfo();
     if (newToken) {
-      console.log("ChatRoomList: User logged in or token refreshed");
-      if (currentUserId.value) {
-        chatStore.fetchRooms();
+      chatStore.fetchRooms(true);
+      if (webSocketService.isConnected() && currentUserId.value) {
         setupWebSocket();
-      } else {
-        console.warn(
-          "ChatRoomList: User ID not available after token refresh."
+      } else if (!webSocketService.isConnected()) {
+        console.log(
+          "ChatRoomList: WebSocket is not connected after token change."
         );
       }
     } else {
-      console.log("ChatRoomList: User logged out");
       chatStore.clearChatState();
-      if (webSocketService.isConnected() && userIdBeforeLogout) {
-        console.log("ChatRoomList: Unsubscribing WebSocket topics on logout");
-        webSocketService.unsubscribe("/topic/rooms");
-        webSocketService.unsubscribe(
-          `/user/${userIdBeforeLogout}/queue/events`
-        );
-      } else {
+      emit("select-room", null);
+      if (webSocketService.isConnected() && previousUserId) {
         console.log(
-          "ChatRoomList: No active WebSocket connection or user ID to unsubscribe from on logout."
+          "ChatRoomList: Unsubscribing WebSocket topics on logout for user",
+          previousUserId
         );
+        webSocketService.unsubscribe("/topic/rooms");
+        webSocketService.unsubscribe(`/user/${previousUserId}/queue/events`);
       }
     }
-  },
-  { immediate: true }
+  }
 );
 
 watch(
@@ -258,21 +265,16 @@ watch(
 );
 
 onMounted(() => {
-  if (authStore.accessToken && currentUserId.value) {
-    chatStore.fetchRooms();
-    if (webSocketService.isConnected()) {
-      setupWebSocket();
-    } else {
-      setTimeout(() => {
-        if (webSocketService.isConnected()) {
-          setupWebSocket();
-        } else {
-          console.warn(
-            "ChatRoomList onMounted: WebSocket 여전히 연결되지 않음"
-          );
-        }
-      }, 1000);
+  console.log("ChatRoomList: Component Mounted");
+  if (authStore.accessToken) {
+    if (rooms.value.length === 0 || fetchStatus.value === "error") {
+      chatStore.fetchRooms(true);
     }
+  }
+  if (webSocketService.isConnected() && currentUserId.value) {
+    setupWebSocket();
+  } else if (!webSocketService.isConnected()) {
+    console.log("ChatRoomList: WebSocket is not connected on mount.");
   }
   console.log(
     "ChatRoomList 마운트됨, 초기 selectedRoomId:",
