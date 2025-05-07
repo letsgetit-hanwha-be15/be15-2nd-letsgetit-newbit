@@ -45,9 +45,9 @@ public class CompletePurchaseService {
         Long mentorId = columnRequestService.getMentorId(columnId);
         saleHistoryRepository.save(SaleHistory.forColumn(columnId, columnPrice, mentorId));
 
-        notificationCommandService.sendNotification(
-                new NotificationSendRequest(userId, 13L, columnId, "칼럼 구매가 완료되었습니다.")
-        );
+//        notificationCommandService.sendNotification(
+//                new NotificationSendRequest(userId, 13L, columnId, "칼럼 구매가 완료되었습니다.")
+//        );
     }
 
     @Transactional

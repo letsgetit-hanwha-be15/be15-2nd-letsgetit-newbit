@@ -19,3 +19,6 @@ export function purchasePerkByPoint({ userId, serviceId }) {
     },
   });
 }
+
+export const purchaseColumn = (payload) =>
+    api.post('/feature/purchase/column', payload)
