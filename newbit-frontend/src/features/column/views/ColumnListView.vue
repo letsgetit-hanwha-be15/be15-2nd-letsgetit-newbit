@@ -121,7 +121,7 @@ onMounted(() => {
     <!-- 페이지네이션 -->
     <PagingBar
         :currentPage="currentPage"
-        :totalPage="totalPage"
+        :total-pages="totalPage"
         @page-change="handlePageChange"
     />
 
