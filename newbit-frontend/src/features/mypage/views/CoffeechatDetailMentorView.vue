@@ -8,23 +8,28 @@ import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue"
 import UserProfileCard from "@/features/mypage/components/UserProfileCard.vue";
 import UserProfileSideBar from "@/features/profile/components/UserProfileSideBar.vue";
 import {getCoffeechatById, getRequestTimes} from "@/api/coffeechat.js";
+import {getUserProfile} from "@/api/user.js";
 
 const route = useRoute();
 const coffeechatId = ref(Number(route.params.id))
 
 // 프론트용 페이지
 // 유저 정보 (API 연동 전용 Mock)
-const user = ref({
-  id: 1,
-  profileImageUrl: profileImage,
-  nickname: 'sezeme',
-  jobName: '백엔드',
-})
+const mentee = ref({})
 
 const coffeechat = ref({});
 
 const requestTimes = ref([]);
 
+const fetchMentee = async () => {
+  try {
+    const menteeData = await getUserProfile(coffeechat.value.coffeechatId);
+    mentee.value = menteeData.data.data || {};
+    console.log(menteeData);
+  } catch (e) {
+    console.log('멘티 상세 조회 실패', e);
+  }
+}
 
 const fetchCoffeechat = async () => {
   try {
@@ -41,7 +46,11 @@ const fetchCoffeechat = async () => {
     console.log('커피챗 상세 조회 실패', e);
   }
 }
-onMounted(() => fetchCoffeechat());
+
+onMounted(async () => {
+  await fetchCoffeechat();
+  await fetchMentee();
+});
 
 const statusMap = {
   IN_PROGRESS: '승인대기',
@@ -77,9 +86,9 @@ function getStatusText(status) {
   <div class="flex justify-end">
     <div class="w-fit">
       <UserProfileCard
-          :profileImageUrl="user.profileImageUrl"
-          :nickname="user.nickname"
-          :jobName="user.jobName"
+          :profileImageUrl="mentee.profileImageUrl"
+          :nickname="mentee.nickname"
+          :jobName="mentee.jobName"
       />
     </div>
   </div>

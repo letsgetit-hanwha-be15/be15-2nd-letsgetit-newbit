@@ -7,6 +7,8 @@ import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
 import {useToast} from "vue-toastification";
 import {getCoffeechatById, getRequestTimes} from "@/api/coffeechat.js";
+import {getMentorById} from "@/api/mentor.js";
+import {useAuthStore} from "@/features/stores/auth.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -14,31 +16,25 @@ const toast = useToast();
 const coffeechatId = ref(Number(route.params.id))
 const isPaymentModalOpen = ref(false);
 
-// 프론트용 페이지
-// 멘토 정보 (API 연동 전용 Mock)
-const user = ref({
-  id: 1,
-  profileImageUrl: profileImage,
-  nickname: 'sezeme',
-  jobName: '백엔드',
-  temperature: 100,
-  price: 50,
-  preferredTime: '7시 이후 좋아요! 2시간 이하로 신청해주세요!',
-  externalLinkUrl: 'https://example.com',
-  introduction: '안녕하세요! 반갑습니다! 잘 부탁드립니다. 반갑습니다. 잘 부탁드립니다. 반갑스빈다.',
-  isActive: true
-})
-
 // 현재 로그인한 유저 정보
-const me = ref({
-  "diamond": 30
-})
+const authStore = useAuthStore();
 
+
+const mentor = ref({})
 
 // todo : coffeechat 상세 조회 api에서 coffeechat.sale_confirmed_at 속성 추가로 가져오기
 const coffeechat = ref({});
 
 const requestTimes = ref([]);
+
+const fetchMentor = async () => {
+  try {
+    const mentorData = await getMentorById(coffeechat.value.mentorId);
+    mentor.value = mentorData.data.data || {};
+  } catch (e) {
+    console.log('멘토 상세 조회 실패', e);
+  }
+}
 
 const fetchCoffeechat = async () => {
   try {
@@ -49,13 +45,14 @@ const fetchCoffeechat = async () => {
       const timesData = await getRequestTimes(coffeechatId.value);
       requestTimes.value = timesData.data.data.requestTimes || [];
     }
-    console.log('커피챗객체', coffeechat.value)
-    console.log('요청시간객체', requestTimes.value)
   } catch (e) {
     console.log('커피챗 상세 조회 실패', e);
   }
 }
-onMounted(() => fetchCoffeechat());
+onMounted(async () => {
+  await fetchCoffeechat();
+  await fetchMentor();
+});
 
 const statusMap = {
   IN_PROGRESS: '승인대기',
@@ -83,8 +80,8 @@ function closePaymentModal() {
 
 function paymentCoffeechat() {
   // todo : 현재 보유 중인 다이아 몇 개인지 검사 후, 다이아가 부족하면 상점으로 이동
-  console.log(me.value.diamond + (user.value.price * coffeechat.value.purchaseQuantity))
-  if(me.value.diamond < user.value.price * coffeechat.value.purchaseQuantity){
+  console.log(authStore.diamond + (mentor.value.price * coffeechat.value.purchaseQuantity))
+  if(authStore.diamond < mentor.value.price * coffeechat.value.purchaseQuantity){
     router.push('/products')
   }
   else {
@@ -124,7 +121,7 @@ function registerReview() {
       <CoffeechatDetail
           :coffeechat="coffeechat"
           :requestTimes="requestTimes"
-          :diamondCount="user.price * coffeechat.purchaseQuantity"
+          :diamondCount="mentor.price * coffeechat.purchaseQuantity"
       />
       <!-- 버튼들 -->
       <div class="flex flex-wrap gap-2 justify-end pb-10">
@@ -187,15 +184,15 @@ function registerReview() {
   <div class="flex justify-end">
     <div class="w-fit">
       <MentorProfileCard
-          :profileImageUrl="user.profileImageUrl"
-          :nickname="user.nickname"
-          :jobName="user.jobName"
-          :temperature="user.temperature"
-          :price="user.price"
-          :preferredTime="user.preferredTime"
-          :externalLinkUrl="user.externalLinkUrl"
-          :introduction="user.introduction"
-          :isActive="user.isActive"
+          :profileImageUrl="mentor.profileImageUrl"
+          :nickname="mentor.nickname"
+          :jobName="mentor.jobName"
+          :temperature="mentor.temperature"
+          :price="mentor.price"
+          :preferredTime="mentor.preferredTime"
+          :externalLinkUrl="mentor.externalLinkUrl"
+          :introduction="mentor.introduction"
+          :isActive="mentor.isActive"
       />
     </div>
   </div>
