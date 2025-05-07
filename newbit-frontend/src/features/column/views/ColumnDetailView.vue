@@ -137,7 +137,7 @@ onMounted(fetchColumnDetail)
             />
           </svg>
         </div>
-        <h2 class="text-2xl font-bold text-gray-800">구매하시겠습니까?</h2>
+        <h2 class="text-xl font-bold text-gray-800">칼럼을 구매하시겠습니까?</h2>
       </div>
 
 
