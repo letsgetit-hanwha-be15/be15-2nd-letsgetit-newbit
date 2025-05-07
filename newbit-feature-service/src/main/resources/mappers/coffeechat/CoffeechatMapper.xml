@@ -9,6 +9,8 @@
         c.purchase_quantity,
         c.confirmed_schedule,
         c.ended_at,
+        c.purchase_confirmed_at,
+        c.sale_confirmed_at,
         c.mentor_id,
         c.mentee_id,
         c.updated_at, <!--삭제 일시( progress status를 cancel로 변경한 일시가 가장 마지막으로 기록 )-->
