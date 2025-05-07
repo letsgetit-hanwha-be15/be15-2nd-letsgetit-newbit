@@ -94,7 +94,7 @@ public class SeriesController {
 
     @GetMapping
     @Operation(summary = "공개된 시리즈 목록 조회", description = "사용자가 볼 수 있는 공개 시리즈 목록을 조회합니다.")
-    public ApiResponse<Page<GetMySeriesListResponseDto>> getPublicSeriesList(
+    public ApiResponse<Page<GetSeriesListResponseDto>> getPublicSeriesList(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -104,7 +104,7 @@ public class SeriesController {
 
     @GetMapping("/public-list/search")
     @Operation(summary = "공개된 시리즈 검색", description = "시리즈 제목 또는 작성자 닉네임으로 공개된 시리즈를 검색합니다.")
-    public ApiResponse<Page<GetMySeriesListResponseDto>> searchPublicSeriesList(
+    public ApiResponse<Page<GetSeriesListResponseDto>> searchPublicSeriesList(
             @ModelAttribute SearchCondition condition,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size

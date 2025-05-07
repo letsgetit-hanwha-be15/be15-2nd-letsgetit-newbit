@@ -39,3 +39,13 @@ export const patchMentorIntroduction = (data) => {
         }
     );
 };
+
+/* 4. 멘토 목록 조회 */
+export const getMentors = (data) => {
+    return api.get(
+        '/user/users/mentors',
+        {
+            params: data
+        }
+    );
+};

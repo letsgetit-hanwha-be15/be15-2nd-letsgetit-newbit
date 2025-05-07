@@ -1,11 +1,16 @@
 package com.newbit.newbitfeatureservice.column.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
+import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
 import com.newbit.newbitfeatureservice.column.dto.request.SearchCondition;
 import feign.FeignException;
+import com.newbit.newbitfeatureservice.column.dto.response.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,11 +20,6 @@ import com.newbit.newbitfeatureservice.column.domain.Column;
 import com.newbit.newbitfeatureservice.column.domain.Series;
 import com.newbit.newbitfeatureservice.column.dto.request.CreateSeriesRequestDto;
 import com.newbit.newbitfeatureservice.column.dto.request.UpdateSeriesRequestDto;
-import com.newbit.newbitfeatureservice.column.dto.response.CreateSeriesResponseDto;
-import com.newbit.newbitfeatureservice.column.dto.response.GetMySeriesListResponseDto;
-import com.newbit.newbitfeatureservice.column.dto.response.GetSeriesColumnsResponseDto;
-import com.newbit.newbitfeatureservice.column.dto.response.GetSeriesDetailResponseDto;
-import com.newbit.newbitfeatureservice.column.dto.response.UpdateSeriesResponseDto;
 import com.newbit.newbitfeatureservice.column.mapper.SeriesMapper;
 import com.newbit.newbitfeatureservice.column.repository.ColumnRepository;
 import com.newbit.newbitfeatureservice.column.repository.SeriesRepository;
@@ -28,6 +28,7 @@ import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SeriesService {
@@ -36,6 +37,7 @@ public class SeriesService {
     private final ColumnRepository columnRepository;
     private final MentorFeignClient mentorFeignClient;
     private final SeriesMapper seriesMapper;
+    private final UserFeignClient userFeignClient;
 
     @Transactional
     public CreateSeriesResponseDto createSeries(CreateSeriesRequestDto dto, Long userId) {
@@ -173,13 +175,46 @@ public class SeriesService {
     }
 
     @Transactional(readOnly = true)
-    public Page<GetMySeriesListResponseDto> getMySeriesList(Long userId, int page, int size) {
-        Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
+    public Page<GetSeriesListResponseDto> getPublicSeriesList(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        Page<Series> allSeries = seriesRepository.findAllByColumnsIsNotEmpty(pageable);
 
-        Page<Series> seriesPage = seriesRepository.findAllByMentorIdOrderByCreatedAtDesc(mentorId, pageable);
-        return seriesPage
-                .map(seriesMapper::toMySeriesListDto);
+        List<GetSeriesListResponseDto> content = new ArrayList<>();
+
+        for (Series series : allSeries.getContent()) {
+            try {
+                Long mentorId = series.getMentorId();
+
+                // 1단계: mentorId -> userId
+                var mentorResponse = mentorFeignClient.getUserIdByMentorId(mentorId);
+                if (mentorResponse.getData() == null) continue;
+
+                Long userId = mentorResponse.getData();
+
+                // 2단계: userId -> nickname
+                var nickname = userFeignClient.getNicknameByUserId(userId).getData();
+                if (nickname == null) continue;
+
+                // DTO 생성 + 닉네임 주입
+                GetSeriesListResponseDto dto = GetSeriesListResponseDto.builder()
+                        .seriesId(series.getSeriesId())
+                        .title(series.getTitle())
+                        .description(series.getDescription())
+                        .thumbnailUrl(series.getThumbnailUrl())
+                        .mentorId(mentorId)
+                        .createdAt(series.getCreatedAt())
+                        .build();
+
+                dto.setMentorNickname(nickname);
+
+                content.add(dto);
+
+            } catch (Exception e) {
+                log.warn("Failed to fetch mentor nickname for mentorId={}", series.getMentorId(), e);
+            }
+        }
+
+        return new PageImpl<>(content, pageable, allSeries.getTotalElements());
     }
 
     @Transactional(readOnly = true)
@@ -212,20 +247,54 @@ public class SeriesService {
                 .map(seriesMapper::toSeriesColumnDto);
     }
 
-    public Page<GetMySeriesListResponseDto> getPublicSeriesList(int page, int size) {
+    @Transactional(readOnly = true)
+    public Page<GetMySeriesListResponseDto> getMySeriesList(Long userId, int page, int size) {
+        Long mentorId = mentorFeignClient.getMentorIdByUserId(userId).getData();
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Series> allSeries = seriesRepository.findAllByColumnsIsNotEmpty(pageable);
-
-        return allSeries.map(seriesMapper::toMySeriesListDto);
+        Page<Series> seriesPage = seriesRepository.findAllByMentorIdOrderByCreatedAtDesc(mentorId, pageable);
+        return seriesPage.map(seriesMapper::toMySeriesListDto);
     }
 
     // 시리즈 검색 기능
-    public Page<GetMySeriesListResponseDto> searchPublicSeriesList(SearchCondition condition, int page, int size) {
+    @Transactional(readOnly = true)
+    public Page<GetSeriesListResponseDto> searchPublicSeriesList(SearchCondition condition, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Series> seriesPage = seriesRepository.searchSeriesByKeyword(condition.getKeyword(), pageable);
-        return seriesPage.map(seriesMapper::toMySeriesListDto);
+
+        List<GetSeriesListResponseDto> content = new ArrayList<>();
+
+        for (Series series : seriesPage.getContent()) {
+            try {
+                Long mentorId = series.getMentorId();
+                var mentorResponse = mentorFeignClient.getUserIdByMentorId(mentorId);
+                if (mentorResponse.getData() == null) continue;
+
+                Long userId = mentorResponse.getData();
+                var nickname = userFeignClient.getNicknameByUserId(userId).getData();
+                if (nickname == null) continue;
+
+                GetSeriesListResponseDto dto = GetSeriesListResponseDto.builder()
+                        .seriesId(series.getSeriesId())
+                        .title(series.getTitle())
+                        .description(series.getDescription())
+                        .thumbnailUrl(series.getThumbnailUrl())
+                        .mentorId(series.getMentorId())
+                        .createdAt(series.getCreatedAt())
+                        .build();
+
+                dto.setMentorNickname(nickname);
+                content.add(dto);
+
+            } catch (Exception e) {
+                log.warn("멘토 닉네임 조회 실패: mentorId={}, seriesId={}, title={}",
+                        series.getMentorId(), series.getSeriesId(), series.getTitle(), e);
+            }
+        }
+
+        return new PageImpl<>(content, pageable, seriesPage.getTotalElements());
     }
+
 
     @Transactional(readOnly = true)
     public int getColumnCountBySeriesId(Long seriesId) {
