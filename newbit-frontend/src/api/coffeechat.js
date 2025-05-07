@@ -30,3 +30,13 @@ export function getCoffeechatById(coffeechatId) {
 export function getRequestTimes(coffeechatId) {
     return api.get(`/feature/coffeechats/${coffeechatId}/request-times`)
 }
+
+/* 6. 멘토 리뷰 조회(프로필) */
+export const getMentorReviews = (mentorId, page = 0, size = 5) => {
+    return api.get(`/feature/reviews/mentors/${mentorId}`, {
+        params: {
+            page,
+            size
+        }
+    })
+}

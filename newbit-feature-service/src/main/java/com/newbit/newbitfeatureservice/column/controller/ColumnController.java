@@ -56,7 +56,7 @@ public class ColumnController {
 
     @GetMapping("/{mentorId}")
     @Operation(summary = "멘토 칼럼 목록 조회", description = "특정 멘토가 작성한 공개 칼럼 목록을 조회합니다.")
-    public ApiResponse<Page<GetMyColumnListResponseDto>> getMentorColumnList(
+    public ApiResponse<Page<GetColumnListResponseDto>> getMentorColumnList(
             @PathVariable Long mentorId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
