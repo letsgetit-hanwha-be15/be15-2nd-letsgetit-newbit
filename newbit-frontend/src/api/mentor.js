@@ -45,10 +45,7 @@ export const getMentors = (data) => {
     return api.get(
         '/user/users/mentors',
         {
-            params: data,
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            params: data
         }
     );
 };
