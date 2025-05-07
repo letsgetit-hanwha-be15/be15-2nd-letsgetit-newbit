@@ -41,4 +41,7 @@ public interface CoffeeLetterRoomRepository extends MongoRepository<CoffeeLetter
     List<CoffeeLetterRoom> findByMentorIdOrMenteeId(Long mentorId, Long menteeId);
     List<CoffeeLetterRoom> findByMentorIdOrMenteeIdAndStatus(Long mentorId, Long menteeId, CoffeeLetterRoom.RoomStatus status);
 
+    // +++ 추가: 멘토 ID, 멘티 ID, 상태로 채팅방 조회
+    Optional<CoffeeLetterRoom> findByMentorIdAndMenteeIdAndStatus(Long mentorId, Long menteeId, CoffeeLetterRoom.RoomStatus status);
+
 }

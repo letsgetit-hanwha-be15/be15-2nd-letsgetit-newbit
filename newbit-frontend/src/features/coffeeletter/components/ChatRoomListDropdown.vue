@@ -16,8 +16,8 @@
           @click="selectRoom(room)"
         >
           <img
-            src="@/assets/image/profile.png"
-            alt="프로필"
+            :src="getProfileImage(room)"
+            :alt="getPartnerName(room)"
             class="profile-img"
           />
           <div class="chat-info">
@@ -50,7 +50,10 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, inject, watch, computed } from "vue";
 import { useRouter } from "vue-router";
-import { fetchChatRoomsByUser } from "@/api/coffeeletter";
+import { useAuthStore } from "@/features/stores/auth";
+import { useChatStore } from "../stores/chatStore";
+import { useProfileStore } from "@/features/stores/profile";
+import { storeToRefs } from "pinia";
 
 const props = defineProps({
   open: Boolean,
@@ -64,11 +67,14 @@ const emit = defineEmits(["close"]);
 const modalRef = ref(null);
 const activeDropdown = inject("activeDropdown", ref(null));
 const router = useRouter();
-const loading = ref(false);
-
-// TODO: 사용자 정보 auth 적용 후 수정
-const currentUserId = ref(3);
-const isMentor = ref(true);
+const authStore = useAuthStore();
+const chatStore = useChatStore();
+const profileStore = useProfileStore();
+const {
+  rooms: chatRooms,
+  isLoadingRooms: loading,
+  fetchStatus,
+} = storeToRefs(chatStore);
 
 watch(activeDropdown, (newValue) => {
   if (newValue !== props.dropdownId && props.open) {
@@ -76,37 +82,37 @@ watch(activeDropdown, (newValue) => {
   }
 });
 
-const chatRooms = ref([]);
+watch(
+  () => authStore.accessToken,
+  (newToken) => {
+    if (props.open && newToken) {
+      chatStore.fetchRooms();
+    }
+  }
+);
 
 const displayedRooms = computed(() => {
   return chatRooms.value.slice(0, 5);
 });
 
-const fetchChatRooms = async () => {
-  loading.value = true;
-  try {
-    const response = await fetchChatRoomsByUser(currentUserId.value);
-    chatRooms.value = response.data;
-  } catch (error) {
-    console.error("채팅방 목록 조회 실패:", error);
-    chatRooms.value = [];
-  } finally {
-    loading.value = false;
-  }
+const isCurrentUserMentor = (room) => {
+  return room.mentorId === parseInt(authStore.userId);
 };
 
 const getPartnerName = (room) => {
-  return isCurrentUserMentor(room) ? room.menteeName : room.mentorName;
-};
-
-const isCurrentUserMentor = (room) => {
-  return room.mentorId === currentUserId.value;
+  const partnerInfo = chatStore.getPartnerInfo(room);
+  return partnerInfo?.nickname || "";
 };
 
 const getUnreadCount = (room) => {
   return isCurrentUserMentor(room)
     ? room.unreadCountMentor
     : room.unreadCountMentee;
+};
+
+const getProfileImage = (room) => {
+  const partnerInfo = chatStore.getPartnerInfo(room);
+  return profileStore.getProfileImageUrl(partnerInfo?.profileImageUrl);
 };
 
 const close = () => {
@@ -127,8 +133,8 @@ function handleClickOutside(event) {
 
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
-  if (props.open) {
-    fetchChatRooms();
+  if (chatRooms.value.length === 0 || fetchStatus.value === "error") {
+    chatStore.fetchRooms();
   }
 });
 
@@ -140,12 +146,20 @@ watch(
   () => props.open,
   (newValue) => {
     if (newValue) {
-      fetchChatRooms();
+      chatStore.fetchRooms();
     }
   }
 );
 
-const selectRoom = (room) => {
+const selectRoom = async (room) => {
+  if (getUnreadCount(room) > 0) {
+    try {
+      await chatStore.markRoomAsRead(room.id);
+    } catch (error) {
+      console.error("채팅방 읽음 처리 실패:", error);
+    }
+  }
+
   router.push({
     path: "/coffeeletters/chats",
     query: { roomId: room.id },
