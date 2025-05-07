@@ -6,7 +6,7 @@ import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vu
 import {useRoute, useRouter} from "vue-router";
 import CoffeechatDetail from "@/features/mypage/components/CoffeechatDetail.vue";
 import {useToast} from "vue-toastification";
-import {getCoffeechatById, getRequestTimes} from "@/api/coffeechat.js";
+import {cancelCoffeechat, getCoffeechatById, getRequestTimes} from "@/api/coffeechat.js";
 import {getMentorById} from "@/api/mentor.js";
 import {useAuthStore} from "@/features/stores/auth.js";
 

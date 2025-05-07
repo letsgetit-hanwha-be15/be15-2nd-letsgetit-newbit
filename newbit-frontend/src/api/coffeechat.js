@@ -50,3 +50,10 @@ export const getMentorReviews = (mentorId, page = 0, size = 5) => {
         }
     })
 }
+
+/* 9. 멘티가 커피챗 취소 */
+export function cancelCoffeechat(coffeechatId, cancelReasonId) {
+    return api.delete(`/feature/coffeechats/${coffeechatId}`, {
+        data: {cancelReasonId}
+    })
+}

@@ -5,10 +5,10 @@ import {ref} from "vue";
 import MentorProfileCard from "@/features/mypage/components/MentorProfileCard.vue";
 import profileImage from '@/assets/image/default-profile.png'
 import {useRoute, useRouter} from "vue-router";
+import {cancelCoffeechat} from "@/api/coffeechat.js";
 
 const isCancelModalOpen = ref(false);
 const selectedReasonKey = ref(null);
-const router = useRouter();
 const route = useRoute();
 const coffeechatId = ref(Number(route.params.id))
 
@@ -32,15 +32,19 @@ function closeCancelModal() {
   isCancelModalOpen.value = false
 }
 
-function confirmCancel() {
+async function confirmCancel() {
   const reasonKey = selectedReasonKey.value
   const reasonText = statusMap[reasonKey]
 
-  // todo : 취소 API 호출
+  try {
+    await cancelCoffeechat(coffeechatId.value, reasonKey);
+  } catch (e) {
+    console.log('커피챗 취소 실패',e);
+  }
   console.log(`선택된 키: ${reasonKey}, 사유: ${reasonText}`)
 
   isCancelModalOpen.value = false
-  router.push(`/mypage/history/coffeechats/${coffeechatId.value}`)
+  window.location.href = `/mypage/history/coffeechats/${coffeechatId.value}`;
 }
 
 // 프론트용 페이지
