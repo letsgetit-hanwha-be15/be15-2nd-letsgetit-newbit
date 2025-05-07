@@ -1,5 +1,9 @@
 package com.newbit.newbitfeatureservice.column.controller;
 
+import com.newbit.newbitfeatureservice.column.dto.response.AdminColumnRequestResponseDto;
+import com.newbit.newbitfeatureservice.column.dto.response.GetMyColumnRequestResponseDto;
+import com.newbit.newbitfeatureservice.column.service.ColumnRequestService;
+import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
 import com.newbit.newbitfeatureservice.security.model.CustomUser;
 import com.newbit.newbitfeatureservice.column.dto.request.ApproveColumnRequestDto;
 import com.newbit.newbitfeatureservice.column.dto.request.RejectColumnRequestDto;
@@ -8,11 +12,10 @@ import com.newbit.newbitfeatureservice.column.service.AdminColumnService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminColumnController {
 
     private final AdminColumnService adminColumnService;
+    private final ColumnRequestService columnRequestService;
 
     @PostMapping("/requests/approve/create")
     @Operation(summary = "칼럼 등록 요청 승인", description = "CREATE 타입의 칼럼 등록 요청을 승인합니다.")
@@ -76,4 +80,13 @@ public class AdminColumnController {
         return adminColumnService.rejectDeleteColumnRequest(dto, customUser.getUserId());
     }
 
+    @GetMapping("/admin")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "모든 칼럼 요청 조회 (관리자용)", description = "관리자가 등록, 수정, 삭제 요청 목록을 전체 조회합니다.")
+    public ApiResponse<Page<AdminColumnRequestResponseDto>> getAllColumnRequests(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.success(columnRequestService.getAllColumnRequests(page, size));
+    }
 }

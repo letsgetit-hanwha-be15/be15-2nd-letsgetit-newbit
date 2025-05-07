@@ -4,6 +4,7 @@ import com.newbit.newbitfeatureservice.column.domain.Series;
 import com.newbit.newbitfeatureservice.column.dto.request.CreateColumnRequestDto;
 import com.newbit.newbitfeatureservice.column.domain.Column;
 import com.newbit.newbitfeatureservice.column.domain.ColumnRequest;
+import com.newbit.newbitfeatureservice.column.dto.response.AdminColumnRequestResponseDto;
 import com.newbit.newbitfeatureservice.column.dto.response.GetMyColumnListResponseDto;
 import com.newbit.newbitfeatureservice.column.dto.response.GetMyColumnRequestResponseDto;
 import com.newbit.newbitfeatureservice.column.enums.RequestType;
@@ -49,7 +50,11 @@ public class ColumnMapper {
 
                 // CREATE 요청이면 Column 테이블의 값 사용, 아니면 updated 값 사용
                 .title(isCreate ? column.getTitle() : columnRequest.getUpdatedTitle())
-                .price(isCreate ? column.getPrice() : columnRequest.getUpdatedPrice())
+                .price(isCreate
+                        ? column.getPrice()
+                        : columnRequest.getUpdatedPrice() != null
+                        ? columnRequest.getUpdatedPrice()
+                        : 0)
                 .thumbnailUrl(isCreate ? column.getThumbnailUrl() : columnRequest.getUpdatedThumbnailUrl())
 
                 .createdAt(columnRequest.getCreatedAt())
@@ -66,4 +71,26 @@ public class ColumnMapper {
                 .createdAt(column.getCreatedAt())
                 .build();
     }
+
+    public AdminColumnRequestResponseDto toAdminColumnRequestResponseDto(ColumnRequest request, String mentorNickname) {
+        Column column = request.getColumn();
+        boolean isCreate = request.getRequestType() == RequestType.CREATE;
+
+        return AdminColumnRequestResponseDto.builder()
+                .columnRequestId(request.getColumnRequestId())
+                .requestType(request.getRequestType())
+                .isApproved(request.getIsApproved())
+                .title(isCreate ? column.getTitle() : request.getUpdatedTitle())
+                .price(isCreate
+                        ? column.getPrice()
+                        : request.getUpdatedPrice() != null
+                        ? request.getUpdatedPrice()
+                        : 0)
+                .thumbnailUrl(isCreate ? column.getThumbnailUrl() : request.getUpdatedThumbnailUrl())
+                .createdAt(request.getCreatedAt())
+                .rejectedReason(request.getRejectedReason())
+                .mentorNickname(mentorNickname)
+                .build();
+    }
+
 }

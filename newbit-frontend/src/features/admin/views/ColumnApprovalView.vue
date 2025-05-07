@@ -7,7 +7,7 @@
       <button
           v-for="tab in tabs"
           :key="tab"
-          @click="selectedTab = tab"
+          @click="changeTab(tab)"
           :class="[
           'pb-2 text-13px-bold',
           selectedTab === tab
@@ -19,35 +19,28 @@
       </button>
     </div>
 
-    <!-- 칼럼 카드 목록 -->
-    <div class="flex flex-col gap-6">
+    <!-- 요청 카드 목록 -->
+    <div v-if="columnRequests.length" class="flex flex-col gap-6">
       <div
-          v-for="column in filteredColumns"
-          :key="column.id"
+          v-for="item in columnRequests"
+          :key="item.columnRequestId"
           class="flex justify-between items-start p-5 border border-[var(--newbitdivider)] rounded-lg shadow-sm bg-[var(--newbitlightmode)]"
       >
         <!-- 텍스트 -->
         <div class="flex flex-col justify-between flex-1 pr-4">
-          <!-- 제목 -->
           <h2 class="text-heading3 mb-8">
-            [{{ column.category }}] {{ column.title }}
+            {{ item.title }}
           </h2>
-
-          <!-- 다이아몬드 개수 -->
           <div class="flex items-center gap-1 text-13px-regular text-[var(--newbitdark)] mb-2">
             <img :src="diamondIcon" alt="다이아" class="w-4 h-4" />
-            <span>{{ column.diamondCount }}</span>
+            <span>{{ item.price ?? 0 }}</span>
           </div>
-
-          <!-- 작성자 + 작성일 -->
           <div class="text-13px-regular text-[var(--newbitgray)] mb-2">
-            {{ column.writer }} | 작성일 {{ column.date }}
+            {{ item.mentorNickname || '익명 멘토' }} | {{ formatDate(item.createdAt) }}
           </div>
-
-          <!-- 상세보기 버튼 -->
           <button
               class="bg-[var(--newbitnormal)] text-white px-3 py-1.5 rounded text-13px-regular w-fit"
-              @click="handleDetailClick(column.id)"
+              @click="goToDetail(item.columnRequestId)"
           >
             상세보기
           </button>
@@ -56,101 +49,97 @@
         <!-- 썸네일 -->
         <div class="w-[240px] h-[140px]">
           <img
-              :src="column.thumbnailUrl || fallbackImg"
+              :src="item.thumbnailUrl || fallbackImg"
               @error="(e) => (e.target.src = fallbackImg)"
-              alt="썸네일"
               class="w-full h-full object-cover rounded-md"
+              alt="썸네일"
           />
         </div>
       </div>
     </div>
 
-    <div class="flex justify-center gap-2 mt-10 text-13px-regular text-[var(--newbitgray)]">
-      <span class="cursor-pointer">← Previous</span>
-      <span class="font-bold text-[var(--newbitnormal)]">1</span>
-      <span class="cursor-pointer">2</span>
-      <span class="cursor-pointer">3</span>
-      <span class="cursor-pointer">Next →</span>
+    <!-- 비어있을 때 -->
+    <div v-else class="text-center text-[var(--newbitgray)] py-12">
+      요청이 없습니다.
     </div>
 
+    <!-- 페이징 -->
+    <PagingBar
+        :currentPage="currentPage + 1"
+        :total-pages="totalPages"
+        @page-change="handlePageChange"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import PagingBar from '@/components/common/PagingBar.vue'
+import { getAllColumnRequests } from "@/api/column.js";
 
-// 탭 상태
+const router = useRouter()
+
 const tabs = ['등록', '수정', '삭제']
 const selectedTab = ref('등록')
+const columnRequests = ref([])
+const currentPage = ref(0)
+const totalPages = ref(1)
 
-// 다이아몬드 아이콘 및 기본 썸네일
-const diamondIcon = new URL('@/assets/image/diamond-icon.png', import.meta.url).href
 const fallbackImg = new URL('@/assets/image/product-skeleton.png', import.meta.url).href
+const diamondIcon = new URL('@/assets/image/diamond-icon.png', import.meta.url).href
 
-// 더미 데이터 (후에 API 연동 예정)
-const allColumns = ref([
-  {
-    id: 1,
-    title: '스펙의 전례 없는 위기 대응 전략: "통제할 수 있는 것에 집중하자"',
-    category: '인터뷰',
-    diamondCount: 10,
-    writer: '오멘토',
-    date: '2025.04.02',
-    thumbnailUrl: 'https://via.placeholder.com/160x100?text=썸네일1',
-    type: '등록'
-  },
-  {
-    id: 2,
-    title: '팀장 없이도 굴러가는 시스템 만들기',
-    category: '트러블슈팅',
-    diamondCount: 5,
-    writer: '트랄랄렐로',
-    date: '2025.04.02',
-    thumbnailUrl: 'https://via.placeholder.com/160x100?text=썸네일2',
-    type: '등록'
-  },
-  {
-    id: 3,
-    title: '일의 "맥락"을 발견하는 다섯 가지 방법',
-    category: '오피니언',
-    diamondCount: 5,
-    writer: '신데렐라',
-    date: '2025.04.02',
-    thumbnailUrl: 'https://via.placeholder.com/160x100?text=썸네일3',
-    type: '등록'
-  },
-  {
-    id: 4,
-    title: '협업에서 마찰 없이 의견을 전달하는 방법',
-    category: '커뮤니케이션',
-    diamondCount: 8,
-    writer: '멘토링마스터',
-    date: '2025.04.03',
-    thumbnailUrl: '',
-    type: '수정'
-  },
-  {
-    id: 5,
-    title: '퇴사 전에 꼭 점검해야 할 체크리스트',
-    category: '라이프',
-    diamondCount: 3,
-    writer: '파이널보스',
-    date: '2025.04.04',
-    thumbnailUrl: '',
-    type: '삭제'
-  }
-])
-
-// 필터링된 칼럼 리스트
-const filteredColumns = computed(() =>
-    allColumns.value.filter((col) => col.type === selectedTab.value)
-)
-
-// 상세보기 클릭 시 (임시)
-const handleDetailClick = (id) => {
-  alert(`상세보기 클릭: ${id}`)
+const requestTypeMap = {
+  등록: 'CREATE',
+  수정: 'UPDATE',
+  삭제: 'DELETE'
 }
+
+const fetchRequests = async () => {
+  try {
+    const res = await getAllColumnRequests({
+      page: currentPage.value,
+      size: 6
+    })
+
+    const result = res?.data?.data
+
+    columnRequests.value = result.content.filter(
+        (item) => item.requestType === requestTypeMap[selectedTab.value]
+    )
+
+    totalPages.value = result.totalPages
+  } catch (err) {
+    console.error('칼럼 요청 목록 조회 실패', err)
+  }
+}
+
+const changeTab = (tab) => {
+  selectedTab.value = tab
+  currentPage.value = 0
+}
+
+const handlePageChange = (page) => {
+  currentPage.value = page - 1 // PagingBar는 1부터 시작하므로 -1
+}
+
+const goToDetail = (id) => {
+  router.push({
+    name: 'AdminColumnDetail',
+    params: { columnId: id },
+    query: { type: requestTypeMap[selectedTab.value] }
+  })
+}
+
+const formatDate = (isoDate) =>
+    new Date(isoDate).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    })
+
+watch([currentPage, selectedTab], fetchRequests)
+onMounted(fetchRequests)
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

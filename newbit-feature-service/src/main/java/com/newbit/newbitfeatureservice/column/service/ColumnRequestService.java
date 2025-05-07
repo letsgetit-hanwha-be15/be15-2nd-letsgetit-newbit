@@ -1,14 +1,12 @@
 package com.newbit.newbitfeatureservice.column.service;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
+import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
 import com.newbit.newbitfeatureservice.column.domain.Series;
 import com.newbit.newbitfeatureservice.column.dto.request.CreateColumnRequestDto;
 import com.newbit.newbitfeatureservice.column.dto.request.DeleteColumnRequestDto;
 import com.newbit.newbitfeatureservice.column.dto.request.UpdateColumnRequestDto;
-import com.newbit.newbitfeatureservice.column.dto.response.CreateColumnResponseDto;
-import com.newbit.newbitfeatureservice.column.dto.response.DeleteColumnResponseDto;
-import com.newbit.newbitfeatureservice.column.dto.response.GetMyColumnRequestResponseDto;
-import com.newbit.newbitfeatureservice.column.dto.response.UpdateColumnResponseDto;
+import com.newbit.newbitfeatureservice.column.dto.response.*;
 import com.newbit.newbitfeatureservice.column.domain.Column;
 import com.newbit.newbitfeatureservice.column.domain.ColumnRequest;
 import com.newbit.newbitfeatureservice.column.enums.RequestType;
@@ -21,7 +19,9 @@ import com.newbit.newbitfeatureservice.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,6 +36,7 @@ public class ColumnRequestService {
     private final SeriesRepository seriesRepository;
     private final MentorFeignClient mentorFeignClient;
     private final ColumnMapper columnMapper;
+    private final UserFeignClient userFeignClient;
 
     public CreateColumnResponseDto createColumnRequest(CreateColumnRequestDto dto, Long userId) {
         // 1. Mentor 조회
@@ -133,5 +134,25 @@ public class ColumnRequestService {
         return columnRepository.findById(columnId)
                 .map(Column::getMentorId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
+    }
+
+    public Page<AdminColumnRequestResponseDto> getAllColumnRequests(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<ColumnRequest> columnRequestPage = columnRequestRepository.findAll(pageable);
+
+        return columnRequestPage.map(request -> {
+            Long mentorId = request.getColumn().getMentorId();
+            Long userId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
+            String nickname;
+            try {
+                nickname = userFeignClient.getNicknameByUserId(userId).getData();
+            } catch (Exception e) {
+                log.error("닉네임 조회 실패 - userId: {}", userId, e);
+                nickname = "익명 멘토"; // fallback
+            }
+
+            return columnMapper.toAdminColumnRequestResponseDto(request, nickname);
+        });
     }
 }

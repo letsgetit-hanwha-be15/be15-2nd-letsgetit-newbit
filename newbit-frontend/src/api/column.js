@@ -49,9 +49,13 @@ export const updateColumnRequest = (columnId, data) =>
 export const deleteColumnRequest = (columnId, data) =>
     api.post(`feature/columns/requests/${columnId}/delete`, data)
 
-// 본인 칼럼 요청 목록 조회
+// 본인 칼럼 요청 목록 조회 (멘토용)
 export const getMyColumnRequests = (params) =>
     api.get('feature/columns/requests/my', { params })
+
+// 전체 칼럼 요청 목록 조회 (관리자용)
+export const getAllColumnRequests = (params) =>
+    api.get('feature/columns/admin', { params })
 
 
 
