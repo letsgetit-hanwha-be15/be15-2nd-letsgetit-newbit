@@ -184,20 +184,33 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostListResponse> getPostList(Pageable pageable) {
-        Page<Post> postPage = postRepository.findAll(pageable);
+    public Page<PostListResponse> getPostList(Pageable pageable, String keyword, String sortOption, Long categoryId) {
+        Page<Post> postPage;
 
-        int totalElements = (int) postPage.getTotalElements(); // serialNumber 계산용
+        if (categoryId != null) {
+            postPage = postRepository.findByPostCategoryIdAndDeletedAtIsNull(categoryId, pageable);
+        } else {
+            postPage = postRepository.findAllByDeletedAtIsNull(pageable);
+        }
+
+        long totalElements = postPage.getTotalElements(); // 전체 게시글 수
+        int pageSize = pageable.getPageSize();
+        int currentPage = pageable.getPageNumber();
 
         return postPage.map(post -> {
             ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
             String writerName = response.getData() != null ? response.getData().getNickname() : null;
 
-            String serialNumber = post.isNotice() ? "공지사항" : String.valueOf(post.getId()); // 또는 전체 게시글 수 기준 계산
+            String categoryName = post.getPostCategory().getName();
 
-            return new PostListResponse(post, writerName, serialNumber);
+            // 전체 게시글 기준 번호 계산
+            int indexInPage = postPage.getContent().indexOf(post);
+            long serial = totalElements - (currentPage * pageSize + indexInPage);
+
+            return new PostListResponse(post, writerName, String.valueOf(serial));
         });
     }
+
 
 
     @Transactional(readOnly = true)

@@ -1,9 +1,6 @@
 /* user 관련 api 호출 */
 import api from './axios.js'
 
-// 테스트용 임시 토큰
-const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiYXV0aG9yaXR5IjoiTUVOVE9SIiwidXNlcklkIjoxMiwiaWF0IjoxNzQ2NDY1Njg5LCJleHAiOjE3NDY0Njc0ODl9.Q7GfPgiNB7G7SaQUw12WUqid4bs2oPktS1ALRBoBe-rY_d47HAX-eYNEjf1n-060fDPbE_U1UM4BhOxYReroTQ'
-
 /* 1. 회원 가입 */
 export function SignUpUser(data) {
     return api.post('/user/users/signup', data);
@@ -31,31 +28,18 @@ export function FindPassword(data) {
 
 /* 6. 회원 탈퇴 */
 export const deleteUser = (data) => {
-    return api.delete('/user/users/me', {
-        headers: {
-            Authorization: `Bearer ${token}`
-        },
-        data: data
-    });
+    return api.delete('/user/users/me');
 };
 
 
 /* 7. 회원 정보 조회 */
 export function getUserInfo(data) {
-    return api.get('/user/users/me', {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
+    return api.get('/user/users/me');
 }
 
 /* 8. 회원 정보 수정 */
 export function putUserInfo(data) {
-    return api.put('/user/users/me/info', data, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
+    return api.put('/user/users/me/info', data);
 }
 
 /* 9. 로그인 */

@@ -48,9 +48,11 @@ public class ColumnRequestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<UpdateColumnResponseDto> updateColumnRequest(
             @PathVariable Long columnId,
-            @RequestBody @Valid UpdateColumnRequestDto dto
+            @RequestBody @Valid UpdateColumnRequestDto dto,
+            @AuthenticationPrincipal CustomUser customUser
             ) {
-        return ApiResponse.success(columnRequestService.updateColumnRequest(dto, columnId));
+        return ApiResponse.success(
+                columnRequestService.updateColumnRequest(dto, columnId, customUser.getUserId()));
     }
 
     // 칼럼 삭제 요청 API

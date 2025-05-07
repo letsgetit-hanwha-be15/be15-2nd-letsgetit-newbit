@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { postPost, fetchPostCategories } from '@/api/post'
 import { useRouter } from 'vue-router'
 import Editor from '@toast-ui/editor'
 import '@toast-ui/editor/dist/toastui-editor.css'
@@ -17,28 +18,43 @@ const handleFileChange = (e) => {
   file.value = e.target.files[0]
 }
 
+const selectedCategoryId = ref('')
+const categories = ref([])
+
+
 const submitPost = async () => {
   const content = toastEditor?.getMarkdown()
 
-  if (!title.value.trim() || !content.trim()) {
-    toast.error('제목과 내용을 입력해주세요.')
+  if (!title.value.trim() || !content.trim() || !selectedCategoryId.value) {
+    toast.error('카테고리, 제목, 내용을 모두 입력해주세요.')
     return
   }
 
   const formData = new FormData()
   formData.append('title', title.value)
   formData.append('content', content)
+  formData.append('postCategoryId', selectedCategoryId.value)
   if (file.value) formData.append('file', file.value)
 
   try {
-    await fetch('/api/posts', {
-      method: 'POST',
-      body: formData
-    })
+    await postPost(formData) // ✅ 이 줄만 남깁니다
     toast.success('게시글 등록이 완료되었습니다!')
     router.push('/posts')
   } catch (e) {
     toast.error('게시글 등록에 실패했습니다.')
+    console.error('등록 실패:', e)
+  }
+}
+
+
+
+const loadCategories = async () => {
+  try {
+    const res = await fetchPostCategories()
+    categories.value = res.data
+  } catch (e) {
+    toast.error('카테고리 로딩에 실패했습니다.')
+    console.error('카테고리 불러오기 실패:', e)
   }
 }
 
@@ -50,6 +66,7 @@ onMounted(() => {
     previewStyle: 'vertical',
     usageStatistics: false
   })
+  loadCategories()
 })
 
 onBeforeUnmount(() => {
@@ -73,6 +90,20 @@ onBeforeUnmount(() => {
       placeholder="제목을 입력하세요"
       class="w-full border px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-1 focus:ring-blue-500"
   />
+
+  <select
+      v-model="selectedCategoryId"
+      class="w-full border px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-1 focus:ring-blue-500"
+  >
+    <option value="" disabled>카테고리 선택</option>
+    <option
+        v-for="category in categories.filter(c => c.name !== '전체')"
+        :key="category.id"
+        :value="category.id"
+    >
+      {{ category.name }}
+    </option>
+  </select>
 
   <!-- 첨부파일 입력 -->
   <div class="flex gap-2">

@@ -20,7 +20,7 @@ public class PostResponse {
     private final LocalDateTime deletedAt;
     private final Long userId;
     private final Long postCategoryId;
-    private String categoryName;
+    private final Long categoryId;
     private final String writerName;
     private final List<String> imageUrls;
 
@@ -36,7 +36,7 @@ public class PostResponse {
         this.deletedAt = post.getDeletedAt();
         this.userId = post.getUserId();
         this.postCategoryId = post.getPostCategoryId();
-        this.categoryName = categoryName;
+        this.categoryId = post.getPostCategoryId();
         this.writerName = writerName;
         this.imageUrls = imageUrls;
     }

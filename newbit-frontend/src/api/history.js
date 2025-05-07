@@ -1,18 +1,9 @@
 import api from './axios.js'
 
-//테스트용 임시 토큰
-const token = 'eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiYXV0aG9yaXR5IjoiTUVOVE9SIiwidXNlcklkIjoxMSwiaWF0IjoxNzQ2NDQxNjE4LCJleHAiOjE3NDY0NDM0MTh9.y_Jyk5Am6sD_Q5QnNNzXUePD28srth4EdQe78Eau5tqpnov7zSk1hXouxgTHShJfm2rVICoNM3Cgj-O_ChPOvQ'
-
-//todo: headers 공통 로직으로 제외
 export const fetchPointHistory = async (page = 1) => {
     try {
-        // const token = localStorage.getItem('accessToken'); // 또는 Pinia, Vuex에서 가져오기
-
         const response = await api.get('/feature/purchase/point/history', {
-            params: { page },
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            params: { page }
         });
 
         if (response.data?.success) {
@@ -34,10 +25,7 @@ export const fetchDiamondHistory = async (page = 1) => {
     try {
         // const token = localStorage.getItem('accessToken'); // 또는 Pinia, Vuex에서 가져오기
         const response = await api.get('/feature/purchase/diamond/history', {
-            params: { page },
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            params: { page }
         });
 
         if (response.data?.success) {
@@ -56,12 +44,8 @@ export const fetchDiamondHistory = async (page = 1) => {
 
 export const fetchSaleHistory = async (page = 1) => {
     try {
-        // const token = localStorage.getItem('accessToken'); // 또는 Pinia, Vuex에서 가져오기
         const response = await api.get('/feature/purchase/sale/history', {
-            params: { page },
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            params: { page }
         });
 
         if (response.data?.success) {
@@ -80,12 +64,8 @@ export const fetchSaleHistory = async (page = 1) => {
 
 export const fetchSettlementHistory = async (page = 1) => {
     try {
-        // const token = localStorage.getItem('accessToken'); // 또는 Pinia, Vuex에서 가져오기
         const response = await api.get('/feature/settlements/my', {
-            params: { page },
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
+            params: { page }
         });
 
         if (response.data?.success) {
