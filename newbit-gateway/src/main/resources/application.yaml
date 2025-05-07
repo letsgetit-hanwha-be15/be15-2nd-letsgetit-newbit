@@ -24,7 +24,9 @@ spring:
             - Method=GET,POST,PUT,DELETE,OPTIONS,PATCH
           filters:
             - RewritePath=/api/v1/feature/(?<segment>.*), /${segment}
+
         # SockJS websocket 연결 (info, xhr 요청)
+
         - id: feature-service-sockjs
           uri: lb://newbit-feature-service
           predicates:
@@ -32,7 +34,9 @@ spring:
             - Method=GET,POST,OPTIONS
           filters:
             - RewritePath=/api/v1/feature/ws/(?<segment>.*), /ws/${segment}
+            -
         # 실제 WebSocket 업그레이드 요청
+
         - id: feature-service-ws
           uri: lb:ws://newbit-feature-service
           predicates:
