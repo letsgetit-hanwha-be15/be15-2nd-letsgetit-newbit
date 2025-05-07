@@ -41,6 +41,12 @@ public class WebSocketController {
             @Parameter(description = "채팅방 ID") @DestinationVariable String roomId, 
             @Payload ChatMessageDTO chatMessage) {
         chatMessage.setType(MessageType.ENTER);
-        chatService.sendSystemMessage(roomId, chatMessage.getSenderName() + "님이 입장하셨습니다.");
+        
+        String userName = chatMessage.getSenderName();
+        if (userName == null || userName.isEmpty()) {
+            userName = "사용자";
+        }
+        
+        chatService.sendSystemMessage(roomId, userName + "님이 입장하셨습니다.");
     }
 }

@@ -11,22 +11,35 @@ import {
 import {
   fetchRoomInfo,
   fetchMessagesByRoomPaging,
-  sendMessage,
   markAsRead,
-} from "@/api/coffeeletter";
+} from "@/api/coffeeletter.js";
 import websocketService from "@/features/coffeeletter/services/websocket";
 import { useIntersectionObserver } from "@vueuse/core";
+import { useAuthStore } from "@/features/stores/auth";
 
-// TODO; 사용자 정보 auth 적용 후 수정 ( 테스트용 하드 코딩)
+const authStore = useAuthStore();
 const DEFAULT_ROOM_ID = "67fca09d6632d00f31d416bc";
-const currentUserId = 3;
-const isMentor = true;
+const currentUserId = ref(null);
+const isMentor = ref(false);
+
+const parseUserInfo = () => {
+  if (authStore.accessToken) {
+    try {
+      const payload = JSON.parse(atob(authStore.accessToken.split(".")[1]));
+      currentUserId.value = parseInt(payload.userId);
+      isMentor.value = payload.authority === "ROLE_MENTOR";
+    } catch (e) {
+      console.error("토큰 파싱 오류:", e);
+    }
+  }
+};
+
+parseUserInfo();
 
 const props = defineProps({
   roomId: {
     type: String,
     required: false,
-    default: DEFAULT_ROOM_ID,
   },
 });
 
@@ -67,7 +80,7 @@ const { stop: stopObserver } = useIntersectionObserver(
 );
 
 const getCurrentRoomId = () => {
-  return props.roomId || DEFAULT_ROOM_ID;
+  return props.roomId;
 };
 
 const fetchRoomData = async () => {
@@ -83,10 +96,10 @@ const fetchRoomData = async () => {
 
     roomInfo.value = {
       id: room.id,
-      partnerName: isMentor
+      partnerName: isMentor.value
         ? room.menteeName || room.menteeNickname
         : room.mentorName || room.mentorNickname,
-      partnerProfileImageUrl: isMentor
+      partnerProfileImageUrl: isMentor.value
         ? room.menteeProfileImageUrl
         : room.mentorProfileImageUrl,
       status: room.status,
@@ -172,38 +185,40 @@ const sendNewMessage = async () => {
   if (!allowSendMessage.value) return;
   if (!newMessage.value.trim() || !getCurrentRoomId()) return;
 
+  const senderName =
+    authStore.userInfo?.nickname || authStore.userName || "알 수 없는 사용자";
+
   const messageData = {
     roomId: getCurrentRoomId(),
-    senderId: currentUserId,
-    senderName: isMentor ? "김멘토스" : "박멘티코어",
+    senderId: currentUserId.value,
+    senderName: senderName,
     content: newMessage.value,
     type: "CHAT",
     timestamp: new Date().toISOString(),
-    readByMentor: isMentor,
-    readByMentee: !isMentor,
+    readByMentor: isMentor.value,
+    readByMentee: !isMentor.value,
   };
 
   try {
-    const response = await sendMessage(messageData);
-    const sentMessage = response.data;
+    const success = websocketService.sendMessage(messageData);
 
-    if (!websocketService.isConnected()) {
-      messages.value.push(sentMessage);
-      scrollToBottom();
+    if (success) {
+      newMessage.value = "";
+    } else {
+      console.error("메시지 전송 실패: WebSocket 연결 없음");
+      error.value = "메시지 전송에 실패했습니다. 연결 상태를 확인해주세요.";
     }
-
-    newMessage.value = "";
   } catch (err) {
-    console.error("메시지 전송 실패:", err);
-    error.value = "메시지 전송에 실패했습니다. 다시 시도해주세요.";
+    console.error("메시지 전송 로직 오류:", err);
+    error.value = "메시지 전송 중 오류가 발생했습니다.";
   }
 };
 
 const markMessagesAsRead = async () => {
-  if (!getCurrentRoomId()) return;
+  if (!getCurrentRoomId() || !currentUserId.value) return;
 
   try {
-    await markAsRead(getCurrentRoomId(), currentUserId);
+    await markAsRead(getCurrentRoomId(), currentUserId.value);
   } catch (err) {
     console.error("메시지 읽음 처리 실패:", err);
   }
@@ -219,7 +234,7 @@ const scrollToBottom = () => {
 };
 
 const isMyMessage = (message) => {
-  return message.senderId === currentUserId;
+  return message.senderId === currentUserId.value;
 };
 
 const formatTime = (dateStr) => {
@@ -305,33 +320,63 @@ const statusText = computed(() => {
 const setupWebSocket = () => {
   if (!getCurrentRoomId()) return;
 
-  websocketService.connect({
-    roomId: getCurrentRoomId(),
-    onNewMessage: (message) => {
-      if (message.type === "CHAT" || message.type === "SYSTEM") {
-        const isDuplicate = messages.value.some(
-          (m) =>
-            m.id === message.id ||
-            (m.senderId === message.senderId &&
-              m.content === message.content &&
-              m.timestamp === message.timestamp)
-        );
+  if (websocketService.isConnected()) {
+    console.log("Chat: 이미 연결된 WebSocket에 구독 시도", getCurrentRoomId());
+    websocketService.subscribeToChatRoom(getCurrentRoomId(), (message) => {
+      const currentRoomId = getCurrentRoomId();
+      console.log(
+        `[Chat.vue WS Callback] Received Message:`,
+        JSON.stringify(message),
+        `\n Current Room ID: ${currentRoomId}`,
+        `\n Message Room ID: ${message?.roomId}`,
+        `\n Is Correct Room? ${message?.roomId === currentRoomId}`
+      );
 
-        if (!isDuplicate) {
-          messages.value.push(message);
-          markMessagesAsRead();
-          scrollToBottom();
+      if (message?.roomId === currentRoomId) {
+        if (message.type === "CHAT" || message.type === "SYSTEM") {
+          const isDuplicate = messages.value.some(
+            (m) =>
+              m.id === message.id ||
+              (m.senderId === message.senderId &&
+                m.content === message.content &&
+                m.timestamp === message.timestamp)
+          );
+
+          if (!isDuplicate) {
+            console.log(
+              `[Chat.vue WS Callback] Adding message to room ${currentRoomId}:`,
+              JSON.stringify(message)
+            );
+            messages.value.push(message);
+            markMessagesAsRead();
+            scrollToBottom();
+          } else {
+            console.log(
+              `[Chat.vue WS Callback] Duplicate message detected, ignoring.`
+            );
+          }
+        } else if (message.type === "READ_RECEIPT") {
+          console.log(
+            `[Chat.vue WS Callback] Received read receipt for room ${currentRoomId}. (Ignoring for now)`
+          );
+          // TODO: Implement read receipt display if needed
+        } else {
+          console.log(
+            `[Chat.vue WS Callback] Received message of unknown type: ${message.type}`
+          );
         }
-      } else if (message.type === "READ_RECEIPT") {
+      } else {
+        console.warn(
+          `[Chat.vue WS Callback] Message from wrong room! Room ID: ${message?.roomId}, Current Room ID: ${currentRoomId}. Message Ignored.`
+        );
       }
-    },
-    onConnected: () => {},
-    onError: (error) => {
-      console.error("WebSocket 연결 오류:", error);
-      error.value =
-        "채팅 서버 연결에 문제가 발생했습니다. 페이지를 새로고침 해주세요.";
-    },
-  });
+    });
+  } else {
+    console.warn(
+      "Chat: WebSocket이 연결되지 않아 구독할 수 없습니다.",
+      getCurrentRoomId()
+    );
+  }
 };
 
 watch(
@@ -396,6 +441,31 @@ onBeforeUnmount(() => {
     websocketService.unsubscribe(`/topic/chat/${getCurrentRoomId()}`);
   }
 });
+
+watch(
+  () => authStore.accessToken,
+  (newToken) => {
+    parseUserInfo();
+    if (!newToken && getCurrentRoomId()) {
+      console.log(
+        "Chat: User logged out, unsubscribing from room",
+        getCurrentRoomId()
+      );
+      websocketService.unsubscribe(`/topic/chat/room/${getCurrentRoomId()}`);
+      websocketService.unsubscribe(`/topic/chat/${getCurrentRoomId()}`);
+    } else if (newToken && getCurrentRoomId()) {
+    }
+  }
+);
+
+watch(
+  () => currentUserId.value,
+  () => {
+    if (currentUserId.value) {
+      fetchRoomData();
+    }
+  }
+);
 </script>
 
 <template>

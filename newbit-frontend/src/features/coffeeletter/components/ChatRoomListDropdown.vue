@@ -50,7 +50,9 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, inject, watch, computed } from "vue";
 import { useRouter } from "vue-router";
-import { fetchChatRoomsByUser } from "@/api/coffeeletter";
+import { useAuthStore } from "@/features/stores/auth";
+import { useChatStore } from "../stores/chatStore";
+import { storeToRefs } from "pinia";
 
 const props = defineProps({
   open: Boolean,
@@ -64,11 +66,9 @@ const emit = defineEmits(["close"]);
 const modalRef = ref(null);
 const activeDropdown = inject("activeDropdown", ref(null));
 const router = useRouter();
-const loading = ref(false);
-
-// TODO: 사용자 정보 auth 적용 후 수정
-const currentUserId = ref(3);
-const isMentor = ref(true);
+const authStore = useAuthStore();
+const chatStore = useChatStore();
+const { rooms: chatRooms, isLoadingRooms: loading } = storeToRefs(chatStore);
 
 watch(activeDropdown, (newValue) => {
   if (newValue !== props.dropdownId && props.open) {
@@ -76,31 +76,30 @@ watch(activeDropdown, (newValue) => {
   }
 });
 
-const chatRooms = ref([]);
+watch(
+  () => authStore.accessToken,
+  () => {
+    if (props.open) {
+      // chatStore.fetchRooms();
+    }
+  }
+);
 
 const displayedRooms = computed(() => {
-  return chatRooms.value.slice(0, 5);
+  const sortedRooms = [...chatRooms.value].sort((a, b) => {
+    const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+    const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+    return timeB - timeA;
+  });
+  return sortedRooms.slice(0, 5);
 });
 
-const fetchChatRooms = async () => {
-  loading.value = true;
-  try {
-    const response = await fetchChatRoomsByUser(currentUserId.value);
-    chatRooms.value = response.data;
-  } catch (error) {
-    console.error("채팅방 목록 조회 실패:", error);
-    chatRooms.value = [];
-  } finally {
-    loading.value = false;
-  }
+const isCurrentUserMentor = (room) => {
+  return room.mentorId === authStore.parsedUserId;
 };
 
 const getPartnerName = (room) => {
   return isCurrentUserMentor(room) ? room.menteeName : room.mentorName;
-};
-
-const isCurrentUserMentor = (room) => {
-  return room.mentorId === currentUserId.value;
 };
 
 const getUnreadCount = (room) => {
@@ -127,9 +126,7 @@ function handleClickOutside(event) {
 
 onMounted(() => {
   window.addEventListener("click", handleClickOutside);
-  if (props.open) {
-    fetchChatRooms();
-  }
+  // chatStore.fetchRooms();
 });
 
 onBeforeUnmount(() => {
@@ -139,9 +136,9 @@ onBeforeUnmount(() => {
 watch(
   () => props.open,
   (newValue) => {
-    if (newValue) {
-      fetchChatRooms();
-    }
+    // if (newValue) {
+    //   chatStore.fetchRooms();
+    // }
   }
 );
 

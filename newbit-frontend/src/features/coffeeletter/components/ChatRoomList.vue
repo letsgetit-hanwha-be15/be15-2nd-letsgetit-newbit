@@ -1,9 +1,12 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRouter } from "vue-router";
-import { fetchChatRoomsByUser } from "@/api/coffeeletter";
 import webSocketService from "@/features/coffeeletter/services/websocket";
 import ChatRoomListDropdown from "./ChatRoomListDropdown.vue";
+import { useAuthStore } from "@/features/stores/auth";
+import { useChatStore } from "../stores/chatStore";
+import { storeToRefs } from "pinia";
+import { createTestRoom } from "@/api/coffeeletter";
 
 const props = defineProps({
   onSelectRoom: {
@@ -19,13 +22,78 @@ const props = defineProps({
 const emit = defineEmits(["select-room"]);
 const router = useRouter();
 
-// TODO: 사용자 정보 auth 적용 후 수정
-const currentUserId = ref(3);
-const isMentor = ref(true);
+const authStore = useAuthStore();
+const chatStore = useChatStore();
+const { rooms, isLoadingRooms } = storeToRefs(chatStore);
 
-const rooms = ref([]);
+const currentUserId = ref(null);
+const isMentor = ref(false);
+const isCreatingTestRoom = ref(false);
+const mentorName = ref("멘토스");
+
+const parseUserInfo = () => {
+  if (authStore.accessToken) {
+    try {
+      const payload = JSON.parse(atob(authStore.accessToken.split(".")[1]));
+      currentUserId.value = parseInt(payload.userId);
+      isMentor.value = payload.authority === "ROLE_MENTOR";
+      console.log(
+        "ChatRoomList: User Info Parsed:",
+        currentUserId.value,
+        isMentor.value
+      );
+    } catch (e) {
+      console.error("토큰 파싱 오류:", e);
+      currentUserId.value = null;
+    }
+  } else {
+    currentUserId.value = null;
+  }
+};
+
+// TODO: 테스트 끝나고 삭제할 메서드
+const handleCreateTestRoom = async () => {
+  if (!currentUserId.value) {
+    console.error("테스트 방 생성 불가: 사용자 ID를 찾을 수 없습니다.");
+    alert("로그인이 필요합니다.");
+    return;
+  }
+
+  const mentorId = 1107;
+  const menteeId = currentUserId.value;
+
+  if (mentorId === menteeId) {
+    alert(
+      "멘토와 멘티 ID가 동일할 수 없습니다. (현재 사용자 ID: " + menteeId + ")"
+    );
+    return;
+  }
+
+  isCreatingTestRoom.value = true;
+  try {
+    console.log(`테스트 방 생성 시도: 멘토 ${mentorId}, 멘티 ${menteeId}`);
+    const response = await createTestRoom(mentorId, menteeId);
+    console.log("테스트 방 생성 성공:", response.data);
+    alert("테스트 방이 성공적으로 생성되었습니다. 목록을 새로고침합니다.");
+    await chatStore.fetchRooms();
+  } catch (error) {
+    console.error(
+      "테스트 방 생성 실패:",
+      error.response?.data || error.message
+    );
+    alert(
+      `테스트 방 생성에 실패했습니다: ${
+        error.response?.data?.message || error.message
+      }`
+    );
+  } finally {
+    isCreatingTestRoom.value = false;
+  }
+};
+
+parseUserInfo();
+
 const searchQuery = ref("");
-const loading = ref(false);
 
 const filteredRooms = computed(() => {
   if (!searchQuery.value.trim()) return rooms.value;
@@ -42,29 +110,6 @@ const filteredRooms = computed(() => {
 
 const selectRoom = (roomId) => {
   emit("select-room", roomId);
-};
-
-const fetchRooms = async () => {
-  loading.value = true;
-  try {
-    const response = await fetchChatRoomsByUser(currentUserId.value);
-    rooms.value = response.data;
-
-    rooms.value.sort((a, b) => {
-      const timeA = a.lastMessageTime
-        ? new Date(a.lastMessageTime).getTime()
-        : 0;
-      const timeB = b.lastMessageTime
-        ? new Date(b.lastMessageTime).getTime()
-        : 0;
-      return timeB - timeA;
-    });
-  } catch (error) {
-    console.error("채팅방 목록 조회 실패:", error);
-    rooms.value = [];
-  } finally {
-    loading.value = false;
-  }
 };
 
 const getPartnerName = (room) => {
@@ -126,38 +171,23 @@ const getProfileImage = (room) => {
 };
 
 const setupWebSocket = () => {
-  webSocketService.connect({
-    userId: currentUserId.value,
-    onRoomListUpdate: (updatedRoom) => {
-      console.log("채팅방 목록 업데이트:", updatedRoom);
-      const index = rooms.value.findIndex((room) => room.id === updatedRoom.id);
-      if (index !== -1) {
-        rooms.value[index] = updatedRoom;
-      } else {
-        rooms.value.unshift(updatedRoom);
-      }
-      rooms.value.sort((a, b) => {
-        const timeA = a.lastMessageTime
-          ? new Date(a.lastMessageTime).getTime()
-          : 0;
-        const timeB = b.lastMessageTime
-          ? new Date(b.lastMessageTime).getTime()
-          : 0;
-        return timeB - timeA;
-      });
-    },
-    onUserEvent: (event) => {
-      console.log("사용자 이벤트 수신:", event);
-      if (event.type === "READ_UPDATE" || event.type === "NEW_MESSAGE") {
-        fetchRooms();
-      }
-    },
-    onConnected: () => {
-      console.log("채팅방 목록 WebSocket 연결됨");
-    },
-    onError: (error) => {
-      console.error("WebSocket 오류:", error);
-    },
+  if (!currentUserId.value || !webSocketService.isConnected()) {
+    console.warn(
+      "ChatRoomList: WebSocket 구독 조건을 만족하지 않음 (사용자 ID 또는 연결 상태)"
+    );
+    return;
+  }
+
+  console.log("ChatRoomList: 이미 연결된 WebSocket에 구독 시도");
+
+  // 방 목록 업데이트 구독 -> 스토어 액션 호출
+  webSocketService.subscribeToRoomUpdates((updatedRoom) => {
+    chatStore.updateRoomFromTopicEvent(updatedRoom);
+  });
+
+  // 사용자 이벤트 구독 -> 스토어 액션 호출
+  webSocketService.subscribeToUserEvents(currentUserId.value, (event) => {
+    chatStore.updateRoomFromUserEvent(event);
   });
 };
 
@@ -184,9 +214,66 @@ watch(
   }
 );
 
+watch(
+  () => authStore.accessToken,
+  (newToken, oldToken) => {
+    const userIdBeforeLogout = currentUserId.value;
+    parseUserInfo();
+    if (newToken) {
+      console.log("ChatRoomList: User logged in or token refreshed");
+      if (currentUserId.value) {
+        chatStore.fetchRooms();
+        setupWebSocket();
+      } else {
+        console.warn(
+          "ChatRoomList: User ID not available after token refresh."
+        );
+      }
+    } else {
+      console.log("ChatRoomList: User logged out");
+      chatStore.clearChatState();
+      if (webSocketService.isConnected() && userIdBeforeLogout) {
+        console.log("ChatRoomList: Unsubscribing WebSocket topics on logout");
+        webSocketService.unsubscribe("/topic/rooms");
+        webSocketService.unsubscribe(
+          `/user/${userIdBeforeLogout}/queue/events`
+        );
+      } else {
+        console.log(
+          "ChatRoomList: No active WebSocket connection or user ID to unsubscribe from on logout."
+        );
+      }
+    }
+  },
+  { immediate: true }
+);
+
+watch(
+  () => currentUserId.value,
+  (newUserId) => {
+    if (newUserId) {
+      setupWebSocket();
+    }
+  }
+);
+
 onMounted(() => {
-  fetchRooms();
-  setupWebSocket();
+  if (authStore.accessToken && currentUserId.value) {
+    chatStore.fetchRooms();
+    if (webSocketService.isConnected()) {
+      setupWebSocket();
+    } else {
+      setTimeout(() => {
+        if (webSocketService.isConnected()) {
+          setupWebSocket();
+        } else {
+          console.warn(
+            "ChatRoomList onMounted: WebSocket 여전히 연결되지 않음"
+          );
+        }
+      }, 1000);
+    }
+  }
   console.log(
     "ChatRoomList 마운트됨, 초기 selectedRoomId:",
     props.selectedRoomId
@@ -194,7 +281,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (webSocketService.isConnected()) {
+  if (webSocketService.isConnected() && currentUserId.value) {
     webSocketService.unsubscribe("/topic/rooms");
     webSocketService.unsubscribe(`/user/${currentUserId.value}/queue/events`);
   }
@@ -214,7 +301,16 @@ onUnmounted(() => {
         class="search-input"
       />
     </div>
-    <div v-if="loading" class="loading-container">
+    <div class="test-button-container">
+      <button @click="handleCreateTestRoom" :disabled="isCreatingTestRoom">
+        {{
+          isCreatingTestRoom
+            ? "생성 중..."
+            : `Test Room (Mentor: ${mentorName})`
+        }}
+      </button>
+    </div>
+    <div v-if="isLoadingRooms" class="loading-container">
       <div class="loading-spinner"></div>
     </div>
     <div v-else-if="rooms.length === 0" class="no-rooms">
@@ -472,5 +568,30 @@ onUnmounted(() => {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.test-button-container {
+  padding: 0 16px 10px;
+}
+
+.test-button-container button {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: #f0ad4e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.test-button-container button:hover:not(:disabled) {
+  background-color: #ec971f;
+}
+
+.test-button-container button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 </style>

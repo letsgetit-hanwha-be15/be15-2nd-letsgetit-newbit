@@ -3,6 +3,7 @@ package com.newbit.newbitfeatureservice.coffeeletter.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 import com.newbit.newbitfeatureservice.client.user.MentorFeignClient;
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
@@ -49,17 +50,40 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public CoffeeLetterRoomDTO createRoom(CoffeeLetterRoomDTO roomDto) {
-        CoffeeLetterRoom existingRoom = RoomUtils.findRoomByCoffeeChatId(roomRepository, roomDto.getCoffeeChatId());
-        if (existingRoom != null) {
-            throw new BusinessException(ErrorCode.COFFEELETTER_ALREADY_EXIST);
+        if (roomDto.getCoffeeChatId() != null) {
+            CoffeeLetterRoom existingRoom = RoomUtils.findRoomByCoffeeChatId(roomRepository, roomDto.getCoffeeChatId());
+            if (existingRoom != null) {
+                throw new BusinessException(ErrorCode.COFFEELETTER_ALREADY_EXIST);
+            }
+        } else {
+            Optional<CoffeeLetterRoom> existingRoomByUsers = roomRepository.findByMentorIdAndMenteeIdAndStatus(
+                    roomDto.getMentorId(),
+                    roomDto.getMenteeId(),
+                    CoffeeLetterRoom.RoomStatus.ACTIVE
+            );
+            if (existingRoomByUsers.isPresent()) {
+                 throw new BusinessException(ErrorCode.COFFEELETTER_ALREADY_EXIST);
+            }
+            Optional<CoffeeLetterRoom> existingRoomByUsersReverse = roomRepository.findByMentorIdAndMenteeIdAndStatus(
+                    roomDto.getMenteeId(),
+                    roomDto.getMentorId(),
+                    CoffeeLetterRoom.RoomStatus.ACTIVE
+            );
+            if (existingRoomByUsersReverse.isPresent()) {
+                 throw new BusinessException(ErrorCode.COFFEELETTER_ALREADY_EXIST);
+             }
         }
 
         CoffeeLetterRoom room = modelMapper.map(roomDto, CoffeeLetterRoom.class);
-        room.getParticipants().add(room.getMentorId().toString());
-        room.getParticipants().add(room.getMenteeId().toString());
+        room.getParticipants().clear();
+        room.getParticipants().add(String.valueOf(room.getMentorId()));
+        room.getParticipants().add(String.valueOf(room.getMenteeId()));
+
+        if (roomDto.getStatus() != null) {
+            room.setStatus(roomDto.getStatus());
+        }
 
         CoffeeLetterRoom savedRoom = roomRepository.save(room);
-
         messageService.sendSystemMessage(savedRoom.getId(), "채팅방이 개설되었습니다.");
 
         return modelMapper.map(savedRoom, CoffeeLetterRoomDTO.class);
@@ -116,8 +140,21 @@ public class RoomServiceImpl implements RoomService {
         List<CoffeeLetterRoomDTO> roomDTOs = rooms.stream()
                 .map(room -> {
                     CoffeeLetterRoomDTO dto = modelMapper.map(room, CoffeeLetterRoomDTO.class);
+                    
+                    // 마지막 메시지 정보 설정
                     enrichRoomWithLastMessage(dto);
+                    
+                    // 사용자 정보(닉네임, 프로필) 설정
                     enrichRoomWithUserInfo(dto);
+                    
+                    // *** 안 읽은 메시지 수 직접 조회 및 설정 ***
+                    if (room.getMentorId() != null) {
+                        dto.setUnreadCountMentor(messageService.getUnreadMessageCount(room.getId(), room.getMentorId()));
+                    }
+                    if (room.getMenteeId() != null) {
+                         dto.setUnreadCountMentee(messageService.getUnreadMessageCount(room.getId(), room.getMenteeId()));
+                    }
+                    
                     return dto;
                 })
                 .collect(Collectors.toList());
