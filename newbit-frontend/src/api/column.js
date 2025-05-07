@@ -57,6 +57,10 @@ export const getMyColumnRequests = (params) =>
 export const getAllColumnRequests = (params) =>
     api.get('feature/columns/admin', { params })
 
+// 관리자용 칼럼 요청 상세 조회
+export const getColumnRequestDetail = (columnRequestId) =>
+    api.get(`feature/columns/requests/${columnRequestId}`);
+
 
 
 /* --- 칼럼 관리자 승인/거절 --- */
