@@ -1,21 +1,33 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { useRoute } from "vue-router";
-import axios from "axios";
 import {
   fetchRoomInfo as fetchRoomInfoApi,
   fetchMessagesByRoom,
   sendMessage as sendMessageApi,
   markAsRead as markAsReadApi,
-} from "@/api/coffeeletter";
-
-const DEFAULT_ROOM_ID = "67fca09d6632d00f31d416bc";
+} from "@/api/coffeeletter.js";
+import { useAuthStore } from "@/features/stores/auth";
 
 const route = useRoute();
 const roomId = computed(() => route.params.id || DEFAULT_ROOM_ID);
 
-const currentUserId = ref(9); // 임시 사용자 ID
-const isMentor = ref(true); // 임시 멘토 여부
+const authStore = useAuthStore();
+const currentUserId = ref(null);
+const isMentor = ref(false);
+
+const parseUserInfo = () => {
+  if (authStore.accessToken) {
+    try {
+      currentUserId.value = parseInt(authStore.userId);
+    } catch (e) {
+      console.error("사용자 정보 파싱 오류:", e);
+      currentUserId.value = null;
+    }
+  }
+};
+
+parseUserInfo();
 
 const messages = ref([]);
 const newMessage = ref("");
@@ -28,6 +40,25 @@ const roomInfo = ref({
   menteeId: null,
 });
 
+watch(
+  () => authStore.accessToken,
+  () => {
+    parseUserInfo();
+    fetchRoomInfo();
+    fetchMessages();
+  }
+);
+
+watch(
+  () => currentUserId.value,
+  () => {
+    if (currentUserId.value) {
+      fetchRoomInfo();
+      fetchMessages();
+    }
+  }
+);
+
 const fetchRoomInfo = async () => {
   try {
     const response = await fetchRoomInfoApi(roomId.value);
@@ -35,7 +66,9 @@ const fetchRoomInfo = async () => {
 
     roomInfo.value = {
       id: room.id,
-      partnerName: isMentor.value ? room.menteeName : room.mentorName,
+      partnerName: isMentor.value
+        ? room.menteeNickname || room.menteeName || "멘티"
+        : room.mentorNickname || room.mentorName || "멘토",
       status: room.status,
       mentorId: room.mentorId,
       menteeId: room.menteeId,
@@ -45,7 +78,6 @@ const fetchRoomInfo = async () => {
   }
 };
 
-// 메시지 목록 조회
 const fetchMessages = async () => {
   try {
     const response = await fetchMessagesByRoom(roomId.value);
@@ -55,14 +87,13 @@ const fetchMessages = async () => {
   }
 };
 
-// 메시지 전송
 const sendMessage = async () => {
-  if (!newMessage.value.trim()) return;
+  if (!newMessage.value.trim() || !currentUserId.value) return;
 
   const messageData = {
     roomId: roomId.value,
     senderId: currentUserId.value,
-    senderName: isMentor.value ? "멘토A" : "멘티A",
+    senderName: authStore.nickname || "알 수 없는 사용자",
     content: newMessage.value,
     type: "CHAT",
     timestamp: new Date().toISOString(),
@@ -85,6 +116,8 @@ const sendMessage = async () => {
 };
 
 const markAsRead = async () => {
+  if (!currentUserId.value) return;
+
   try {
     await markAsReadApi(roomId.value, currentUserId.value);
 
@@ -122,12 +155,16 @@ const formatTime = (dateStr) => {
 };
 
 onMounted(async () => {
-  await fetchRoomInfo();
-  await fetchMessages();
-  markAsRead();
-  nextTick(() => {
-    scrollToBottom();
-  });
+  parseUserInfo(); // 사용자 정보 초기화
+
+  if (currentUserId.value) {
+    await fetchRoomInfo();
+    await fetchMessages();
+    markAsRead();
+    nextTick(() => {
+      scrollToBottom();
+    });
+  }
 });
 
 watch(messages, () => {

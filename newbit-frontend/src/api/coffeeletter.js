@@ -1,61 +1,90 @@
-import axios from "axios";
+import api from "./axios.js";
+import { useAuthStore } from "@/features/stores/auth";
 
-const API_PREFIX = import.meta.env.VITE_API_BASE_URL;
+/* 1. 내 채팅방 목록 조회 */
+export function fetchMyChatRooms() {
+  return api.get(`feature/coffeeletter/rooms/my`);
+}
 
-export const fetchChatRoomsByUser = (userId) => {
-  return axios.get(`${API_PREFIX}feature/coffeeletter/rooms/user/${userId}`);
-};
+/* 2. 채팅방 정보 조회 */
+export function fetchRoomInfo(roomId) {
+  return api.get(`feature/coffeeletter/rooms/${roomId}`);
+}
 
-export const fetchRoomInfo = (roomId) => {
-  return axios.get(`${API_PREFIX}feature/coffeeletter/rooms/${roomId}`);
-};
+/* 3. 채팅방 메시지 목록 조회 */
+export function fetchMessagesByRoom(roomId) {
+  return api.get(`feature/coffeeletter/messages/${roomId}`);
+}
 
-export const fetchMessagesByRoom = (roomId) => {
-  return axios.get(`${API_PREFIX}feature/coffeeletter/messages/${roomId}`);
-};
-
-export const fetchMessagesByRoomPaging = (
+/* 4. 채팅방 메시지 페이징 조회 */
+export function fetchMessagesByRoomPaging(
   roomId,
   page = 0,
   size = 30,
   direction = "ASC"
-) => {
-  return axios.get(
-    `${API_PREFIX}feature/coffeeletter/messages/${roomId}/paging`,
-    {
-      params: { page, size, direction },
-    }
+) {
+  return api.get(`feature/coffeeletter/messages/${roomId}/paging`, {
+    params: { page, size, direction },
+  });
+}
+
+/* 5. 메시지 전송 */
+export function sendMessage(messageData) {
+  return api.post(`feature/coffeeletter/messages`, messageData);
+}
+
+/* 6. 메시지 읽음 표시 */
+export function markAsRead(roomId) {
+  const authStore = useAuthStore();
+  const userId = authStore.userId;
+  return api.post(
+    `feature/coffeeletter/messages/${roomId}/mark-as-read/${userId}`
   );
-};
+}
 
-export const sendMessage = (messageData) => {
-  return axios.post(`${API_PREFIX}feature/coffeeletter/messages`, messageData);
-};
+/* 7. 커피챗 ID로 채팅방 조회 */
+export function getRoomByCoffeeChatId(coffeeChatId) {
+  return api.get(`feature/coffeeletter/rooms/coffeechat/${coffeeChatId}`);
+}
 
-export const markAsRead = (roomId, userId) => {
-  return axios.post(
-    `${API_PREFIX}feature/coffeeletter/messages/${roomId}/mark-as-read/${userId}`
+/* 8. 채팅방 생성 */
+export function createRoom(roomData) {
+  return api.post(`feature/coffeeletter/rooms`, roomData);
+}
+
+/* 9. 채팅방 종료 */
+export function endRoom(roomId) {
+  return api.put(`feature/coffeeletter/rooms/${roomId}/end`);
+}
+
+/* 10. 채팅방 취소 */
+export function cancelRoom(roomId) {
+  return api.put(`feature/coffeeletter/rooms/${roomId}/cancel`);
+}
+
+/* 11. 테스트용 채팅방 생성 */
+export function createTestRoom(mentorId, menteeId) {
+  console.log(
+    `[API] Creating test room with mentorId: ${mentorId}, menteeId: ${menteeId}`
   );
-};
 
-// 커피챗 ID로 채팅방 조회
-export const getRoomByCoffeeChatId = (coffeeChatId) => {
-  return axios.get(
-    `${API_PREFIX}feature/coffeeletter/rooms/coffeechat/${coffeeChatId}`
-  );
-};
+  const authStore = useAuthStore();
+  const menteeNickname = authStore.nickname || "멘티";
+  const mentorNickname = "멘토스";
 
-// 채팅방 생성
-export const createRoom = (roomData) => {
-  return axios.post(`${API_PREFIX}feature/coffeeletter/rooms`, roomData);
-};
+  // 테스트 멘토 프로필 이미지 URL
+  const mentorProfileImageUrl =
+    "https://via.placeholder.com/150/3b82f6/ffffff?text=멘토";
 
-// 채팅방 종료
-export const endRoom = (roomId) => {
-  return axios.put(`${API_PREFIX}feature/coffeeletter/rooms/${roomId}/end`);
-};
-
-// 채팅방 취소
-export const cancelRoom = (roomId) => {
-  return axios.put(`${API_PREFIX}feature/coffeeletter/rooms/${roomId}/cancel`);
-};
+  const roomData = {
+    mentorId: mentorId,
+    menteeId: menteeId,
+    mentorNickname: mentorNickname,
+    menteeNickname: menteeNickname,
+    mentorProfileImageUrl: mentorProfileImageUrl,
+    menteeProfileImageUrl: authStore.profileImageUrl || null,
+    status: "ACTIVE",
+  };
+  console.log("[API] Sending roomData:", roomData);
+  return api.post(`feature/coffeeletter/rooms`, roomData);
+}

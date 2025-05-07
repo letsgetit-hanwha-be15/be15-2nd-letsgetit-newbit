@@ -40,20 +40,6 @@ public class MessageController {
         this.messageService = messageService;
     }
     
-    // TODO : 향후 삭제 예정 웹소켓 연결 전 테스트 용도의 api 
-    @Operation(summary = "메시지 전송", description = "새로운 메시지를 전송합니다.")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "메시지 전송 성공", 
-                    content = @Content(schema = @Schema(implementation = ChatMessageDTO.class))),
-        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-        @ApiResponse(responseCode = "500", description = "서버 오류")
-    })
-    @PostMapping
-    public ResponseEntity<ChatMessageDTO> sendMessage(@Validated @RequestBody ChatMessageDTO messageDto) {
-        ChatMessageDTO sentMessage = messageService.sendMessage(messageDto);
-        return ResponseEntity.ok(sentMessage);
-    }
-    
     @Operation(summary = "채팅방 메시지 조회", description = "특정 채팅방의 모든 메시지를 조회합니다.")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "메시지 조회 성공"),

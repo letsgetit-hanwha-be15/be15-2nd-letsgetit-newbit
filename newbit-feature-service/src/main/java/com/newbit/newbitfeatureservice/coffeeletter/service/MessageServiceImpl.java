@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.newbit.newbitfeatureservice.coffeeletter.dto.CoffeeLetterRoomDTO;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -88,16 +89,12 @@ public class MessageServiceImpl implements MessageService {
         messagingTemplate.convertAndSend("/topic/chat/room/" + message.getRoomId(), savedMessageDto);
 
         try {
-            // 받는 사람 ID 결정
             Long receiverId;
             if (message.getSenderId().equals(room.getMentorId())) {
-                // 보낸 사람이 멘토라면 받는 사람은 멘티
                 receiverId = room.getMenteeId();
             } else if (message.getSenderId().equals(room.getMenteeId())) {
-                // 보낸 사람이 멘티라면 받는 사람은 멘토
                 receiverId = room.getMentorId();
                 
-                // 멘토 ID로 User ID 조회 (Feign 클라이언트 호출)
                 if (mentorFeignClient != null) {
                     try {
                         ApiResponse<Long> response = mentorFeignClient.getUserIdByMentorId(room.getMentorId());
@@ -109,12 +106,10 @@ public class MessageServiceImpl implements MessageService {
                     }
                 }
             } else {
-                // 알 수 없는 발신자인 경우, 알림 발송 건너뜀
                 log.warn("알 수 없는 발신자 ID: {}, 알림 발송을 건너뜁니다.", message.getSenderId());
                 return savedMessageDto;
             }
             
-            // 알림 전송
             notificationCommandService.sendNotification(
                     new NotificationSendRequest(
                             receiverId,
@@ -208,32 +203,43 @@ public class MessageServiceImpl implements MessageService {
     public void markAsRead(String roomId, Long userId) {
         CoffeeLetterRoom room = RoomUtils.getRoomById(roomRepository, roomId);
         List<ChatMessage> unreadMessages = getUnreadMessageEntities(roomId, userId);
-        
+
+        boolean updated = false;
         for (ChatMessage message : unreadMessages) {
             if (room.getMentorId().equals(userId)) {
-                message.setReadByMentor(true);
+                if (!message.isReadByMentor()) { // 이미 true이면 업데이트 안 함
+                    message.setReadByMentor(true);
+                    updated = true;
+                }
             } else if (room.getMenteeId().equals(userId)) {
-                message.setReadByMentee(true);
+                if (!message.isReadByMentee()) {
+                    message.setReadByMentee(true);
+                    updated = true;
+                }
             }
-            messageRepository.save(message);
         }
-        
-        // 클라이언트에게 읽음 처리 알림
-        // 1. 개별 사용자에게 알림
-        messagingTemplate.convertAndSendToUser(
-            userId.toString(),
-            "/queue/events",
-            createReadStatusEvent(roomId, userId)
-        );
-        
-        // 2. 해당 룸의 구독자들에게 알림 (상대방이 이 메시지를 읽었다는 것을 알기 위해)
-        messagingTemplate.convertAndSend(
-            "/topic/chat/" + roomId,
-            createReadStatusBroadcast(roomId, userId)
-        );
-        
-        // 3. 채팅방 목록 업데이트 (안 읽은 메시지 카운트 변경)
-        updateRoomListForUsers(room);
+
+        if (updated) {
+            if (room.getMentorId().equals(userId)) {
+                room.setUnreadCountMentor(0);
+            } else {
+                room.setUnreadCountMentee(0);
+            }
+            CoffeeLetterRoom updatedRoom = roomRepository.save(room); // 변경된 room 저장
+
+            messagingTemplate.convertAndSendToUser(
+                userId.toString(),
+                "/queue/events",
+                createReadStatusEvent(roomId, userId)
+            );
+
+            messagingTemplate.convertAndSend(
+                "/topic/chat/" + roomId,
+                createReadStatusBroadcast(roomId, userId)
+            );
+
+            updateRoomListForUsers(updatedRoom);
+        }
     }
     
     private Object createReadStatusEvent(String roomId, Long userId) {
@@ -251,8 +257,9 @@ public class MessageServiceImpl implements MessageService {
     }
     
     private void updateRoomListForUsers(CoffeeLetterRoom room) {
-        // 멘토와 멘티 모두에게 업데이트된 채팅방 목록을 전송
-        messagingTemplate.convertAndSend("/topic/rooms", room);
+        CoffeeLetterRoomDTO roomDto = modelMapper.map(room, CoffeeLetterRoomDTO.class);
+        // DTO 객체를 전송
+        messagingTemplate.convertAndSend("/topic/rooms", roomDto);
     }
 
     @Override

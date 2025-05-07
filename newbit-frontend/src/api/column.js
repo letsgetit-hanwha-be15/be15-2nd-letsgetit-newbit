@@ -20,6 +20,16 @@ export const getColumnDetail = (columnId, userId) =>
 export const getMyColumnList = (page = 0, size = 10) =>
     api.get('feature/columns/my', { params: { page, size } })
 
+// 멘토 컬럼 목록 조회 요청
+export const getMentorColumnList = (mentorId, page = 0, size = 10) => {
+    return api.get(`feature/columns/${mentorId}`, {
+        params: {
+            page,
+            size
+        }
+    })
+}
+
 
 /* --- 칼럼 요청 관련 --- */
 
@@ -42,6 +52,7 @@ export const getMyColumnRequests = (params) =>
 // 전체 칼럼 요청 목록 조회 (관리자용)
 export const getAllColumnRequests = (params) =>
     api.get('feature/columns/admin', { params })
+
 
 
 /* --- 칼럼 관리자 승인/거절 --- */
@@ -124,6 +135,15 @@ export const searchPublicSeriesList = (condition, page = 0, size = 10) =>
         params: { ...condition, page, size },
     })
 
+// 멘토 리시즈 검색
+export const getMentorSeriesList = (mentorId, page = 0, size = 10) => {
+    return api.get(`feature/series/mentor/${mentorId}`, {
+        params: {
+            page,
+            size
+        }
+    })
+}
 
 /* --- 시리즈 이미지 업로드 --- */
 

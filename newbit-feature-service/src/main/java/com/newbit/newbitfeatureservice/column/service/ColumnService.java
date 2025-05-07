@@ -98,20 +98,44 @@ public class ColumnService {
     }
 
     @Transactional(readOnly = true)
-    public Page<GetMyColumnListResponseDto> getMentorColumnList(Long mentorId, int page, int size) {
-        // 예외 처리: 멘토 존재 여부 확인
+    public Page<GetColumnListResponseDto> getMentorColumnList(Long mentorId, int page, int size) {
+        // 1. 멘토 존재 여부 확인 및 userId 가져오기
+        Long userId;
         try {
-            mentorFeignClient.getUserIdByMentorId(mentorId); // 404 발생 시 예외 터짐
+            userId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
         } catch (FeignException.NotFound e) {
             throw new BusinessException(ErrorCode.MENTOR_NOT_FOUND);
         }
 
+        // 2. 닉네임 조회
+        String mentorNickname;
+        try {
+            mentorNickname = userFeignClient.getNicknameByUserId(userId).getData();
+        } catch (FeignException.NotFound e) {
+            throw new BusinessException(ErrorCode.USER_INFO_NOT_FOUND);
+        }
+
+        // 3. 칼럼 페이지 조회
         Pageable pageable = PageRequest.of(page, size);
         Page<Column> columnsPage = columnRepository
                 .findAllByMentorIdAndIsPublicTrueOrderByCreatedAtDesc(mentorId, pageable);
 
-        return columnsPage.map(columnMapper::toMyColumnListDto);
+        // 4. DTO 매핑 + 닉네임 수동 주입
+        return columnsPage.map(column -> {
+            GetColumnListResponseDto dto = new GetColumnListResponseDto(
+                    column.getColumnId(),
+                    column.getTitle(),
+                    column.getThumbnailUrl(),
+                    column.getPrice(),
+                    column.getLikeCount(),
+                    mentorId,
+                    column.getCreatedAt()
+            );
+            dto.setMentorNickname(mentorNickname);
+            return dto;
+        });
     }
+
 
 
     @Transactional(readOnly = true)

@@ -5,9 +5,11 @@ import { useAuthStore } from '@/features/stores/auth'
 import { getMentorProfile } from '@/api/user'
 import MentorProfileSideBar from '@/features/profile/components/MentorProfileSideBar.vue'
 import MentorProfileTabBar from '@/features/profile/components/MentorProfileTabBar.vue'
-import PagingBar from '@/components/common/PagingBar.vue'
 import profileImage from '@/assets/image/default-profile.png'
 import ColumnTab from "@/features/profile/components/ColumnTab.vue"
+import SeriesTab from "@/features/profile/components/SeriesTab.vue";
+import PostTab from "@/features/profile/components/PostTab.vue";
+import ReviewTab from "@/features/profile/components/ReviewTab.vue";
 
 // 인증 및 라우터 정보
 const authStore = useAuthStore()
@@ -30,11 +32,9 @@ const user = ref({
 })
 const isMyProfile = ref(false)
 const isLoaded = ref(false)
-const currentPage = ref(1)
-const totalPages = ref(1)
 const selectedTab = ref('칼럼')
 
-// 칼럼 데이터
+// 데이터
 const columns = ref([])
 const series = ref([])
 const posts= ref([])
@@ -100,15 +100,8 @@ onMounted(async () => {
         <ColumnTab v-if="selectedTab === '칼럼'" :columns="columns" />
         <SeriesTab v-if="selectedTab === '시리즈'" :series="series" />
         <PostTab v-if="selectedTab === '게시글'" :post="posts"/>
-        <ReviewTab v-if="selectedTab === '칼럼'" :review="reviews" />
+        <ReviewTab v-if="selectedTab === '리뷰'" :review="reviews" />
       </div>
-
-
-<!--      <PagingBar-->
-<!--        class="mt-8"-->
-<!--        :current-page="currentPage"-->
-<!--        :total-pages="totalPages"-->
-<!--        @page-change="handlePageChange"-->
 
     </div>
   </div>

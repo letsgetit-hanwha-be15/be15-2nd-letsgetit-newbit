@@ -1,10 +1,14 @@
 <script setup>
 import { ref } from 'vue'
 
-const userName = ref('')
-const phoneNumber = ref('')
+const props = defineProps({
+  findError: Boolean // ❗ 부모가 내려주는 에러 상태
+})
 
 const emit = defineEmits(['submit', 'goFindId', 'goFindPassword', 'goSignup'])
+
+const userName = ref('')
+const phoneNumber = ref('')
 
 const onSubmit = () => {
   if (!userName.value || !phoneNumber.value) {
@@ -28,37 +32,45 @@ const onSubmit = () => {
         <p class="text-[20px] text-newbittext font-semibold">아이디(이메일) 찾기</p>
       </div>
 
-      <!-- 이름 입력 -->
-      <div class="mb-5">
-        <label for="userName" class="block mb-2 text-20px-regular text-newbittext">이름</label>
-        <input
-            id="userName"
-            v-model="userName"
-            type="text"
-            placeholder="Name"
-            class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular text-[rgba(3,3,4,0.54)]"
-        />
-      </div>
+      <!-- ✅ form 시작 -->
+      <form @submit.prevent="onSubmit">
+        <!-- 이름 입력 -->
+        <div class="mb-5">
+          <label for="userName" class="block mb-2 text-20px-regular text-newbittext">이름</label>
+          <input
+              id="userName"
+              v-model="userName"
+              type="text"
+              placeholder="Name"
+              class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular text-[rgba(3,3,4,0.54)]"
+          />
+        </div>
 
-      <!-- 전화번호 입력 -->
-      <div class="mb-5">
-        <label for="phone" class="block mb-2 text-20px-regular text-newbittext">전화번호</label>
-        <input
-            id="phone"
-            v-model="phoneNumber"
-            type="tel"
-            placeholder="PhoneNumber"
-            class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular text-[rgba(3,3,4,0.54)]"
-        />
-      </div>
+        <!-- 전화번호 입력 -->
+        <div class="mb-5">
+          <label for="phone" class="block mb-2 text-20px-regular text-newbittext">전화번호</label>
+          <input
+              id="phone"
+              v-model="phoneNumber"
+              type="tel"
+              placeholder="PhoneNumber"
+              class="w-full h-[60px] px-4 border border-[#ccc] rounded-md bg-white text-16px-regular text-[rgba(3,3,4,0.54)]"
+          />
+        </div>
 
-      <!-- 아이디 찾기 버튼 -->
-      <button
-          @click.prevent="onSubmit"
-          class="w-full h-[48px] bg-[var(--newbitnormal)] text-white text-button rounded-md mb-5 hover:bg-[var(--newbitnormal-hover)]"
-      >
-        아이디 찾기
-      </button>
+        <!-- 에러 메시지 -->
+        <p v-if="findError" class="text-red-500 text-sm mb-5">
+          일치하는 회원 정보를 찾을 수 없습니다.
+        </p>
+
+        <!-- 아이디 찾기 버튼 -->
+        <button
+            type="submit"
+            class="w-full h-[48px] bg-[var(--newbitnormal)] text-white text-button rounded-md mb-5 hover:bg-[var(--newbitnormal-hover)]"
+        >
+          아이디 찾기
+        </button>
+      </form>
 
       <!-- 하단 링크 -->
       <div class="flex justify-between text-[16px] text-[rgba(3,3,4,0.54)] underline">
