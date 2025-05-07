@@ -35,3 +35,8 @@ export function getRequestTimes(coffeechatId) {
 export function acceptCoffeechatTime(requestTimeId) {
     return api.put(`/feature/coffeechats/${requestTimeId}/approve`, null)
 }
+
+/* 7. 커피챗 거절 */
+export function rejectCoffeechatTime(coffeechatId) {
+    return api.put(`/feature/coffeechats/${coffeechatId}/reject`, null)
+}

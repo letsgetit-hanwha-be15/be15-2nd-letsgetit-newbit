@@ -3,7 +3,7 @@ import {computed, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {useToast} from "vue-toastification";
 import dayjs from 'dayjs'
-import {acceptCoffeechatTime} from "@/api/coffeechat.js";
+import {acceptCoffeechatTime, rejectCoffeechatTime} from "@/api/coffeechat.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -60,10 +60,15 @@ async function confirmCoffeechat () {
 
 }
 
-function cancelRequest() {
-  // todo : api 연결(멘토가 커피챗 취소)
-  toast.info('취소되었습니다.')
-  router.push(`/mypage/mentor/coffeechats/${coffeechatId}`);
+async function cancelRequest() {
+  try {
+    await rejectCoffeechatTime(coffeechatId);
+  } catch (e) {
+    console.log('커피챗 거절 실패', e);
+  }
+  toast.info('거절되었습니다.')
+  window.location.href = `/mypage/mentor/coffeechats/${coffeechatId}`;
+
 }
 
 const formatFullTime = (startTimeStr, endTimeStr) => {
@@ -173,7 +178,7 @@ function closeCoffeechat() {
         <button v-if="isMentor"
                 @click="cancelRequest"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitred)] text-[var(--newbitlight)]  text-button">
-          취소
+          거절
         </button>
         <!-- 커피챗 승인 모달 -->
         <div v-if="isConfirmModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
