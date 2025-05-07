@@ -72,3 +72,10 @@ export function endCoffeechat(coffeechatId) {
 export function confirmPurchaseCoffeechat(coffeechatId) {
     return api.put(`/feature/coffeechats/${coffeechatId}/confirm-purchase`, null)
 }
+
+/* 13. 리뷰 작성 */
+export function createReview(payload) {
+    return api.post(`/feature/reviews`, payload)
+}
+
+

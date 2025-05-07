@@ -147,7 +147,7 @@ function registerReview() {
           구매 확정
         </button>
         <button v-if="coffeechat.progressStatus === 'COMPLETE'"
-                :disabled="true"
+                :disabled="coffeechat.purchaseConfirmedAt === null"
                 @click="registerReview"
                 class="ml-2 rounded-md px-4 py-2 text-button bg-[var(--newbitnormal)] text-[var(--newbitlight)]  text-button disabled:opacity-50">
           리뷰 작성

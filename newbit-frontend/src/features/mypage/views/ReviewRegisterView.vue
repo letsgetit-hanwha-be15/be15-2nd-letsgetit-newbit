@@ -7,6 +7,7 @@ import profileImage from '@/assets/image/default-profile.png'
 import RegisterReviewForm from "@/features/mypage/components/RegisterReviewForm.vue";
 import {useRoute, useRouter} from "vue-router";
 import {useToast} from "vue-toastification";
+import {createReview} from "@/api/coffeechat.js";
 
 const user = ref({
   id: 1,
@@ -27,14 +28,19 @@ const router = useRouter();
 const toast = useToast();
 const coffeechatId = ref(Number(route.params.id));
 
-const handleCreate = async (formData) => {
+const handleCreate = async (payload) => {
   isSubmitting.value = true;
 
-  // todo : 리뷰 등록 api 호출
-  toast.success('리뷰 등록 완료')
+  try {
+    await createReview(JSON.parse(JSON.stringify(payload)).payload)
+    toast.success('리뷰 등록 완료')
+    await router.push(`/mypage/history/coffeechats/${coffeechatId.value}`)
+
+  } catch (e) {
+    console.log('리뷰 등록 실패', e);
+  }
 
   isSubmitting.value = false;
-  await router.push(`/mypage/history/coffeechats/${coffeechatId.value}`)
 }
 </script>
 
