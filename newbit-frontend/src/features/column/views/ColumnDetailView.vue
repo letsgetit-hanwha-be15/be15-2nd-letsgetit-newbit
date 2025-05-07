@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getColumnDetail } from '@/api/column.js'
+import { getColumnDetail, deleteColumnRequest } from '@/api/column.js'
 import dayjs from 'dayjs'
 import { useAuthStore } from '@/features/stores/auth'
 
@@ -11,12 +11,10 @@ const route = useRoute()
 const router = useRouter()
 
 const columnId = Number(route.params.id)
-const userId = authStore.userId || 12;
-// const userId = 12;
+const userId = authStore.userId || 12
 const column = ref(null)
 
 const isMentor = authStore.userRole === 'MENTOR'
-// const isOwner = computed(() => column.value?.mentorId === authStore.mentorId)  // 추후에 적용(작성자 본인만 수정/삭제 버튼 노출하도록 조건 분기)
 
 const isLiked = ref(false)
 const toggleLike = () => {
@@ -29,9 +27,19 @@ const heartDefault = new URL('@/assets/image/heart-default.png', import.meta.url
 const heartActive = new URL('@/assets/image/heart-active.png', import.meta.url).href
 
 const isDeleteModalVisible = ref(false)
-const confirmDelete = () => {
-  alert('삭제 요청이 전송되었습니다.')
-  isDeleteModalVisible.value = false
+const confirmDelete = async () => {
+  try {
+    const data = {
+      mentorId: authStore.mentorId
+    }
+    await deleteColumnRequest(columnId, data)
+    alert('삭제 요청이 전송되었습니다.')
+    isDeleteModalVisible.value = false
+    router.push('/columns')
+  } catch (err) {
+    console.error('칼럼 삭제 요청 실패', err)
+    alert('삭제 요청 중 오류가 발생했습니다.')
+  }
 }
 
 const goToEdit = () => {
