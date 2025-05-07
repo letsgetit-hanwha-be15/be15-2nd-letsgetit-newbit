@@ -90,6 +90,7 @@ public class ColumnMapper {
                 .createdAt(request.getCreatedAt())
                 .rejectedReason(request.getRejectedReason())
                 .mentorNickname(mentorNickname)
+                .content(isCreate ? column.getContent() : request.getUpdatedContent())
                 .build();
     }
 
