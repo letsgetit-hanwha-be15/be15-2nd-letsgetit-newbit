@@ -33,3 +33,13 @@ export function updatePost(postId, formData) {
 export function deletePost(postId) {
     return api.delete(`/feature/posts/${postId}`)
 }
+
+export function postComment(postId, content) {
+    return api.post(`/feature/posts/${postId}/comments`, {
+        content: content
+    })
+}
+
+export const deleteComment = (postId, commentId) => {
+    return api.delete(`/feature/posts/${postId}/comments/${commentId}`)
+}
