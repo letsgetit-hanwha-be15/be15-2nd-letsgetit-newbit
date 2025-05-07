@@ -30,6 +30,10 @@ export const getMentorColumnList = (mentorId, page = 0, size = 10) => {
     })
 }
 
+// 좋아요한 칼럼 조회
+export const getLikedColumnList = (page = 1, size = 10) =>
+    api.get('feature/users/likes/columns', { params: { page, size } })
+
 
 /* --- 칼럼 요청 관련 --- */
 
