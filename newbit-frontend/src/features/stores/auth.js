@@ -63,6 +63,13 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem('refreshToken');
     }
 
+    function initAuth() {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            setAuth(token);
+        }
+    }
+
     return {
         accessToken,
         userRole,
@@ -80,5 +87,6 @@ export const useAuthStore = defineStore('auth', () => {
 
         pointValue: computed(() => point.value),
         diamondValue: computed(() => diamond.value),
+        initAuth
     };
 });
