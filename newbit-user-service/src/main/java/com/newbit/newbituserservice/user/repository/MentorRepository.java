@@ -6,9 +6,10 @@ import com.newbit.newbituserservice.user.entity.User;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.util.Optional;
-
+@EnableJpaRepositories
 public interface MentorRepository extends JpaRepository<Mentor, Long> {
 
     @Query("SELECT new com.newbit.newbituserservice.user.dto.response.MentorDTO(" +
@@ -20,6 +21,6 @@ public interface MentorRepository extends JpaRepository<Mentor, Long> {
             "JOIN m.user u " +
             "WHERE m.mentorId = :mentorId")
     Optional<MentorDTO> findMentorDTOByMentorId(@Param("mentorId") Long mentorId);
-
+    Optional<Mentor> findByUserUserId(Long userId);
     Optional<Mentor> findByUser_UserId(Long userId);
 }

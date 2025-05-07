@@ -41,9 +41,11 @@ public class User {
     @Column(nullable = false)
     private String nickname;
 
+    @Builder.Default
     @Column(nullable = false)
     private Integer point = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     private Integer diamond = 0;
 

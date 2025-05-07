@@ -57,7 +57,7 @@ public class Column {
     private Long mentorId;
 
     @ManyToOne
-    @JoinColumn(name = "series_id")
+    @JoinColumn(name = "series_id", nullable = true)
     private Series series;
 
 

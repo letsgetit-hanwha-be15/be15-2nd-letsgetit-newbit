@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "리뷰API", description = "리뷰 조회 API")
 @RestController
@@ -31,14 +28,6 @@ public class ReviewQueryController {
     public ResponseEntity<ApiResponse<ReviewListResponse>> getMentorReviews(
             @PathVariable Long mentorId
     ) {
-
-        // 서비스 레이어에 보낼 request 생성
-        /*
-        * request 정보
-        * 멘토꺼 리뷰 목록을 조회할지, 멘티가 작성한 리뷰 목록을 조회할지
-        * request에는 멘토 / 멘티 둘 중 한 정보만 있고,
-        * response 에는 두 정보 다 존재.
-        * */
         ReviewSearchServiceRequest reviewSearchServiceRequest = new ReviewSearchServiceRequest();
         reviewSearchServiceRequest.setMentorId(mentorId);
 
@@ -71,7 +60,9 @@ public class ReviewQueryController {
     @GetMapping("/me/received")
 //    @PreAuthorize("hasAuthority('MENTOR')")
     public ResponseEntity<ApiResponse<ReviewListResponse>> getMentorMyReviews(
-            @AuthenticationPrincipal CustomUser customUser
+            @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(defaultValue = "0") int page, // 기본값 0
+            @RequestParam(defaultValue = "10") int size // 기본값 10
     ) {
 
         // 유저 아이디로 멘토 아이디를 찾아오기
@@ -80,6 +71,8 @@ public class ReviewQueryController {
 
         ReviewSearchServiceRequest reviewSearchServiceRequest = new ReviewSearchServiceRequest();
         reviewSearchServiceRequest.setMentorId(mentorId);
+        reviewSearchServiceRequest.setPage(page);
+        reviewSearchServiceRequest.setSize(size);
 
         ReviewListResponse response = reviewQueryService.getReviews(reviewSearchServiceRequest);
 

@@ -10,8 +10,8 @@ import lombok.Setter;
 public class CoffeechatSearchServiceRequest {
     private Integer page = 1;
     private Integer size = 10;
-    private Long userId;
-    private String authority;
+    private Long menteeId;
+    private Long mentorId;
     private ProgressStatus progressStatus;
     private Boolean isProgressing;
 
