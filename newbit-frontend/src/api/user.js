@@ -86,3 +86,8 @@ export function refreshUserToken() {
 export function getUserProfile(userId) {
     return api.get(`user/users/${userId}/profile`);
 }
+
+/* 13. 멘토 프로필 조회 */
+export function getMentorProfile(mentorId) {
+    return api.get(`user/users/mentor/${mentorId}/profile`);
+}

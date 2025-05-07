@@ -5,6 +5,7 @@ import java.util.List;
 
 @Data
 public class MentorProfileDTO {
+    private Long mentorId;
     private String userName;
     private String nickname;
     private String profileImageUrl;
