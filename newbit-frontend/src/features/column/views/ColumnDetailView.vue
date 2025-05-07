@@ -12,7 +12,7 @@ const router = useRouter()
 const route = useRoute()
 
 const columnId = Number(route.params.id)
-const userId = authStore.userId
+const mentorId = Number(authStore.mentorId)
 
 const column = ref(null)
 const isLiked = ref(false)
@@ -28,6 +28,10 @@ const heartDefault = new URL('@/assets/image/heart-default.png', import.meta.url
 const heartActive = new URL('@/assets/image/heart-active.png', import.meta.url).href
 
 const isMentor = authStore.userRole === 'MENTOR'
+
+const isMine = computed(() => {
+  return isMentor && column.value?.mentorId === mentorId
+})
 
 const toggleLike = () => {
   isLiked.value = !isLiked.value
@@ -206,7 +210,7 @@ onMounted(fetchColumnDetail)
     </div>
 
     <!-- 멘토 전용 버튼 -->
-    <div v-if="isMentor" class="flex justify-end gap-2 mt-6">
+    <div v-if="isMine" class="flex justify-end gap-2 mt-6">
       <button @click="goToEdit" class="bg-blue-500 text-white px-4 py-2 rounded">수정</button>
       <button @click="() => isDeleteModalVisible = true" class="bg-[var(--newbitred)] text-white px-4 py-2 rounded">삭제</button>
     </div>
