@@ -3,6 +3,7 @@ package com.newbit.newbitfeatureservice.post.service;
 import com.newbit.newbitfeatureservice.client.user.UserFeignClient;
 import com.newbit.newbitfeatureservice.client.user.dto.UserDTO;
 import com.newbit.newbitfeatureservice.common.dto.ApiResponse;
+import com.newbit.newbitfeatureservice.post.dto.response.PostListResponse;
 import com.newbit.newbitfeatureservice.post.entity.Attachment;
 import com.newbit.newbitfeatureservice.post.repository.AttachmentRepository;
 import com.newbit.newbitfeatureservice.purchase.command.domain.PointTypeConstants;
@@ -183,21 +184,21 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PostResponse> getPostList(Pageable pageable) {
+    public Page<PostListResponse> getPostList(Pageable pageable) {
         Page<Post> postPage = postRepository.findAll(pageable);
+
+        int totalElements = (int) postPage.getTotalElements(); // serialNumber 계산용
+
         return postPage.map(post -> {
             ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(post.getUserId());
             String writerName = response.getData() != null ? response.getData().getNickname() : null;
-            String categoryName = post.getPostCategory().getName();
 
-            List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
-                    .stream()
-                    .map(attachment -> attachment.getImageUrl())
-                    .toList();
+            String serialNumber = post.isNotice() ? "공지사항" : String.valueOf(post.getId()); // 또는 전체 게시글 수 기준 계산
 
-            return new PostResponse(post, writerName, categoryName, imageUrls);
+            return new PostListResponse(post, writerName, serialNumber);
         });
     }
+
 
     @Transactional(readOnly = true)
     public List<PostResponse> getMyPosts(Long userId) {
