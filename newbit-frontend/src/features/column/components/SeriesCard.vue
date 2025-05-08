@@ -44,7 +44,7 @@ const toggleSubscription = () => {
       <template v-if="series.mentorNickname">
         {{ series.mentorNickname }} |
       </template>
-      {{ series.columnCount }}개의 칼럼
+      {{ series.columns }}개의 칼럼
     </p>
     <p class="text-14px-bold text-[var(--newbittext)] mt-1">
       {{ title }}
