@@ -106,8 +106,9 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 ### 설계 문서
 
 - [DDD 설계 문서](https://miro.com/app/board/uXjVINvVwgo=/?share_link_id=532750127721)
-- [요구사항 명세서](https://docs.google.com/spreadsheets/d/1aflf9F-G79LgBtK9sxy4J_ZFPHslv-X5P6s3-67kGR4/edit?gid=2084470607#gid=2084470607)
-
+- [요구사항 명세서](https://docs.google.com/spreadsheets/d/1aflf9F-G79LgBtK9sxy4J_ZFPHslv-X5P6s3-67kGR4/edit?gid=721187272#gid=721187272)
+- [기능 명세서](https://docs.google.com/spreadsheets/d/1aflf9F-G79LgBtK9sxy4J_ZFPHslv-X5P6s3-67kGR4/edit?gid=55030434#gid=55030434)
+  
 ### 테스크 결과 보고서
 
 - [테스트 결과 보고서](https://docs.google.com/document/d/1eEU6sED_ITLF-2X6D3e6yWcYB-gYg7WDk_agsvssvpw/edit?tab=t.0)
