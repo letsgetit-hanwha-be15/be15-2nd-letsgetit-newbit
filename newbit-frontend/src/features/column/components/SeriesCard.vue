@@ -18,7 +18,6 @@ const displayThumbnail = computed(() =>
 
 const title = computed(() => props.series.title ?? props.series.seriesTitle ?? '')
 
-// 구독 toggle 함수 (임시)
 const toggleSubscription = () => {
   props.series.subscribed = !props.series.subscribed
 }
