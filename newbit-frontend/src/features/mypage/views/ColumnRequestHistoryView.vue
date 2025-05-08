@@ -99,7 +99,12 @@ const fetchColumns = async () => {
       diamondCount: item.price || 0,
       date: item.createdAt?.substring(0, 10).replace(/-/g, '.'),
       type: requestTypeToKorean(item.requestType),
-      status: item.isApproved === null ? '진행중' : item.isApproved ? '승인' : '반려',
+      status: (() => {
+        if (item.isApproved === null) return '진행중'
+        if (item.isApproved === true) return '승인'
+        if (item.isApproved === false && !item.rejectedReason) return '진행중'
+        return '반려'
+      })(),
       rejectedReason: item.rejectedReason || '',
       thumbnailUrl: item.thumbnailUrl,
     }))

@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { getPublicSeriesList, searchPublicSeriesList } from '@/api/column'
 import SeriesCard from '@/features/column/components/SeriesCard.vue'
 import PagingBar from '@/components/common/PagingBar.vue'
 import SeriesCreateModal from '@/features/column/components/SeriesCreateModal.vue'
@@ -8,47 +9,46 @@ import SeriesCreateModal from '@/features/column/components/SeriesCreateModal.vu
 // 상태
 const searchKeyword = ref('')
 const currentPage = ref(1)
-const totalPage = 3
+const totalPage = ref(0)
 const isCreateModalOpen = ref(false)
+const allSeries = ref([])
+const isLoading = ref(false)
 
 const isMyPage = false // TODO: 로그인한 유저의 멘토 여부 확인 후 수정
 
-// 임시 시리즈 목록
-const allSeries = ref([
-  {
-    id: 1,
-    title: '시리즈 제목',
-    mentorNickname: '오멘토',
-    columnCount: 3,
-    thumbnailUrl: '',
-    subscribed: true
-  },
-  {
-    id: 2,
-    title: '버텨야 할 때와 그만두어야 할 때를 구분하기',
-    mentorNickname: 'Onda',
-    columnCount: 3,
-    thumbnailUrl: '',
-    subscribed: false
+const fetchSeriesList = async () => {
+  isLoading.value = true
+  try {
+    const res = searchKeyword.value.trim()
+        ? await searchPublicSeriesList({ keyword: searchKeyword.value }, currentPage.value - 1, 9)
+        : await getPublicSeriesList(currentPage.value - 1, 9)
+
+    // mentorNickname 제거
+    allSeries.value = res.data.content.map(series => ({
+      ...series,
+      mentorNickname: null,
+      mentorId: series.mentorId,
+    }))
+    totalPage.value = res.data.totalPages
+  } catch (err) {
+    console.error('시리즈 목록 조회 실패:', err)
+  } finally {
+    isLoading.value = false
   }
-])
+}
 
-// 검색 + 공개 조건 필터링
-const filteredSeries = computed(() =>
-    allSeries.value
-        .filter(s =>
-            s.title.includes(searchKeyword.value) || s.mentorNickname.includes(searchKeyword.value)
-        )
-        .filter(s => isMyPage || s.columnCount > 0)
-)
+onMounted(() => {
+  fetchSeriesList()
+})
 
-// 이벤트 핸들러
 const handleSearch = () => {
-  console.log('검색어:', searchKeyword.value)
+  currentPage.value = 1
+  fetchSeriesList()
 }
 
 const handlePageChange = (page) => {
   currentPage.value = page
+  fetchSeriesList()
 }
 
 const openCreateModal = () => {
@@ -57,7 +57,7 @@ const openCreateModal = () => {
 
 const handleCreateSeries = (payload) => {
   console.log('생성된 시리즈:', payload)
-  // TODO: API 호출 및 리스트 갱신
+  fetchSeriesList()
 }
 </script>
 
@@ -70,8 +70,7 @@ const handleCreateSeries = (payload) => {
           class="pb-2 cursor-pointer"
           :class="$route.path === '/columns'
           ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold'
-          : 'text-[var(--newbitgray)]'"
-      >
+          : 'text-[var(--newbitgray)]'">
         칼럼
       </router-link>
       <router-link
@@ -79,8 +78,7 @@ const handleCreateSeries = (payload) => {
           class="pb-2 cursor-pointer"
           :class="$route.path.startsWith('/series')
           ? 'border-b-2 border-[var(--newbitnormal)] text-[var(--newbitnormal)] font-bold'
-          : 'text-[var(--newbitgray)]'"
-      >
+          : 'text-[var(--newbitgray)]'">
         시리즈
       </router-link>
     </div>
@@ -91,7 +89,7 @@ const handleCreateSeries = (payload) => {
         <input
             v-model="searchKeyword"
             type="text"
-            placeholder="작성자나 제목으로 검색해보세요"
+            placeholder="시리즈 제목으로 검색해보세요"
             class="flex-1 border border-[var(--newbitdivider)] rounded px-4 py-2 text-13px-regular"
         />
         <button
@@ -112,7 +110,7 @@ const handleCreateSeries = (payload) => {
     <!-- 카드 리스트 -->
     <div class="grid grid-cols-3 gap-6">
       <SeriesCard
-          v-for="series in filteredSeries"
+          v-for="series in allSeries"
           :key="series.id"
           :series="series"
       />

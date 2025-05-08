@@ -10,7 +10,7 @@ import {getUserBalance} from "@/api/user.js";
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
-
+const userId = authStore.userId
 const columnId = Number(route.params.id)
 const mentorId = Number(authStore.mentorId)
 
@@ -31,6 +31,8 @@ const isMentor = authStore.userRole === 'MENTOR'
 
 const isMine = computed(() => {
   return isMentor && column.value?.mentorId === mentorId
+  console.log('🔍 isMine:', mine, '| 내 mentorId:', mentorId, '| 칼럼 mentorId:', column.value?.mentorId)
+  return mine
 })
 
 const toggleLike = () => {

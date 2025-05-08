@@ -42,16 +42,29 @@ public class ColumnService {
     public GetColumnDetailResponseDto getColumnDetail(Long userId, Long columnId) {
         GetColumnDetailResponseDto dto = columnRepository.findPublicColumnDetailById(columnId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COLUMN_NOT_FOUND));
-        Long mentorId = dto.getMentorId();
-        Long authorUserId = mentorFeignClient.getUserIdByMentorId(mentorId).getData();
-        String nickname = userFeignClient.getUserByUserId(authorUserId).getData().getNickname();
-        dto.setMentorNickname(nickname);
 
-        boolean isPurchased = columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId);
-        if (!isPurchased && !(authorUserId.equals(userId)) && !(dto.getPrice() == 0)) {
-            throw new BusinessException(ErrorCode.COLUMN_NOT_PURCHASED);
+        Long mentorId = dto.getMentorId();
+        String nickname = "익명 멘토"; // 기본값
+
+        try {
+            var mentorResponse = mentorFeignClient.getUserIdByMentorId(mentorId);
+            Long authorUserId = mentorResponse.getData();
+            if (authorUserId != null) {
+                var userResponse = userFeignClient.getUserByUserId(authorUserId);
+                if (userResponse.getData() != null && userResponse.getData().getNickname() != null) {
+                    nickname = userResponse.getData().getNickname();
+
+                    boolean isPurchased = columnPurchaseHistoryQueryService.hasUserPurchasedColumn(userId, columnId);
+                    if (!isPurchased && !(authorUserId.equals(userId)) && dto.getPrice() != 0) {
+                        throw new BusinessException(ErrorCode.COLUMN_NOT_PURCHASED);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("유저 닉네임 조회 실패 mentorId={}, columnId={}", mentorId, columnId, e);
         }
 
+        dto.setMentorNickname(nickname);
         return dto;
     }
 
