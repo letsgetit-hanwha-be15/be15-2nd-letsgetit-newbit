@@ -113,3 +113,63 @@ const submitApproval = async () => {
 
 onMounted(fetchData)
 </script>
+
+
+
+
+
+
+
+
+<!--<script setup>-->
+<!--import { ref, onMounted } from 'vue'-->
+<!--import { useRoute, useRouter } from 'vue-router'-->
+<!--import { getAllColumnRequests } from '@/api/column'-->
+<!--import { useToast } from 'vue-toastification'-->
+
+<!--const route = useRoute()-->
+<!--const router = useRouter()-->
+<!--const toast = useToast()-->
+
+<!--const columnId = route.params.columnId-->
+
+<!--const column = ref({})-->
+<!--const approvalDecision = ref(null)-->
+<!--const rejectionReason = ref('')-->
+<!--const fallbackImg = new URL('@/assets/image/product-skeleton.png', import.meta.url).href-->
+<!--const diamondIcon = new URL('@/assets/image/diamond-icon.png', import.meta.url).href-->
+
+<!--const fetchData = async () => {-->
+<!--  try {-->
+<!--    const res = await getAllColumnRequests({ page: 0, size: 100 })-->
+<!--    const all = res.data.data.content-->
+<!--    const found = all.find((item) => item.columnRequestId === Number(columnId))-->
+<!--    if (found) column.value = found-->
+<!--  } catch (e) {-->
+<!--    console.error('상세 정보 불러오기 실패', e)-->
+<!--  }-->
+<!--}-->
+
+<!--const submitApproval = () => {-->
+<!--  if (!approvalDecision.value) {-->
+<!--    toast.warning('승인 또는 반려를 선택해주세요.')-->
+<!--    return-->
+<!--  }-->
+
+<!--  if (approvalDecision.value === 'reject' && !rejectionReason.value.trim()) {-->
+<!--    toast.warning('반려 사유를 입력해주세요.')-->
+<!--    return-->
+<!--  }-->
+
+<!--  const message =-->
+<!--      approvalDecision.value === 'approve'-->
+<!--          ? '요청이 승인되었습니다.'-->
+<!--          : '요청이 반려되었습니다.'-->
+
+<!--  toast.success(message)-->
+<!--  router.push({ path: '/admin/columns', query: { reload: 'true' } })-->
+<!--}-->
+
+<!--onMounted(fetchData)-->
+<!--</script>-->
+
