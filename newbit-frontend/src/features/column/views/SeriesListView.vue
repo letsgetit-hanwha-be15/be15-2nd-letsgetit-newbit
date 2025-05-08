@@ -23,12 +23,7 @@ const fetchSeriesList = async () => {
         ? await searchPublicSeriesList({ keyword: searchKeyword.value }, currentPage.value - 1, 9)
         : await getPublicSeriesList(currentPage.value - 1, 9)
 
-    // mentorNickname 제거
-    allSeries.value = res.data.content.map(series => ({
-      ...series,
-      mentorNickname: null,
-      mentorId: series.mentorId,
-    }))
+    allSeries.value = res.data.data.content
     totalPage.value = res.data.totalPages
   } catch (err) {
     console.error('시리즈 목록 조회 실패:', err)
@@ -111,7 +106,7 @@ const handleCreateSeries = (payload) => {
     <div class="grid grid-cols-3 gap-6">
       <SeriesCard
           v-for="series in allSeries"
-          :key="series.id"
+          :key="series.seriesId"
           :series="series"
       />
     </div>

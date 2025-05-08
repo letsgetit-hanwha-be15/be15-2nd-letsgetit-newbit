@@ -202,7 +202,9 @@ public class SeriesService {
                         .description(series.getDescription())
                         .thumbnailUrl(series.getThumbnailUrl())
                         .mentorId(mentorId)
+                        .mentorNickname(nickname)
                         .createdAt(series.getCreatedAt())
+                        .columns(series.getColumns().size())
                         .build();
 
                 dto.setMentorNickname(nickname);

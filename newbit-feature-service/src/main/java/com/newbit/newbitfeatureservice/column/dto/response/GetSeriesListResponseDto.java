@@ -32,6 +32,7 @@ public class GetSeriesListResponseDto {
     @Schema(description = "작성일시", example = "2025-07-02T09:00:00")
     private LocalDateTime createdAt;
 
+    private Integer columns;
     public void setMentorNickname(String nickname) {
         this.mentorNickname = nickname;
     }
