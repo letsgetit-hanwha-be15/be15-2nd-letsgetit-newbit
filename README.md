@@ -129,6 +129,8 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 ### 프레젠테이션
 
 - [BE Powerpoint 문서](https://docs.google.com/presentation/d/11G4_GNc5dlZcgKw5RPP-vGZSRRCIeN7t/edit#slide=id.p1)
+- [FE Powerpoint 문서 - 테스트 결과 보고서 포함 ](https://docs.google.com/presentation/d/1NCJaUrWr4Os9JrGR8ZjdEubyR3cYRAUP/edit?usp=sharing&ouid=101829531113308310114&rtpof=true&sd=true)
+
 
 ### API 문서
 
