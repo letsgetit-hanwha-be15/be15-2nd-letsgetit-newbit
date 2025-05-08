@@ -43,8 +43,15 @@ const submitPost = async () => {
   if (file.value) formData.append('file', file.value)
 
   try {
-    await postPost(formData) // ✅ 이 줄만 남깁니다
-    toast.success('게시글 등록이 완료되었습니다!')
+    await postPost(formData)
+
+    // ✅ 공지/일반 구분 알림
+    if (isNotice.value) {
+      toast.success('공지사항이 등록되었습니다!')
+    } else {
+      toast.success('게시글이 등록되었습니다!')
+    }
+
     router.push('/posts')
   } catch (e) {
     toast.error('게시글 등록에 실패했습니다.')

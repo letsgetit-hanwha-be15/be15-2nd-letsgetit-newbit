@@ -53,3 +53,11 @@ export const reportPost = (reportData) => {
 export const reportComment = (reportData) => {
     return api.post('/feature/reports/comment', reportData)
 }
+
+export function updateNotice(postId, data) {
+    return api.patch(`/feature/posts/notices/${postId}`, data)
+}
+
+export function deleteNotice(postId) {
+    return api.delete(`/feature/posts/notices/${postId}`)
+}

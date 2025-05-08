@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import {onMounted, ref, computed, watch} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import {getPostDetail } from '@/api/post'
@@ -29,6 +29,21 @@ const convertReasonToId = (reason) => {
 
   return reasonMap[reason] || 11
 }
+
+const deleteModalTitle = ref('게시글 삭제')
+const deleteModalMessage = ref('게시글을 삭제하시겠습니까?')
+
+watch(post, (val) => {
+  if (val?.isNotice) {
+    deleteModalTitle.value = '공지사항 삭제'
+    deleteModalMessage.value = '공지사항을 삭제하시겠습니까?'
+  } else {
+    deleteModalTitle.value = '게시글 삭제'
+    deleteModalMessage.value = '게시글을 삭제하시겠습니까?'
+  }
+})
+
+
 
 const authStore = useAuthStore()
 const currentUserId = authStore.userId
@@ -74,10 +89,11 @@ const closeDeleteModal = () => {
 const confirmDelete = async () => {
   try {
     await deletePost(post.value.id)
-    toast.success('삭제되었습니다.')
+    const msg = post.value.isNotice ? '공지사항이 삭제되었습니다.' : '게시글이 삭제되었습니다.'
+    toast.success(msg)
     router.push('/posts')
   } catch (e) {
-    toast.error('삭제 실패')
+    toast.error('삭제에 실패했습니다.')
   } finally {
     isDeleteModalOpen.value = false
   }
@@ -191,6 +207,7 @@ marked.setOptions({
 const fetchPostDetail = async () => {
   try {
     const res = await getPostDetail(postId)
+    console.log('📦 post detail:', res)
     post.value = {
       id: res.id,
       title: res.title,
@@ -199,11 +216,13 @@ const fetchPostDetail = async () => {
       content: marked(res.content),
       likeCount: res.likeCount,
       liked: false,
+      isNotice: res.isNotice, // ✅ 추가
       attachment: {
         name: res.imageUrls?.[0]?.split('/').pop() || 'Newbit.jpg',
         size: '2KB'
       }
     }
+
 
     comments.value = res.comments.map((c) => ({
       id: c.id,
@@ -332,8 +351,8 @@ onMounted(fetchPostDetail)
       />
       <DeleteConfirmModal
           v-if="isDeleteModalOpen"
-          title="게시글 삭제"
-          message="게시글을 삭제하시겠습니까?"
+          :title="deleteModalTitle"
+          :message="deleteModalMessage"
           @close="closeDeleteModal"
           @confirm="confirmDelete"
       />
