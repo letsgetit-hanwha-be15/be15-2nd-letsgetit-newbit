@@ -5,10 +5,15 @@ import { useRouter } from 'vue-router'
 import Editor from '@toast-ui/editor'
 import '@toast-ui/editor/dist/toastui-editor.css'
 import { useToast } from 'vue-toastification'
+import { computed } from 'vue'
+import { useAuthStore } from '@/features/stores/auth.js'
+
+const authStore = useAuthStore()
+const isAdmin = computed(() => authStore.userRole === 'ADMIN')
 
 const router = useRouter()
 const toast = useToast()
-
+const isNotice = ref(false)
 const title = ref('')
 const file = ref(null)
 const editorRef = ref(null)
@@ -34,6 +39,7 @@ const submitPost = async () => {
   formData.append('title', title.value)
   formData.append('content', content)
   formData.append('postCategoryId', selectedCategoryId.value)
+  formData.append('isNotice', isNotice.value)
   if (file.value) formData.append('file', file.value)
 
   try {
@@ -82,6 +88,17 @@ onBeforeUnmount(() => {
   >
     <span class="mr-1">←</span> 목록으로
   </button>
+
+  <!-- 공지사항 등록 체크박스 (관리자만 보임) -->
+  <label
+      v-if="isAdmin"
+      class="flex items-center gap-2 text-sm text-gray-700"
+  >
+    <input type="checkbox" v-model="isNotice" />
+    공지사항으로 등록
+  </label>
+
+
 
   <!-- 제목 입력 -->
   <input

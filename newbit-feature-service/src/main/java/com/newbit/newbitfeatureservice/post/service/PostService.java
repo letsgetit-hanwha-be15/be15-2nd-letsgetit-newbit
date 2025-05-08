@@ -190,7 +190,8 @@ public class PostService {
         if (categoryId != null) {
             postPage = postRepository.findByPostCategoryIdAndDeletedAtIsNull(categoryId, pageable);
         } else {
-            postPage = postRepository.findAllByDeletedAtIsNull(pageable);
+            postPage = postRepository.findAllWithNoticeFirst(pageable);
+
         }
 
         long totalElements = postPage.getTotalElements(); // 전체 게시글 수
@@ -254,7 +255,7 @@ public class PostService {
     @Transactional
     public PostResponse createNotice(PostCreateRequest request, CustomUser user) {
         boolean isAdmin = user.getAuthorities().stream()
-                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+                .anyMatch(auth -> "ADMIN".equals(auth.getAuthority()));
 
         if (!isAdmin) {
             throw new BusinessException(ErrorCode.ONLY_ADMIN_CAN_CREATE_NOTICE);
@@ -274,7 +275,10 @@ public class PostService {
 
         ApiResponse<UserDTO> response = userFeignClient.getUserByUserId(user.getUserId());
         String writerName = response.getData() != null ? response.getData().getNickname() : null;
-        String categoryName = post.getPostCategory().getName();
+        String categoryName = post.getPostCategory() != null
+                ? post.getPostCategory().getName()
+                : null;
+
 
         List<String> imageUrls = attachmentRepository.findByPostId(post.getId())
                 .stream()
