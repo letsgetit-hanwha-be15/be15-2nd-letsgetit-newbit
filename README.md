@@ -24,13 +24,12 @@
 
 <a href="#7">🫡 프로젝트 구조</a>
 
-<a href="#8">🎨 와이어프레임</a>
+<a href="#8">🎨 화면 ui</a>
 
-<a href="#9">🖼️ 화면 ui</a>
+<a href="#9">📃 회고록</a>
 
-<a href="#10">📃 회고록</a>
+<a href="#10">📜 라이센스</a>
 
-<a href="#11">📜 라이센스</a>
 
 <br><br>
 
@@ -129,7 +128,7 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 
 ### 프레젠테이션
 
-- [Powerpoint 문서](https://docs.google.com/presentation/d/11G4_GNc5dlZcgKw5RPP-vGZSRRCIeN7t/edit#slide=id.p1)
+- [BE Powerpoint 문서](https://docs.google.com/presentation/d/11G4_GNc5dlZcgKw5RPP-vGZSRRCIeN7t/edit#slide=id.p1)
 
 ### API 문서
 
@@ -229,36 +228,8 @@ src/
 └── user/ # 로그인/회원가입, 유저 관리
 ```
 
-## <p id="8"> 와이어프레임
-<details>
-  <summary>메인페이지</summary>
 
-  #### 메인 페이지
-  <img width="1150" alt="메인페이지.png" src="./assets/images/메인 페이지.png" >
-
-</details>
-<details>
-  <summary>회원</summary>
-
-  #### 회원가입/로그인/아이디찾기/비밀번호찾기
-  <img width="1150" alt="회원가입.png" src="./assets/images/회원가입.png" >
-
-</details>
-<details>
-  <summary>프로필</summary>
-
-  #### 멘토 목록
-  <img width="1150" alt="멘토 목록.png" src="./assets/images/멘토목록.png" >
-
-  #### 멘토 프로필
-  <img width="1150" alt="멘토 프로필.png" src="./assets/images/멘토프로필.png" >
-
-  #### 유저 프로필
-  <img width="1150" alt="유저 프로필.png" src="./assets/images/유저프로필.png" >
-
-</details>
-
-## <p id="9"> 화면 ui
+## <p id="8"> 화면 ui
 <details>
   <summary>회원/로그인</summary>
 
@@ -286,19 +257,47 @@ src/
   <summary>칼럼/게시글</summary>
 
   #### 칼럼
-  <img width="1150" alt="내 콘텐츠.png" src="./assets/images/칼럼럼.png" >
+  <img width="1150" alt="칼럼.png" src="./assets/images/칼럼.png" >
 
-  #### 게시글
-  <img width="1150" alt="활동내역.png" src="./assets/images/게시글.png" >
+  #### 게시판
+  <img width="1150" alt="게시판.png" src="./assets/images/게시판.png" >
 
-  #### 유저프로필/멘토프로필
-  <img width="1150" alt="유저프로필멘토프로필.png" src="./assets/images/유저프로필멘토프로필.png" >
+</details>
+<details>
+  <summary>커피챗/리뷰</summary>
+
+  #### 커피챗
+  <img width="1150" alt="커피챗.png" src="./assets/images/커피챗.png" >
+
+  #### 리뷰
+  <img width="1150" alt="리뷰.png" src="./assets/images/리뷰.png" >
+  
+  #### 커피레터
+  <img width="1150" alt="커피레터.png" src="./assets/images/커피레터.png" >
+
+</details>
+<details>
+  <summary>상품</summary>
+
+  #### 상품
+  <img width="1150" alt="상품.png" src="./assets/images/상품.png" >
+
+  #### 심리테스트
+  <img width="1150" alt="심리테스트.png" src="./assets/images/심리테스트.png" >
+
+</details>
+
+<details>
+  <summary>신고/관리자</summary>
+
+  #### 신고/관리자
+  <img width="1150" alt="신고관리자.png" src="./assets/images/신고관리자.png" >
+
 
 </details>
 
 
-
-## <p id="10"> 회고록
+## <p id="9"> 회고록
 
 |  이름  | COMMENT                                                                                                                                                                                                                                                                                                          |
 | :----: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -311,6 +310,6 @@ src/
 
 
 
-## <p id="11"> 📜 라이센스
+## <p id="10"> 📜 라이센스
 
 이 프로젝트는 MIT 라이센스를 따릅니다.
