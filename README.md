@@ -57,6 +57,24 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 <img src="https://img.shields.io/badge/mongodb-47A248?style=for-the-badge&logo=mongodb&logoColor=white">
 <img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white">
 
+### Frontend
+
+<img src="https://img.shields.io/badge/vue.js-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white">
+<img src="https://img.shields.io/badge/pinia-2D8CFF?style=for-the-badge&logo=pinia&logoColor=white">
+<img src="https://img.shields.io/badge/axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white">
+<img src="https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white">
+<img src="https://img.shields.io/badge/tailwindcss-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white">
+<img src="https://img.shields.io/badge/element--plus-409EFF?style=for-the-badge&logo=element&logoColor=white">
+<img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
+<img src="https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white">
+<img src="https://img.shields.io/badge/Toast%20UI-0068B5?style=for-the-badge">
+<img src="https://img.shields.io/badge/WebSocket-010101?style=for-the-badge&logo=websockets&logoColor=white">
+<img src="https://img.shields.io/badge/STOMP-4B4B4B?style=for-the-badge">
+<img src="https://img.shields.io/badge/marked-000000?style=for-the-badge">
+<img src="https://img.shields.io/badge/vue--toastification-34495E?style=for-the-badge">
+
+
+
 ### Communication Protocols
 
 <img src="https://img.shields.io/badge/websocket-010101?style=for-the-badge&logo=socket.io&logoColor=white">
@@ -140,3 +158,32 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 ## 📜 라이센스
 
 이 프로젝트는 MIT 라이센스를 따릅니다.
+
+## 📁 프로젝트 구조
+```
+src/
+├── api/ # 기능별 API 모듈 (column.js, user.js 등)
+├── components/ # 공용 UI 컴포넌트
+├── config/ # Toast UI, 알림 등 설정 파일
+├── router/ # Vue Router 설정
+├── stores/ # Pinia 상태 관리
+├── views/ # 글로벌 뷰 (AdminPage 등)
+├── App.vue # 루트 컴포넌트
+│
+└── features/ # 
+├── admin/ # 관리자 페이지 (승인/반려)
+├── column/ # 칼럼 등록/수정/요청/조회
+├── series/ # 시리즈 생성/수정/삭제
+├── coffeechat/ # 커피챗 신청 및 관리
+├── coffeeletter/ # 커피챗 후속 메시지/피드백
+├── mypage/ # 마이페이지 (내 정보, 구매내역)
+├── payment/ # 결제 및 다이아몬드 충전
+├── notification/ # 알림 기능
+├── post/ # 자유 게시판
+├── product/ # 상품 정보
+├── perk/ # 멘토 혜택/등급 시스템
+├── profile/ # 프로필 보기/수정
+├── report/ # 신고 기능
+└── user/ # 로그인/회원가입, 유저 관리
+```
+
