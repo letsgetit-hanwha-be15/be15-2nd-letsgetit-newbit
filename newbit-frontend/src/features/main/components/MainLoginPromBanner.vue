@@ -1,13 +1,14 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/features/stores/auth' // auth 스토어 임포트
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 function goLogin() {
   router.push('/login')
 }
 </script>
-
 
 <template>
   <div
@@ -28,7 +29,9 @@ function goLogin() {
         서비스를 이용해보세요!
       </p>
 
+      <!-- 로그인 안 한 경우에만 버튼 보여줌 -->
       <button
+          v-if="!authStore.isAuthenticated"
           @click="goLogin"
           class="nav-button"
       >
