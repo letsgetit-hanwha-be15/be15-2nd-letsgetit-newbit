@@ -198,8 +198,11 @@ const fetchPostDetail = async () => {
     const res = await getPostDetail(postId)
     console.log('📦 post detail:', res)
 
-    console.log('📦 백엔드 응답 전체:', res)
-    console.log('✅ isNotice 값:', res.isNotice)
+    console.log("📦 백엔드 응답 전체:", res)
+    console.log('✅ userId (작성자):', res.userId)
+    console.log('✅ currentUserId:', currentUserId)
+    console.log('✅ 비교 결과:', res.userId === currentUserId)
+
 
     // ✅ 모달 제목 여기서 직접 설정
     const isNotice = res.notice === true || res.notice === 'true' || res.notice === 1;
@@ -213,6 +216,7 @@ const fetchPostDetail = async () => {
       id: res.id,
       title: res.title,
       author: res.writerName,
+      authorId: res.userId,
       createdAt: res.createdAt.replace('T', ' ').slice(0, 16),
       content: marked(res.content),
       likeCount: res.likeCount,
@@ -227,6 +231,7 @@ const fetchPostDetail = async () => {
     comments.value = res.comments.map((c) => ({
       id: c.id,
       nickname: c.writerName,
+      userId: c.userId,
       date: new Date().toISOString().slice(0, 16).replace('T', ' '),
       content: c.content
     }))
@@ -242,7 +247,8 @@ onMounted(fetchPostDetail)
 <template>
   <section class="p-8 max-w-3xl mx-auto pb-40">
     <div v-if="post">
-      <div class="flex justify-end gap-2 mb-2">
+      <!-- 수정/삭제 버튼: 게시글 작성자만 표시 -->
+      <div class="flex justify-end gap-2 mb-2" v-if="post.authorId === currentUserId">
         <button
             @click="goToEdit"
             class="bg-blue-500 text-white px-3 py-1 rounded text-sm"
@@ -256,6 +262,7 @@ onMounted(fetchPostDetail)
           삭제
         </button>
       </div>
+
 
       <div class="flex justify-between items-start mb-1">
         <h1 class="text-2xl font-bold">{{ post.title }}</h1>
@@ -299,14 +306,6 @@ onMounted(fetchPostDetail)
             <p class="text-sm">{{ c.content }}</p>
             <!-- 댓글 버튼 (삭제 & 신고) -->
             <div class="flex justify-between mt-2">
-              <!-- 삭제 버튼 -->
-              <button
-                  class="bg-[var(--newbitred)] text-white text-xs px-3 py-1 rounded"
-                  @click="openCommentDeleteModal(c.id)"
-              >
-                삭제
-              </button>
-
               <!-- 신고 버튼 -->
               <button
                   class="bg-[var(--newbitred)] text-white text-xs px-3 py-1 rounded"
@@ -315,6 +314,14 @@ onMounted(fetchPostDetail)
                 신고
               </button>
 
+              <!-- 삭제 버튼: 본인만 표시 -->
+              <button
+                  v-if="c.userId === currentUserId"
+                  class="bg-[var(--newbitred)] text-white text-xs px-3 py-1 rounded"
+                  @click="openCommentDeleteModal(c.id)"
+              >
+                삭제
+              </button>
             </div>
           </li>
         </ul>

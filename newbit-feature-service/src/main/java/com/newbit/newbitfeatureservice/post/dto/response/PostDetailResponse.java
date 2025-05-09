@@ -23,6 +23,7 @@ public class PostDetailResponse {
     private String categoryName;
     private List<String> imageUrls;
     private List<CommentResponse> comments;
+    private Long userId;
 
     public PostDetailResponse(Post post, List<CommentResponse> comments, String writerName, String categoryName) {
         this.id = post.getId();
@@ -36,5 +37,6 @@ public class PostDetailResponse {
         this.imageUrls = post.getImageUrls();
         this.isNotice = post.isNotice();
         this.comments = comments;
+        this.userId = post.getUserId();
     }
 }
