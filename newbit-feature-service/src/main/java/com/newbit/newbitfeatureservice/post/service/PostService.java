@@ -126,6 +126,7 @@ public class PostService {
                 .createdAt(post.getCreatedAt())
                 .imageUrls(imageUrls)
                 .comments(commentResponses)
+                .userId(post.getUserId())
                 .build();
     }
 

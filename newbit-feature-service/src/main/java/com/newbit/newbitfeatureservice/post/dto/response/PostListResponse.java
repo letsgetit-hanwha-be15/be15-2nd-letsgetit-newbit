@@ -16,6 +16,7 @@ public class PostListResponse {
     private final Long categoryId;
     private final Integer likeCount;
     private final String serialNumber;
+    private final Long userId;
 
     public PostListResponse(Post post, String writerNickname, String serialNumber) {
         this.id = post.getId();
@@ -26,5 +27,6 @@ public class PostListResponse {
         this.categoryId = post.getPostCategoryId();
         this.likeCount = post.getLikeCount();
         this.serialNumber = serialNumber;
+        this.userId = post.getUserId();
     }
 }
