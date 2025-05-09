@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import {onMounted, ref, computed, watch} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import {getPostDetail } from '@/api/post'
@@ -29,6 +29,11 @@ const convertReasonToId = (reason) => {
 
   return reasonMap[reason] || 11
 }
+
+const deleteModalTitle = ref('게시글 삭제')
+const deleteModalMessage = ref('게시글을 삭제하시겠습니까?')
+
+const post = ref(null)
 
 const authStore = useAuthStore()
 const currentUserId = authStore.userId
@@ -74,10 +79,11 @@ const closeDeleteModal = () => {
 const confirmDelete = async () => {
   try {
     await deletePost(post.value.id)
-    toast.success('삭제되었습니다.')
+    const msg = post.value.isNotice ? '공지사항이 삭제되었습니다.' : '게시글이 삭제되었습니다.'
+    toast.success(msg)
     router.push('/posts')
   } catch (e) {
-    toast.error('삭제 실패')
+    toast.error('삭제에 실패했습니다.')
   } finally {
     isDeleteModalOpen.value = false
   }
@@ -102,7 +108,6 @@ const goToEdit = () => {
 const route = useRoute()
 const postId = route.params.postId
 
-const post = ref(null)
 const comments = ref([])
 const newComment = ref('')
 const currentPage = ref(1)
@@ -191,6 +196,19 @@ marked.setOptions({
 const fetchPostDetail = async () => {
   try {
     const res = await getPostDetail(postId)
+    console.log('📦 post detail:', res)
+
+    console.log('📦 백엔드 응답 전체:', res)
+    console.log('✅ isNotice 값:', res.isNotice)
+
+    // ✅ 모달 제목 여기서 직접 설정
+    const isNotice = res.notice === true || res.notice === 'true' || res.notice === 1;
+
+    deleteModalTitle.value = isNotice ? '공지사항 삭제' : '게시글 삭제';
+    deleteModalMessage.value = isNotice
+        ? '공지사항을 삭제하시겠습니까?'
+        : '게시글을 삭제하시겠습니까?';
+
     post.value = {
       id: res.id,
       title: res.title,
@@ -199,6 +217,7 @@ const fetchPostDetail = async () => {
       content: marked(res.content),
       likeCount: res.likeCount,
       liked: false,
+      isNotice, // 여기는 프론트 내부에서 쓰는 용도니까 그대로 사용해도 OK
       attachment: {
         name: res.imageUrls?.[0]?.split('/').pop() || 'Newbit.jpg',
         size: '2KB'
@@ -291,7 +310,7 @@ onMounted(fetchPostDetail)
               <!-- 신고 버튼 -->
               <button
                   class="bg-[var(--newbitred)] text-white text-xs px-3 py-1 rounded"
-                  @click="() => openCommentReportModal(c.id)"
+                  @click="openCommentReportModal(c.id)"
               >
                 신고
               </button>
@@ -325,15 +344,15 @@ onMounted(fetchPostDetail)
       </div>
 
       <ReportModal
-          v-if="isReportModalOpen"
+          v-if="isReportModalOpen && reportedId && reportType"
           :title="reportType === 'post' ? '게시글 신고' : '댓글 신고'"
           @close="closeReportModal"
           @submit="handleReportSubmit"
       />
       <DeleteConfirmModal
           v-if="isDeleteModalOpen"
-          title="게시글 삭제"
-          message="게시글을 삭제하시겠습니까?"
+          :title="deleteModalTitle"
+          :message="deleteModalMessage"
           @close="closeDeleteModal"
           @confirm="confirmDelete"
       />

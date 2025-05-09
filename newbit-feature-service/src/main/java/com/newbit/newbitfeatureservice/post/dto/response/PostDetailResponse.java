@@ -29,9 +29,12 @@ public class PostDetailResponse {
         this.title = post.getTitle();
         this.content = post.getContent();
         this.likeCount = post.getLikeCount();
+        this.reportCount = post.getReportCount();
         this.createdAt = post.getCreatedAt();
         this.writerName = writerName;
         this.categoryName = categoryName;
+        this.imageUrls = post.getImageUrls();
+        this.isNotice = post.isNotice();
         this.comments = comments;
     }
 }

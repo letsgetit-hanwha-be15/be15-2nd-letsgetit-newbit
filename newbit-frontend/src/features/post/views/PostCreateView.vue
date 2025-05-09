@@ -5,10 +5,15 @@ import { useRouter } from 'vue-router'
 import Editor from '@toast-ui/editor'
 import '@toast-ui/editor/dist/toastui-editor.css'
 import { useToast } from 'vue-toastification'
+import { computed } from 'vue'
+import { useAuthStore } from '@/features/stores/auth.js'
+
+const authStore = useAuthStore()
+const isAdmin = computed(() => authStore.userRole === 'ADMIN')
 
 const router = useRouter()
 const toast = useToast()
-
+const isNotice = ref(false)
 const title = ref('')
 const file = ref(null)
 const editorRef = ref(null)
@@ -34,11 +39,19 @@ const submitPost = async () => {
   formData.append('title', title.value)
   formData.append('content', content)
   formData.append('postCategoryId', selectedCategoryId.value)
+  formData.append('isNotice', isNotice.value)
   if (file.value) formData.append('file', file.value)
 
   try {
-    await postPost(formData) // ✅ 이 줄만 남깁니다
-    toast.success('게시글 등록이 완료되었습니다!')
+    await postPost(formData)
+
+    // ✅ 공지/일반 구분 알림
+    if (isNotice.value) {
+      toast.success('공지사항이 등록되었습니다!')
+    } else {
+      toast.success('게시글이 등록되었습니다!')
+    }
+
     router.push('/posts')
   } catch (e) {
     toast.error('게시글 등록에 실패했습니다.')
@@ -82,6 +95,17 @@ onBeforeUnmount(() => {
   >
     <span class="mr-1">←</span> 목록으로
   </button>
+
+  <!-- 공지사항 등록 체크박스 (관리자만 보임) -->
+  <label
+      v-if="isAdmin"
+      class="flex items-center gap-2 text-sm text-gray-700"
+  >
+    <input type="checkbox" v-model="isNotice" />
+    공지사항으로 등록
+  </label>
+
+
 
   <!-- 제목 입력 -->
   <input

@@ -12,4 +12,5 @@ public class PostCreateRequest {
     private String content;
     private Long postCategoryId;
     private List<String> imageUrls;
+    private boolean isNotice;
 }

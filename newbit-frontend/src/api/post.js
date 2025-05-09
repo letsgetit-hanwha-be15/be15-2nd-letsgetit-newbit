@@ -18,7 +18,9 @@ export function fetchPostCategories() {
 }
 
 export function postPost(formData) {
-    return api.post('/feature/posts', formData)
+    const isNotice = formData.get('isNotice') === 'true' || formData.get('isNotice') === true
+    const url = isNotice ? '/feature/posts/notices' : '/feature/posts'
+    return api.post(url, formData)
 }
 
 export async function getPostDetail(postId) {
@@ -50,4 +52,12 @@ export const reportPost = (reportData) => {
 
 export const reportComment = (reportData) => {
     return api.post('/feature/reports/comment', reportData)
+}
+
+export function updateNotice(postId, data) {
+    return api.patch(`/feature/posts/notices/${postId}`, data)
+}
+
+export function deleteNotice(postId) {
+    return api.delete(`/feature/posts/notices/${postId}`)
 }

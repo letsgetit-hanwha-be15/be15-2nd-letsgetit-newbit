@@ -29,6 +29,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Page<Post> findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
-    Page<Post> findAllByDeletedAtIsNull(Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE p.deletedAt IS NULL ORDER BY p.isNotice DESC, p.createdAt DESC")
+    Page<Post> findAllWithNoticeFirst(Pageable pageable);
+
 
 }

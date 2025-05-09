@@ -2,16 +2,19 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
-import { updatePost } from '@/api/post'
-import { getPostDetail } from '@/api/post'
+import { updatePost, updateNotice, getPostDetail } from '@/api/post'
 import Editor from '@toast-ui/editor'
 import '@toast-ui/editor/dist/toastui-editor.css'
 
-const toast = useToast()
+// 라우터
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
 
+// 게시글 ID 및 공지사항 여부 판단
 const postId = route.params.postId
+const isNoticeMode = route.path.includes('/notices') // 경로 기반 분기 (예: /posts/notices/:postId/edit)
+
 const title = ref('')
 const file = ref(null)
 const editorRef = ref(null)
@@ -29,27 +32,36 @@ const submitEdit = async () => {
     return
   }
 
-  const formData = new FormData()
-  formData.append('title', title.value)
-  formData.append('content', content)
-  if (file.value) formData.append('file', file.value)
-
   try {
-    await updatePost(postId, formData)
-    toast.success('게시글이 수정되었습니다!')
+    if (isNoticeMode) {
+      // 공지사항은 JSON
+      await updateNotice(postId, { title: title.value, content })
+    } else {
+      // 일반 게시글은 FormData
+      const formData = new FormData()
+      formData.append('title', title.value)
+      formData.append('content', content)
+      if (file.value) formData.append('file', file.value)
+
+      await updatePost(postId, formData)
+    }
+
+    toast.success('수정이 완료되었습니다!')
     router.push(`/posts/${postId}`)
   } catch (e) {
-    toast.error('게시글 수정에 실패했습니다.')
+    toast.error('수정에 실패했습니다.')
+    console.error(e)
   }
 }
 
 const fetchPostData = async () => {
   try {
-    const data = await getPostDetail(postId) // 실제 서버에서 게시글 정보 조회
+    const data = await getPostDetail(postId)
     title.value = data.title
     if (toastEditor) toastEditor.setMarkdown(data.content)
   } catch (e) {
     toast.error('게시글 데이터를 불러오지 못했습니다.')
+    console.error(e)
   }
 }
 
@@ -68,7 +80,6 @@ onBeforeUnmount(() => {
   toastEditor?.destroy()
 })
 </script>
-
 <template>
   <section class="max-w-3xl mx-auto px-6 py-4 space-y-6">
     <button
@@ -85,7 +96,7 @@ onBeforeUnmount(() => {
         class="w-full border px-4 py-3 rounded-lg text-base focus:outline-none focus:ring-1 focus:ring-blue-500"
     />
 
-    <div class="flex gap-2">
+    <div v-if="!isNoticeMode" class="flex gap-2">
       <input
           type="text"
           :value="file?.name || '첨부파일'"
@@ -100,7 +111,6 @@ onBeforeUnmount(() => {
       </label>
     </div>
 
-    <!-- Toast UI 에디터 영역 -->
     <div ref="editorRef" />
 
     <div class="flex justify-end gap-2 mt-4">
