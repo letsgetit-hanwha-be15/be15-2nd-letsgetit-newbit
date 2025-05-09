@@ -1,8 +1,9 @@
 <script setup>
 import Footer from "@/components/common/Footer.vue";
+import AuthRequiredModal from "@/components/common/AuthRequiredModal.vue";
 import { useNotificationStore } from "@/features/stores/notification.js";
 import { useAuthStore } from "@/features/stores/auth.js";
-import { onMounted, onUnmounted, watch, ref } from "vue";
+import { onMounted, onUnmounted, watch, ref, nextTick } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import webSocketService from "@/features/coffeeletter/services/websocket";
 import { useChatStore } from "@/features/coffeeletter/stores/chatStore";
@@ -12,6 +13,17 @@ const notification = useNotificationStore();
 const chatStore = useChatStore();
 const router = useRouter();
 const route = useRoute();
+
+const showAuthModal = ref(false);
+const pendingAuthRedirect = ref(null);
+
+// 라우터 가드에서 접근 차단 시 모달을 띄우기 위한 헬퍼
+if (window.__setAuthModal === undefined) {
+  window.__setAuthModal = (redirectPath) => {
+    showAuthModal.value = true;
+    pendingAuthRedirect.value = redirectPath;
+  };
+}
 
 const globalWebSocketStatus = ref({
   roomsSubscribed: false,
@@ -152,6 +164,14 @@ watch(
 <template>
   <RouterView />
   <Footer />
+  <AuthRequiredModal
+    v-if="showAuthModal"
+    @close="showAuthModal = false"
+    @login="
+      showAuthModal = false;
+      router.push({ name: 'Login', query: { redirect: pendingAuthRedirect } });
+    "
+  />
 </template>
 
 <style scoped></style>
