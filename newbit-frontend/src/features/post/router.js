@@ -12,7 +12,8 @@ export const postRoutes = [
     {
         path: '/posts/create',
         name: 'PostCreate',
-        component: PostCreateView
+        component: PostCreateView,
+        meta: { requiresAuth: true },
     },
     {
         path: '/posts/category/:categoryId',
@@ -30,6 +31,7 @@ export const postRoutes = [
         path: '/posts/:postId/edit',
         name: 'PostEdit',
         component: PostEditView,
-        props: true
+        props: true,
+        meta: { requiresAuth: true },
     }
 ]
