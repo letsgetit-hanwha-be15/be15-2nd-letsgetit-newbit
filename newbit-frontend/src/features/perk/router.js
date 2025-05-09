@@ -8,6 +8,7 @@ export const perkRoutes = [
     path: "/perks/quiz",
     name: "PersonalQuiz",
     component: () => import("@/features/perk/views/PersonalQuizView.vue"),
+    meta: { requiresAuth: true },
   },
   {
     path: "/perks/quiz-free",

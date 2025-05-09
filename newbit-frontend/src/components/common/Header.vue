@@ -79,8 +79,8 @@ const handleLogout = async () => {
   try {
     await logoutUser();
     authStore.clearAuth();
-    router.push("/");
-    window.location.reload(); // ✅ 강제 새로고침으로 UI 반영
+    router.push({ name: "Login" });
+    // window.location.reload(); // ✅ 강제 새로고침으로 UI 반영
   } catch (e) {
     console.error("로그아웃 실패", e);
   }

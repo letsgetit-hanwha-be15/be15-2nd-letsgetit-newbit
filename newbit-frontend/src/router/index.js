@@ -53,10 +53,14 @@ router.beforeEach((to) => {
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    return {
-      name: "login",
-      query: { redirect: to.fullPath },
-    };
+    if (typeof window !== "undefined" && window.__setAuthModal) {
+      window.__setAuthModal(to.fullPath);
+    }
+    return false;
+  }
+
+  if (to.meta.requiresAdmin && authStore.userRole !== "admin") {
+    return { name: "main" };
   }
 
   if (

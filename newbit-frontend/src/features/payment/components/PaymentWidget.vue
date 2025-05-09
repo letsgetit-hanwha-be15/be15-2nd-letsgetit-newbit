@@ -47,6 +47,7 @@ const {
   onSuccess: (result) => emit("success", result),
   // TODO : 결제 위젯 에러 발생시 에러 캐치하려고 했으나 위젯이 iframe 으로 렌더링되어 캐치 불가능한 문제 발생(추정)
   // Toss payments위젯 내부 문제인지 아닌지 자세한 원인 파악 필요, 차후에 우선적으로 해결
+  // 확인 : Toss 내부 위젯 문제
   onError: (error) => {
     console.log("[PaymentWidget][onError] 결제 위젯 에러 발생:", error);
     setTimeout(() => {
