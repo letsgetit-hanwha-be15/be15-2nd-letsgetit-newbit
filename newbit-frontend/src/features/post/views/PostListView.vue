@@ -59,7 +59,6 @@ watch(currentPage, () => {
 
 watch(searchKeyword, () => {
   currentPage.value = 1
-  loadPosts()
 })
 
 // 3. 검색 + 정렬 + 카테고리 필터 적용
