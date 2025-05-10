@@ -203,6 +203,62 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 
 
 ## <p id="7"> 📁 프로젝트 구조
+Back-End
+```
+📦 newbit-gateway/
+└── src/
+└── main/
+└── java/com/newbit/newbitgateway/
+├── dto/ # API 응답 DTO
+├── error/ # JWT 에러 코드
+├── exception/ # 공통 예외 핸들러
+├── filter/ # 요청 필터
+└── jwt/ # JWT 토큰 발급/검증
+
+🧑‍💻 newbit-user-service/
+└── src/
+└── main/
+└── java/com/newbit/newbituserservice/
+├── auth/ # 인증 기능
+├── client/ # 외부 통신 (Feign 등)
+├── common/
+│ ├── config/ # Feign, Swagger, JPA 설정
+│ ├── dto/ # 공통 DTO
+│ └── exception/ # 예외 처리
+├── security/
+│ ├── config/
+│ ├── filter/
+│ └── model/ # JWT 토큰, 핸들러 등
+└── user/
+├── controller/
+├── dto/
+├── entity/
+├── mapper/
+├── repository/
+├── service/
+└── support/
+
+🧩 newbit-feature-service/
+└── src/
+└── main/
+└── java/com/newbit/newbitfeatureservice/
+├── client/ # Feign 통신
+├── coffeechat/ # 커피챗
+├── coffeeletter/ # 커피챗 후기/메시지
+├── column/ # 칼럼 도메인
+├── like/ # 좋아요
+├── notification/ # 알림
+├── payment/ # 결제
+├── post/ # 게시판
+├── product/ # 상품 정보
+├── purchase/ # 결제 내역
+├── report/ # 신고
+├── s3/ # S3 파일 업로드
+├── security/ # 보안 설정
+├── settlement/ # 정산 기능
+└── subscription/ # 시리즈 구독
+```
+Front-End
 ```
 src/
 ├── api/ # 기능별 API 모듈 (column.js, user.js 등)
