@@ -61,3 +61,9 @@ export function updateNotice(postId, data) {
 export function deleteNotice(postId) {
     return api.delete(`/feature/posts/notices/${postId}`)
 }
+
+export const searchPosts = (keyword) => {
+    return api.get('/api/posts/search', {
+        params: { keyword }
+    })
+}

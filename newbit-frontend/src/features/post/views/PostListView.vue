@@ -37,6 +37,10 @@ async function loadPosts() {
   try {
     const page = currentPage.value - 1 // Spring은 0부터 시작
     const res = await fetchPostList(page, 10, sortOption.value, searchKeyword.value, selectedCategoryId.value)
+
+    // 🔍 백엔드 응답 확인
+    console.log('✅ 백엔드 응답 데이터:', res.data)
+
     originalPosts.value = res.data.content
     totalPages.value = res.data.totalPages
     totalItems.value = res.data.totalElements
@@ -51,6 +55,10 @@ onMounted(() => {
 
 watch(currentPage, () => {
   loadPosts()
+})
+
+watch(searchKeyword, () => {
+  currentPage.value = 1
 })
 
 // 3. 검색 + 정렬 + 카테고리 필터 적용
