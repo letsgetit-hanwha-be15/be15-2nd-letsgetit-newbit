@@ -7,19 +7,22 @@ export const columnRoutes = [
     {
         path: "/columns/requests",
         name: "ColumnRequestPage",
-        component: () => import("@/features/column/views/ColumnRequestView.vue")
+        component: () => import("@/features/column/views/ColumnRequestView.vue"),
+        meta: { requiresAuth: true },
     },
     {
         path: "/columns/edit/:id",
         name: "ColumnEditRequestPage",
         component: () => import("@/features/column/views/ColumnEditRequestView.vue"),
         props: true,
+        meta: { requiresAuth: true },
     },
     {
         path: "/columns/:id",
         name: "ColumnDetail",
         component: () => import("@/features/column/views/ColumnDetailView.vue"),
-        props: true
+        props: true,
+        meta: { requiresAuth: true },
     },
     {
         path: "/series",

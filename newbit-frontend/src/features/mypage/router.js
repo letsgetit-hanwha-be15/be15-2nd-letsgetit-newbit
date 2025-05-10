@@ -27,6 +27,7 @@ export const mypageRoutes = [
     {
         path: "/mypage",
         component: MyPageLayout,
+        meta: { requiresAuth: true },
         children: [
             {
                 path: "",
