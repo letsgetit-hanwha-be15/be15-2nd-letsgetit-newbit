@@ -300,27 +300,45 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 #### 커피레터
 
 <details>
-  <summary>채팅 기능</summary>
+  <summary>채팅방</summary>
   <div align="center">
-    <img src="./assets/images/expression-chat.gif" />
+    <img src="./assets/images/채팅방테스트.gif" />
   </div>
 </details>
 
 #### 결제
 
 <details>
-  <summary>유저 잔여 다이아 확인 -> 상품 구매 -> 다이아 내역 확인 -> 결제 내역 확인 -> 유저 잔여 다이아몬드 확인</summary>
+  <summary>결제진행</summary>
   <div align="center">
-    <img src="./assets/images/expression-payment.gif" />
+    <img src="./assets/images/결제진행테스트.gif" />
+  </div>
+</details>
+<details>
+  <summary>결제취소</summary>
+  <div align="center">
+    <img src="./assets/images/결제취소테스트.gif" />
   </div>
 </details>
 
 #### 심리테스트
 
 <details>
-  <summary>포인트 상품 결제</summary>
+  <summary>유료심리테스트</summary>
   <div align="center">
-    <img src="./assets/images/expression-point-purchase.gif" />
+    <img src="./assets/images/유료심리테스트.gif" />
+  </div>
+</details>
+<details>
+  <summary>무료테스트</summary>
+  <div align="center">
+    <img src="./assets/images/무료테스트진행.gif" />
+  </div>
+</details>
+<details>
+  <summary>포인트구매실패</summary>
+  <div align="center">
+    <img src="./assets/images/포인트구매실패테스트.gif" />
   </div>
 </details>
 
@@ -329,7 +347,7 @@ Newbit은 사회 초년생과 지식과 다양한 경험을 가진 IT 전문가�
 <details>
   <summary>신고 조회</summary>
   <div align="center">
-    <img src="./assets/images/expression-report.gif" />
+    <img src="./assets/images/신고조회테스트.gif" />
   </div>
 </details>
 
